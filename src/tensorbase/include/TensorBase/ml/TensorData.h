@@ -24,31 +24,31 @@ namespace TensorBase
   /**
     @brief Tensor data
   */
-	template<typename TensorT, typename DeviceT, int Dim, typename... Indices>
+  template<typename TensorT, typename DeviceT, int Dim, typename... Indices>
   class TensorData
   {
   public:
-    //TensorData() = default;
-    TensorData(const Indices&... indices) { setIndices(indices...); };
+    TensorData() = default;
+    //TensorData(const Indices&... indices) { setIndices(indices...); };
     TensorData(const TensorData& other)
-		{
-			h_data_ = other.h_data_;
-			d_data_ = other.d_data_;
-			h_data_updated_ = other.h_data_updated_;
-			d_data_updated_ = other.d_data_updated_;
+    {
+      h_data_ = other.h_data_;
+      d_data_ = other.d_data_;
+      h_data_updated_ = other.h_data_updated_;
+      d_data_updated_ = other.d_data_updated_;
       indices_ = other.indices_;
-		};
+    };
     ~TensorData() = default; ///< Default destructor
 
     inline bool operator==(const TensorData& other) const
     {
       return
         std::tie(
-       
+
         ) == std::tie(
 
         )
-      ;
+        ;
     }
 
     inline bool operator!=(const TensorData& other) const
@@ -57,11 +57,11 @@ namespace TensorBase
     }
 
     inline TensorData& operator=(const TensorData& other)
-    { 
-			h_data_ = other.h_data_;
-			d_data_ = other.d_data_;
-			h_data_updated_ = other.h_data_updated_;
-			d_data_updated_ = other.d_data_updated_;
+    {
+      h_data_ = other.h_data_;
+      d_data_ = other.d_data_;
+      h_data_updated_ = other.h_data_updated_;
+      d_data_updated_ = other.d_data_updated_;
       indices_ = other.indices_;
       return *this;
     }
@@ -70,54 +70,54 @@ namespace TensorBase
     std::tuple<Indices...> getIndicesAsTuple() const { return indices_; }
     auto getIndicesAsParameterPack() { return getParametersPack(); }
 
-		virtual void setData(const Eigen::Tensor<TensorT, Dim>& data) = 0; ///< data setter
+    virtual void setData(const Eigen::Tensor<TensorT, Dim>& data) = 0; ///< data setter
 
     Eigen::TensorMap<Eigen::Tensor<TensorT, Dim>> getData() { return getData_(indices_, std::index_sequence_for<Indices...>()); } ///< data copy getter
-		std::shared_ptr<TensorT> getHDataPointer() { return h_data_; }; ///< data pointer getter
-		std::shared_ptr<TensorT> getDDataPointer() { return d_data_; }; ///< data pointer getter
+    std::shared_ptr<TensorT> getHDataPointer() { return h_data_; }; ///< data pointer getter
+    std::shared_ptr<TensorT> getDDataPointer() { return d_data_; }; ///< data pointer getter
 
-		size_t getTensorSize() { return 1 * sizeof(TensorT); }; ///< Get the size of each tensor in bytes
+    size_t getTensorSize() { return 1 * sizeof(TensorT); }; ///< Get the size of each tensor in bytes
 
-		virtual bool syncHAndDData(DeviceT& device) = 0;  ///< Sync the host and device data
-		std::pair<bool, bool> getDataStatus() { return std::make_pair(h_data_updated_, d_data_updated_);	};   ///< Get the status of the host and device data
+    virtual bool syncHAndDData(DeviceT& device) = 0;  ///< Sync the host and device data
+    std::pair<bool, bool> getDataStatus() { return std::make_pair(h_data_updated_, d_data_updated_); };   ///< Get the status of the host and device data
 
   protected:
-		std::shared_ptr<TensorT> h_data_ = nullptr;
-		std::shared_ptr<TensorT> d_data_ = nullptr;
+    std::shared_ptr<TensorT> h_data_ = nullptr;
+    std::shared_ptr<TensorT> d_data_ = nullptr;
 
-		bool h_data_updated_ = false;
-		bool d_data_updated_ = false;
+    bool h_data_updated_ = false;
+    bool d_data_updated_ = false;
 
     std::tuple<Indices...> indices_;
 
   private:
     template<std::size_t... Is>
-    Eigen::TensorMap<Eigen::Tensor<TensorT, Dim>> getData_(const std::tuple<Indices...>& tuple,  std::index_sequence<Is...>) {
+    Eigen::TensorMap<Eigen::Tensor<TensorT, Dim>> getData_(const std::tuple<Indices...>& tuple, std::index_sequence<Is...>) {
       std::shared_ptr<TensorT> h_data = h_data_;
       Eigen::TensorMap<Eigen::Tensor<TensorT, Dim>> data(h_data.get(), std::get<Is>(tuple)...);
       return data;
     }
 
 
-	//private:
-	//	friend class cereal::access;
-	//	template<class Archive>
-	//	void serialize(Archive& archive) {
-	//		archive(batch_size_, memory_size_, layer_size_, 
-	//		h_data_, h_output_, h_error_, h_derivative_, h_dt_,
-	//		d_data_, d_output_, d_error_, d_derivative_, d_dt_,
-	//		h_data_updated_, h_output_updated_, h_error_updated_, h_derivative_updated_, h_dt_updated_,
-	//		d_data_updated_, d_output_updated_, d_error_updated_, d_derivative_updated_, d_dt_updated_);
-	//	}
+    //private:
+    //	friend class cereal::access;
+    //	template<class Archive>
+    //	void serialize(Archive& archive) {
+    //		archive(batch_size_, memory_size_, layer_size_, 
+    //		h_data_, h_output_, h_error_, h_derivative_, h_dt_,
+    //		d_data_, d_output_, d_error_, d_derivative_, d_dt_,
+    //		h_data_updated_, h_output_updated_, h_error_updated_, h_derivative_updated_, h_dt_updated_,
+    //		d_data_updated_, d_output_updated_, d_error_updated_, d_derivative_updated_, d_dt_updated_);
+    //	}
   };
 
-	template<typename TensorT, int Dim, typename... Indices>
-	class TensorDataCpu : public TensorData<TensorT, Eigen::DefaultDevice, Dim, Indices...> {
-	public:
+  template<typename TensorT, int Dim, typename... Indices>
+  class TensorDataCpu : public TensorData<TensorT, Eigen::DefaultDevice, Dim, Indices...> {
+  public:
     //using TensorData<TensorT, Eigen::DefaultDevice, Dim, Indices...>::TensorData;
     TensorDataCpu(Indices... indices) { setIndices(indices...); };
-		void setData(const Eigen::Tensor<TensorT, Dim>& data) { setData_(data, this->indices_, std::index_sequence_for<Indices...>()); }; ///< data setter
-		bool syncHAndDData(Eigen::DefaultDevice& device) { return true; }
+    void setData(const Eigen::Tensor<TensorT, Dim>& data) { setData_(data, this->indices_, std::index_sequence_for<Indices...>()); }; ///< data setter
+    bool syncHAndDData(Eigen::DefaultDevice& device) { return true; }
   private:
     template<std::size_t... Is>
     void setData_(const Eigen::Tensor<TensorT, Dim>& data, const std::tuple<Indices...>& tuple, std::index_sequence<Is...>) {
@@ -138,40 +138,40 @@ namespace TensorBase
       this->d_data_updated_ = false;
 
     };
-	//private:
-	//	friend class cereal::access;
-	//	template<class Archive>
-	//	void serialize(Archive& archive) {
-	//		archive(cereal::base_class<TensorData<TensorT, Eigen::DefaultDevice>>(this));
-	//	}
-	};
+    //private:
+    //	friend class cereal::access;
+    //	template<class Archive>
+    //	void serialize(Archive& archive) {
+    //		archive(cereal::base_class<TensorData<TensorT, Eigen::DefaultDevice>>(this));
+    //	}
+  };
 
 #if COMPILE_WITH_CUDA
 
-	template<typename TensorT, int Dim, typename... Indices>
-	class TensorDataGpu : public TensorData<TensorT, Eigen::GpuDevice, Dim, Indices...> {
-	public:
+  template<typename TensorT, int Dim, typename... Indices>
+  class TensorDataGpu : public TensorData<TensorT, Eigen::GpuDevice, Dim, Indices...> {
+  public:
     //using TensorData<TensorT, Eigen::DefaultDevice, Dim, Indices...>::TensorData;
     TensorDataGpu(Indices... indices) { setIndices(indices...); }
     void setData(const Eigen::Tensor<TensorT, Dim>& data) { setData_(data, this->indices_, std::index_sequence_for<Indices...>()); }; ///< data setter
-		bool syncHAndDData(Eigen::GpuDevice& device){
-			if (this->h_data_updated_ && !this->d_data_updated_) {
-				device.memcpyHostToDevice(this->d_data_.get(), this->h_data_.get(), getTensorSize());
-				this->d_data_updated_ = true;
-				this->h_data_updated_ = false;
-				return true;
-			}
-			else if (!this->h_data_updated_ && this->d_data_updated_) {
-				device.memcpyDeviceToHost(this->h_data_.get(), this->d_data_.get(), getTensorSize());
-				this->h_data_updated_ = true;
-				this->d_data_updated_ = false;
-				return true;
-			}
-			else {
-				std::cout << "Both host and device are syncHAndDronized." << std::endl;
-				return false;
-			}
-		}
+    bool syncHAndDData(Eigen::GpuDevice& device) {
+      if (this->h_data_updated_ && !this->d_data_updated_) {
+        device.memcpyHostToDevice(this->d_data_.get(), this->h_data_.get(), getTensorSize());
+        this->d_data_updated_ = true;
+        this->h_data_updated_ = false;
+        return true;
+      }
+      else if (!this->h_data_updated_ && this->d_data_updated_) {
+        device.memcpyDeviceToHost(this->h_data_.get(), this->d_data_.get(), getTensorSize());
+        this->h_data_updated_ = true;
+        this->d_data_updated_ = false;
+        return true;
+      }
+      else {
+        std::cout << "Both host and device are syncHAndDronized." << std::endl;
+        return false;
+      }
+    }
   private:
     template<std::size_t... Is>
     void setData_(const Eigen::Tensor<TensorT, Dim>& data, const std::tuple<Indices...>& tuple, std::index_sequence<Is...>) {
@@ -191,13 +191,13 @@ namespace TensorBase
       this->h_data_updated_ = true;
       this->d_data_updated_ = false;
     };
-	//private:
-	//	friend class cereal::access;
-	//	template<class Archive>
-	//	void serialize(Archive& archive) {
-	//		archive(cereal::base_class<TensorData<TensorT, Eigen::GpuDevice>>(this));
-	//	}
-	};
+    //private:
+    //	friend class cereal::access;
+    //	template<class Archive>
+    //	void serialize(Archive& archive) {
+    //		archive(cereal::base_class<TensorData<TensorT, Eigen::GpuDevice>>(this));
+    //	}
+  };
 #endif
 }
 
