@@ -13,30 +13,30 @@ BOOST_AUTO_TEST_SUITE(tensorData)
 
 BOOST_AUTO_TEST_CASE(constructor) 
 {
-	TensorDataCpu<float>* ptr = nullptr;
-	TensorDataCpu<float>* nullPointer = nullptr;
-	ptr = new TensorDataCpu<float>();
+	TensorDataCpu<float, 3>* ptr = nullptr;
+	TensorDataCpu<float, 3>* nullPointer = nullptr;
+	ptr = new TensorDataCpu<float, 3>();
   BOOST_CHECK_NE(ptr, nullPointer);
   delete ptr;
 }
 
 BOOST_AUTO_TEST_CASE(destructor) 
 {
-	TensorDataCpu<float>* ptr = nullptr;
-	ptr = new TensorDataCpu<float>();
+	TensorDataCpu<float, 3>* ptr = nullptr;
+	ptr = new TensorDataCpu<float, 3>();
   delete ptr;
 }
 
 BOOST_AUTO_TEST_CASE(comparison) 
 {
-	TensorDataCpu<float> tensordata, tensordata_test;
+	TensorDataCpu<float, 3> tensordata, tensordata_test;
 	BOOST_CHECK(tensordata == tensordata_test);
 }
 
 #if COMPILE_WITH_CUDA
 BOOST_AUTO_TEST_CASE(gettersAndSetters2)
 {
-	TensorDataGpu<float, int, int, int> tensordata(2, 3, 4);
+  TensorDataGpu<float, 3> tensordata(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
 
   Eigen::Tensor<float, 3> data(2, 3, 4);
 	data.setConstant(0.5);
@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE(gettersAndSetters2)
 
 BOOST_AUTO_TEST_CASE(syncHAndD2)
 {
-	TensorDataGpu<float, int, int, int> tensordata(2, 3, 4);
+	TensorDataGpu<float, 3> tensordata(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
 
 	Eigen::Tensor<float, 3> data(2, 3, 4);
 	data.setConstant(0.5);
@@ -77,14 +77,14 @@ BOOST_AUTO_TEST_CASE(syncHAndD2)
 
 BOOST_AUTO_TEST_CASE(gettersAndSetters)
 {
-	TensorDataCpu<float, int, int, int> tensordata(2, 3, 4);
+	TensorDataCpu<float, 3> tensordata(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
 	size_t test = 2 * 3 * 4 * sizeof(float);
 	BOOST_CHECK_EQUAL(tensordata.getTensorSize(), test);
 }
 
 BOOST_AUTO_TEST_CASE(gettersAndSetters1)
 {
-	TensorDataCpu<float, int, int, int> tensordata(2, 3, 4);
+	TensorDataCpu<float, 3> tensordata(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
 
 	Eigen::Tensor<float, 3> data(2, 3, 4);
 	data.setConstant(0);
@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE(gettersAndSetters1)
 
 BOOST_AUTO_TEST_CASE(syncHAndD)
 {
-	TensorDataCpu<float, int, int, int> tensordata(2, 3, 4);
+	TensorDataCpu<float, 3> tensordata(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
 
 	Eigen::Tensor<float, 3> data(2, 3, 4);
 	data.setConstant(0.5);
