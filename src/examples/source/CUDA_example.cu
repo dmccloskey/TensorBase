@@ -71,6 +71,9 @@ void stringCompareGpuEx(const std::size_t& dim1, DeviceT& cpuDevice) {
 	Eigen::GpuStreamDevice stream_device(&stream, 0);
 	Eigen::GpuDevice device_(&stream_device);
 
+  const std::tuple<int, int, int> params = { 1, 1, 1 };
+  Eigen::Tensor<float, 2> in(params);
+
   Eigen::TensorMap<Eigen::Tensor<std::string, 1>> in1_str(h_str_in1, dim1);
   in1_str.setConstant("Hello");
   in1_str(0) = "H";

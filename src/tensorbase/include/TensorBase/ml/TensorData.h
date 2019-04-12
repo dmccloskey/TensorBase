@@ -19,22 +19,24 @@
 //#undef max // clashes with std::limit on windows in polymorphic.hpp
 //#include <cereal/types/polymorphic.hpp>
 
-namespace TensorData
+namespace TensorBase
 {
   /**
     @brief Tensor data
   */
-	template<typename TensorT, typename DeviceT, int Dim, int... Args>
+	template<typename TensorT, typename DeviceT, int Dim, typename... Indices>
   class TensorData
   {
-public:
-    TensorData() = default; ///< Default constructor
+  public:
+    //TensorData() = default;
+    TensorData(const Indices&... indices) { setIndices(indices...); };
     TensorData(const TensorData& other)
 		{
 			h_data_ = other.h_data_;
 			d_data_ = other.d_data_;
 			h_data_updated_ = other.h_data_updated_;
 			d_data_updated_ = other.d_data_updated_;
+      indices_ = other.indices_;
 		};
     ~TensorData() = default; ///< Default destructor
 
@@ -60,32 +62,42 @@ public:
 			d_data_ = other.d_data_;
 			h_data_updated_ = other.h_data_updated_;
 			d_data_updated_ = other.d_data_updated_;
-      dimensions_ = other.dimensions_;
+      indices_ = other.indices_;
       return *this;
     }
 
+    void setIndices(const Indices&... indices) { indices_ = std::tuple<Indices...>(indices...); }
+    std::tuple<Indices...> getIndicesAsTuple() const { return indices_; }
+    auto getIndicesAsParameterPack() { return getParametersPack(); }
+
 		virtual void setData(const Eigen::Tensor<TensorT, Dim>& data) = 0; ///< data setter
-		Eigen::TensorMap<Eigen::Tensor<TensorT, Dim>> getData() { std::shared_ptr<TensorT> h_data = h_data_; Eigen::TensorMap<Eigen::Tensor<TensorT, Dims>> data(h_data.get(), Args); return data; }; ///< data copy getter
+
+    Eigen::TensorMap<Eigen::Tensor<TensorT, Dim>> getData() { return getData_(indices_, std::index_sequence_for<Indices...>()); } ///< data copy getter
 		std::shared_ptr<TensorT> getHDataPointer() { return h_data_; }; ///< data pointer getter
 		std::shared_ptr<TensorT> getDDataPointer() { return d_data_; }; ///< data pointer getter
 
-		size_t getTensorSize() { return batch_size_ * memory_size_ * layer_size_ * sizeof(TensorT); }; ///< Get the size of each tensor in bytes
+		size_t getTensorSize() { return 1 * sizeof(TensorT); }; ///< Get the size of each tensor in bytes
 
+		virtual bool syncHAndDData(DeviceT& device) = 0;  ///< Sync the host and device data
+		std::pair<bool, bool> getDataStatus() { return std::make_pair(h_data_updated_, d_data_updated_);	};   ///< Get the status of the host and device data
 
-		virtual bool syncHAndDData(DeviceT& device) = 0;
-
-		std::pair<bool, bool> getDataStatus() { return std::make_pair(h_data_updated_, d_data_updated_);	};
-
-protected:
-		int batch_size_ = 1; ///< Mini batch size
-		int memory_size_ = 2; ///< Memory size
-		int layer_size_ = 1; ///< Layer size
-
+  protected:
 		std::shared_ptr<TensorT> h_data_ = nullptr;
 		std::shared_ptr<TensorT> d_data_ = nullptr;
 
 		bool h_data_updated_ = false;
 		bool d_data_updated_ = false;
+
+    std::tuple<Indices...> indices_;
+
+  private:
+    template<std::size_t... Is>
+    Eigen::TensorMap<Eigen::Tensor<TensorT, Dim>> getData_(const std::tuple<Indices...>& tuple,  std::index_sequence<Is...>) {
+      std::shared_ptr<TensorT> h_data = h_data_;
+      Eigen::TensorMap<Eigen::Tensor<TensorT, Dim>> data(h_data.get(), std::get<Is>(tuple)...);
+      return data;
+    }
+
 
 	//private:
 	//	friend class cereal::access;
@@ -99,21 +111,33 @@ protected:
 	//	}
   };
 
-	template<typename TensorT, int Dim, int... Args>
-	class TensorDataCpu : public TensorData<TensorT, Eigen::DefaultDevice, int Dim, int... Args> {
+	template<typename TensorT, int Dim, typename... Indices>
+	class TensorDataCpu : public TensorData<TensorT, Eigen::DefaultDevice, Dim, Indices...> {
 	public:
-		void setData(const Eigen::Tensor<TensorT, Dim>& data) {
-			TensorT* h_data = new TensorT[this->batch_size_*this->memory_size_*this->layer_size_];
-			// copy the tensor
-			Eigen::TensorMap<Eigen::Tensor<TensorT, Dim>> data_copy(h_data, Args);
-			data_copy = data;
-			//auto h_deleter = [&](TensorT* ptr) { delete[] ptr; };
-			//this->h_data_.reset(h_data, h_deleter);
-			this->h_data_.reset(h_data);
-			this->h_data_updated_ = true;
-			this->d_data_updated_ = true;
-		}; ///< data setter
+    //using TensorData<TensorT, Eigen::DefaultDevice, Dim, Indices...>::TensorData;
+    TensorDataCpu(Indices... indices) { setIndices(indices...); };
+		void setData(const Eigen::Tensor<TensorT, Dim>& data) { setData_(data, this->indices_, std::index_sequence_for<Indices...>()); }; ///< data setter
 		bool syncHAndDData(Eigen::DefaultDevice& device) { return true; }
+  private:
+    template<std::size_t... Is>
+    void setData_(const Eigen::Tensor<TensorT, Dim>& data, const std::tuple<Indices...>& tuple, std::index_sequence<Is...>) {
+      // allocate cuda and pinned host memory
+      TensorT* d_data;
+      TensorT* h_data;
+      assert(cudaMalloc((void**)(&d_data), getTensorSize()) == cudaSuccess);
+      assert(cudaHostAlloc((void**)(&h_data), getTensorSize(), cudaHostAllocDefault) == cudaSuccess);
+      // copy the tensor
+      Eigen::TensorMap<Eigen::Tensor<TensorT, Dim>> data_copy(h_data, std::get<Is>(tuple)...);
+      data_copy = data;
+      // define the deleters
+      auto h_deleter = [&](TensorT* ptr) { cudaFreeHost(ptr); };
+      auto d_deleter = [&](TensorT* ptr) { cudaFree(ptr); };
+      this->h_data_.reset(h_data, h_deleter);
+      this->d_data_.reset(d_data, d_deleter);
+      this->h_data_updated_ = true;
+      this->d_data_updated_ = false;
+
+    };
 	//private:
 	//	friend class cereal::access;
 	//	template<class Archive>
@@ -124,26 +148,12 @@ protected:
 
 #if COMPILE_WITH_CUDA
 
-	template<typename TensorT, int Dim, int... Args>
-	class TensorDataGpu : public TensorData<TensorT, Eigen::GpuDevice, int Dim, int... Args> {
+	template<typename TensorT, int Dim, typename... Indices>
+	class TensorDataGpu : public TensorData<TensorT, Eigen::GpuDevice, Dim, Indices...> {
 	public:
-		void setData(const Eigen::Tensor<TensorT, Dim>& data) {
-			// allocate cuda and pinned host memory
-			TensorT* d_data;
-			TensorT* h_data;
-			assert(cudaMalloc((void**)(&d_data), getTensorSize()) == cudaSuccess);
-			assert(cudaHostAlloc((void**)(&h_data), getTensorSize(), cudaHostAllocDefault ) == cudaSuccess);
-			// copy the tensor
-			Eigen::TensorMap<Eigen::Tensor<TensorT, Dim>> data_copy(h_data, Args);
-			data_copy = data;
-			// define the deleters
-			auto h_deleter = [&](TensorT* ptr) { cudaFreeHost(ptr); };
-			auto d_deleter = [&](TensorT* ptr) { cudaFree(ptr); };
-			this->h_data_.reset(h_data, h_deleter); 
-			this->d_data_.reset(d_data, d_deleter);
-			this->h_data_updated_ = true;
-			this->d_data_updated_ = false;
-		}; ///< data setter
+    //using TensorData<TensorT, Eigen::DefaultDevice, Dim, Indices...>::TensorData;
+    TensorDataGpu(Indices... indices) { setIndices(indices...); }
+    void setData(const Eigen::Tensor<TensorT, Dim>& data) { setData_(data, this->indices_, std::index_sequence_for<Indices...>()); }; ///< data setter
 		bool syncHAndDData(Eigen::GpuDevice& device){
 			if (this->h_data_updated_ && !this->d_data_updated_) {
 				device.memcpyHostToDevice(this->d_data_.get(), this->h_data_.get(), getTensorSize());
@@ -162,6 +172,25 @@ protected:
 				return false;
 			}
 		}
+  private:
+    template<std::size_t... Is>
+    void setData_(const Eigen::Tensor<TensorT, Dim>& data, const std::tuple<Indices...>& tuple, std::index_sequence<Is...>) {
+      // allocate cuda and pinned host memory
+      TensorT* d_data;
+      TensorT* h_data;
+      assert(cudaMalloc((void**)(&d_data), getTensorSize()) == cudaSuccess);
+      assert(cudaHostAlloc((void**)(&h_data), getTensorSize(), cudaHostAllocDefault) == cudaSuccess);
+      // copy the tensor
+      Eigen::TensorMap<Eigen::Tensor<TensorT, Dim>> data_copy(h_data, std::get<Is>(tuple)...);
+      data_copy = data;
+      // define the deleters
+      auto h_deleter = [&](TensorT* ptr) { cudaFreeHost(ptr); };
+      auto d_deleter = [&](TensorT* ptr) { cudaFree(ptr); };
+      this->h_data_.reset(h_data, h_deleter);
+      this->d_data_.reset(d_data, d_deleter);
+      this->h_data_updated_ = true;
+      this->d_data_updated_ = false;
+    };
 	//private:
 	//	friend class cereal::access;
 	//	template<class Archive>
