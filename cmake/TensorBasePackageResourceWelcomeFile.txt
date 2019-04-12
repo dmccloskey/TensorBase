@@ -1,0 +1,5 @@
+Welcome to the installation of TensorBase.
+
+TensorBase - A GPU accelerated, in memory, multi-dimensional database.
+
+For more information visit our website at www.TensorBase.com.

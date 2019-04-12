@@ -1,0 +1,100 @@
+
+#ifndef TENSORBASE_CONFIG_H
+#define TENSORBASE_CONFIG_H
+
+// include TENSORBASE_DLLAPI macros
+#include <TensorBase/TensorBaseConfig.h>
+
+#include <boost/current_function.hpp>
+
+// Here are some global configuration flags for TensorBase
+
+// Define compiler specifics (used in VERY few places only)
+// Microsoft Visual Studio .NET, 2005, 2008
+#cmakedefine TENSORBASE_COMPILER_MSVC
+// GNU g++
+#cmakedefine TENSORBASE_COMPILER_GXX
+
+// __PRETTY_FUNCTION__ is a GNU G++ extension so we use the alternative in boost
+#define TENSORBASE_PRETTY_FUNCTION BOOST_CURRENT_FUNCTION
+
+// TENSORBASE_ASSERTIONS enables some debugging methods within some TensorBase classes
+#ifdef TENSORBASE_COMPILER_MSVC
+// we define this using NDEBUG on MSVC as there are multiple build types simultaneously in the Solution file,
+// thus setting one value will not fit them all
+#	ifndef NDEBUG // hopefully defined automatically by MS-compiler in Debug Mode
+#		define TENSORBASE_ASSERTIONS
+#	endif
+#else // linux & Co (only one build type at a time)
+#  if (@CF_TENSORBASE_ASSERTIONS@)
+#    define TENSORBASE_ASSERTIONS
+#  endif
+#endif
+
+
+// let Cmake decide if we are using Windows (i.e. if windows.h is available).
+//   GCC and MSVC have pre-defined macros for this as well but using -ansi in GCC will disable those, thus asking the compiler is fragile
+#ifndef WIN32  //avoid warning of redefinition
+#cmakedefine WIN32
+#endif
+
+#ifdef WIN32   //should be true on: MinGW (32bit + 64bit) & MSVS compiler
+#define TENSORBASE_WINDOWSPLATFORM 1
+#endif
+
+// are we building a shared lib?
+#cmakedefine BUILD_SHARED_LIBS
+
+#cmakedefine TENSORBASE_BIG_ENDIAN
+
+// Define on 64 bit architectures
+#cmakedefine TENSORBASE_64BIT_ARCHITECTURE
+
+#define TENSORBASE_INT32_TYPE @CF_TENSORBASE_INT32_TYPE@
+#define TENSORBASE_INT64_TYPE @CF_TENSORBASE_INT64_TYPE@
+#define TENSORBASE_BYTE_TYPE @CF_TENSORBASE_BYTE_TYPE@
+#define TENSORBASE_UINT32_TYPE @CF_TENSORBASE_UINT32_TYPE@
+#define TENSORBASE_UINT64_TYPE @CF_TENSORBASE_UINT64_TYPE@
+//#define TENSORBASE_SIZE_T_SIGNED @CF_TENSORBASE_SIZE_T_SIGNED@
+
+// if you ever want to do abs() or floor() on this type in VC then use _abs64() and include <stdlib.h> (no kidding!)
+#define PointerSizeInt @CF_TENSORBASE_INT64_TYPE@
+#define PointerSizeUInt @CF_TENSORBASE_UINT64_TYPE@
+
+#cmakedefine TENSORBASE_HAS_UNISTD_H
+#cmakedefine TENSORBASE_HAS_PROCESS_H
+#cmakedefine TENSORBASE_HAS_STDINT_H
+
+#cmakedefine TENSORBASE_HAS_TIME_H
+#cmakedefine TENSORBASE_HAS_SYS_TYPES_H
+#cmakedefine TENSORBASE_HAS_SYS_TIMES_H
+#cmakedefine TENSORBASE_HAS_SYS_TIME_H
+
+#cmakedefine TENSORBASE_HAS_KILL
+#cmakedefine TENSORBASE_HAS_SYSCONF
+
+#cmakedefine ENABLE_UPDATE_CHECK
+
+// is libc++ or has stream bug
+#cmakedefine TENSORBASE_HAS_STREAM_EXTRACTION_BUG
+
+#define TENSORBASE_BOOST_VERSION_MAJOR @CF_TENSORBASE_BOOST_VERSION_MAJOR@
+#define TENSORBASE_BOOST_VERSION_MINOR @CF_TENSORBASE_BOOST_VERSION_MINOR@
+#define TENSORBASE_BOOST_VERSION_SUBMINOR @CF_TENSORBASE_BOOST_VERSION_SUBMINOR@
+#define TENSORBASE_BOOST_VERSION @CF_TENSORBASE_BOOST_VERSION@
+
+#define COINOR_SOLVER @CF_USECOINOR@
+
+#define TENSORBASE_GLPK_VERSION @CF_TENSORBASE_GLPK_VERSION@
+#define TENSORBASE_GLPK_VERSION_MAJOR @CF_TENSORBASE_GLPK_VERSION_MAJOR@
+#define TENSORBASE_GLPK_VERSION_MINOR @CF_TENSORBASE_GLPK_VERSION_MINOR@
+
+// class tests
+
+#ifdef _OPENMP
+  #define IF_MASTERTHREAD if (omp_get_thread_num() ==0)
+#else
+  #define IF_MASTERTHREAD
+#endif
+
+#endif // TENSORBASE_CONFIG_H

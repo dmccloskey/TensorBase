@@ -30,3 +30,13 @@
 *.exe
 *.out
 *.app
+
+# Distribution / packaging
+build*/
+
+# VS
+.vscode*/
+.vs*/
+.vs/
+.vscode/
+
