@@ -24,12 +24,12 @@ namespace TensorBase
   /**
     @brief Tensor data
   */
-  template<typename TensorT, typename DeviceT, int Dim, typename... Indices>
+  template<typename TensorT, typename DeviceT, typename... Indices>
   class TensorData
   {
   public:
     TensorData() = default;
-    //TensorData(const Indices&... indices) { setIndices(indices...); };
+    //TensorData(const Indices&... indices) { setIndices(indices...); };  // uncommenting will throw an error...
     TensorData(const TensorData& other)
     {
       h_data_ = other.h_data_;
@@ -68,15 +68,14 @@ namespace TensorBase
 
     void setIndices(const Indices&... indices) { indices_ = std::tuple<Indices...>(indices...); }
     std::tuple<Indices...> getIndicesAsTuple() const { return indices_; }
-    auto getIndicesAsParameterPack() { return getParametersPack(); }
 
-    virtual void setData(const Eigen::Tensor<TensorT, Dim>& data) = 0; ///< data setter
+    virtual void setData(const Eigen::Tensor<TensorT, sizeof...(Indices)>& data) = 0; ///< data setter
 
-    Eigen::TensorMap<Eigen::Tensor<TensorT, Dim>> getData() { return getData_(indices_, std::index_sequence_for<Indices...>()); } ///< data copy getter
+    Eigen::TensorMap<Eigen::Tensor<TensorT, sizeof...(Indices)>> getData() { return getData_(indices_, std::index_sequence_for<Indices...>()); } ///< data copy getter
     std::shared_ptr<TensorT> getHDataPointer() { return h_data_; }; ///< data pointer getter
     std::shared_ptr<TensorT> getDDataPointer() { return d_data_; }; ///< data pointer getter
 
-    size_t getTensorSize() { return 1 * sizeof(TensorT); }; ///< Get the size of each tensor in bytes
+    size_t getTensorSize() { return prod_(1, indices_, std::index_sequence_for<Indices...>()) * sizeof(TensorT); }; ///< Get the size of each tensor in bytes
 
     virtual bool syncHAndDData(DeviceT& device) = 0;  ///< Sync the host and device data
     std::pair<bool, bool> getDataStatus() { return std::make_pair(h_data_updated_, d_data_updated_); };   ///< Get the status of the host and device data
@@ -89,15 +88,20 @@ namespace TensorBase
     bool d_data_updated_ = false;
 
     std::tuple<Indices...> indices_;
+    size_t tensor_size_;
+
+    template<typename T>
+    int prod_(T t, Indices... indices) {
+      return t * prod_(indices...);
+    }
 
   private:
     template<std::size_t... Is>
-    Eigen::TensorMap<Eigen::Tensor<TensorT, Dim>> getData_(const std::tuple<Indices...>& tuple, std::index_sequence<Is...>) {
+    Eigen::TensorMap<Eigen::Tensor<TensorT, sizeof...(Indices)>> getData_(const std::tuple<Indices...>& tuple, std::index_sequence<Is...>) {
       std::shared_ptr<TensorT> h_data = h_data_;
-      Eigen::TensorMap<Eigen::Tensor<TensorT, Dim>> data(h_data.get(), std::get<Is>(tuple)...);
+      Eigen::TensorMap<Eigen::Tensor<TensorT, sizeof...(Indices)>> data(h_data.get(), std::get<Is>(tuple)...);
       return data;
     }
-
 
     //private:
     //	friend class cereal::access;
@@ -111,23 +115,23 @@ namespace TensorBase
     //	}
   };
 
-  template<typename TensorT, int Dim, typename... Indices>
-  class TensorDataCpu : public TensorData<TensorT, Eigen::DefaultDevice, Dim, Indices...> {
+  template<typename TensorT, typename... Indices>
+  class TensorDataCpu : public TensorData<TensorT, Eigen::DefaultDevice, Indices...> {
   public:
     //using TensorData<TensorT, Eigen::DefaultDevice, Dim, Indices...>::TensorData;
     TensorDataCpu(Indices... indices) { setIndices(indices...); };
-    void setData(const Eigen::Tensor<TensorT, Dim>& data) { setData_(data, this->indices_, std::index_sequence_for<Indices...>()); }; ///< data setter
+    void setData(const Eigen::Tensor<TensorT, sizeof...(Indices)>& data) { setData_(data, this->indices_, std::index_sequence_for<Indices...>()); }; ///< data setter
     bool syncHAndDData(Eigen::DefaultDevice& device) { return true; }
   private:
     template<std::size_t... Is>
-    void setData_(const Eigen::Tensor<TensorT, Dim>& data, const std::tuple<Indices...>& tuple, std::index_sequence<Is...>) {
+    void setData_(const Eigen::Tensor<TensorT, sizeof...(Indices)>& data, const std::tuple<Indices...>& tuple, std::index_sequence<Is...>) {
       // allocate cuda and pinned host memory
       TensorT* d_data;
       TensorT* h_data;
       assert(cudaMalloc((void**)(&d_data), getTensorSize()) == cudaSuccess);
       assert(cudaHostAlloc((void**)(&h_data), getTensorSize(), cudaHostAllocDefault) == cudaSuccess);
       // copy the tensor
-      Eigen::TensorMap<Eigen::Tensor<TensorT, Dim>> data_copy(h_data, std::get<Is>(tuple)...);
+      Eigen::TensorMap<Eigen::Tensor<TensorT, sizeof...(Indices)>> data_copy(h_data, std::get<Is>(tuple)...);
       data_copy = data;
       // define the deleters
       auto h_deleter = [&](TensorT* ptr) { cudaFreeHost(ptr); };
@@ -148,12 +152,12 @@ namespace TensorBase
 
 #if COMPILE_WITH_CUDA
 
-  template<typename TensorT, int Dim, typename... Indices>
-  class TensorDataGpu : public TensorData<TensorT, Eigen::GpuDevice, Dim, Indices...> {
+  template<typename TensorT, typename... Indices>
+  class TensorDataGpu : public TensorData<TensorT, Eigen::GpuDevice, Indices...> {
   public:
     //using TensorData<TensorT, Eigen::DefaultDevice, Dim, Indices...>::TensorData;
     TensorDataGpu(Indices... indices) { setIndices(indices...); }
-    void setData(const Eigen::Tensor<TensorT, Dim>& data) { setData_(data, this->indices_, std::index_sequence_for<Indices...>()); }; ///< data setter
+    void setData(const Eigen::Tensor<TensorT, sizeof...(Indices)>& data) { setData_(data, this->indices_, std::index_sequence_for<Indices...>()); }; ///< data setter
     bool syncHAndDData(Eigen::GpuDevice& device) {
       if (this->h_data_updated_ && !this->d_data_updated_) {
         device.memcpyHostToDevice(this->d_data_.get(), this->h_data_.get(), getTensorSize());
@@ -174,14 +178,14 @@ namespace TensorBase
     }
   private:
     template<std::size_t... Is>
-    void setData_(const Eigen::Tensor<TensorT, Dim>& data, const std::tuple<Indices...>& tuple, std::index_sequence<Is...>) {
+    void setData_(const Eigen::Tensor<TensorT, sizeof...(Indices)>& data, const std::tuple<Indices...>& tuple, std::index_sequence<Is...>) {
       // allocate cuda and pinned host memory
       TensorT* d_data;
       TensorT* h_data;
       assert(cudaMalloc((void**)(&d_data), getTensorSize()) == cudaSuccess);
       assert(cudaHostAlloc((void**)(&h_data), getTensorSize(), cudaHostAllocDefault) == cudaSuccess);
       // copy the tensor
-      Eigen::TensorMap<Eigen::Tensor<TensorT, Dim>> data_copy(h_data, std::get<Is>(tuple)...);
+      Eigen::TensorMap<Eigen::Tensor<TensorT, sizeof...(Indices)>> data_copy(h_data, std::get<Is>(tuple)...);
       data_copy = data;
       // define the deleters
       auto h_deleter = [&](TensorT* ptr) { cudaFreeHost(ptr); };
