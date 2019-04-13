@@ -10,6 +10,7 @@
 #include <cuda_runtime.h>
 #endif
 
+#define EIGEN_USE_THREADS
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <Eigen/src/Core/util/Meta.h>
 #include <memory>
@@ -23,7 +24,10 @@
 namespace TensorBase
 {
   /**
-    @brief Tensor data
+    @brief Tensor data base class to handle the underlying memory and resource
+      allocation of tensor data
+
+    LIMITATIONS: currently, the memory management assumes a single GPU environment.
   */
   template<typename TensorT, typename DeviceT, int TDim>
   class TensorData
@@ -67,6 +71,9 @@ namespace TensorBase
       return *this;
     }
 
+    /**
+      @brief Set the tensor indices and calculate the tensor size
+    */
     void setIndices(const Eigen::array<Eigen::Index, TDim>& indices) { 
       indices_ = indices; 
       size_t tensor_size = 1;
@@ -74,7 +81,7 @@ namespace TensorBase
         tensor_size *= index;
       tensor_size_ = tensor_size;
     }
-    Eigen::array<Eigen::Index, TDim> getIndices() const { return indices_; }
+    Eigen::array<Eigen::Index, TDim> getIndices() const { return indices_; }  ///< indices getter
 
     virtual void setData(const Eigen::Tensor<TensorT, TDim>& data) = 0; ///< data setter
 
@@ -88,14 +95,15 @@ namespace TensorBase
     std::pair<bool, bool> getDataStatus() { return std::make_pair(h_data_updated_, d_data_updated_); };   ///< Get the status of the host and device data
 
   protected:
-    std::shared_ptr<TensorT> h_data_ = nullptr;
-    std::shared_ptr<TensorT> d_data_ = nullptr;
+    std::shared_ptr<TensorT> h_data_ = nullptr;  ///< Shared pointer implementation of the host tensor data
+    std::shared_ptr<TensorT> d_data_ = nullptr;  ///< Shared pointer implementation of the device (GPU) tensor data
 
-    bool h_data_updated_ = false;
-    bool d_data_updated_ = false;
+    bool h_data_updated_ = false;  ///< boolean indicator if the host data is up to date
+    bool d_data_updated_ = false;  ///< boolean indicator if the device data is up to date
+    // MULTI-GPU: more advanced syncronization will need to be implemented when transfering data between different GPUs    
 
-    Eigen::array<Eigen::Index, TDim> indices_; // = Eigen::array<Eigen::Index, TDim>();
-    size_t tensor_size_;
+    Eigen::array<Eigen::Index, TDim> indices_ = Eigen::array<Eigen::Index, TDim>(); ///< Tensor indices (initialized to all zeros)
+    size_t tensor_size_ = 0;  ///< Tensor size
 
     //private:
     //	friend class cereal::access;
@@ -109,8 +117,11 @@ namespace TensorBase
     //	}
   };
 
+  /**
+    @brief Tensor data class specialization for Eigen::DefaultDevice (single thread CPU)
+  */
   template<typename TensorT, int TDim>
-  class TensorDataCpu : public TensorData<TensorT, Eigen::DefaultDevice, TDim> {
+  class TensorDataDefaultDevice : public TensorData<TensorT, Eigen::DefaultDevice, TDim> {
   public:
     using TensorData<TensorT, Eigen::DefaultDevice, TDim>::TensorData;
     void setData(const Eigen::Tensor<TensorT, TDim>& data) {
@@ -133,7 +144,39 @@ namespace TensorBase
     //	}
   };
 
+  /**
+    @brief Tensor data class specialization for Eigen::ThreadPoolDevice (Multi thread CPU)
+
+    NOTE: Methods are exactly the same as DefaultDevice
+  */
+  template<typename TensorT, int TDim>
+  class TensorDataCpu : public TensorData<TensorT, Eigen::ThreadPoolDevice, TDim> {
+  public:
+    using TensorData<TensorT, Eigen::ThreadPoolDevice, TDim>::TensorData;
+    void setData(const Eigen::Tensor<TensorT, TDim>& data) {
+      TensorT* h_data = new TensorT[this->tensor_size_];
+      // copy the tensor
+      Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy(h_data, getIndices());
+      data_copy = data;
+      //auto h_deleter = [&](TensorT* ptr) { delete[] ptr; };
+      //this->h_data_.reset(h_data, h_deleter);
+      this->h_data_.reset(h_data);
+      this->h_data_updated_ = true;
+      this->d_data_updated_ = true;
+    }; ///< data setter
+    bool syncHAndDData(Eigen::ThreadPoolDevice& device) { return true; }
+    //private:
+    //	friend class cereal::access;
+    //	template<class Archive>
+    //	void serialize(Archive& archive) {
+    //		archive(cereal::base_class<TensorData<TensorT, Eigen::DefaultDevice>>(this));
+    //	}
+  };
+
 #if COMPILE_WITH_CUDA
+  /**
+    @brief Tensor data class specialization for Eigen::GpuDevice (single GPU)
+  */
   template<typename TensorT, int TDim>
   class TensorDataGpu : public TensorData<TensorT, Eigen::GpuDevice, TDim> {
   public:
@@ -183,7 +226,7 @@ namespace TensorBase
 #endif
 }
 
-//CEREAL_REGISTER_TYPE(TensorData::TensorDataCpu<float>);
+//CEREAL_REGISTER_TYPE(TensorData::TensorDataDefaultDevice<float>);
 //// TODO: add double, int, etc.
 //#if COMPILE_WITH_CUDA
 //CEREAL_REGISTER_TYPE(TensorData::TensorDataGpu<float>);
