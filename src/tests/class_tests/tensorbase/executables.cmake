@@ -10,6 +10,7 @@ set(io_executables_list
 )
 
 set(ml_executables_list
+  TensorDimension_test
   TensorData_test
 )
 
