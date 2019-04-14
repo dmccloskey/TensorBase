@@ -1,6 +1,5 @@
 set(core_executables_list
   Helloworld_test
-  Preprocessing_test
   Statistics_test
   StringParsing_test
 )
@@ -11,6 +10,8 @@ set(io_executables_list
 )
 
 set(ml_executables_list
+  TensorAxis_test
+  TensorDimension_test
   TensorData_test
 )
 
