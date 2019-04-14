@@ -109,11 +109,8 @@ namespace TensorBase
     //	friend class cereal::access;
     //	template<class Archive>
     //	void serialize(Archive& archive) {
-    //		archive(batch_size_, memory_size_, layer_size_, 
-    //		h_data_, h_output_, h_error_, h_derivative_, h_dt_,
-    //		d_data_, d_output_, d_error_, d_derivative_, d_dt_,
-    //		h_data_updated_, h_output_updated_, h_error_updated_, h_derivative_updated_, h_dt_updated_,
-    //		d_data_updated_, d_output_updated_, d_error_updated_, d_derivative_updated_, d_dt_updated_);
+    //		archive(indices_, tensor_size_,
+    //		h_data_, d_data_, h_data_updated_, d_data_updated_);
     //	}
   };
 
