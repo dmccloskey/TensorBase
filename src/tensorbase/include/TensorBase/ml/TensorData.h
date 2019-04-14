@@ -1,7 +1,7 @@
 /**TODO:  Add copyright*/
 
-#ifndef TENSORDATA_TENSORDATA_H
-#define TENSORDATA_TENSORDATA_H
+#ifndef TENSORBASE_TENSORDATA_H
+#define TENSORBASE_TENSORDATA_H
 
 #if COMPILE_WITH_CUDA
 #define EIGEN_DEFAULT_DENSE_INDEX_TYPE int
@@ -230,4 +230,4 @@ namespace TensorBase
 //// TODO: add double, int, etc.
 //#endif
 
-#endif //TENSORDATA_TENSORDATA_H
+#endif //TENSORBASE_TENSORDATA_H

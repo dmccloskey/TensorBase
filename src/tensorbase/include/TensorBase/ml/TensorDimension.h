@@ -1,7 +1,7 @@
 /**TODO:  Add copyright*/
 
-#ifndef TENSORDIMENSION_TENSORDIMENSION_H
-#define TENSORDIMENSION_TENSORDIMENSION_H
+#ifndef TENSORBASE_TENSORDIMENSION_H
+#define TENSORBASE_TENSORDIMENSION_H
 
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <string>
@@ -47,4 +47,4 @@ namespace TensorBase
     //	}
   };
 };
-#endif //TENSORDIMENSION_TENSORDIMENSION_H
+#endif //TENSORBASE_TENSORDIMENSION_H

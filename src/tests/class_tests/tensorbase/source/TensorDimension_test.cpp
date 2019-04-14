@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(gettersAndSetters)
 {
   TensorDimension tensordimension;
   // Check defaults
-  BOOST_CHECK_EQUAL(tensordimension.getId(), 0);
+  BOOST_CHECK_EQUAL(tensordimension.getId(), -1);
   BOOST_CHECK_EQUAL(tensordimension.getName(), "");
   BOOST_CHECK_EQUAL(tensordimension.getNLabels(), 0);
 
