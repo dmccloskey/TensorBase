@@ -11,10 +11,8 @@ set(io_executables_list
 
 set(ml_executables_list
   TensorAxis_test
-  TensorCollection_test
   TensorDimension_test
   TensorData_test
-  TensorTable_test
 )
 
 ### collect test executables

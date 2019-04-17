@@ -34,14 +34,14 @@ namespace TensorBase
   {
   public:
     TensorData() = default;
-    TensorData(const Eigen::array<Eigen::Index, TDim>& dimensions) { setDimensions(dimensions); };  
+    TensorData(const Eigen::array<Eigen::Index, TDim>& indices) { setIndices(indices); };  
     TensorData(const TensorData& other)
     {
       h_data_ = other.h_data_;
       d_data_ = other.d_data_;
       h_data_updated_ = other.h_data_updated_;
       d_data_updated_ = other.d_data_updated_;
-      dimensions_ = other.dimensions_;
+      indices_ = other.indices_;
     };
     ~TensorData() = default; ///< Default destructor
 
@@ -67,25 +67,25 @@ namespace TensorBase
       d_data_ = other.d_data_;
       h_data_updated_ = other.h_data_updated_;
       d_data_updated_ = other.d_data_updated_;
-      dimensions_ = other.dimensions_;
+      indices_ = other.indices_;
       return *this;
     }
 
     /**
-      @brief Set the tensor dimensions and calculate the tensor size
+      @brief Set the tensor indices and calculate the tensor size
     */
-    void setDimensions(const Eigen::array<Eigen::Index, TDim>& dimensions) { 
-      dimensions_ = dimensions; 
+    void setIndices(const Eigen::array<Eigen::Index, TDim>& indices) { 
+      indices_ = indices; 
       size_t tensor_size = 1;
-      for (const auto& index : dimensions)
+      for (const auto& index : indices)
         tensor_size *= index;
       tensor_size_ = tensor_size;
     }
-    Eigen::array<Eigen::Index, TDim> getDimensions() const { return dimensions_; }  ///< dimensions getter
+    Eigen::array<Eigen::Index, TDim> getIndices() const { return indices_; }  ///< indices getter
 
     virtual void setData(const Eigen::Tensor<TensorT, TDim>& data) = 0; ///< data setter
 
-    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> getData() { std::shared_ptr<TensorT> h_data = h_data_;  Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data(h_data.get(), getDimensions()); return data; } ///< data copy getter
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> getData() { std::shared_ptr<TensorT> h_data = h_data_;  Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data(h_data.get(), getIndices()); return data; } ///< data copy getter
     std::shared_ptr<TensorT> getHDataPointer() { return h_data_; }; ///< data pointer getter
     std::shared_ptr<TensorT> getDDataPointer() { return d_data_; }; ///< data pointer getter
 
@@ -102,14 +102,14 @@ namespace TensorBase
     bool d_data_updated_ = false;  ///< boolean indicator if the device data is up to date
     // MULTI-GPU: more advanced syncronization will need to be implemented when transfering data between different GPUs    
 
-    Eigen::array<Eigen::Index, TDim> dimensions_ = Eigen::array<Eigen::Index, TDim>(); ///< Tensor dimensions (initialized to all zeros)
+    Eigen::array<Eigen::Index, TDim> indices_ = Eigen::array<Eigen::Index, TDim>(); ///< Tensor indices (initialized to all zeros)
     size_t tensor_size_ = 0;  ///< Tensor size
 
     //private:
     //	friend class cereal::access;
     //	template<class Archive>
     //	void serialize(Archive& archive) {
-    //		archive(dimensions_, tensor_size_,
+    //		archive(indices_, tensor_size_,
     //		h_data_, d_data_, h_data_updated_, d_data_updated_);
     //	}
   };
@@ -124,7 +124,7 @@ namespace TensorBase
     void setData(const Eigen::Tensor<TensorT, TDim>& data) {
       TensorT* h_data = new TensorT[this->tensor_size_];
       // copy the tensor
-      Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy(h_data, getDimensions());
+      Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy(h_data, getIndices());
       data_copy = data;
       //auto h_deleter = [&](TensorT* ptr) { delete[] ptr; };
       //this->h_data_.reset(h_data, h_deleter);
@@ -153,7 +153,7 @@ namespace TensorBase
     void setData(const Eigen::Tensor<TensorT, TDim>& data) {
       TensorT* h_data = new TensorT[this->tensor_size_];
       // copy the tensor
-      Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy(h_data, getDimensions());
+      Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy(h_data, getIndices());
       data_copy = data;
       //auto h_deleter = [&](TensorT* ptr) { delete[] ptr; };
       //this->h_data_.reset(h_data, h_deleter);
@@ -185,7 +185,7 @@ namespace TensorBase
       assert(cudaMalloc((void**)(&d_data), getTensorSize()) == cudaSuccess);
       assert(cudaHostAlloc((void**)(&h_data), getTensorSize(), cudaHostAllocDefault) == cudaSuccess);
       // copy the tensor
-      Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy(h_data, getDimensions());
+      Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy(h_data, getIndices());
       data_copy = data;
       // define the deleters
       auto h_deleter = [&](TensorT* ptr) { cudaFreeHost(ptr); };
