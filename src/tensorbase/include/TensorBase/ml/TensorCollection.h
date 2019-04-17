@@ -1,7 +1,7 @@
 /**TODO:  Add copyright*/
 
-#ifndef TENSORBASE_HETEROTENSOR_H
-#define TENSORBASE_HETEROTENSOR_H
+#ifndef TENSORBASE_TENSORCOLLECTION_H
+#define TENSORBASE_TENSORCOLLECTION_H
 
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/ml/TensorData.h>
@@ -26,11 +26,11 @@ namespace TensorBase
     @brief Class for managing heterogenous Tensors
   */
   template<typename DeviceT, int TDim, typename... TensorTs>
-  class HeteroTensor
+  class TensorCollection
   {
   public:
-    HeteroTensor() = default;  ///< Default constructor
-    ~HeteroTensor() = default; ///< Default destructor
+    TensorCollection() = default;  ///< Default constructor
+    ~TensorCollection() = default; ///< Default destructor
 
     void setId(const int& id) { id_ = id; }; ///< id setter
     int getId() const { return id_; }; ///< id getter
@@ -109,7 +109,7 @@ namespace TensorBase
   };
 
   template<typename DeviceT, int TDim, typename... TensorTs>
-  void HeteroTensor<DeviceT, TDim, TensorTs...>::setAxes(const std::vector<TensorAxis>& tensor_axes) {
+  void TensorCollection<DeviceT, TDim, TensorTs...>::setAxes(const std::vector<TensorAxis>& tensor_axes) {
     // Determine the overall dimensions of the heterotensor
     int axis_cnt = 0;
     for (const TensorAxis& axis : tensor_axes) {
@@ -144,7 +144,7 @@ namespace TensorBase
   };
 
   template<typename DeviceT, int TDim, typename... TensorTs>
-  void HeteroTensor<DeviceT, TDim, TensorTs...>::clearAxes() {
+  void TensorCollection<DeviceT, TDim, TensorTs...>::clearAxes() {
     axes_.clear();
     dimensions_.clear();
     indices_.clear();
@@ -155,7 +155,7 @@ namespace TensorBase
   };
 
   template<typename DeviceT, int TDim, typename... TensorTs>
-  void HeteroTensor<DeviceT, TDim, TensorTs...>::setTensors(const std::vector<std::vector<std::string>>& labels_types) {
+  void TensorCollection<DeviceT, TDim, TensorTs...>::setTensors(const std::vector<std::vector<std::string>>& labels_types) {
     static_assert(sizeof...(TensorTs) == Labels_types);
     auto tup = std::make_tuple(labels_types);
     for_each_in_tuple(tup, [](const auto &x) {
@@ -167,8 +167,8 @@ namespace TensorBase
   };
 
   template<int TDim, typename... TensorTs>
-  class HeteroTensorDefaultDevice: public HeteroTensor<Eigen::DefaultDevice, TDim, TensorTs...>
+  class TensorCollectionDefaultDevice: public TensorCollection<Eigen::DefaultDevice, TDim, TensorTs...>
   {
   };
 };
-#endif //TENSORBASE_HETEROTENSOR_H
+#endif //TENSORBASE_TENSORCOLLECTION_H
