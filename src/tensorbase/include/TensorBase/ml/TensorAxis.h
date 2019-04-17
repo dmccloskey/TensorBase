@@ -15,6 +15,8 @@ namespace TensorBase
   {
   public:
     TensorAxis() = default;  ///< Default constructor
+    TensorAxis(const std::string& name,
+      const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<std::string, 2>& labels);
     ~TensorAxis() = default; ///< Default destructor
 
     void setId(const int& id) { id_ = id; }; ///< id setter
@@ -54,5 +56,11 @@ namespace TensorBase
     //		archive(id_, name_, n_dimensions_, n_labels_, tensor_dimension_names_, tensor_dimension_labels_);
     //	}
   };
+
+  TensorAxis::TensorAxis(const std::string& name,
+    const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<std::string, 2>& labels) {
+    setName(name);
+    setDimensionsAndLabels(dimensions, labels);
+  }
 };
 #endif //TENSORBASE_TENSORAXIS_H

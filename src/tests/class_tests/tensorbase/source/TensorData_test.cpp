@@ -39,16 +39,16 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
 {
   TensorDataDefaultDevice<float, 3> tensordata;
   // Check defaults
-  BOOST_CHECK_EQUAL(tensordata.getIndices().at(0), 0);
-  BOOST_CHECK_EQUAL(tensordata.getIndices().at(1), 0);
-  BOOST_CHECK_EQUAL(tensordata.getIndices().at(2), 0);
+  BOOST_CHECK_EQUAL(tensordata.getDimensions().at(0), 0);
+  BOOST_CHECK_EQUAL(tensordata.getDimensions().at(1), 0);
+  BOOST_CHECK_EQUAL(tensordata.getDimensions().at(2), 0);
   BOOST_CHECK_EQUAL(tensordata.getTensorSize(), 0);
 
   // initialize indices
-  tensordata.setIndices(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
-  BOOST_CHECK_EQUAL(tensordata.getIndices().at(0), 2);
-  BOOST_CHECK_EQUAL(tensordata.getIndices().at(1), 3);
-  BOOST_CHECK_EQUAL(tensordata.getIndices().at(2), 4);
+  tensordata.setDimensions(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+  BOOST_CHECK_EQUAL(tensordata.getDimensions().at(0), 2);
+  BOOST_CHECK_EQUAL(tensordata.getDimensions().at(1), 3);
+  BOOST_CHECK_EQUAL(tensordata.getDimensions().at(2), 4);
   size_t test = 2 * 3 * 4 * sizeof(float);
   BOOST_CHECK_EQUAL(tensordata.getTensorSize(), test);
 }
@@ -56,9 +56,9 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
 BOOST_AUTO_TEST_CASE(gettersAndSetters2DefaultDevice)
 {
   TensorDataDefaultDevice<float, 3> tensordata(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
-  BOOST_CHECK_EQUAL(tensordata.getIndices().at(0), 2);
-  BOOST_CHECK_EQUAL(tensordata.getIndices().at(1), 3);
-  BOOST_CHECK_EQUAL(tensordata.getIndices().at(2), 4);
+  BOOST_CHECK_EQUAL(tensordata.getDimensions().at(0), 2);
+  BOOST_CHECK_EQUAL(tensordata.getDimensions().at(1), 3);
+  BOOST_CHECK_EQUAL(tensordata.getDimensions().at(2), 4);
 
   Eigen::Tensor<float, 3> data(2, 3, 4);
   data.setConstant(0);
@@ -113,9 +113,9 @@ BOOST_AUTO_TEST_CASE(destructorCpu)
 BOOST_AUTO_TEST_CASE(gettersAndSetters2Cpu)
 {
   TensorDataCpu<float, 3> tensordata(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
-  BOOST_CHECK_EQUAL(tensordata.getIndices().at(0), 2);
-  BOOST_CHECK_EQUAL(tensordata.getIndices().at(1), 3);
-  BOOST_CHECK_EQUAL(tensordata.getIndices().at(2), 4);
+  BOOST_CHECK_EQUAL(tensordata.getDimensions().at(0), 2);
+  BOOST_CHECK_EQUAL(tensordata.getDimensions().at(1), 3);
+  BOOST_CHECK_EQUAL(tensordata.getDimensions().at(2), 4);
 
   Eigen::Tensor<float, 3> data(2, 3, 4);
   data.setConstant(0);
@@ -172,9 +172,9 @@ BOOST_AUTO_TEST_CASE(destructorGpu)
 BOOST_AUTO_TEST_CASE(gettersAndSettersGpu)
 {
   TensorDataGpu<float, 3> tensordata(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
-  BOOST_CHECK_EQUAL(tensordata.getIndices().at(0), 2);
-  BOOST_CHECK_EQUAL(tensordata.getIndices().at(1), 3);
-  BOOST_CHECK_EQUAL(tensordata.getIndices().at(2), 4);
+  BOOST_CHECK_EQUAL(tensordata.getDimensions().at(0), 2);
+  BOOST_CHECK_EQUAL(tensordata.getDimensions().at(1), 3);
+  BOOST_CHECK_EQUAL(tensordata.getDimensions().at(2), 4);
 
   Eigen::Tensor<float, 3> data(2, 3, 4);
 	data.setConstant(0.5);
