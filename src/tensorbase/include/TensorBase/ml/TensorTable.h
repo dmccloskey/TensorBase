@@ -130,7 +130,7 @@ namespace TensorBase
 
   template<typename TensorT, int TDim>
   void TensorTableDefaultDevice<TensorT, TDim>::initData() {
-    getData().reset(new TensorDataDefaultDevice<TensorT, TDim>(getDimensions()));
+    this->getData().reset(new TensorDataDefaultDevice<TensorT, TDim>(this->getDimensions()));
   }
 };
 #endif //TENSORBASE_TENSORTABLE_H
