@@ -40,3 +40,4 @@ build*/
 .vs/
 .vscode/
 
+CMakeFiles/*
