@@ -85,7 +85,7 @@ namespace TensorBase
 
     virtual void setData(const Eigen::Tensor<TensorT, TDim>& data) = 0; ///< data setter
 
-    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> getData() { std::shared_ptr<TensorT> h_data = h_data_;  Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data(h_data.get(), getDimensions()); return data; } ///< data copy getter
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> getData() { std::shared_ptr<TensorT> h_data = h_data_;  Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data(h_data.get(), this->getDimensions()); return data; } ///< data copy getter
     std::shared_ptr<TensorT> getHDataPointer() { return h_data_; }; ///< data pointer getter
     std::shared_ptr<TensorT> getDDataPointer() { return d_data_; }; ///< data pointer getter
 
@@ -124,7 +124,7 @@ namespace TensorBase
     void setData(const Eigen::Tensor<TensorT, TDim>& data) {
       TensorT* h_data = new TensorT[this->tensor_size_];
       // copy the tensor
-      Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy(h_data, getDimensions());
+      Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy(h_data, this->getDimensions());
       data_copy = data;
       //auto h_deleter = [&](TensorT* ptr) { delete[] ptr; };
       //this->h_data_.reset(h_data, h_deleter);
@@ -153,7 +153,7 @@ namespace TensorBase
     void setData(const Eigen::Tensor<TensorT, TDim>& data) {
       TensorT* h_data = new TensorT[this->tensor_size_];
       // copy the tensor
-      Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy(h_data, getDimensions());
+      Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy(h_data, this->getDimensions());
       data_copy = data;
       //auto h_deleter = [&](TensorT* ptr) { delete[] ptr; };
       //this->h_data_.reset(h_data, h_deleter);
