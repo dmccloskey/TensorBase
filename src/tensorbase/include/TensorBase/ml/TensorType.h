@@ -127,8 +127,8 @@ namespace TensorBase
   };
 
   /// @brief Base class for all data types representing primitive values
-  template<typename BASE, Type::type TYPE_ID, typename C_TYPE>
-  class PrimitiveCType: public BASE
+  template<typename C_TYPE>
+  class PrimitiveCType: public TensorType
   {
     C_TYPE value_t_;
   public:
@@ -139,18 +139,6 @@ namespace TensorBase
     operator C_TYPE&() { return value_t_; }  ///< minimal operator overload needed
   };
 
-  template<typename T>
-  class primitive
-  {
-    T value_t_;
-  public:
-    using value_type = T;
-    constexpr primitive() noexcept : value_t_() {}
-    template<typename U>
-    constexpr primitive(U const& value) noexcept : value_t_(value) {}
-    operator T&() { return value_t_; }
-  };
-
   /// Concrete type class for always-null data
   class NullType : public TensorType {
   public:
@@ -159,7 +147,7 @@ namespace TensorBase
   };
 
   /// Concrete type class for boolean data
-  class BooleanType : public PrimitiveCType<TensorType, Type::BOOL, bool> {
+  class BooleanType : public PrimitiveCType<bool> {
   public:
     using PrimitiveCType::PrimitiveCType;
     Type::type getId() const { return Type::BOOL; }
@@ -167,7 +155,7 @@ namespace TensorBase
   };
 
   /// Concrete type class for unsigned 8-bit integer data
-  class UInt8Type : public PrimitiveCType<TensorType, Type::UINT8, uint8_t> {
+  class UInt8Type : public PrimitiveCType<uint8_t> {
   public:
     using PrimitiveCType::PrimitiveCType;
     Type::type getId() const { return Type::UINT8; }
@@ -175,7 +163,7 @@ namespace TensorBase
   };
 
   /// Concrete type class for signed 8-bit integer data
-  class Int8Type : public PrimitiveCType<TensorType, Type::INT8, int8_t> {
+  class Int8Type : public PrimitiveCType<int8_t> {
   public:
     using PrimitiveCType::PrimitiveCType;
     Type::type getId() const { return Type::INT8; }
@@ -183,7 +171,7 @@ namespace TensorBase
   };
 
   /// Concrete type class for unsigned 16-bit integer data
-  class UInt16Type : public PrimitiveCType<TensorType, Type::UINT16, uint16_t> {
+  class UInt16Type : public PrimitiveCType<uint16_t> {
   public:
     using PrimitiveCType::PrimitiveCType;
     Type::type getId() const { return Type::UINT16; }
@@ -191,7 +179,7 @@ namespace TensorBase
   };
 
   /// Concrete type class for signed 16-bit integer data
-  class Int16Type : public PrimitiveCType<TensorType, Type::INT16, int16_t> {
+  class Int16Type : public PrimitiveCType<int16_t> {
   public:
     using PrimitiveCType::PrimitiveCType;
     Type::type getId() const { return Type::INT16; }
@@ -199,7 +187,7 @@ namespace TensorBase
   };
 
   /// Concrete type class for unsigned 32-bit integer data
-  class UInt32Type : public PrimitiveCType<TensorType, Type::UINT32, uint32_t> {
+  class UInt32Type : public PrimitiveCType<uint32_t> {
   public:
     using PrimitiveCType::PrimitiveCType;
     Type::type getId() const { return Type::UINT32; }
@@ -207,7 +195,7 @@ namespace TensorBase
   };
 
   /// Concrete type class for signed 32-bit integer data
-  class Int32Type : public PrimitiveCType<TensorType, Type::INT32, int32_t> {
+  class Int32Type : public PrimitiveCType<int32_t> {
   public:
     using PrimitiveCType::PrimitiveCType;
     Type::type getId() const { return Type::INT32; }
@@ -215,7 +203,7 @@ namespace TensorBase
   };
 
   /// Concrete type class for unsigned 64-bit integer data
-  class UInt64Type : public PrimitiveCType<TensorType, Type::UINT64, uint64_t> {
+  class UInt64Type : public PrimitiveCType<uint64_t> {
   public:
     using PrimitiveCType::PrimitiveCType;
     Type::type getId() const { return Type::UINT64; }
@@ -223,7 +211,7 @@ namespace TensorBase
   };
 
   /// Concrete type class for signed 64-bit integer data
-  class Int64Type : public PrimitiveCType<TensorType, Type::INT64, int64_t> {
+  class Int64Type : public PrimitiveCType<int64_t> {
   public:
     using PrimitiveCType::PrimitiveCType;
     Type::type getId() const { return Type::INT64; } 
@@ -231,7 +219,7 @@ namespace TensorBase
   };
 
   /// Concrete type class for 16-bit floating-point data
-  class HalfFloatType : public PrimitiveCType<TensorType, Type::HALF_FLOAT, uint16_t> {
+  class HalfFloatType : public PrimitiveCType<uint16_t> {
   public:
     using PrimitiveCType::PrimitiveCType;
     Type::type getId() const { return Type::HALF_FLOAT; } 
@@ -239,7 +227,7 @@ namespace TensorBase
   };
 
   /// Concrete type class for 32-bit floating-point data (C "float")
-  class FloatType : public PrimitiveCType<TensorType, Type::FLOAT, float> {
+  class FloatType : public PrimitiveCType<float> {
   public:
     using PrimitiveCType::PrimitiveCType;
     Type::type getId() const { return Type::FLOAT; } 
@@ -247,66 +235,66 @@ namespace TensorBase
   };
 
   /// Concrete type class for 64-bit floating-point data (C "double")
-  class DoubleType : public PrimitiveCType<TensorType, Type::DOUBLE, double> {
+  class DoubleType : public PrimitiveCType<double> {
   public:
     using PrimitiveCType::PrimitiveCType;
     Type::type getId() const { return Type::DOUBLE; } 
     std::string getName() const override { return "double"; }
   };
 
-  ///// @brief Concrete type class for variable-size binary data
-  //class BinaryType : public TensorType {
-  //public:
-  //  Type::type getId() const { return Type::BINARY; }
-  //  std::string getName() const override { return "binary"; }
-  //};
-  //
-  ///// @brief Concrete type class for fixed-size binary data
-  //class FixedSizeBinaryType : public TensorType {
-  //public:
-  //  explicit FixedSizeBinaryType(int32_t byte_width): byte_width_(byte_width) {}
-  //  std::string getName() const override { return "fixed_size_binary"; }
-  //  Type::type getId() const { return Type::FIXED_SIZE_BINARY; }
-  //  int32_t byte_width() const { return byte_width_; }
-  //protected:
-  //  int32_t byte_width_;
-  //};
+  /// @brief Concrete type class for variable-size binary data
+  class BinaryType : public TensorType {
+  public:
+    Type::type getId() const { return Type::BINARY; }
+    std::string getName() const override { return "binary"; }
+  };
+  
+  /// @brief Concrete type class for fixed-size binary data
+  class FixedSizeBinaryType : public TensorType {
+  public:
+    explicit FixedSizeBinaryType(int32_t byte_width): byte_width_(byte_width) {}
+    std::string getName() const override { return "fixed_size_binary"; }
+    Type::type getId() const { return Type::FIXED_SIZE_BINARY; }
+    int32_t byte_width() const { return byte_width_; }
+  protected:
+    int32_t byte_width_;
+  };
 
-  ///// @brief Concrete type class for variable-size string data, utf8-encoded
-  //class StringType : public BinaryType {
-  //public:
-  //  using BinaryType::BinaryType;
-  //  Type::type getId() const { return Type::STRING; }
-  //  std::string getName() const override { return "utf8"; }
-  //};
+  /// @brief Concrete type class for variable-size string data, utf8-encoded
+  class StringType : public BinaryType {
+  public:
+    using BinaryType::BinaryType;
+    Type::type getId() const { return Type::STRING; }
+    std::string getName() const override { return "utf8"; }
+  };
 
-  //enum class DateUnit : char { DAY = 0, MILLI = 1 };
+  enum class DateUnit : char { DAY = 0, MILLI = 1 };
 
-  ///// @brief Base type class for date data
-  //class DateType : public TensorType {
-  //public:
-  //  virtual DateUnit unit() const = 0;
-  //};
+  /// @brief Base type class for date data
+  class DateType : public TensorType {
+  public:
+    virtual DateUnit unit() const = 0;
+  };
 
-  ///// Concrete type class for 32-bit date data (as number of days since UNIX epoch)
-  //class Date32Type : public DateType {
-  //public:
-  //  static constexpr DateUnit UNIT = DateUnit::DAY;
-  //  using c_type = int32_t;
-  //  std::string getName() const override { return "date32"; }
-  //  Type::type getId() const { return Type::DATE32; }
-  //  DateUnit unit() const override { return UNIT; }
-  //};
+  /// Concrete type class for 32-bit date data (as number of days since UNIX epoch)
+  class Date32Type : public DateType {
+  public:
+    static constexpr DateUnit UNIT = DateUnit::DAY;
+    using c_type = int32_t;
+    std::string getName() const override { return "date32"; }
+    Type::type getId() const { return Type::DATE32; }
+    DateUnit unit() const override { return UNIT; }
+  };
 
-  ///// Concrete type class for 64-bit date data (as number of milliseconds since UNIX epoch)
-  //class Date64Type : public DateType {
-  //public:
-  //  static constexpr DateUnit UNIT = DateUnit::MILLI;
-  //  using c_type = int64_t;
-  //  std::string getName() const override { return "date64"; }
-  //  Type::type getId() const { return Type::DATE64; }
-  //  DateUnit unit() const override { return UNIT; }
-  //};
+  /// Concrete type class for 64-bit date data (as number of milliseconds since UNIX epoch)
+  class Date64Type : public DateType {
+  public:
+    static constexpr DateUnit UNIT = DateUnit::MILLI;
+    using c_type = int64_t;
+    std::string getName() const override { return "date64"; }
+    Type::type getId() const { return Type::DATE64; }
+    DateUnit unit() const override { return UNIT; }
+  };
 
   struct TimeUnit {
     /// The unit for a time or timestamp TensorType
