@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <string>
 #include <type_traits>  // `is_signed`
+#include <ostream>
 
 #include <unsupported/Eigen/CXX11/Tensor>
 
@@ -185,7 +186,7 @@ namespace TensorBase
   class UInt16Type : public PrimitiveCType<TensorType, Type::UINT16, uint16_t> {
   public:
     using PrimitiveCType::PrimitiveCType;
-    Type::type getId() const { return Type::INT8; } // FIXME
+    Type::type getId() const { return Type::UINT16; }
     std::string getName() const override { return "uint16"; }
   };
 
@@ -193,7 +194,7 @@ namespace TensorBase
   class Int16Type : public PrimitiveCType<TensorType, Type::INT16, int16_t> {
   public:
     using PrimitiveCType::PrimitiveCType;
-    Type::type getId() const { return Type::INT8; } // FIXME
+    Type::type getId() const { return Type::INT16; }
     std::string getName() const override { return "int16"; }
   };
 
@@ -201,7 +202,7 @@ namespace TensorBase
   class UInt32Type : public PrimitiveCType<TensorType, Type::UINT32, uint32_t> {
   public:
     using PrimitiveCType::PrimitiveCType;
-    Type::type getId() const { return Type::INT8; } // FIXME
+    Type::type getId() const { return Type::UINT32; }
     std::string getName() const override { return "uint32"; }
   };
 
@@ -209,7 +210,7 @@ namespace TensorBase
   class Int32Type : public PrimitiveCType<TensorType, Type::INT32, int32_t> {
   public:
     using PrimitiveCType::PrimitiveCType;
-    Type::type getId() const { return Type::INT8; } // FIXME
+    Type::type getId() const { return Type::INT32; }
     std::string getName() const override { return "int32"; }
   };
 
@@ -217,7 +218,7 @@ namespace TensorBase
   class UInt64Type : public PrimitiveCType<TensorType, Type::UINT64, uint64_t> {
   public:
     using PrimitiveCType::PrimitiveCType;
-    Type::type getId() const { return Type::INT8; } // FIXME
+    Type::type getId() const { return Type::UINT64; }
     std::string getName() const override { return "uint64"; }
   };
 
@@ -225,7 +226,7 @@ namespace TensorBase
   class Int64Type : public PrimitiveCType<TensorType, Type::INT64, int64_t> {
   public:
     using PrimitiveCType::PrimitiveCType;
-    Type::type getId() const { return Type::INT8; } // FIXME
+    Type::type getId() const { return Type::INT64; } 
     std::string getName() const override { return "int64"; }
   };
 
@@ -233,7 +234,7 @@ namespace TensorBase
   class HalfFloatType : public PrimitiveCType<TensorType, Type::HALF_FLOAT, uint16_t> {
   public:
     using PrimitiveCType::PrimitiveCType;
-    Type::type getId() const { return Type::INT8; } // FIXME
+    Type::type getId() const { return Type::HALF_FLOAT; } 
     std::string getName() const override { return "halffloat"; }
   };
 
@@ -241,7 +242,7 @@ namespace TensorBase
   class FloatType : public PrimitiveCType<TensorType, Type::FLOAT, float> {
   public:
     using PrimitiveCType::PrimitiveCType;
-    Type::type getId() const { return Type::INT8; } // FIXME
+    Type::type getId() const { return Type::FLOAT; } 
     std::string getName() const override { return "float"; }
   };
 
@@ -249,74 +250,63 @@ namespace TensorBase
   class DoubleType : public PrimitiveCType<TensorType, Type::DOUBLE, double> {
   public:
     using PrimitiveCType::PrimitiveCType;
-    Type::type getId() const { return Type::INT8; } // FIXME
+    Type::type getId() const { return Type::DOUBLE; } 
     std::string getName() const override { return "double"; }
   };
 
-  /// @brief Concrete type class for variable-size binary data
-  class BinaryType : public TensorType {
-  public:
-    static constexpr Type::type type_id = Type::BINARY;
-    BinaryType() : BinaryType(Type::BINARY) {}
-    std::string getName() const override { return "binary"; }
-  protected:
-    // Allow subclasses to change the logical type.
-    explicit BinaryType(Type::type logical_type) : TensorType(logical_type) {}
-  };
-  
-  /// @brief Concrete type class for fixed-size binary data
-  class FixedSizeBinaryType : public TensorType {
-  public:
-    static constexpr Type::type type_id = Type::FIXED_SIZE_BINARY;
-    explicit FixedSizeBinaryType(int32_t byte_width): TensorType(Type::FIXED_SIZE_BINARY), byte_width_(byte_width) {}
-    explicit FixedSizeBinaryType(int32_t byte_width, Type::type override_type_id): TensorType(override_type_id), byte_width_(byte_width) {}
-    std::string getName() const override { return "fixed_size_binary"; }
-    int32_t byte_width() const { return byte_width_; }
-  protected:
-    int32_t byte_width_;
-  };
+  ///// @brief Concrete type class for variable-size binary data
+  //class BinaryType : public TensorType {
+  //public:
+  //  Type::type getId() const { return Type::BINARY; }
+  //  std::string getName() const override { return "binary"; }
+  //};
+  //
+  ///// @brief Concrete type class for fixed-size binary data
+  //class FixedSizeBinaryType : public TensorType {
+  //public:
+  //  explicit FixedSizeBinaryType(int32_t byte_width): byte_width_(byte_width) {}
+  //  std::string getName() const override { return "fixed_size_binary"; }
+  //  Type::type getId() const { return Type::FIXED_SIZE_BINARY; }
+  //  int32_t byte_width() const { return byte_width_; }
+  //protected:
+  //  int32_t byte_width_;
+  //};
 
-  /// @brief Concrete type class for variable-size string data, utf8-encoded
-  class StringType : public BinaryType {
-  public:
-    static constexpr Type::type type_id = Type::STRING;
-    StringType() : BinaryType(Type::STRING) {}
-    std::string getName() const override { return "utf8"; }
-  };
+  ///// @brief Concrete type class for variable-size string data, utf8-encoded
+  //class StringType : public BinaryType {
+  //public:
+  //  using BinaryType::BinaryType;
+  //  Type::type getId() const { return Type::STRING; }
+  //  std::string getName() const override { return "utf8"; }
+  //};
 
-  enum class DateUnit : char { DAY = 0, MILLI = 1 };
+  //enum class DateUnit : char { DAY = 0, MILLI = 1 };
 
-  /// @brief Base type class for date data
-  class DateType : public TensorType {
-  public:
-    virtual DateUnit unit() const = 0;
-  protected:
-    explicit DateType(Type::type type_id);
-  };
+  ///// @brief Base type class for date data
+  //class DateType : public TensorType {
+  //public:
+  //  virtual DateUnit unit() const = 0;
+  //};
 
-  /// Concrete type class for 32-bit date data (as number of days since UNIX epoch)
-  class Date32Type : public DateType {
-  public:
-    static constexpr Type::type type_id = Type::DATE32;
-    static constexpr DateUnit UNIT = DateUnit::DAY;
-    using c_type = int32_t;
-    Date32Type();
-    std::string getName() const override { return "date32"; }
-    Type::type getId() const { return Type::INT8; } // FIXME
-    DateUnit unit() const override { return UNIT; }
-  };
+  ///// Concrete type class for 32-bit date data (as number of days since UNIX epoch)
+  //class Date32Type : public DateType {
+  //public:
+  //  static constexpr DateUnit UNIT = DateUnit::DAY;
+  //  using c_type = int32_t;
+  //  std::string getName() const override { return "date32"; }
+  //  Type::type getId() const { return Type::DATE32; }
+  //  DateUnit unit() const override { return UNIT; }
+  //};
 
-  /// Concrete type class for 64-bit date data (as number of milliseconds since UNIX epoch)
-  class Date64Type : public DateType {
-  public:
-    static constexpr Type::type type_id = Type::DATE64;
-    static constexpr DateUnit UNIT = DateUnit::MILLI;
-    using c_type = int64_t;
-    Date64Type();
-    std::string getName() const override { return "date64"; }
-    Type::type getId() const { return Type::INT8; } // FIXME
-    DateUnit unit() const override { return UNIT; }
-  };
+  ///// Concrete type class for 64-bit date data (as number of milliseconds since UNIX epoch)
+  //class Date64Type : public DateType {
+  //public:
+  //  static constexpr DateUnit UNIT = DateUnit::MILLI;
+  //  using c_type = int64_t;
+  //  std::string getName() const override { return "date64"; }
+  //  Type::type getId() const { return Type::DATE64; }
+  //  DateUnit unit() const override { return UNIT; }
+  //};
 
   struct TimeUnit {
     /// The unit for a time or timestamp TensorType
@@ -344,28 +334,24 @@ namespace TensorBase
   /// Base type class for time data
   class TimeType : public TensorType {
   public:
+    TimeType(TimeUnit::type unit) : unit_(unit) {};
+    TimeType() : unit_(TimeUnit::MILLI) {};
     TimeUnit::type unit() const { return unit_; }
-    Type::type getId() const { return Type::INT8; } // FIXME
-  protected:
-    TimeType(Type::type type_id, TimeUnit::type unit);
+  private:
     TimeUnit::type unit_;
   };
 
   class Time32Type : public TimeType {
   public:
-    static constexpr Type::type type_id = Type::TIME32;
     using c_type = int32_t;
-    explicit Time32Type(TimeUnit::type unit = TimeUnit::MILLI);
-    Type::type getId() const { return Type::INT8; } // FIXME
+    Type::type getId() const { return Type::TIME32; }
     std::string getName() const override { return "time32"; }
   };
 
   class Time64Type : public TimeType {
   public:
-    static constexpr Type::type type_id = Type::TIME64;
     using c_type = int64_t;
-    explicit Time64Type(TimeUnit::type unit = TimeUnit::MILLI);
-    Type::type getId() const { return Type::INT8; } // FIXME
+    Type::type getId() const { return Type::TIME64; }
     std::string getName() const override { return "time64"; }
   };
 
@@ -373,10 +359,9 @@ namespace TensorBase
   public:
     using Unit = TimeUnit;
     typedef int64_t c_type;
-    static constexpr Type::type type_id = Type::TIMESTAMP;
-    explicit TimestampType(TimeUnit::type unit = TimeUnit::MILLI): TensorType(Type::TIMESTAMP), unit_(unit) {}
-    explicit TimestampType(TimeUnit::type unit, const std::string& timezone): TensorType(Type::TIMESTAMP), unit_(unit), timezone_(timezone) {}
-    Type::type getId() const { return Type::INT8; } // FIXME
+    explicit TimestampType(TimeUnit::type unit = TimeUnit::MILLI): unit_(unit) {}
+    explicit TimestampType(TimeUnit::type unit, const std::string& timezone): unit_(unit), timezone_(timezone) {}
+    Type::type getId() const { return Type::TIMESTAMP; }
     std::string getName() const override { return "timestamp"; }
     TimeUnit::type unit() const { return unit_; }
     const std::string& timezone() const { return timezone_; }
@@ -389,9 +374,8 @@ namespace TensorBase
   public:
     enum class Unit : char { YEAR_MONTH = 0, DAY_TIME = 1 };
     using c_type = int64_t;
-    static constexpr Type::type type_id = Type::INTERVAL;
-    explicit IntervalType(Unit unit = Unit::YEAR_MONTH): TensorType(Type::INTERVAL), unit_(unit) {}
-    Type::type getId() const { return Type::INT8; } // FIXME
+    explicit IntervalType(Unit unit = Unit::YEAR_MONTH): unit_(unit) {}
+    Type::type getId() const { return Type::INTERVAL; }
     std::string getName() const override { return "interval"; }
     Unit unit() const { return unit_; }
   private:
