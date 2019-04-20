@@ -3,7 +3,6 @@
 #ifndef TENSORBASE_TENSORTYPE_H
 #define TENSORBASE_TENSORTYPE_H
 
-#include <climits> // `CHAR_BIT`
 #include <cstdint>
 #include <string>
 #include <type_traits>  // `is_signed`
@@ -16,8 +15,8 @@ namespace TensorBase
   /* Classes and structures for all data types used
 
   References:
-  Primitive type wrappers using the following minimal wrapper structure
-    ```
+  Primitive type wrappers using the following minimal wrapper structure with additional operator overloads
+  ```
     template<typename T>
     class primitive
     {
@@ -142,20 +141,11 @@ namespace TensorBase
     constexpr PrimitiveCType(U const& value) noexcept : value_t_(value) {}
     operator C_TYPE&() { return value_t_; }  ///< minimal operator overload needed
     constexpr C_TYPE const& get() const noexcept { return value_t_; }
+
+    // TODO: implement all overloads
   };
 
-  template<typename T>
-  constexpr bool operator>(PrimitiveCType<T> const& lhs, T const& rhs) noexcept {
-    return lhs.get() > rhs;
-  }
-  template<typename T>
-  constexpr bool operator>(T const& lhs, PrimitiveCType<T> const& rhs) noexcept {
-    return lhs > rhs.get();
-  }
-  template<typename T1, typename T2>
-  constexpr bool operator>(PrimitiveCType<T1> const& lhs, PrimitiveCType<T2> const& rhs) noexcept {
-    return lhs.get() > rhs.get();
-  }
+  // TODO: implement all overloads
 
   /// Concrete type class for always-null data
   class NullType : public TensorType {

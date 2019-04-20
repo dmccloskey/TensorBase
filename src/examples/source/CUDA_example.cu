@@ -39,32 +39,6 @@ void convertStrTensorToHashTensor(std::size_t* hash_data, std::string* string_da
   { return std::hash<std::string>{}(elem); });
 }
 
-template<typename C_TYPE>
-class primitive
-{
-  C_TYPE value_t_;
-public:
-  using c_type = C_TYPE;
-  constexpr primitive() noexcept : value_t_() {}
-  template<typename U>
-  constexpr primitive(U const& value) noexcept : value_t_(value) {}
-  operator C_TYPE&() { return value_t_; }  ///< minimal operator overload needed
-  constexpr C_TYPE const& get() const noexcept { return value_t_; }
-};
-
-template<typename T>
-constexpr bool operator>(primitive<T> const& lhs, T const& rhs) noexcept {
-  return lhs.get() > rhs;
-}
-template<typename T>
-constexpr bool operator>(T const& lhs, primitive<T> const& rhs) noexcept {
-  return lhs > rhs.get();
-}
-template<typename T1, typename T2>
-constexpr bool operator>(primitive<T1> const& lhs, primitive<T2> const& rhs) noexcept {
-  return lhs.get() > rhs.get();
-}
-
 template<typename DeviceT>
 void stringCompareGpuEx(const std::size_t& dim1, DeviceT& cpuDevice) {
   // compare a string to a 1D tensor of strings
@@ -533,14 +507,13 @@ int main(int argc, char** argv)
 
   // Numeric comparison tests
   if (numeric_comparison) {
-    using Float = primitive<float>;
-    numericCompareGpuEx<TensorBase::FloatType>(1e6);
-    numericCompareCpuEx<TensorBase::FloatType>(1e6, defaultDevice);
-    numericCompareCpuEx<TensorBase::FloatType>(1e6, cpuDevice);
+    numericCompareGpuEx<float>(1e6);
+    numericCompareCpuEx<float>(1e6, defaultDevice);
+    numericCompareCpuEx<float>(1e6, cpuDevice);
 
-    numericCompareGpuEx<TensorBase::FloatType>(1e3);
-    numericCompareCpuEx<TensorBase::FloatType>(1e3, defaultDevice);
-    numericCompareCpuEx<TensorBase::FloatType>(1e3, cpuDevice);
+    numericCompareGpuEx<float>(1e3);
+    numericCompareCpuEx<float>(1e3, defaultDevice);
+    numericCompareCpuEx<float>(1e3, cpuDevice);
   }
 
   // Group by and count comparison
