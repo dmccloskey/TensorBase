@@ -141,7 +141,21 @@ namespace TensorBase
     template<typename U>
     constexpr PrimitiveCType(U const& value) noexcept : value_t_(value) {}
     operator C_TYPE&() { return value_t_; }  ///< minimal operator overload needed
+    constexpr C_TYPE const& get() const noexcept { return value_t_; }
   };
+
+  template<typename T>
+  constexpr bool operator>(PrimitiveCType<T> const& lhs, T const& rhs) noexcept {
+    return lhs.get() > rhs;
+  }
+  template<typename T>
+  constexpr bool operator>(T const& lhs, PrimitiveCType<T> const& rhs) noexcept {
+    return lhs > rhs.get();
+  }
+  template<typename T1, typename T2>
+  constexpr bool operator>(PrimitiveCType<T1> const& lhs, PrimitiveCType<T2> const& rhs) noexcept {
+    return lhs.get() > rhs.get();
+  }
 
   /// Concrete type class for always-null data
   class NullType : public TensorType {
