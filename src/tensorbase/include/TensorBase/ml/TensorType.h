@@ -37,7 +37,7 @@ namespace TensorBase
   */
 
   struct Type {
-    /// \brief Main data type enumeration
+    /// @brief Main data type enumeration
     ///
     /// This enumeration provides a quick way to interrogate the category
     /// of a TensorType instance.
@@ -46,6 +46,8 @@ namespace TensorBase
       NA,
       /// Boolean as 1 bit, LSB bit-packed ordering
       BOOL,
+      /// Character as 1 bit, ASCII
+      CHAR,
       /// Unsigned 8-bit little-endian integer
       UINT8,
       /// Signed 8-bit little-endian integer
@@ -68,6 +70,8 @@ namespace TensorBase
       FLOAT,
       /// 8-byte floating point value
       DOUBLE,
+      /// 16-byte floating point value
+      LONG_DOUBLE,
       /// UTF8 variable-length string as List<Char>
       STRING,
       /// Variable-length bytes (no guarantee of UTF8-ness)
@@ -152,6 +156,14 @@ namespace TensorBase
     using PrimitiveCType::PrimitiveCType;
     Type::type getId() const { return Type::BOOL; }
     std::string getName() const override { return "bool"; }
+  };
+
+  /// Concrete type class for character data
+  class CharType : public PrimitiveCType<char> {
+  public:
+    using PrimitiveCType::PrimitiveCType;
+    Type::type getId() const { return Type::CHAR; }
+    std::string getName() const override { return "char"; }
   };
 
   /// Concrete type class for unsigned 8-bit integer data
@@ -240,6 +252,14 @@ namespace TensorBase
     using PrimitiveCType::PrimitiveCType;
     Type::type getId() const { return Type::DOUBLE; } 
     std::string getName() const override { return "double"; }
+  };
+
+  /// Concrete type class for 64-bit floating-point data with extra precision (C "long double")
+  class LongDoubleType : public PrimitiveCType<long double> {
+  public:
+    using PrimitiveCType::PrimitiveCType;
+    Type::type getId() const { return Type::LONG_DOUBLE; }
+    std::string getName() const override { return "long_double"; }
   };
 
   /// @brief Concrete type class for variable-size binary data
