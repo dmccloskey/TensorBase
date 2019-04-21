@@ -8,8 +8,6 @@
 #include <type_traits>  // `is_signed`
 #include <ostream>
 
-#include <unsupported/Eigen/CXX11/Tensor>
-
 namespace TensorBase
 {
   /* Classes and structures for all data types used
@@ -33,6 +31,12 @@ namespace TensorBase
 
   Type inheritance, list/map/dict types, and date/time class structures were inspired by the Apache Arrow types  
   https://github.com/apache/arrow/blob/master/cpp/src/arrow/type.h  
+
+  STATUS and TODOS:
+  - implement all operator overloads in `PrimitiveCType`
+  - implement both CPU and GPU versions of `PrimitiveCType`s
+  - implement `sizeof()` in TensorType and all derived types
+  - clean up date, time, and interval classes
   */
 
   struct Type {

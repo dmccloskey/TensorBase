@@ -32,4 +32,18 @@ BOOST_AUTO_TEST_CASE(Int8Type1)
   BOOST_CHECK(tensorType < 3);
 }
 
+// TODO implement all other tests
+
+BOOST_AUTO_TEST_CASE(HeteroVector1)
+{
+  std::vector<std::shared_ptr<TensorType>> heteroVecT;
+  heteroVecT.push_back(std::shared_ptr<TensorType>(new BooleanType(true)));
+  heteroVecT.push_back(std::shared_ptr<TensorType>(new CharType('a')));
+  heteroVecT.push_back(std::shared_ptr<TensorType>(new UInt8Type(1)));
+
+  std::cout << heteroVecT[0]->getName() << heteroVecT[0] << std::endl;
+  std::cout << heteroVecT[1]->getName() << heteroVecT[1] << std::endl;
+  std::cout << heteroVecT[2]->getName() << heteroVecT[2] << std::endl;
+}
+
 BOOST_AUTO_TEST_SUITE_END()

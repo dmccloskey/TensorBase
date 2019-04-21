@@ -14,7 +14,6 @@
 #include <functional> // Hash
 #include <unordered_map> // Hash
 #include <algorithm>  // Sort
-#include <TensorBase/ml/TensorType.h>
 
 using namespace std;
 
