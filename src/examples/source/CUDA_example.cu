@@ -472,7 +472,7 @@ int main(int argc, char** argv)
 
   // Benchmarks to run
   bool string_comparison = false;
-  bool sort_comparison = false;
+  bool sort_comparison = true;
   bool numeric_comparison = true;
   Eigen::ThreadPool pool(8);
   Eigen::ThreadPoolDevice cpuDevice(&pool, 8);

@@ -15,6 +15,7 @@ set(ml_executables_list
   TensorDimension_test
   TensorData_test
   TensorTable_test
+  TensorType_test
 )
 
 ### collect test executables

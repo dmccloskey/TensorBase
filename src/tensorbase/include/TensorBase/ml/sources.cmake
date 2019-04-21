@@ -8,6 +8,7 @@ set(sources_list_h
 	TensorDimension.h
 	TensorData.h
 	TensorTable.h
+	TensorType.h
 )
 
 ### add path to the filenames
