@@ -25,6 +25,25 @@ BOOST_AUTO_TEST_CASE(destructor)
   delete ptr;
 }
 
+BOOST_AUTO_TEST_CASE(constructorName)
+{
+  TensorDimension tensordimension("1");
+  BOOST_CHECK_EQUAL(tensordimension.getId(), -1);
+  BOOST_CHECK_EQUAL(tensordimension.getName(), "1");
+  BOOST_CHECK_EQUAL(tensordimension.getNLabels(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(constructorNameAndLabels)
+{
+  Eigen::Tensor<std::string, 1> labels(5);
+  labels.setConstant("Hello!");
+  TensorDimension tensordimension("1", labels);
+  BOOST_CHECK_EQUAL(tensordimension.getName(), "1");
+  BOOST_CHECK_EQUAL(tensordimension.getNLabels(), 5);
+  BOOST_CHECK_EQUAL(tensordimension.getLabels()(0), "Hello!");
+  BOOST_CHECK_EQUAL(tensordimension.getLabels()(4), "Hello!");
+}
+
 BOOST_AUTO_TEST_CASE(gettersAndSetters)
 {
   TensorDimension tensordimension;

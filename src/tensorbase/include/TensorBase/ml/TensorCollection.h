@@ -21,7 +21,7 @@ namespace TensorBase
     };  ///< Default constructor
     ~TensorCollection() = default; ///< Default destructor
 
-    std::vector<std::string> getTableNames() const {}; ///< table neames getter
+    std::vector<std::string> getTableNames() const; ///< table neames getter
 
     /*
     @brief Add Table
@@ -33,7 +33,7 @@ namespace TensorBase
     @returns true if successful, false otherwise
     */
     template<typename TensorT, typename DeviceT, int TDim>
-    bool addTable(const std::shared_ptr<TensorTable<TensorT, DeviceT, TDim>& table);
+    bool addTable(const std::shared_ptr<TensorTable<TensorT, DeviceT, TDim>>& table);
 
     /*
     @brief delete Tables

@@ -17,6 +17,7 @@ namespace TensorBase
   {
   public:
     TensorTable() = default;  ///< Default constructor
+    TensorTable(const std::string& name, const std::vector<TensorAxis>& tensor_axes) : name_(name) { setAxes(tensor_axes); };
     ~TensorTable() = default; ///< Default destructor
 
     void setId(const int& id) { id_ = id; }; ///< id setter
@@ -73,6 +74,8 @@ namespace TensorBase
 
   template<typename TensorT, typename DeviceT, int TDim>
   void TensorTable<TensorT, DeviceT, TDim>::setAxes(const std::vector<TensorAxis>& tensor_axes) {
+    assert(TDim == tensor_axes.size()); // "The number of tensor_axes and the template TDim do not match.";
+
     // Determine the overall dimensions of the tensor
     int axis_cnt = 0;
     for (const TensorAxis& axis : tensor_axes) {
@@ -125,12 +128,16 @@ namespace TensorBase
   class TensorTableDefaultDevice: public TensorTable<TensorT, Eigen::DefaultDevice, TDim>
   {
   public:
-    void initData();
+    TensorTableDefaultDevice() = default;
+    TensorTableDefaultDevice(const std::string& name, const std::vector<TensorAxis>& tensor_axes) { this->setName(name); this->setAxes(tensor_axes); };
+    void initData() override;
   };
 
   template<typename TensorT, int TDim>
   void TensorTableDefaultDevice<TensorT, TDim>::initData() {
     this->getData().reset(new TensorDataDefaultDevice<TensorT, TDim>(this->getDimensions()));
   }
+
+  // TODO CPU and GPU template specializations
 };
 #endif //TENSORBASE_TENSORTABLE_H
