@@ -2,6 +2,7 @@ set(core_executables_list
   Helloworld_test
   Statistics_test
   StringParsing_test
+  TupleAlgorithms_test
 )
 
 set(io_executables_list

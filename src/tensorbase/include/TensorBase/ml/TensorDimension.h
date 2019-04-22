@@ -15,6 +15,8 @@ namespace TensorBase
   {
   public:
     TensorDimension() = default;  ///< Default constructor
+    TensorDimensions(const std::string& name) : name_(name) {};
+    TensorDimensions(const std::string& name, const Eigen::Tensor<std::string, 1>& labels) : name_(name) { setLables(labels); };
     ~TensorDimension() = default; ///< Default destructor
 
     void setId(const int& id) { id_ = id; }; ///< id setter
