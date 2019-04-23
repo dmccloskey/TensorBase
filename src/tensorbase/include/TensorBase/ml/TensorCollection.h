@@ -27,7 +27,14 @@ namespace TensorBase
     }; 
     ~TensorCollection() = default; ///< Default destructor
 
-    std::vector<std::string> getTableNames() const; ///< table neames getter
+    /*
+    @brief get all of the table names in the collection
+
+    @note `struct GetTableNamesHelper` is used to accumulate the table names
+
+    @returns a vector of strings with the table names
+    */
+    std::vector<std::string> getTableNames() const;
 
     /*
     @brief Add Table
@@ -139,7 +146,6 @@ namespace TensorBase
     void operator()(T&& t) { names.push_back(std::forward<decltype(t)>(t)->getName()); }
     std::vector<std::string> names;
   };
-
   template<class ...TTables>
   inline std::vector<std::string> TensorCollection<TTables...>::getTableNames() const
   {
