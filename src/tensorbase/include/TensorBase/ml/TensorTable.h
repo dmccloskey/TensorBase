@@ -18,7 +18,7 @@ namespace TensorBase
   public:
     TensorTable() = default;  ///< Default constructor
     TensorTable(const std::string& name, const std::vector<TensorAxis>& tensor_axes) : name_(name) { setAxes(tensor_axes); };
-    ~TensorTable() = default; ///< Default destructor
+    virtual ~TensorTable() = default; ///< Default destructor
 
     void setId(const int& id) { id_ = id; }; ///< id setter
     int getId() const { return id_; }; ///< id getter
@@ -130,6 +130,7 @@ namespace TensorBase
   public:
     TensorTableDefaultDevice() = default;
     TensorTableDefaultDevice(const std::string& name, const std::vector<TensorAxis>& tensor_axes) { this->setName(name); this->setAxes(tensor_axes); };
+    ~TensorTableDefaultDevice() = default;
     void initData() override;
   };
 

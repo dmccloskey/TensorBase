@@ -5,11 +5,17 @@
 
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/ml/TensorTable.h>
+#include <TensorBase/core/TupleAlgorithms.h>
 
 namespace TensorBase
 {
   /**
     @brief Class for managing heterogenous Tensors
+
+    TODOs:
+    - add static checks for the "acceptable" TTables
+    - add static checks that the TTables are wrapped in a `std::shared_ptr`
+    - implement the method bodies for unimplemented method signatures
   */
   template<class... TTables>
   class TensorCollection
@@ -17,8 +23,8 @@ namespace TensorBase
   public:
     TensorCollection() = default;  ///< Default constructor
     TensorCollection(TTables&... tTables) { 
-      tables_ = std::make_tuple(tTables...); 
-    };  ///< Default constructor
+      tables_ = std::make_tuple(tTables...);
+    }; 
     ~TensorCollection() = default; ///< Default destructor
 
     std::vector<std::string> getTableNames() const; ///< table neames getter
@@ -28,12 +34,11 @@ namespace TensorBase
 
     add a new TensorTable to the tuple of tables
 
-    @param[in] func Lambda or functor (?)
+    @param[in] tables Variable number of tables to add
 
     @returns true if successful, false otherwise
     */
-    template<typename TensorT, typename DeviceT, int TDim>
-    bool addTable(const std::shared_ptr<TensorTable<TensorT, DeviceT, TDim>>& table);
+    bool addTables(TTables&... tTables);
 
     /*
     @brief delete Tables
@@ -126,14 +131,21 @@ namespace TensorBase
     bool readShardsFromDisk();
 
   private:
-    std::tuple<std::shared_ptr<TTables>...> tables_; ///< tuple of TensorTables<TensorT, DeviceT, TDim>
-    
-    //private:
-    //	friend class cereal::access;
-    //	template<class Archive>
-    //	void serialize(Archive& archive) {
-    //		archive(id_, name_, n_dimensions_, n_labels_, tensor_dimension_names_, tensor_dimension_labels_);
-    //	}
+    std::tuple<TTables...> tables_; ///< tuple of std::shared_ptr TensorTables<TensorT, DeviceT, TDim>
   };
+
+  struct GetTableNamesHelper {
+    template<typename T>
+    void operator()(T&& t) { names.push_back(std::forward<decltype(t)>(t)->getName()); }
+    std::vector<std::string> names;
+  };
+
+  template<class ...TTables>
+  inline std::vector<std::string> TensorCollection<TTables...>::getTableNames() const
+  {
+    GetTableNamesHelper getTableNamesHelper;
+    for_each(tables_, getTableNamesHelper);
+    return getTableNamesHelper.names;
+  }
 };
 #endif //TENSORBASE_TENSORCOLLECTION_H

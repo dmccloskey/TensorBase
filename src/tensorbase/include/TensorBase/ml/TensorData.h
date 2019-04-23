@@ -43,7 +43,7 @@ namespace TensorBase
       d_data_updated_ = other.d_data_updated_;
       dimensions_ = other.dimensions_;
     };
-    ~TensorData() = default; ///< Default destructor
+    virtual ~TensorData() = default; ///< Default destructor
 
     inline bool operator==(const TensorData& other) const
     {
@@ -121,6 +121,7 @@ namespace TensorBase
   class TensorDataDefaultDevice : public TensorData<TensorT, Eigen::DefaultDevice, TDim> {
   public:
     using TensorData<TensorT, Eigen::DefaultDevice, TDim>::TensorData;
+    ~TensorDataDefaultDevice() = default;
     void setData(const Eigen::Tensor<TensorT, TDim>& data) {
       TensorT* h_data = new TensorT[this->tensor_size_];
       // copy the tensor
@@ -150,6 +151,7 @@ namespace TensorBase
   class TensorDataCpu : public TensorData<TensorT, Eigen::ThreadPoolDevice, TDim> {
   public:
     using TensorData<TensorT, Eigen::ThreadPoolDevice, TDim>::TensorData;
+    ~TensorDataCpu() = default;
     void setData(const Eigen::Tensor<TensorT, TDim>& data) {
       TensorT* h_data = new TensorT[this->tensor_size_];
       // copy the tensor
@@ -178,6 +180,7 @@ namespace TensorBase
   class TensorDataGpu : public TensorData<TensorT, Eigen::GpuDevice, TDim> {
   public:
     using TensorData<TensorT, Eigen::GpuDevice, TDim>::TensorData;
+    ~TensorDataGpu() = default;
     void setData(const Eigen::Tensor<TensorT, TDim>& data) {
       // allocate cuda and pinned host memory
       TensorT* d_data;
