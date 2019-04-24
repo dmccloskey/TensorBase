@@ -25,6 +25,7 @@ namespace TensorBase
     TensorCollection(TTables&... tTables) { 
       tables_ = std::make_tuple(tTables...);
     }; 
+    TensorCollection(std::tuple<TTables...>& tTables): tables_(tTables) {}
     ~TensorCollection() = default; ///< Default destructor
 
     /*

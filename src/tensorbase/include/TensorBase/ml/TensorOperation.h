@@ -70,14 +70,12 @@ namespace TensorBase
     TensorCollection<T...> operator()(TensorCollection<T...>&& collection, T&&... t) {};
   };
 
-  class TensorCreateTable : TensorCreate {
+  class TensorCreateTable {
   public:
-    template<
-      typename... Types1, template <typename...> class T, 
-      typename... Types2, template <typename...> class U,
-      typename... Ts>
-    void operator()(T<Types1...>&& collection, U<Types2...>&& new_collection, Ts&&... t) {
-      new_collection = std::tuple_cat(collection, TensorCollection<Ts...>(t));
+    template<typename TC, typename TCr, typename... TTables>
+    void operator()(TC& collection, TCr& collection_new, TTables&... t) {
+      auto tables_new = std::tuple_cat(collection.tables_, std::make_tuple(t...));
+      collection_new.tables_ = tables_new;
     };
   };
 

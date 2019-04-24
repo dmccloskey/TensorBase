@@ -48,12 +48,17 @@ BOOST_AUTO_TEST_CASE(scratch)
   TensorTableDefaultDevice<int, 2> tensorTable2("2", { TensorAxis("1", dimensions1, labels1),
     TensorAxis("2", dimensions2, labels2),
     });
-  std::shared_ptr<TensorTableDefaultDevice<int, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(tensorTable1);
+  std::shared_ptr<TensorTableDefaultDevice<int, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(tensorTable2);
 
   TensorCollection<
     std::shared_ptr<TensorTableDefaultDevice<float, 3>>,
     std::shared_ptr<TensorTableDefaultDevice<int, 2>>> collection_2;
-  TensorCreateTable(collection_1, collection_2, tensorTable2_ptr);
+  TensorCreateTable()(collection_1, collection_2, tensorTable2_ptr);
+  //auto tables_new = std::tuple_cat(collection_1.tables_, std::make_tuple(tensorTable2_ptr));
+
+  //TensorCollection<
+  //  std::shared_ptr<TensorTableDefaultDevice<float, 3>>,
+  //  std::shared_ptr<TensorTableDefaultDevice<int, 2>>> collection_2(tables_new);
 
 }
 
