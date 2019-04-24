@@ -43,6 +43,8 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   BOOST_CHECK_EQUAL(tensordata.getDimensions().at(1), 0);
   BOOST_CHECK_EQUAL(tensordata.getDimensions().at(2), 0);
   BOOST_CHECK_EQUAL(tensordata.getTensorSize(), 0);
+  BOOST_CHECK_EQUAL(tensordata.getDims(), 3);
+  BOOST_CHECK_EQUAL(tensordata.getDeviceName(), typeid(Eigen::DefaultDevice).name());
 
   // initialize indices
   tensordata.setDimensions(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
@@ -116,6 +118,8 @@ BOOST_AUTO_TEST_CASE(gettersAndSetters2Cpu)
   BOOST_CHECK_EQUAL(tensordata.getDimensions().at(0), 2);
   BOOST_CHECK_EQUAL(tensordata.getDimensions().at(1), 3);
   BOOST_CHECK_EQUAL(tensordata.getDimensions().at(2), 4);
+  BOOST_CHECK_EQUAL(tensordata.getDims(), 3);
+  BOOST_CHECK_EQUAL(tensordata.getDeviceName(), typeid(Eigen::ThreadPoolDevice).name());
 
   Eigen::Tensor<float, 3> data(2, 3, 4);
   data.setConstant(0);
@@ -175,6 +179,8 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersGpu)
   BOOST_CHECK_EQUAL(tensordata.getDimensions().at(0), 2);
   BOOST_CHECK_EQUAL(tensordata.getDimensions().at(1), 3);
   BOOST_CHECK_EQUAL(tensordata.getDimensions().at(2), 4);
+  BOOST_CHECK_EQUAL(tensordata.getDims(), 3);
+  BOOST_CHECK_EQUAL(tensordata.getDeviceName(), typeid(Eigen::GpuDevice).name());
 
   Eigen::Tensor<float, 3> data(2, 3, 4);
 	data.setConstant(0.5);

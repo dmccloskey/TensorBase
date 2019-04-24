@@ -141,7 +141,7 @@ namespace TensorBase
     std::tuple<TTables...> tables_; ///< tuple of std::shared_ptr TensorTables<TensorT, DeviceT, TDim>
   };
 
-  struct GetTableNamesHelper {
+  class GetTableNamesHelper {
     template<typename T>
     void operator()(T&& t) { names.push_back(std::forward<decltype(t)>(t)->getName()); }
     std::vector<std::string> names;

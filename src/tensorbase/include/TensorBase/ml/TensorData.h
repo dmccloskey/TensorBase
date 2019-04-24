@@ -33,8 +33,10 @@ namespace TensorBase
   class TensorData
   {
   public:
-    TensorData() = default;
-    TensorData(const Eigen::array<Eigen::Index, TDim>& dimensions) { setDimensions(dimensions); };  
+    TensorData() { device_name_ = typeid(DeviceT).name(); };
+    TensorData(const Eigen::array<Eigen::Index, TDim>& dimensions) { 
+      setDimensions(dimensions); 
+      device_name_ = typeid(DeviceT).name(); };
     TensorData(const TensorData& other)
     {
       h_data_ = other.h_data_;
@@ -49,9 +51,9 @@ namespace TensorBase
     {
       return
         std::tie(
-
+          dimensions_
         ) == std::tie(
-
+          other.dimensions_
         )
         ;
     }
@@ -82,15 +84,16 @@ namespace TensorBase
       tensor_size_ = tensor_size;
     }
     Eigen::array<Eigen::Index, TDim> getDimensions() const { return dimensions_; }  ///< dimensions getter
+    size_t getTensorSize() { return tensor_size_ * sizeof(TensorT); }; ///< Get the size of each tensor in bytes
+    int getDims() { return dimensions_.size(); };  ///< TDims getter
+    std::string getDeviceName() { return device_name_; }; ///< Device name getter
 
     virtual void setData(const Eigen::Tensor<TensorT, TDim>& data) = 0; ///< data setter
 
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> getData() { std::shared_ptr<TensorT> h_data = h_data_;  Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data(h_data.get(), this->getDimensions()); return data; } ///< data copy getter
     std::shared_ptr<TensorT> getHDataPointer() { return h_data_; }; ///< data pointer getter
     std::shared_ptr<TensorT> getDDataPointer() { return d_data_; }; ///< data pointer getter
-
-    size_t getTensorSize() { return tensor_size_ * sizeof(TensorT); }; ///< Get the size of each tensor in bytes
-
+    
     virtual bool syncHAndDData(DeviceT& device) = 0;  ///< Sync the host and device data
     std::pair<bool, bool> getDataStatus() { return std::make_pair(h_data_updated_, d_data_updated_); };   ///< Get the status of the host and device data
 
@@ -104,6 +107,7 @@ namespace TensorBase
 
     Eigen::array<Eigen::Index, TDim> dimensions_ = Eigen::array<Eigen::Index, TDim>(); ///< Tensor dimensions (initialized to all zeros)
     size_t tensor_size_ = 0;  ///< Tensor size
+    std::string device_name_ = "";
 
     //private:
     //	friend class cereal::access;
