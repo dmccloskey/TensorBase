@@ -37,95 +37,10 @@ namespace TensorBase
     std::vector<std::string> getTableNames() const;
 
     /*
-    @brief Add Table
-
-    add a new TensorTable to the tuple of tables
-
-    @param[in] tables Variable number of tables to add
-
-    @returns true if successful, false otherwise
-    */
-    bool addTables(TTables&... tTables);
-
-    /*
-    @brief delete Tables
-
-    remove a TensorTable from the tuple of tables
-
-    @param[in] table_names List of table names to remove
-
-    @returns true if successful, false otherwise
-    */
-    bool deleteTables(const std::vector<std::string>& table_names);
-
-    /*
-    @brief select a specific number of tensor tables, dimensions, and labels
-
-    The functor can describe any number of sort,
-    group by, join, or aggregate operations.
-    In addition, the functor can also describe any
-    transformation operations including matrix multiplication
-    and other linear algebra operations supported
-    by the Eigen library
-
-    @param[in] func Lambda or functor (?)
-
-    @returns a subset of the TensorCollection
-    */
-    template<typename Func>
-    TensorCollection selectFromTables(Func func);
-
-    /*
-    @brief insert values into a particular dimension
-
-    all tables where the current dimension is the only
-    dimension composing the axis will be expanded.
-    The functor or lambda should describe the values
-    to be added and/or the default values to fill
-    each affected tensor with.
-
-    @param[in] dimension The name of the dimensions to expand
-    @param[in] labels A list of labels to insert into the dimension
-    @param[in] func Lambda or functor (?)
-
-    @returns true if successful, false otherwise
-    */
-    template<typename Func>
-    bool insertIntoDimension(std::string& dimension, std::vector<std::string>& labels, Func func);
-
-    /*
-    @brief update a specific number of tensor tables, dimensions, and labels
-
-    @param[in] func Lambda or functor (?)
-
-    @returns true if successful, false otherwise
-    */
-    template<typename Func>
-    bool updateTables(Func func);
-
-    /*
-    @brief remove labels from a dimension
-
-    all tables where the current dimension is the only
-    dimension composing the axis will be reduced.
-    The functor or lambda should describe the 
-    selection criteria if no specific labels are given.
-
-    @param[in] dimension The name of the dimensions to expand
-    @param[in] labels A list of labels to insert into the dimension
-    @param[in] func Lambda or functor (?)
-
-    @returns true if successful, false otherwise
-    */
-    template<typename Func>
-    bool removeFromDimension(std::string& dimension, std::vector<std::string>& labels, Func func);
-
-    /*
     @brief write modified table shards to disk
 
     @returns true if successful, false otherwise
     */
-    template<typename Func>
     bool writeShardsToDisk();
 
     /*
@@ -134,10 +49,8 @@ namespace TensorBase
 
     @returns true if successful, false otherwise
     */
-    template<typename Func>
     bool readShardsFromDisk();
 
-  private:
     std::tuple<TTables...> tables_; ///< tuple of std::shared_ptr TensorTables<TensorT, DeviceT, TDim>
   };
 
