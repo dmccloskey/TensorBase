@@ -7,6 +7,7 @@ set(sources_list_h
 	TensorCollection.h
 	TensorDimension.h
 	TensorData.h
+	TensorOperation.h
 	TensorTable.h
 	TensorType.h
 )

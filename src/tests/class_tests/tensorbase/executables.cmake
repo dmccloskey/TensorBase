@@ -15,6 +15,7 @@ set(ml_executables_list
   TensorCollection_test
   TensorDimension_test
   TensorData_test
+  TensorOperation_test
   TensorTable_test
   TensorType_test
 )
