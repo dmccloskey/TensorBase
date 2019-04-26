@@ -14,6 +14,9 @@ BOOST_AUTO_TEST_CASE(tupleAlgorithmsApply)
 {
   auto x = apply(std::make_tuple(1, 2), std::plus<>{});
   BOOST_CHECK_EQUAL(3, x);
+
+  //auto y = tuple_add(std::make_tuple(1, 2, 3, 4));
+  //BOOST_CHECK_EQUAL(10, y);
 }
 
 BOOST_AUTO_TEST_CASE(tupleAlgorithmsTransform)

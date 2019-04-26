@@ -25,13 +25,65 @@ namespace TensorBase
     template<typename T>
     void operator()(T&& t) {};
     template<typename T>
-    void whereClause(T&& t) {};
+    bool whereClause(T&& t) {};
     template<typename T>
-    void havingClause(T&& t) {};
+    bool havingClause(T&& t) {};
     enum order { ASC, DESC };
-    std::vector<std::pair<std::string, std::string>> select_clause; ///< pairs of TensorTable.name and TensorDimension.label
+    using offsets = std::pair<std::string, std::string>; ///< TensorDimension.label [start, stop)
+    std::vector<std::tuple<std::string, std::string, std::string>> select_clause; ///< pairs of TensorTable.name, TensorDimension.label
     std::vector<std::pair<std::string, std::string>> group_by_clause; ///< pairs of TensorTable.name and TensorDimension.label
     std::vector<std::tuple<std::string, std::string, order>> order_by_clause; ///< tuple of TensorTable.name, TensorDimension.label, and order
+  };
+
+  template<int TDim>
+  class TensorSelectTableSlice {
+  public:
+    TensorSelectTableSlice(const std::string table_name,
+      const Eigen::array<std::string, TDim>& axes_names,
+      const Eigen::array<std::string, TDim>& dimension_names,
+      const Eigen::array<std::string, TDim>& label_names_start,
+      const Eigen::array<std::string, TDim>& label_names_stop) :
+      table_name(table_name), axes_names(axes_names), dimension_names(dimension_names),
+      label_names_start(label_names_start), label_names_stop(label_names_stop) {
+      for (int iter = 0; iter < TDim; ++iter) {
+        offsets.at(iter) = -1;
+        extents.at(iter) = -1;
+      }
+    };
+    template<typename T>
+    void operator()(T&& t){
+      if (std::forward<decltype(t)>(t)->getName() == table_name) {
+        for (auto& axis : std::forward<decltype(t)>(t)->getAxes()) {
+          for (int iter = 0; iter < TDim; ++iter) {
+            if (axis.first == axes_names.at(iter)) {
+              for (int d = 0; d < axis.second->getDimensions().size(); ++d) {
+                if (axis.second->getDimensions()(d) == dimension_names.at(iter)) {
+                  for (int l = 0; l < axis.second->getLabels().dimension(1); ++l) {
+                    if (axis.second->getLabels()(d, l) == label_names_start.at(iter)) {
+                      offsets.at(iter) = l;
+                    }
+                    else if (axis.second->getLabels()(d, l) == label_names_stop.at(iter)) {
+                      extents.at(iter) = l - d + 1;
+                    }
+                    if (extents.at(iter) != -1 && offsets.at(iter) != -1)
+                      break;
+                  }
+                  break;
+                }
+              }
+              break;
+            }
+          }
+        }
+      }
+    };
+    std::string table_name;
+    Eigen::array<std::string, TDim> axes_names;
+    Eigen::array<std::string, TDim> dimension_names;
+    Eigen::array<std::string, TDim> label_names_start;
+    Eigen::array<std::string, TDim> label_names_stop;
+    Eigen::array<int, TDim> offsets;
+    Eigen::array<int, TDim> extents;
   };
 
   class TensorSelectUnion;
@@ -70,7 +122,7 @@ namespace TensorBase
     TensorCollection<T...> operator()(TensorCollection<T...>&& collection, T&&... t) {};
   };
 
-  class TensorCreateTable {
+  class TensorCreateTables {
   public:
     template<typename TC, typename TCr, typename... TTables>
     void operator()(TC& collection, TCr& collection_new, TTables&... t) {
@@ -79,10 +131,18 @@ namespace TensorBase
     };
   };
 
-  class TensorDrop {
+  class TensorDropTable {
   public:
-    template<typename... T>
-    void operator()(T&&... collection, T&&... t) {};
+    template<typename TC, typename TCr>
+    void operator()(TC& collection, TCr& collection_new, const std::string& table_name) {
+      // find the indices of the tables
+      size_t index = find_if(collection.tables_, [&](auto&& t) {
+        if (std::forward<decltype(t)>(t)->getName() == table_name)
+          return false;
+        else
+          return true;
+      });
+    };
   };
 };
 #endif //TENSORBASE_TENSOROPERATION_H

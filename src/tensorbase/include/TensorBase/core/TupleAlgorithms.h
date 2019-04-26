@@ -31,7 +31,8 @@ namespace TensorBase
   // Implementation 2 examples
   template <class Tuple, class F>
   constexpr auto apply(Tuple t, F f) {
-    return index_apply(t, [&](auto... Is) { return f(std::get<Is>(t)...); });
+    return index_apply(t, [&](auto... Is) { 
+      return f(std::get<Is>(t)...); });
   }
 
   /*
@@ -52,6 +53,58 @@ namespace TensorBase
   constexpr F for_each_impl(Tuple&& t, F&& f, std::index_sequence<I...>)
   {
     return (void)std::initializer_list<int>{(std::forward<F>(f)(std::get<I>(std::forward<Tuple>(t))), 0)...}, f;
+  }
+
+  /*
+  @brief find_if method call
+
+  TODO: add tests
+
+  @param[in, out] tuple
+  @param[in] pred Function implementing the "if" logic
+  @returns The first index
+  */
+  template<typename Tuple, typename Predicate>
+  constexpr size_t find_if(Tuple&& tuple, Predicate pred)
+  {
+    size_t index = std::tuple_size<std::remove_reference_t<Tuple>>::value;
+    size_t currentIndex = 0;
+    bool found = false;
+    for_each(tuple, [&](auto&& value)
+    {
+      if (!found && pred(value))
+      {
+        index = currentIndex;
+        found = true;
+      }
+      ++currentIndex;
+    });
+    return index;
+  }
+
+  /*
+  @brief find_all method call
+
+  TODO: add tests
+
+  @param[in, out] tuple
+  @param[in] pred Function implementing the "if" logic
+  @returns The first index
+  */
+  template<typename Tuple, typename Predicate>
+  constexpr std::vector<size_t> find_all(Tuple&& tuple, Predicate pred)
+  {
+    std::vector<size_t> indices;
+    size_t currentIndex = 0;
+    for_each(tuple, [&](auto&& value)
+    {
+      if (pred(value))
+      {
+        indices.push_back(currentIndex);
+      }
+      ++currentIndex;
+    });
+    return indices;
   }
 
   /*
