@@ -24,7 +24,24 @@ BOOST_AUTO_TEST_SUITE(TensorOperation1)
 //  delete ptr;
 //}
 
-BOOST_AUTO_TEST_CASE(TensorTableSelectSlice) 
+BOOST_AUTO_TEST_CASE(TensorTableSelectClause)
+{
+  Eigen::Tensor<std::string, 1> table_names(4), axis_names(4), dimension_names(4), label_names(4);
+  table_names.setValues({"1", "2", "1", "2"});
+  axis_names.setValues({ "1", "2", "1", "2" });
+  dimension_names.setValues({ "x", "y", "x", "y" });
+  label_names.setValues({ "x-axis-0", "y-axis-0", "x-axis-1", "y-axis-2" });
+  SelectClause selectClause(table_names, axis_names, dimension_names, label_names);
+
+  // Check get labels
+  Eigen::Tensor<std::string, 1> table_1 = selectClause.getLabels("1", "1", "x");
+  BOOST_CHECK_EQUAL(table_1.size(), 2);
+  BOOST_CHECK_EQUAL(table_1(0), "x-axis-0");
+  BOOST_CHECK_EQUAL(table_1(1), "x-axis-1");
+  
+
+}
+BOOST_AUTO_TEST_CASE(TensorTableSelect) 
 {
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
   dimensions1(0) = "x";
@@ -47,41 +64,9 @@ BOOST_AUTO_TEST_CASE(TensorTableSelectSlice)
     });
   std::shared_ptr<TensorTableDefaultDevice<int, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(tensorTable2);
 
-  TensorCollection<
-    std::shared_ptr<TensorTableDefaultDevice<float, 3>>,
-    std::shared_ptr<TensorTableDefaultDevice<int, 2>>> collection_1(tensorTable1_ptr, tensorTable2_ptr);
-
-  // select (labels)
-  TensorSelectTableSlice<3> tensorSelectTableSlice("1",
-    Eigen::array<std::string, 3>({"1", "2", "3"}),
-    Eigen::array<std::string, 3>({ "x", "y", "z"}),
-    Eigen::array<std::string, 3>({ "x-axis-0", "y-axis-0", "z-axis-0" }),
-    Eigen::array<std::string, 3>({ "x-axis-1", "y-axis-2", "z-axis-4" })
-    );
-  for_each(collection_1.tables_, tensorSelectTableSlice);
-  Eigen::array<int, 3> offsets_test = { 0, 0, 0 };
-  Eigen::array<int, 3> extents_test = { nlabels1, nlabels2, nlabels3 };
-  for (int i = 0; i < 3; ++i) {
-    BOOST_CHECK_EQUAL(tensorSelectTableSlice.offsets.at(i), offsets_test.at(i));
-    BOOST_CHECK_EQUAL(tensorSelectTableSlice.extents.at(i), extents_test.at(i));
-  }
-
-  // TODO: where to apply the slice operation?
-  //Eigen::Tensor<float, 3> test(nlabels1, nlabels2, nlabels3);
-  //test.setZero();
-  //std::cout << test << std::endl;
-  //auto slice = test.slice(tensorSelectTableSlice.offsets, tensorSelectTableSlice.extents);
-  //std::cout << slice << std::endl;
-
-  // insert
-
-  // delete
-
-  // update
-
-  //TensorCollection<
-  //  std::shared_ptr<TensorTableDefaultDevice<float, 3>>,
-  //  std::shared_ptr<TensorTableDefaultDevice<int, 2>>> collection_2(tables_new);
+  TensorCollection collection_1;
+  collection_1.addTensorTable(tensorTable1_ptr);
+  collection_1.addTensorTable(tensorTable2_ptr);
 
 }
 
