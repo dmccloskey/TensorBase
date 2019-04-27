@@ -123,12 +123,6 @@ namespace TensorBase
     std::vector<std::pair<std::string, std::string>> delete_clause; ///< pairs of TensorTable.name and TensorDimension.label
   };
 
-  class TensorCreate: public TensorOperation {
-  public:
-    template<typename... T>
-    TensorCollection<T...> operator()(TensorCollection<T...>&& collection, T&&... t) {};
-  };
-
   class TensorAddTables {
   public:
     template<typename TC, typename TCr, typename... TTables>

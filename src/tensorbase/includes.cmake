@@ -8,8 +8,8 @@ set(TensorBase_sources_h  CACHE INTERNAL "This variable should hold all TensorBa
 
 ## ATTENTION: The order of includes should be similar to the inclusion hierarchy
 include(include/TensorBase/core/sources.cmake)
-include(include/TensorBase/ml/sources.cmake)
 include(include/TensorBase/io/sources.cmake)
+include(include/TensorBase/ml/sources.cmake)
 
 ## add configured config.h&Co to source group
 source_group("Header Files\\TensorBase" FILES ${TensorBase_configured_headers})

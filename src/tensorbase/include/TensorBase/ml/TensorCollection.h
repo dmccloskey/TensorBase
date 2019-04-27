@@ -5,28 +5,47 @@
 
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/ml/TensorTable.h>
-#include <TensorBase/core/TupleAlgorithms.h>
+#include <map>
 
 namespace TensorBase
 {
   /**
     @brief Class for managing heterogenous Tensors
-
-    TODOs:
-    - add static checks for the "acceptable" TTables
-    - add static checks that the TTables are wrapped in a `std::shared_ptr`
-    - implement the method bodies for unimplemented method signatures
   */
-  template<class... TTables>
   class TensorCollection
   {
+    /// The erasure interface to Tensor Table
+    class TensorTableConcept {
+    public: 
+      virtual std::string getName() const = 0; 
+      virtual std::map<std::string, std::shared_ptr<TensorAxis>>& getAxes() = 0;
+      virtual std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>>& getIndices() = 0;
+      virtual std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>>& getIndicesView() = 0;
+      virtual std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>>& getIsModified() = 0;
+      virtual std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>>& getInMemory() = 0;
+      virtual std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>>& getIsShardable() = 0;
+    };
+
+    /// The erasure wrapper around the Tensor Table interface
+    template<typename T>
+    class TensorTableWrapper : public TensorTableConcept {
+      const std::shared_ptr<T> tensor_table_;
+    public:
+      TensorTableWrapper(const std::shared_ptr<T>& tensor_table) : tensor_table_(tensor_table) {};
+      std::string getName() const { return tensor_table_->getName(); };
+      std::map<std::string, std::shared_ptr<TensorAxis>>& getAxes() { return tensor_table_->getAxes(); };
+      std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>>& getIndices() { return tensor_table_->getIndices(); };
+      std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>>& getIndicesView() { return tensor_table_->getIndicesView(); };
+      std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>>& getIsModified() { return tensor_table_->getIsModified(); };
+      std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>>& getInMemory() { return tensor_table_->getInMemory(); };
+      std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>>& getIsShardable() { return tensor_table_->getIsShardable(); };
+    };
   public:
     TensorCollection() = default;  ///< Default constructor
-    TensorCollection(TTables&... tTables) { 
-      tables_ = std::make_tuple(tTables...);
-    }; 
-    TensorCollection(std::tuple<TTables...>& tTables): tables_(tTables) {}
     ~TensorCollection() = default; ///< Default destructor
+
+    template<typename T>
+    void addTensorTable(const std::shared_ptr<T>& tensor_table);
 
     /*
     @brief get all of the table names in the collection
@@ -52,20 +71,22 @@ namespace TensorBase
     */
     bool readShardsFromDisk();
 
-    std::tuple<TTables...> tables_; ///< tuple of std::shared_ptr TensorTables<TensorT, DeviceT, TDim>
+    std::map<std::string, std::shared_ptr<TensorTableConcept>> tensor_tables_; ///< tuple of std::shared_ptr TensorTables<TensorT, DeviceT, TDim>
   };
 
-  struct GetTableNamesHelper {
-    template<typename T>
-    void operator()(T&& t) { names.push_back(std::forward<decltype(t)>(t)->getName()); }
-    std::vector<std::string> names;
-  };
-  template<class ...TTables>
-  inline std::vector<std::string> TensorCollection<TTables...>::getTableNames() const
+  template<typename T>
+  inline void TensorCollection::addTensorTable(const std::shared_ptr<T>& tensor_table)
   {
-    GetTableNamesHelper getTableNamesHelper;
-    for_each(tables_, getTableNamesHelper);
-    return getTableNamesHelper.names;
+    tensor_tables_.emplace(tensor_table->getName(), std::shared_ptr<TensorTableConcept>(new TensorTableWrapper<T>(tensor_table)));
+  }
+
+  inline std::vector<std::string> TensorBase::TensorCollection::getTableNames() const
+  {
+    std::vector<std::string> names;
+    for (const auto& ttable : tensor_tables_) {
+      names.push_back(ttable.second->getName());
+    }
+    return names;
   }
 };
 #endif //TENSORBASE_TENSORCOLLECTION_H

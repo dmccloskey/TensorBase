@@ -11,17 +11,17 @@ BOOST_AUTO_TEST_SUITE(tensorCollection)
 
 BOOST_AUTO_TEST_CASE(constructor) 
 {
-  TensorCollection<TensorTableDefaultDevice<float, 3>>* ptr = nullptr;
-  TensorCollection<TensorTableDefaultDevice<float, 3>>* nullPointer = nullptr;
-	ptr = new TensorCollection<TensorTableDefaultDevice<float, 3>>();
+  TensorCollection* ptr = nullptr;
+  TensorCollection* nullPointer = nullptr;
+	ptr = new TensorCollection();
   BOOST_CHECK_NE(ptr, nullPointer);
   delete ptr;
 }
 
 BOOST_AUTO_TEST_CASE(destructor)
 {
-  TensorCollection<TensorTableDefaultDevice<float, 3>>* ptr = nullptr;
-	ptr = new TensorCollection<TensorTableDefaultDevice<float, 3>>();
+  TensorCollection* ptr = nullptr;
+	ptr = new TensorCollection();
   delete ptr;
 }
 
@@ -54,11 +54,10 @@ BOOST_AUTO_TEST_CASE(gettersAndSetters)
     });
   std::shared_ptr<TensorTableDefaultDevice<char, 3>> tensorTable3_ptr = std::make_shared<TensorTableDefaultDevice<char, 3>>(tensorTable3);
 
-  TensorCollection<
-    std::shared_ptr<TensorTableDefaultDevice<float, 3>>,
-    std::shared_ptr<TensorTableDefaultDevice<int, 2>>,
-    std::shared_ptr<TensorTableDefaultDevice<char, 3>>
-  > tensorCollection(tensorTable1_ptr, tensorTable2_ptr, tensorTable3_ptr);
+  TensorCollection tensorCollection;
+  tensorCollection.addTensorTable(tensorTable1_ptr);
+  tensorCollection.addTensorTable(tensorTable2_ptr);
+  tensorCollection.addTensorTable(tensorTable3_ptr);
 
   // name setters and getters
   BOOST_CHECK(tensorCollection.getTableNames() == std::vector<std::string>({ "1", "2", "3" }));
