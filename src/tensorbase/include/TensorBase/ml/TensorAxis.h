@@ -35,8 +35,8 @@ namespace TensorBase
       setNDimensions(labels.dimension(0));
       setNLabels(labels.dimension(1));
     };  ///< dimensions and labels setter
-    Eigen::Tensor<std::string, 2> getLabels() const { return tensor_dimension_labels_; };  ///< labels getter
-    Eigen::Tensor<std::string, 1> getDimensions() const { return tensor_dimension_names_; };  ///< dimensions getter
+    Eigen::Tensor<std::string, 2>& getLabels() { return tensor_dimension_labels_; };  ///< labels getter
+    Eigen::Tensor<std::string, 1>& getDimensions() { return tensor_dimension_names_; };  ///< dimensions getter
 
   private:
     void setNLabels(const size_t& n_labels) { n_labels_ = n_labels; }; ///< n_labels setter

@@ -88,6 +88,7 @@ namespace TensorBase
         indices(i) = i + 1;
       }
       indices_.emplace(axis.getName(), std::shared_ptr<Eigen::Tensor<int, 1>>(new Eigen::Tensor<int, 1>(indices)));
+      indices_view_.emplace(axis.getName(), std::shared_ptr<Eigen::Tensor<int, 1>>(new Eigen::Tensor<int, 1>(indices)));
 
       // Set the defaults
       Eigen::Tensor<int, 1> is_modified(axis.getNLabels());
@@ -106,7 +107,6 @@ namespace TensorBase
       // Next iteration
       ++axis_cnt;
     }
-    indices_view_ = indices_;
 
     // Allocate memory for the tensor
     initData();

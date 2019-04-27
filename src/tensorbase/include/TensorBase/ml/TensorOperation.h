@@ -48,11 +48,8 @@ namespace TensorBase
 
       // slice out only the selected names
       Eigen::Tensor<int, 0> n_labels = selected.sum();
-      //Eigen::TensorMap<Eigen::Tensor<std::string, 1>> label_names_sliced(label_names_selected.data(), n_labels(0));
-      Eigen::Tensor<std::string, 1> result;// = label_names_sliced;
-      //Eigen::Tensor<std::string, 1> label_names_sliced = label_names_selected.slice(0, n_labels(0));
-      //auto label_names_sliced = label_names_selected.slice(Eigen::array<int, 0>({ 0 }), Eigen::array<int, 0>({ n_labels(0) }));
-      return result;
+      Eigen::TensorMap<Eigen::Tensor<std::string, 1>> label_names_sliced(label_names_selected.data(), n_labels(0));
+      return label_names_sliced;
     }
   };
 
@@ -65,81 +62,59 @@ namespace TensorBase
   /**
     @brief Template class for all Tensor select operations
   */
-  //class TensorSelect {
-  //public:
-  //  template<typename T>
-  //  void operator()(T&& t) {};
-  //  void sortSelectClause() {};
-  //  void selectClause(TensorCollection& tensor_collection, SelectClause& select_clause) {
-  //    // initialize the tracker for table/axis/dimensions that have been reached
-  //    std::set<std::string> table_axis_dimension_set;
-  //    // iterate through each select combination
-  //    for (int iter = 0; iter < select_clause.table_names.size(); ++iter) {
-  //      // check if the table/axis/dimension has already been selected
-  //      std::string table_axis_dimension = select_clause.table_names(iter) + "/" + select_clause.axis_names(iter) + "/" + select_clause.dimension_names(iter);
-  //      if (table_axis_dimension_set.count(table_axis_dimension) != 0) continue;
-  //      table_axis_dimension_set.insert(table_axis_dimension);
-  //      // iterate throgh each table axis
-  //      auto& ttable = tensor_collection.tensor_tables_.at(select_clause.table_names(iter));
-  //      for (auto& axis : ttable->getAxes()) {
-  //        if (axis.first == select_clause.axis_names(iter)) {
-  //          // zero the view for the axis (only once)
-  //          if (axes_names_.count(select_clause.axis_names(iter)) == 0) {
-  //            ttable->getIndicesView().at(select_clause.axis_names(iter))->setZero();
-  //          }
-  //          // iterate through each axis dimensions
-  //          for (int d = 0; d < axis.second->getDimensions().size(); ++d) {
-  //            if (axis.second->getDimensions()(d) == select_clause.dimension_names(iter)) {
-  //              // select the labels that are queried
-  //              Eigen::Tensor<std::string, 1> label_names_selected = select_clause.getLabels(
-  //                select_clause.table_names(iter), select_clause.axis_names(iter), select_clause.dimension_names(iter));
-  //              // reshape to match the axis labels shape
-  //              Eigen::TensorMap<Eigen::Tensor<std::string, 2>> label_names_reshape(label_names_selected.data(), 1, label_names_selected.size());
-  //              // broadcast the length of the labels
-  //              auto labels_names_selected_bcast = label_names_reshape.broadcast(Eigen::array<int, 2>({ (int)axis.second->getNLabels(), 1 }));
-  //              // broadcast the axis labels the size of the labels queried
-  //              Eigen::TensorMap<Eigen::Tensor<std::string, 3>> labels_reshape(axis.second->getLabels().data(), (int)axis.second->getNDimensions(), (int)axis.second->getNLabels(), 1);
-  //              auto labels_bcast = labels_reshape.chip(0, d).broadcast(Eigen::array<int, 2>({ 1, label_names_selected.size() }));
-  //              // broadcast the tensor indices the size of the labels queried
-  //              Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_reshape(ttable->getIndices().at(select_clause.axis_names(iter))->data(), 
-  //                (int)axis.second->getNLabels(), 1);
-  //              auto indices_bcast = indices_reshape.broadcast(Eigen::array<int, 2>({ 1, label_names_selected.size() }));
-  //              auto selected = (labels_bcast == label_names_selected).select(indices_bcast, indices_bcast.constant(0));
-  //              auto selected_sum = selected.sum(1);
-  //              ttable->getIndicesView().at(select_clause.axis_names(iter))->operator+= selected_sum;
-  //            }
-  //          }
-  //          
-  //          //// Option 2
-  //          //for (int d = 0; d < axis.second->getDimensions().size(); ++d) {
-  //          //  if (axis.second->getDimensions()(d) == select.dimenion_name) {
-  //          //    for (int l = 0; l < axis.second->getLabels().dimension(1); ++l) {
-  //          //      if (axis.second->getLabels()(d, l) == select.label_name) {
-  //          //        // copy over the index from the indices to the view
-  //          //        ttable->getIndicesView().at(select.axis_name)->operator()(l) = ttable->getIndicesView().at(select.axis_name)->operator()(l);
-  //          //        break;
-  //          //      }
-  //          //    }
-  //          //    break;
-  //          //  }
-  //          //}
-  //          //break;
-  //        }
-  //      }
-  //    }
-  //  }; ///< set indices of axis to 1 or 0
-  //  template<typename T>
-  //  void whereClause(TensorCollection& tensor_collection) {}; ///< set other indices of axis to 1 or 0 based on expression
-  //  template<typename T>
-  //  void groupByClause(T&& t) {};
-  //  template<typename T>
-  //  void havingClause(T&& t) {};
-  //  template<typename T>
-  //  void orderByClause(T&& t) {};
-  //private:
-  //  std::set<std::string> selected_tables_;
-  //  std::set<std::string> axes_names_;
-  //};
+  class TensorSelect {
+  public:
+    void selectClause(TensorCollection& tensor_collection, SelectClause& select_clause) {
+      // initialize the tracker for table/axis/dimensions that have been reached
+      std::set<std::string> table_axis_dimension_set;
+      std::set<std::string> axes_names;
+      // iterate through each select combination
+      for (int iter = 0; iter < select_clause.table_names.size(); ++iter) {
+        // check if the table/axis/dimension has already been selected
+        std::string table_axis_dimension = select_clause.table_names(iter) + "/" + select_clause.axis_names(iter) + "/" + select_clause.dimension_names(iter);
+        if (table_axis_dimension_set.count(table_axis_dimension) != 0) continue;
+        table_axis_dimension_set.insert(table_axis_dimension);
+        // iterate throgh each table axis
+        for (auto& axis : tensor_collection.tensor_tables_.at(select_clause.table_names(iter))->getAxes()) {
+          if (axis.first == select_clause.axis_names(iter)) {
+            // zero the view for the axis (only once)
+            if (axes_names.count(select_clause.axis_names(iter)) == 0) {
+              tensor_collection.tensor_tables_.at(select_clause.table_names(iter))->getIndicesView().at(select_clause.axis_names(iter))->setZero();
+            }
+            // iterate through each axis dimensions
+            for (int d = 0; d < axis.second->getDimensions().size(); ++d) {
+              if (axis.second->getDimensions()(d) == select_clause.dimension_names(iter)) {
+                // select the labels that are queried
+                Eigen::Tensor<std::string, 1> label_names_selected = select_clause.getLabels(
+                  select_clause.table_names(iter), select_clause.axis_names(iter), select_clause.dimension_names(iter));
+                // reshape to match the axis labels shape
+                Eigen::TensorMap<Eigen::Tensor<std::string, 2>> label_names_reshape(label_names_selected.data(), 1, label_names_selected.size());
+                // broadcast the length of the labels
+                auto labels_names_selected_bcast = label_names_reshape.broadcast(Eigen::array<int, 2>({ (int)axis.second->getNLabels(), 1 }));
+                // broadcast the axis labels the size of the labels queried
+                Eigen::TensorMap<Eigen::Tensor<std::string, 3>> labels_reshape(axis.second->getLabels().data(), (int)axis.second->getNDimensions(), (int)axis.second->getNLabels(), 1);
+                auto labels_bcast = (labels_reshape.chip(d, 0)).broadcast(Eigen::array<int, 2>({ 1, (int)label_names_selected.size() }));
+                // broadcast the tensor indices the size of the labels queried
+                Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_reshape(tensor_collection.tensor_tables_.at(select_clause.table_names(iter))->getIndices().at(select_clause.axis_names(iter))->data(),
+                  (int)axis.second->getNLabels(), 1);
+                auto indices_bcast = indices_reshape.broadcast(Eigen::array<int, 2>({ 1, (int)label_names_selected.size() }));
+                auto selected = (labels_bcast == labels_names_selected_bcast).select(indices_bcast, indices_bcast.constant(0));
+                auto selected_sum = selected.sum(Eigen::array<int, 1>({ 1 }));
+                Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(tensor_collection.tensor_tables_.at(select_clause.table_names(iter))->getIndicesView().at(select_clause.axis_names(iter))->data(), (int)axis.second->getNLabels());
+                indices_view += selected_sum;
+              }
+            }
+          }
+        }
+      }
+    }; ///< set indices of axis to 1 or 0
+    void whereClause(TensorCollection& tensor_collection) {}; ///< set other indices of axis to 1 or 0 based on expression
+    void groupByClause(TensorCollection& tensor_collectiont) {};
+    void havingClause(TensorCollection& tensor_collection) {};
+    void orderByClause(TensorCollection& tensor_collection) {};
+  private:
+    std::set<std::string> selected_tables_;
+  };
 
   template<int TDim>
   class TensorSelectTableSlice {
