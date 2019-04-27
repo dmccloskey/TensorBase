@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(TensorTableCreateAndDrop) {
   TensorCollection<
     std::shared_ptr<TensorTableDefaultDevice<float, 3>>,
     std::shared_ptr<TensorTableDefaultDevice<int, 2>>> collection_add;
-  TensorCreateTables()(collection_1, collection_add, tensorTable2_ptr);
+  TensorAddTables()(collection_1, collection_add, tensorTable2_ptr);
 
   BOOST_CHECK(collection_add.getTableNames() == std::vector<std::string>({ "1", "2" }));
   // TODO: other checks needed here?

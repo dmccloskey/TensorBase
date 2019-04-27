@@ -25,12 +25,17 @@ namespace TensorBase
     template<typename T>
     void operator()(T&& t) {};
     template<typename T>
-    bool whereClause(T&& t) {};
+    void selectClause(T&& t) {}; ///< set indices of axis to 1 or 0
     template<typename T>
-    bool havingClause(T&& t) {};
+    void whereClause(T&& t) {}; ///< set other indices of axis to 1 or 0 based on expression
+    template<typename T>
+    void groupByClause(T&& t) {};
+    template<typename T>
+    void havingClause(T&& t) {};
+    template<typename T>
+    void orderByClause(T&& t) {};
     enum order { ASC, DESC };
-    using offsets = std::pair<std::string, std::string>; ///< TensorDimension.label [start, stop)
-    std::vector<std::tuple<std::string, std::string, std::string>> select_clause; ///< pairs of TensorTable.name, TensorDimension.label
+    std::vector<std::tuple<std::string, std::string, std::string, std::string>> select_clause; ///< tuple of TensorTable.name (optional), TensorAxis.name (optional), TensorDimension.name, TensorDimension.label
     std::vector<std::pair<std::string, std::string>> group_by_clause; ///< pairs of TensorTable.name and TensorDimension.label
     std::vector<std::tuple<std::string, std::string, order>> order_by_clause; ///< tuple of TensorTable.name, TensorDimension.label, and order
   };
@@ -97,6 +102,8 @@ namespace TensorBase
     //Eigen::Tensor<TensorT, TDim> values; ///< values to insert
   };
 
+  class TensorAddAxisToTable;
+
   class TensorUpdate {
   public:
     template<typename T>
@@ -122,7 +129,7 @@ namespace TensorBase
     TensorCollection<T...> operator()(TensorCollection<T...>&& collection, T&&... t) {};
   };
 
-  class TensorCreateTables {
+  class TensorAddTables {
   public:
     template<typename TC, typename TCr, typename... TTables>
     void operator()(TC& collection, TCr& collection_new, TTables&... t) {
