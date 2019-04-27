@@ -36,7 +36,7 @@ namespace TensorBase
       Eigen::Tensor<int, 1> indices(table_names.size());
       auto select_table = (table_names == table_names.constant(table_name)).select(indices.constant(1), indices.constant(0));
       auto select_axis = (axis_names == axis_names.constant(axis_name)).select(indices.constant(1), indices.constant(0));
-      auto select_dimension = (axis_names == axis_names.constant(dimension_name)).select(indices.constant(1), indices.constant(0));
+      auto select_dimension = (dimension_names == dimension_names.constant(dimension_name)).select(indices.constant(1), indices.constant(0));
       auto selected = select_table * select_axis * select_dimension;
       
       // get the indices names and sort in ascending order
@@ -48,8 +48,11 @@ namespace TensorBase
 
       // slice out only the selected names
       Eigen::Tensor<int, 0> n_labels = selected.sum();
-      auto label_names_sliced = label_names_selected.slice(Eigen::array<int, 1>({0}), Eigen::array<int, 1>({ (int)n_labels(0) }));
-      return label_names_sliced;
+      //Eigen::TensorMap<Eigen::Tensor<std::string, 1>> label_names_sliced(label_names_selected.data(), n_labels(0));
+      Eigen::Tensor<std::string, 1> result;// = label_names_sliced;
+      //Eigen::Tensor<std::string, 1> label_names_sliced = label_names_selected.slice(0, n_labels(0));
+      //auto label_names_sliced = label_names_selected.slice(Eigen::array<int, 0>({ 0 }), Eigen::array<int, 0>({ n_labels(0) }));
+      return result;
     }
   };
 

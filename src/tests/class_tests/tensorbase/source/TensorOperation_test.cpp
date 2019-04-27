@@ -36,11 +36,14 @@ BOOST_AUTO_TEST_CASE(TensorTableSelectClause)
   // Check get labels
   Eigen::Tensor<std::string, 1> table_1 = selectClause.getLabels("1", "1", "x");
   BOOST_CHECK_EQUAL(table_1.size(), 2);
-  BOOST_CHECK_EQUAL(table_1(0), "x-axis-0");
-  BOOST_CHECK_EQUAL(table_1(1), "x-axis-1");
-  
-
+  BOOST_CHECK_EQUAL(table_1(0), "x-axis-1");
+  BOOST_CHECK_EQUAL(table_1(1), "x-axis-2");
+  Eigen::Tensor<std::string, 1> table_2 = selectClause.getLabels("2", "2", "y");
+  BOOST_CHECK_EQUAL(table_1.size(), 2);
+  BOOST_CHECK_EQUAL(table_1(0), "y-axis-2");
+  BOOST_CHECK_EQUAL(table_1(1), "y-axis-0");
 }
+
 BOOST_AUTO_TEST_CASE(TensorTableSelect) 
 {
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
