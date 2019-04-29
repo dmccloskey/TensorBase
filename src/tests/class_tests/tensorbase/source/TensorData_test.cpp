@@ -94,6 +94,68 @@ BOOST_AUTO_TEST_CASE(syncHAndDDefaultDevice)
   BOOST_CHECK(tensordata.getDataStatus().second);
 }
 
+BOOST_AUTO_TEST_CASE(typeCompatibilityDefaultDevice)
+{
+  { // float
+    TensorDataDefaultDevice<float, 3> tensordata(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+    Eigen::Tensor<float, 3> data(2, 3, 4);
+    data.setConstant(0.5);
+    tensordata.setData(data);
+  }
+  
+  { // int
+    TensorDataDefaultDevice<int, 3> tensordata(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+    Eigen::Tensor<int, 3> data(2, 3, 4);
+    data.setConstant(1);
+    tensordata.setData(data);
+  }
+
+  { // bool
+    TensorDataDefaultDevice<bool, 3> tensordata(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+    Eigen::Tensor<bool, 3> data(2, 3, 4);
+    data.setConstant(0.5);
+    tensordata.setData(data);
+  }
+  
+  { // char
+    TensorDataDefaultDevice<char, 3> tensordata(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+    Eigen::Tensor<char, 3> data(2, 3, 4);
+    data.setConstant('a');
+    tensordata.setData(data);
+  }
+
+  { // char*
+    typedef char* varchar;
+    varchar abc = new char[128];
+    abc[0] = 'a'; abc[1] = 'b'; abc[2] = 'c';
+    TensorDataDefaultDevice<varchar, 3> tensordata(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+    Eigen::Tensor<varchar, 3> data(2, 3, 4);
+    data.setConstant(abc);
+    tensordata.setData(data);
+    delete[] abc;
+  }
+  
+  { // struct
+    struct estruct { int e; };
+    TensorDataDefaultDevice<estruct, 3> tensordata(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+    Eigen::Tensor<estruct, 3> data(2, 3, 4);
+    estruct e; e.e = 1;
+    data.setConstant(e);
+    tensordata.setData(data);
+  }
+
+  { // struct char[]
+    struct charstruct { char c[128]; };
+    TensorDataDefaultDevice<charstruct, 3> tensordata(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+    Eigen::Tensor<charstruct, 3> data(2, 3, 4);
+    charstruct abcd; abcd.c[0] = 'a'; abcd.c[1] = 'b'; abcd.c[2] = 'c'; abcd.c[3] = 'd';
+    data.setConstant(abcd);
+    tensordata.setData(data);
+  }
+
+  // Known failures: std::string
+}
+
 /* TensorDataCpu Tests
 */
 BOOST_AUTO_TEST_CASE(constructorCpu)
