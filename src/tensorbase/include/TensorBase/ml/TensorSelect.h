@@ -53,11 +53,12 @@ namespace TensorBase
     return label_names_sliced;
   };
 
-  
   /// Class defining the `Where` clause statements
+  // TODO use type erasure to make a vector of pointers to functors of the type shown
+  template<typename TensorT, typename DeviceT, int TDim>
   class WhereClause : public SelectClause {
   public:
-    std::vector<std::function<bool()>> predicates;
+    std::vector<std::function<void(TensorT* data_in, TensorT* data_out, DeviceT& device)>> tensor_predicate;
   };
 
   /// Class defining the `Order By` clause statements
@@ -151,7 +152,7 @@ namespace TensorBase
   template<int TDim>
   class TensorSelectSlices {
   public:
-    TensorSelectTableSlice(const std::string table_name,
+    TensorSelectSlices(const std::string table_name,
       const Eigen::array<std::string, TDim>& axes_names,
       const Eigen::array<std::string, TDim>& dimension_names,
       const Eigen::array<std::string, TDim>& label_names_start,

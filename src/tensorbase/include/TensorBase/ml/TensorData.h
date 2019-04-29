@@ -131,8 +131,8 @@ namespace TensorBase
       // copy the tensor
       Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy(h_data, this->getDimensions());
       data_copy = data;
-      //auto h_deleter = [&](TensorT* ptr) { delete[] ptr; };
-      //this->h_data_.reset(h_data, h_deleter);
+      //Eigen::Tensor<TensorT, TDim> data_copy = data;
+      //this->h_data_.reset(data_copy.data());
       this->h_data_.reset(h_data);
       this->h_data_updated_ = true;
       this->d_data_updated_ = true;
