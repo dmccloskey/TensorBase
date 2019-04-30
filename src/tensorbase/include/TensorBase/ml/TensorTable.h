@@ -15,47 +15,33 @@
 
 namespace TensorBase
 {
+  /// The erasure interface for TensorAxis
+  class TensorAxisConcept {
+  public:
+    virtual std::string getName() const = 0;
+    virtual size_t getNLabels() const = 0;
+    virtual size_t getNDimensions() const = 0;
+    virtual Eigen::Tensor<std::string, 1>& getDimensions() = 0;
+  };
+
+  /// The erasure wrapper around the Tensor Axis interface
+  template<typename T>
+  class TensorAxisWrapper : public TensorAxisConcept {
+    std::shared_ptr<T> tensor_axis_;
+  public:
+    TensorAxisWrapper(const std::shared_ptr<T>& tensor_axis) : tensor_axis_(tensor_axis) {};
+    std::string getName() const { return tensor_axis_->getName(); };
+    size_t getNLabels() const { return tensor_axis_->getNLabels(); };
+    size_t getNDimensions() const { return tensor_axis_->getNDimensions(); };
+    Eigen::Tensor<std::string, 1>& getDimensions() { return tensor_axis_->getDimensions(); };
+  };
+
   /**
     @brief Class for managing Tensor data and associated Axes
   */
   template<typename TensorT, typename DeviceT, int TDim>
   class TensorTable
   {
-  protected:
-    /// The erasure interface for TensorAxis
-    class TensorAxisConcept {
-    public:
-      virtual std::string getName() const = 0;
-      virtual size_t getNLabels() const = 0;
-      virtual size_t getNDimensions() const = 0;
-      virtual Eigen::Tensor<std::string, 1>& getDimensions() = 0;
-    };
-
-    /// The erasure wrapper around the Tensor Axis interface
-    template<typename T>
-    class TensorAxisWrapper : public TensorAxisConcept {
-      std::shared_ptr<T> tensor_axis_;
-    public:
-      TensorAxisWrapper(const std::shared_ptr<T>& tensor_axis) : tensor_axis_(tensor_axis) {};
-      std::string getName() const { return tensor_axis_->getName(); };
-      size_t getNLabels() const { return tensor_axis_->getNLabels(); };
-      size_t getNDimensions() const { return tensor_axis_->getNDimensions(); };
-      Eigen::Tensor<std::string, 1>& getDimensions() { return tensor_axis_->getDimensions(); };
-    };
-
-    int id_ = -1;
-    std::string name_ = "";
-
-    Eigen::array<Eigen::Index, TDim> dimensions_ = Eigen::array<Eigen::Index, TDim>();
-    std::map<std::string, std::shared_ptr<TensorAxisConcept>> axes_; ///< primary axis is dim=0
-    std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>> indices_; ///< starting at 1
-    std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>> indices_view_; ///< sorted and/or selected indices
-    std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>> is_modified_;
-    std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>> in_memory_;
-    std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>> is_shardable_;
-
-    std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> data_; ///< The actual tensor data
-
   public:
     TensorTable() = default;  ///< Default constructor
     TensorTable(const std::string& name) : name_(name) {};
@@ -91,6 +77,19 @@ namespace TensorBase
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& getData() { return data_; }; ///< data getter
 
     void clear();  ///< clears the axes and all associated data
+  protected:
+    int id_ = -1;
+    std::string name_ = "";
+
+    Eigen::array<Eigen::Index, TDim> dimensions_ = Eigen::array<Eigen::Index, TDim>();
+    std::map<std::string, std::shared_ptr<TensorAxisConcept>> axes_; ///< primary axis is dim=0
+    std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>> indices_; ///< starting at 1
+    std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>> indices_view_; ///< sorted and/or selected indices
+    std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>> is_modified_;
+    std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>> in_memory_;
+    std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>> is_shardable_;
+
+    std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> data_; ///< The actual tensor data
     
     //private:
     //	friend class cereal::access;

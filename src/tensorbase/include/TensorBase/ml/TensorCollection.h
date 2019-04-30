@@ -33,7 +33,7 @@ namespace TensorBase
     public:
       TensorTableWrapper(const std::shared_ptr<T>& tensor_table) : tensor_table_(tensor_table) {};
       std::string getName() const { return tensor_table_->getName(); };
-      std::map<std::string, std::shared_ptr<TensorAxis>>& getAxes() { return tensor_table_->getAxes(); };
+      std::map<std::string, std::shared_ptr<TensorAxisConcept>>& getAxes() { return tensor_table_->getAxes(); };
       std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>>& getIndices() { return tensor_table_->getIndices(); };
       std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>>& getIndicesView() { return tensor_table_->getIndicesView(); };
       std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>>& getIsModified() { return tensor_table_->getIsModified(); };
@@ -73,13 +73,13 @@ namespace TensorBase
     */
     bool readShardsFromDisk();
 
-    std::map<std::string, std::shared_ptr<TensorTableConcept>> tensor_tables_; ///< tuple of std::shared_ptr TensorTables<TensorT, DeviceT, TDim>
+    std::map<std::string, std::shared_ptr<TensorTableConcept>> tables_; ///< tuple of std::shared_ptr TensorTables<TensorT, DeviceT, TDim>
   };
 
   template<typename T>
   inline void TensorCollection::addTensorTable(const std::shared_ptr<T>& tensor_table)
   {
-    tensor_tables_.emplace(tensor_table->getName(), std::shared_ptr<TensorTableConcept>(new TensorTableWrapper<T>(tensor_table)));
+    auto found = tables_.emplace(tensor_table->getName(), std::shared_ptr<TensorTableConcept>(new TensorTableWrapper<T>(tensor_table)));
   }
 
   inline void TensorCollection::removeTensorTable(const std::string & table_name)
@@ -89,13 +89,13 @@ namespace TensorBase
 
   inline void TensorCollection::clear()
   {
-    tensor_tables_.clear();
+    tables_.clear();
   }
 
   inline std::vector<std::string> TensorBase::TensorCollection::getTableNames() const
   {
     std::vector<std::string> names;
-    for (const auto& ttable : tensor_tables_) {
+    for (const auto& ttable : tables_) {
       names.push_back(ttable.second->getName());
     }
     return names;
