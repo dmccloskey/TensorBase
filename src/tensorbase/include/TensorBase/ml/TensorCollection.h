@@ -18,7 +18,7 @@ namespace TensorBase
     class TensorTableConcept {
     public: 
       virtual std::string getName() const = 0; 
-      virtual std::map<std::string, std::shared_ptr<TensorAxis>>& getAxes() = 0;
+      virtual std::map<std::string, std::shared_ptr<TensorAxisConcept>>& getAxes() = 0;
       virtual std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>>& getIndices() = 0;
       virtual std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>>& getIndicesView() = 0;
       virtual std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>>& getIsModified() = 0;
