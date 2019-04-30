@@ -9,23 +9,23 @@ using namespace std;
 
 BOOST_AUTO_TEST_SUITE(tensorTable)
 
-BOOST_AUTO_TEST_CASE(constructor) 
+BOOST_AUTO_TEST_CASE(constructorDefaultDevice) 
 {
-  TensorTableDefaultDevice<float, 3>* ptr = nullptr;
-  TensorTableDefaultDevice<float, 3>* nullPointer = nullptr;
-	ptr = new TensorTableDefaultDevice<float, 3>();
+  TensorTableDefaultDevice<int, float, 3>* ptr = nullptr;
+  TensorTableDefaultDevice<int, float, 3>* nullPointer = nullptr;
+	ptr = new TensorTableDefaultDevice<int, float, 3>();
   BOOST_CHECK_NE(ptr, nullPointer);
   delete ptr;
 }
 
-BOOST_AUTO_TEST_CASE(destructor)
+BOOST_AUTO_TEST_CASE(destructorDefaultDevice)
 {
-  TensorTableDefaultDevice<float, 3>* ptr = nullptr;
-	ptr = new TensorTableDefaultDevice<float, 3>();
+  TensorTableDefaultDevice<int, float, 3>* ptr = nullptr;
+	ptr = new TensorTableDefaultDevice<int, float, 3>();
   delete ptr;
 }
 
-BOOST_AUTO_TEST_CASE(constructorNameAndAxes)
+BOOST_AUTO_TEST_CASE(constructorNameAndAxesDefaultDevice)
 {
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
   dimensions1(0) = "x";
@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(constructorNameAndAxes)
   labels2.setConstant("y-axis");
   labels3.setConstant("z-axis");
 
-  TensorTableDefaultDevice<float, 3> tensorTable("1", { TensorAxis("1", dimensions1, labels1),
+  TensorTableDefaultDevice<int, float, 3> tensorTable("1", { TensorAxis("1", dimensions1, labels1),
     TensorAxis("2", dimensions2, labels2),
     TensorAxis("3", dimensions3, labels3),
     });
@@ -98,9 +98,9 @@ BOOST_AUTO_TEST_CASE(constructorNameAndAxes)
   BOOST_CHECK_EQUAL(tensorTable.getData()->getTensorSize(), test);
 }
 
-BOOST_AUTO_TEST_CASE(gettersAndSetters)
+BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
 {
-  TensorTableDefaultDevice<float, 3> tensorTable;
+  TensorTableDefaultDevice<int, float, 3> tensorTable;
   // Check defaults
   BOOST_CHECK_EQUAL(tensorTable.getId(), -1);
   BOOST_CHECK_EQUAL(tensorTable.getName(), "");

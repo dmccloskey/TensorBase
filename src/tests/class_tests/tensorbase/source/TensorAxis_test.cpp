@@ -9,31 +9,31 @@ using namespace std;
 
 BOOST_AUTO_TEST_SUITE(tensorAxis)
 
-BOOST_AUTO_TEST_CASE(constructor) 
+BOOST_AUTO_TEST_CASE(constructorDefaultDevice) 
 {
-	TensorAxis* ptr = nullptr;
-	TensorAxis* nullPointer = nullptr;
-	ptr = new TensorAxis();
+	TensorAxisDefaultDevice<int>* ptr = nullptr;
+	TensorAxisDefaultDevice<int>* nullPointer = nullptr;
+	ptr = new TensorAxisDefaultDevice<int>();
   BOOST_CHECK_NE(ptr, nullPointer);
   delete ptr;
 }
 
-BOOST_AUTO_TEST_CASE(destructor)
+BOOST_AUTO_TEST_CASE(destructorDefaultDevice)
 {
-	TensorAxis* ptr = nullptr;
-	ptr = new TensorAxis();
+	TensorAxisDefaultDevice<int>* ptr = nullptr;
+	ptr = new TensorAxisDefaultDevice<int>();
   delete ptr;
 }
 
-BOOST_AUTO_TEST_CASE(constructor1)
+BOOST_AUTO_TEST_CASE(constructor1DefaultDevice)
 {
   Eigen::Tensor<std::string, 1> dimensions(3);
   dimensions(0) = "TensorDimension1";
   dimensions(1) = "TensorDimension2";
   dimensions(2) = "TensorDimension3";
-  Eigen::Tensor<std::string, 2> labels(3, 5);
-  labels.setConstant("Hello!");
-  TensorAxis tensoraxis("1", dimensions, labels);
+  Eigen::Tensor<int, 2> labels(3, 5);
+  labels.setConstant(1);
+  TensorAxisDefaultDevice<int> tensoraxis("1", dimensions, labels);
 
   BOOST_CHECK_EQUAL(tensoraxis.getId(), -1);
   BOOST_CHECK_EQUAL(tensoraxis.getName(), "1");
@@ -42,13 +42,13 @@ BOOST_AUTO_TEST_CASE(constructor1)
   BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(0), "TensorDimension1");
   BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(1), "TensorDimension2");
   BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(2), "TensorDimension3");
-  BOOST_CHECK_EQUAL(tensoraxis.getLabels()(0, 0), "Hello!");
-  BOOST_CHECK_EQUAL(tensoraxis.getLabels()(2, 4), "Hello!");
+  BOOST_CHECK_EQUAL(tensoraxis.getLabels()(0, 0), 1);
+  BOOST_CHECK_EQUAL(tensoraxis.getLabels()(2, 4), 1);
 }
 
-BOOST_AUTO_TEST_CASE(gettersAndSetters)
+BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
 {
-  TensorAxis tensoraxis;
+  TensorAxisDefaultDevice<int> tensoraxis;
   // Check defaults
   BOOST_CHECK_EQUAL(tensoraxis.getId(), -1);
   BOOST_CHECK_EQUAL(tensoraxis.getName(), "");
@@ -62,8 +62,8 @@ BOOST_AUTO_TEST_CASE(gettersAndSetters)
   dimensions(0) = "TensorDimension1";
   dimensions(1) = "TensorDimension2";
   dimensions(2) = "TensorDimension3";
-  Eigen::Tensor<std::string, 2> labels(3, 5);
-  labels.setConstant("Hello!");
+  Eigen::Tensor<int, 2> labels(3, 5);
+  labels.setConstant(1);
   tensoraxis.setDimensionsAndLabels(dimensions, labels);
 
   BOOST_CHECK_EQUAL(tensoraxis.getId(), 1);
@@ -73,8 +73,8 @@ BOOST_AUTO_TEST_CASE(gettersAndSetters)
   BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(0), "TensorDimension1");
   BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(1), "TensorDimension2");
   BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(2), "TensorDimension3");
-  BOOST_CHECK_EQUAL(tensoraxis.getLabels()(0, 0), "Hello!");
-  BOOST_CHECK_EQUAL(tensoraxis.getLabels()(2, 4), "Hello!");
+  BOOST_CHECK_EQUAL(tensoraxis.getLabels()(0, 0), 1);
+  BOOST_CHECK_EQUAL(tensoraxis.getLabels()(2, 4), 1);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

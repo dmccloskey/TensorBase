@@ -131,8 +131,6 @@ namespace TensorBase
       // copy the tensor
       Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy(h_data, this->getDimensions());
       data_copy = data;
-      //Eigen::Tensor<TensorT, TDim> data_copy = data;
-      //this->h_data_.reset(data_copy.data());
       this->h_data_.reset(h_data);
       this->h_data_updated_ = true;
       this->d_data_updated_ = true;
