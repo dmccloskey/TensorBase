@@ -74,13 +74,13 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable.getAxes().at("1")->getNLabels(), nlabels1);
   BOOST_CHECK_EQUAL(tensorTable.getAxes().at("1")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(tensorTable.getAxes().at("1")->getDimensions()(0), "x");
-  BOOST_CHECK_EQUAL(tensorTable.getIndices().at("1")->operator()(0), 1);
-  BOOST_CHECK_EQUAL(tensorTable.getIndices().at("1")->operator()(nlabels1 -1), nlabels1);
-  BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->operator()(0), 1);
-  BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->operator()(nlabels1 - 1), nlabels1);
-  BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("1")->operator()(0), 0);
-  BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("1")->operator()(0), 0);
-  BOOST_CHECK_EQUAL(tensorTable.getIsShardable().at("1")->operator()(0), 1);
+  BOOST_CHECK_EQUAL(tensorTable.getIndices().at("1")->getData()(0), 1);
+  BOOST_CHECK_EQUAL(tensorTable.getIndices().at("1")->getData()(nlabels1 -1), nlabels1);
+  BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->getData()(0), 1);
+  BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->getData()(nlabels1 - 1), nlabels1);
+  BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("1")->getData()(0), 0);
+  BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("1")->getData()(0), 0);
+  BOOST_CHECK_EQUAL(tensorTable.getIsShardable().at("1")->getData()(0), 1);
 
   BOOST_CHECK_EQUAL(tensorTable.getAxes().at("2")->getName(), "2");
   //BOOST_CHECK_EQUAL(tensorTable.getAxes().at("2")->getLabels()(0, 0), 2);
@@ -88,13 +88,13 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable.getAxes().at("2")->getNLabels(), nlabels2);
   BOOST_CHECK_EQUAL(tensorTable.getAxes().at("2")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(tensorTable.getAxes().at("2")->getDimensions()(0), "y");
-  BOOST_CHECK_EQUAL(tensorTable.getIndices().at("2")->operator()(0), 1);
-  BOOST_CHECK_EQUAL(tensorTable.getIndices().at("2")->operator()(nlabels2 - 1), nlabels2);
-  BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->operator()(0), 1);
-  BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->operator()(nlabels2 - 1), nlabels2);
-  BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("2")->operator()(0), 0);
-  BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("2")->operator()(0), 0);
-  BOOST_CHECK_EQUAL(tensorTable.getIsShardable().at("2")->operator()(0), 0);
+  BOOST_CHECK_EQUAL(tensorTable.getIndices().at("2")->getData()(0), 1);
+  BOOST_CHECK_EQUAL(tensorTable.getIndices().at("2")->getData()(nlabels2 - 1), nlabels2);
+  BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(0), 1);
+  BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(nlabels2 - 1), nlabels2);
+  BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("2")->getData()(0), 0);
+  BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("2")->getData()(0), 0);
+  BOOST_CHECK_EQUAL(tensorTable.getIsShardable().at("2")->getData()(0), 0);
 
   BOOST_CHECK_EQUAL(tensorTable.getAxes().at("3")->getName(), "3");
   //BOOST_CHECK_EQUAL(tensorTable.getAxes().at("3")->getLabels()(0, 0), 3);
@@ -102,13 +102,13 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable.getAxes().at("3")->getNLabels(), nlabels3);
   BOOST_CHECK_EQUAL(tensorTable.getAxes().at("3")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(tensorTable.getAxes().at("3")->getDimensions()(0), "z");
-  BOOST_CHECK_EQUAL(tensorTable.getIndices().at("3")->operator()(0), 1);
-  BOOST_CHECK_EQUAL(tensorTable.getIndices().at("3")->operator()(nlabels3 - 1), nlabels3);
-  BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("3")->operator()(0), 1);
-  BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("3")->operator()(nlabels3 - 1), nlabels3);
-  BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("3")->operator()(0), 0);
-  BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("3")->operator()(0), 0);
-  BOOST_CHECK_EQUAL(tensorTable.getIsShardable().at("3")->operator()(0), 0);
+  BOOST_CHECK_EQUAL(tensorTable.getIndices().at("3")->getData()(0), 1);
+  BOOST_CHECK_EQUAL(tensorTable.getIndices().at("3")->getData()(nlabels3 - 1), nlabels3);
+  BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("3")->getData()(0), 1);
+  BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("3")->getData()(nlabels3 - 1), nlabels3);
+  BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("3")->getData()(0), 0);
+  BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("3")->getData()(0), 0);
+  BOOST_CHECK_EQUAL(tensorTable.getIsShardable().at("3")->getData()(0), 0);
 
   // Test expected tensor dimensions
   BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(0), 2);

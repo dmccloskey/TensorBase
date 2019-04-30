@@ -19,11 +19,6 @@ namespace TensorBase
     public: 
       virtual std::string getName() const = 0; 
       virtual std::map<std::string, std::shared_ptr<TensorAxisConcept>>& getAxes() = 0;
-      virtual std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>>& getIndices() = 0;
-      virtual std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>>& getIndicesView() = 0;
-      virtual std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>>& getIsModified() = 0;
-      virtual std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>>& getInMemory() = 0;
-      virtual std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>>& getIsShardable() = 0;
     };
 
     /// The erasure wrapper around the Tensor Table interface
@@ -34,11 +29,6 @@ namespace TensorBase
       TensorTableWrapper(const std::shared_ptr<T>& tensor_table) : tensor_table_(tensor_table) {};
       std::string getName() const { return tensor_table_->getName(); };
       std::map<std::string, std::shared_ptr<TensorAxisConcept>>& getAxes() { return tensor_table_->getAxes(); };
-      std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>>& getIndices() { return tensor_table_->getIndices(); };
-      std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>>& getIndicesView() { return tensor_table_->getIndicesView(); };
-      std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>>& getIsModified() { return tensor_table_->getIsModified(); };
-      std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>>& getInMemory() { return tensor_table_->getInMemory(); };
-      std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>>& getIsShardable() { return tensor_table_->getIsShardable(); };
     };
   public:
     TensorCollection() = default;  ///< Default constructor

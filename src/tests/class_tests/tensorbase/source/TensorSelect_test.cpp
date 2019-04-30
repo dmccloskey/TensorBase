@@ -26,11 +26,12 @@ BOOST_AUTO_TEST_CASE(destructor)
 
 BOOST_AUTO_TEST_CASE(TensorTableSelectClause)
 {
-  Eigen::Tensor<std::string, 1> table_names(4), axis_names(4), dimension_names(4), label_names(4);
+  Eigen::Tensor<std::string, 1> table_names(4), axis_names(4), dimension_names(4);
+  Eigen::Tensor<int, 1> label_names(4);
   table_names.setValues({"1", "2", "1", "2"});
   axis_names.setValues({ "1", "2", "1", "2" });
   dimension_names.setValues({ "x", "y", "x", "y" });
-  label_names.setValues({ "x-axis-0", "y-axis-0", "x-axis-1", "y-axis-2" });
+  label_names.setValues({ 0, 0, 1, 2 });
 
   SelectClause selectClause(table_names, axis_names, dimension_names, label_names);
 
@@ -38,12 +39,12 @@ BOOST_AUTO_TEST_CASE(TensorTableSelectClause)
   Eigen::DefaultDevice device;
   Eigen::Tensor<std::string, 1> table_1 = selectClause.getLabels("1", "1", "x", device);
   BOOST_CHECK_EQUAL(table_1.size(), 2);
-  BOOST_CHECK_EQUAL(table_1(0), "x-axis-1");
-  BOOST_CHECK_EQUAL(table_1(1), "x-axis-0");
+  BOOST_CHECK_EQUAL(table_1(0), 1);
+  BOOST_CHECK_EQUAL(table_1(1), 0);
   Eigen::Tensor<std::string, 1> table_2 = selectClause.getLabels("2", "2", "y", device);
   BOOST_CHECK_EQUAL(table_2.size(), 2);
-  BOOST_CHECK_EQUAL(table_2(0), "y-axis-2");
-  BOOST_CHECK_EQUAL(table_2(1), "y-axis-0");
+  BOOST_CHECK_EQUAL(table_2(0), 2);
+  BOOST_CHECK_EQUAL(table_2(1), 0);
 }
 
 BOOST_AUTO_TEST_CASE(TensorTableSelect) 
@@ -87,11 +88,11 @@ BOOST_AUTO_TEST_CASE(TensorTableSelect)
   Eigen::DefaultDevice device;
   // Test the expected view indices after the select command
   tensorSelect.selectClause(collection_1, selectClause, device);
-  BOOST_CHECK_EQUAL(collection_1.tensor_tables_.at("1")->getIndicesView().at("1")->operator()(0), 1);
-  BOOST_CHECK_EQUAL(collection_1.tensor_tables_.at("1")->getIndicesView().at("1")->operator()(1), 2);
-  BOOST_CHECK_EQUAL(collection_1.tensor_tables_.at("2")->getIndicesView().at("2")->operator()(0), 1);
-  BOOST_CHECK_EQUAL(collection_1.tensor_tables_.at("2")->getIndicesView().at("2")->operator()(1), 0);
-  BOOST_CHECK_EQUAL(collection_1.tensor_tables_.at("2")->getIndicesView().at("2")->operator()(2), 3);
+  BOOST_CHECK_EQUAL(collection_1.tables_.at("1")->getIndicesView().at("1")->operator()(0), 1);
+  BOOST_CHECK_EQUAL(collection_1.tables_.at("1")->getIndicesView().at("1")->operator()(1), 2);
+  BOOST_CHECK_EQUAL(collection_1.tables_.at("2")->getIndicesView().at("2")->operator()(0), 1);
+  BOOST_CHECK_EQUAL(collection_1.tables_.at("2")->getIndicesView().at("2")->operator()(1), 0);
+  BOOST_CHECK_EQUAL(collection_1.tables_.at("2")->getIndicesView().at("2")->operator()(2), 3);
 
 }
 

@@ -63,16 +63,16 @@ namespace TensorBase
       the indices, indices_view, is_modified, in_memory, and
       is_shardable attributes after all axes have been added
     */
-    void setAxes(); ///< axes setter
+    virtual void setAxes() = 0; ///< axes setter
 
     virtual void initData() = 0;  ///< DeviceT specific initializer
 
     std::map<std::string, std::shared_ptr<TensorAxisConcept>>& getAxes() { return axes_; }; ///< axes getter
-    std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>>& getIndices() { return indices_; }; ///< indices getter
-    std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>>& getIndicesView() { return indices_view_; }; ///< indices_view getter
-    std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>>& getIsModified() { return is_modified_; }; ///< is_modified getter
-    std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>>& getInMemory() { return in_memory_; }; ///< in_memory getter
-    std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>>& getIsShardable() { return is_shardable_; }; ///< is_shardable getter
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIndices() { return indices_; }; ///< indices getter
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIndicesView() { return indices_view_; }; ///< indices_view getter
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIsModified() { return is_modified_; }; ///< is_modified getter
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getInMemory() { return in_memory_; }; ///< in_memory getter
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIsShardable() { return is_shardable_; }; ///< is_shardable getter
     Eigen::array<Eigen::Index, TDim>& getDimensions() { return dimensions_; }  ///< dimensions getter
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& getData() { return data_; }; ///< data getter
 
@@ -83,11 +83,11 @@ namespace TensorBase
 
     Eigen::array<Eigen::Index, TDim> dimensions_ = Eigen::array<Eigen::Index, TDim>();
     std::map<std::string, std::shared_ptr<TensorAxisConcept>> axes_; ///< primary axis is dim=0
-    std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>> indices_; ///< starting at 1
-    std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>> indices_view_; ///< sorted and/or selected indices
-    std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>> is_modified_;
-    std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>> in_memory_;
-    std::map<std::string, std::shared_ptr<Eigen::Tensor<int, 1>>> is_shardable_;
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> indices_; ///< starting at 1
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> indices_view_; ///< sorted and/or selected indices
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> is_modified_;
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> in_memory_;
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> is_shardable_;
 
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> data_; ///< The actual tensor data
     
@@ -105,45 +105,6 @@ namespace TensorBase
   {
     auto found = axes_.emplace(tensor_axis->getName(), std::shared_ptr<TensorAxisConcept>(new TensorAxisWrapper<T>(tensor_axis)));
   }
-
-  template<typename TensorT, typename DeviceT, int TDim>
-  void TensorTable<TensorT, DeviceT, TDim>::setAxes() {
-    assert(TDim == axes_.size()); // "The number of tensor_axes and the template TDim do not match.";
-
-    // Determine the overall dimensions of the tensor
-    int axis_cnt = 0;
-    for (auto& axis : axes_) {
-      dimensions_.at(axis_cnt) = axis.second->getNLabels();
-
-      // Build the default indices
-      Eigen::Tensor<int, 1> indices(axis.second->getNLabels());
-      for (int i = 0; i < axis.second->getNLabels(); ++i) {
-        indices(i) = i + 1;
-      }
-      indices_.emplace(axis.second->getName(), std::shared_ptr<Eigen::Tensor<int, 1>>(new Eigen::Tensor<int, 1>(indices)));
-      indices_view_.emplace(axis.second->getName(), std::shared_ptr<Eigen::Tensor<int, 1>>(new Eigen::Tensor<int, 1>(indices)));
-
-      // Set the defaults
-      Eigen::Tensor<int, 1> is_modified(axis.second->getNLabels());
-      is_modified.setZero();
-      is_modified_.emplace(axis.second->getName(), std::shared_ptr<Eigen::Tensor<int, 1>>(new Eigen::Tensor<int, 1>(is_modified)));
-      Eigen::Tensor<int, 1> in_memory(axis.second->getNLabels());
-      in_memory.setZero();
-      in_memory_.emplace(axis.second->getName(), std::shared_ptr<Eigen::Tensor<int, 1>>(new Eigen::Tensor<int, 1>(in_memory)));
-      Eigen::Tensor<int, 1> is_shardable(axis.second->getNLabels());
-      if (axis_cnt == 0)
-        is_shardable.setConstant(1);
-      else
-        is_shardable.setZero();
-      is_shardable_.emplace(axis.second->getName(), std::shared_ptr<Eigen::Tensor<int, 1>>(new Eigen::Tensor<int, 1>(is_shardable)));
-
-      // Next iteration
-      ++axis_cnt;
-    }
-
-    // Allocate memory for the tensor
-    initData();
-  };
 
   template<typename TensorT, typename DeviceT, int TDim>
   void TensorTable<TensorT, DeviceT, TDim>::clear() {
@@ -164,7 +125,64 @@ namespace TensorBase
     TensorTableDefaultDevice() = default;
     TensorTableDefaultDevice(const std::string& name) { this->setName(name); };
     ~TensorTableDefaultDevice() = default;
+    void setAxes() override;
     void initData() override;
+  };
+
+  template<typename TensorT, int TDim>
+  void TensorTableDefaultDevice<TensorT, TDim>::setAxes() {
+    assert(TDim == axes_.size()); // "The number of tensor_axes and the template TDim do not match.";
+
+    // Determine the overall dimensions of the tensor
+    int axis_cnt = 0;
+    for (auto& axis : axes_) {
+      dimensions_.at(axis_cnt) = axis.second->getNLabels();
+      Eigen::array<Eigen::Index, 1> axis_dimensions = { (int)axis.second->getNLabels() };
+
+      // Set the indices
+      Eigen::Tensor<int, 1> indices_values(axis.second->getNLabels());
+      for (int i = 0; i < axis.second->getNLabels(); ++i) {
+        indices_values(i) = i + 1;
+      }
+      TensorDataDefaultDevice<int, 1> indices(axis_dimensions);
+      indices.setData(indices_values);
+      indices_.emplace(axis.second->getName(), std::make_shared<TensorDataDefaultDevice<int, 1>>(indices));
+
+      // Set the indices view
+      TensorDataDefaultDevice<int, 1> indices_view(axis_dimensions);
+      indices_view.setData(indices_values);
+      indices_view_.emplace(axis.second->getName(), std::make_shared<TensorDataDefaultDevice<int, 1>>(indices_view));
+
+      // Set the is_modified defaults
+      Eigen::Tensor<int, 1> is_modified_values(axis.second->getNLabels());
+      is_modified_values.setZero();
+      TensorDataDefaultDevice<int, 1> is_modified(axis_dimensions);
+      is_modified.setData(is_modified_values);
+      is_modified_.emplace(axis.second->getName(), std::make_shared<TensorDataDefaultDevice<int, 1>>(is_modified));
+
+      // Set the in_memory defaults
+      Eigen::Tensor<int, 1> in_memory_values(axis.second->getNLabels());
+      in_memory_values.setZero();
+      TensorDataDefaultDevice<int, 1> in_memory(axis_dimensions);
+      in_memory.setData(in_memory_values);
+      in_memory_.emplace(axis.second->getName(), std::make_shared<TensorDataDefaultDevice<int, 1>>(in_memory));
+
+      // Set the in_memory defaults
+      Eigen::Tensor<int, 1> is_shardable_values(axis.second->getNLabels());
+      if (axis_cnt == 0)
+        is_shardable_values.setConstant(1);
+      else
+        is_shardable_values.setZero();
+      TensorDataDefaultDevice<int, 1> is_shardable(axis_dimensions);
+      is_shardable.setData(is_shardable_values);
+      is_shardable_.emplace(axis.second->getName(), std::make_shared<TensorDataDefaultDevice<int, 1>>(is_shardable));
+
+      // Next iteration
+      ++axis_cnt;
+    }
+
+    // Allocate memory for the tensor
+    initData();
   };
 
   template<typename TensorT, int TDim>
@@ -179,6 +197,7 @@ namespace TensorBase
     TensorTableCpu() = default;
     TensorTableCpu(const std::string& name) { this->setName(name); };
     ~TensorTableCpu() = default;
+    void setAxes() override;
     void initData() override;
   };
 
@@ -195,6 +214,7 @@ namespace TensorBase
     TensorTableGpu() = default;
     TensorTableGpu(const std::string& name) { this->setName(name); };
     ~TensorTableGpu() = default;
+    void setAxes() override;
     void initData() override;
   };
 

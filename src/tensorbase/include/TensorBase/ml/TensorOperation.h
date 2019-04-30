@@ -19,8 +19,6 @@ namespace TensorBase
     virtual void undo(TensorCollection& tensor_collection) = 0;
   };
 
-
-
   class TensorInsertIntoAxis {
   public:
     template<typename T>
@@ -29,7 +27,7 @@ namespace TensorBase
     //Eigen::Tensor<TensorT, TDim> values; ///< values to insert
   };
 
-  class TensorInsertIntoDimension;
+  class TensorAddAxis;
 
   class TensorUpdate {
   public:
@@ -44,7 +42,7 @@ namespace TensorBase
     std::vector<std::pair<std::string, std::string>> delete_clause; ///< pairs of TensorTable.name and TensorDimension.label
   };
 
-  class TensorDeleteFromDimension;
+  class TensorDeleteAxis;
 
   class TensorAddTables;
 

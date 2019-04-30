@@ -64,8 +64,6 @@ BOOST_AUTO_TEST_CASE(gettersAndSetters)
 
   // name setters and getters
   BOOST_CHECK(tensorCollection.getTableNames() == std::vector<std::string>({ "1", "2", "3" }));
-  BOOST_CHECK_EQUAL(tensorCollection.tables_.at("1")->getIndices().at("1")->operator()(0), 1);
-  BOOST_CHECK_EQUAL(tensorCollection.tables_.at("1")->getIndicesView().at("1")->operator()(0), 1);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
