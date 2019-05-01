@@ -101,11 +101,11 @@ BOOST_AUTO_TEST_CASE(TensorSelectDefaultDevice)
   // Test the expected view indices after the select command
   tensorSelect.selectClause(collection_1, select_clause1, device);
   tensorSelect.selectClause(collection_1, select_clause2, device);
-  BOOST_CHECK_EQUAL(collection_1.tables_.at("1")->getIndicesView().at("1")->operator()(0), 1);
-  BOOST_CHECK_EQUAL(collection_1.tables_.at("1")->getIndicesView().at("1")->operator()(1), 2);
-  BOOST_CHECK_EQUAL(collection_1.tables_.at("2")->getIndicesView().at("2")->operator()(0), 1);
-  BOOST_CHECK_EQUAL(collection_1.tables_.at("2")->getIndicesView().at("2")->operator()(1), 0);
-  BOOST_CHECK_EQUAL(collection_1.tables_.at("2")->getIndicesView().at("2")->operator()(2), 3);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("1")->getData()(0), 1);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("1")->getData()(1), 2);
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 1);
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(1), 0);
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 3);
 
 }
 

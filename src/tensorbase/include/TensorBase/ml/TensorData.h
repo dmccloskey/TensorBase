@@ -33,6 +33,7 @@ namespace TensorBase
   class TensorData
   {
   public:
+    using tensorT = TensorT;
     TensorData() { device_name_ = typeid(DeviceT).name(); };
     TensorData(const Eigen::array<Eigen::Index, TDim>& dimensions) { 
       setDimensions(dimensions); 

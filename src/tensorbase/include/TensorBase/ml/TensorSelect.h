@@ -53,50 +53,42 @@ namespace TensorBase
       - By default, If the table is not a part of the select clause, the table will not
         be returned
     */
-    virtual void selectClause(TensorCollection& tensor_collection, SelectClause<TensorT, DeviceT>& select_clause, DeviceT& device) = 0;
+    virtual void selectClause(TensorCollection& tensor_collection, SelectClause<TensorT, DeviceT>& select_clause, DeviceT& device);
 
     /// Select the table/axis/dimension/labels by a boolean expression
-    virtual void whereClause(TensorCollection& tensor_collection, DeviceT& device) = 0;
+    virtual void whereClause(TensorCollection& tensor_collection, DeviceT& device);
 
     /// Select group the dimensions by non-unique values
-    virtual void groupByClause(TensorCollection& tensor_collectiont, SelectClause<TensorT, DeviceT>& group_by_clause, DeviceT& device) = 0;
+    virtual void groupByClause(TensorCollection& tensor_collectiont, SelectClause<TensorT, DeviceT>& group_by_clause, DeviceT& device);
 
     /// ?
-    virtual void havingClause(TensorCollection& tensor_collection, SelectClause<TensorT, DeviceT>& having_clause, DeviceT& device) = 0;
+    virtual void havingClause(TensorCollection& tensor_collection, SelectClause<TensorT, DeviceT>& having_clause, DeviceT& device);
 
     /// Order the selected table/axis/dimension/labels
-    virtual void orderByClause(TensorCollection& tensor_collection, OrderByClause<TensorT, DeviceT>& order_by_clause, DeviceT& device) = 0;
+    virtual void orderByClause(TensorCollection& tensor_collection, OrderByClause<TensorT, DeviceT>& order_by_clause, DeviceT& device);
   protected:
     std::set<std::string> selected_tables_;
     std::set<std::string> selected_axes_;
   };
 
-  template<typename TensorT>
-  class TensorSelectDefaultDevice : public TensorSelect<TensorT, Eigen::DefaultDevice> {
-  public:
-    void selectClause(TensorCollection& tensor_collection, SelectClause<TensorT, Eigen::DefaultDevice>& select_clause, Eigen::DefaultDevice& device);
-    void whereClause(TensorCollection& tensor_collection, Eigen::DefaultDevice& device);
-    void groupByClause(TensorCollection& tensor_collectiont, SelectClause<TensorT, Eigen::DefaultDevice>& group_by_clause, Eigen::DefaultDevice& device);
-    void havingClause(TensorCollection& tensor_collection, SelectClause<TensorT, Eigen::DefaultDevice>& having_clause, Eigen::DefaultDevice& device);
-    void orderByClause(TensorCollection& tensor_collection, OrderByClause<TensorT, Eigen::DefaultDevice>& order_by_clause, Eigen::DefaultDevice& device);
-  };
-
   template<typename TensorT, typename DeviceT>
-  void TensorSelect<TensorT, DeviceT>::selectClause(TensorCollection& tensor_collection, SelectClause<TensorT, Eigen::DefaultDevice>& select_clause, Eigen::DefaultDevice& device) {
+  void TensorSelect<TensorT, DeviceT>::selectClause(TensorCollection& tensor_collection, SelectClause<TensorT, DeviceT>& select_clause, DeviceT& device) {
     // iterate throgh each table axis
     for (auto& axis : tensor_collection.tables_.at(select_clause.table_name)->getAxes()) {
       if (axis.first == select_clause.axis_name) {
         // record the selected tables and axes
         selected_tables_.insert(select_clause.table_name);
-        selected_axes_.insert(select_clause.axis_name);erate through each axis dimensions
+        selected_axes_.insert(select_clause.axis_name);
+        // iterate through each axis dimensions
         for (int d = 0; d < axis.second->getDimensions().size(); ++d) {
           if (axis.second->getDimensions()(d) == select_clause.dimension_name) {
             // zero the view for the axis (only once)
             if (selected_axes_.count(select_clause.axis_name) == 0) {
-              tensor_collection.tables_.at(select_clause.table_name)->zeroIndicesView(select_clause.axis_name, device);
+              //tensor_collection.tables_.at(select_clause.table_name)->zeroIndicesView(select_clause.axis_name, device);
             }
             // copy over indices into the view that are in the select clause
-            selectIndicesView(select_clause.axis_name, d, select_clause.labels->getHDataPointer().get(), select_clause.labels->getData().size(), device);
+            tensor_collection.tables_.at(select_clause.table_name)->selectIndicesView(
+              select_clause.axis_name, d, select_clause.labels->getDataPointer(), select_clause.labels->getData().size(), std::make_shared<DeviceT>(device));
           }
         }
       }

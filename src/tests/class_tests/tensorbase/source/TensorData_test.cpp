@@ -38,6 +38,7 @@ BOOST_AUTO_TEST_CASE(comparisonDefaultDevice)
 BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
 {
   TensorDataDefaultDevice<float, 3> tensordata;
+  static_assert(std::is_same<TensorDataDefaultDevice<float, 3>::tensorT, float>::value, "Value type is not captured.");
   // Check defaults
   BOOST_CHECK_EQUAL(tensordata.getDimensions().at(0), 0);
   BOOST_CHECK_EQUAL(tensordata.getDimensions().at(1), 0);
