@@ -22,6 +22,8 @@ namespace TensorBase
     virtual size_t getNLabels() const = 0;
     virtual size_t getNDimensions() const = 0;
     virtual Eigen::Tensor<std::string, 1>& getDimensions() = 0;
+    virtual std::shared_ptr<void> getLabelsHDataPointer() = 0;
+    virtual std::shared_ptr<void> getLabelsDDataPointer() = 0;
   };
 
   /// The erasure wrapper around the Tensor Axis interface
@@ -34,6 +36,8 @@ namespace TensorBase
     size_t getNLabels() const { return tensor_axis_->getNLabels(); };
     size_t getNDimensions() const { return tensor_axis_->getNDimensions(); };
     Eigen::Tensor<std::string, 1>& getDimensions() { return tensor_axis_->getDimensions(); };
+    std::shared_ptr<void> getLabelsHDataPointer() { return tensor_axis_->getLabelsHDataPointer(); }
+    std::shared_ptr<void> getLabelsDDataPointer() { return tensor_axis_->getLabelsDDataPointer(); }
   };
 
   /**
@@ -75,8 +79,22 @@ namespace TensorBase
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIsShardable() { return is_shardable_; }; ///< is_shardable getter
     Eigen::array<Eigen::Index, TDim>& getDimensions() { return dimensions_; }  ///< dimensions getter
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& getData() { return data_; }; ///< data getter
-
     void clear();  ///< clears the axes and all associated data
+
+    /*
+    @brief Select Tensor Axis that will be included in the view
+
+    @param[in] axis_name
+    @param[in] dimension_index
+    @param[in] select_labels_data
+    @param[in] n_labels
+    @param[in] device
+    */
+    template<typename LabelsT>
+    void selectIndicesView(const std::string& axis_name, const int& dimension_index, LabelsT* select_labels_data, const int& n_labels, const DeviceT& device);
+    void resetIndicesView(const std::string& axis_name, const DeviceT& device); ///< copy over the indices values to the indices view
+    void zeroIndicesView(const std::string& axis_name, const DeviceT& device); ///< set the indices view to zero
+
   protected:
     int id_ = -1;
     std::string name_ = "";
@@ -116,6 +134,36 @@ namespace TensorBase
     in_memory_.clear();
     is_shardable_.clear();
     data_.reset();
+  }
+  template<typename TensorT, typename DeviceT, int TDim>
+  template<typename LabelsT>
+  inline void TensorTable<TensorT, DeviceT, TDim>::selectIndicesView(const std::string & axis_name, const int& dimension_index, LabelsT* select_labels_data, const int & n_labels, const DeviceT & device)
+  {
+    // reshape to match the axis labels shape
+    Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> labels_reshape(select_labels_data, 1, n_labels);
+    // broadcast the length of the labels
+    auto labels_names_selected_bcast = labels_reshape.broadcast(Eigen::array<int, 2>({ (int)getAxes.at(axis_name)->getNLabels(), 1 }));
+    // broadcast the axis labels the size of the labels queried
+    // TODO: GPU sync the data pointer
+    Eigen::TensorMap<Eigen::Tensor<LabelsT, 3>> labels_reshape(static_pointer_cast<LabelsT>(getAxes.at(axis_name)->getLabels()->getHDataPointer().get()), (int)getAxes.at(axis_name)->getNDimensions(), (int)getAxes.at(axis_name)->getNLabels(), 1);
+    auto labels_bcast = (labels_reshape.chip(dimension_index, 0)).broadcast(Eigen::array<int, 2>({ 1, n_labels }));
+    // broadcast the tensor indices the size of the labels queried
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_reshape(indices_.at(axis_name)->getHDataPointer()->get(), (int)getAxes.at(axis_name)->getNLabels(), 1);
+    auto indices_bcast = indices_reshape.broadcast(Eigen::array<int, 2>({ 1, n_labels }));
+    auto selected = (labels_bcast == labels_names_selected_bcast).select(indices_bcast, indices_bcast.constant(0));
+    auto selected_sum = selected.sum(Eigen::array<int, 1>({ 1 }));
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_name)->getHDataPointer()->get(), (int)getAxes.at(axis_name)->getNLabels());
+    indices_view.device(device) += selected_sum;
+  }
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::resetIndicesView(const std::string& axis_name, const DeviceT& device)
+  {    
+    indices_view_.at(axis_name)->getData().device(device) = indices_.at(axis_name)->getData();
+  }
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::zeroIndicesView(const std::string & axis_name, const DeviceT& device)
+  {
+    indices_view_.at(axis_name)->getData().device(device) = indices_view_.at(axis_name)->getData().constant(0);
   };
 
   template<typename TensorT, int TDim>

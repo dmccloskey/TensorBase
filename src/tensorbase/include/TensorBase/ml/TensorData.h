@@ -91,8 +91,7 @@ namespace TensorBase
     virtual void setData(const Eigen::Tensor<TensorT, TDim>& data) = 0; ///< data setter
 
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> getData() { std::shared_ptr<TensorT> h_data = h_data_;  Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data(h_data.get(), this->getDimensions()); return data; } ///< data copy getter
-    std::shared_ptr<TensorT> getHDataPointer() { return h_data_; }; ///< data pointer getter
-    std::shared_ptr<TensorT> getDDataPointer() { return d_data_; }; ///< data pointer getter
+    std::shared_ptr<TensorT> getDataPointer(DeviceT& device); ///< data pointer getter
     
     virtual bool syncHAndDData(DeviceT& device) = 0;  ///< Sync the host and device data
     std::pair<bool, bool> getDataStatus() { return std::make_pair(h_data_updated_, d_data_updated_); };   ///< Get the status of the host and device data
@@ -117,6 +116,29 @@ namespace TensorBase
     //		h_data_, d_data_, h_data_updated_, d_data_updated_);
     //	}
   };
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline std::shared_ptr<TensorT> TensorData<TensorT, DeviceT, TDim>::getDataPointer(DeviceT& device)
+  {
+    // Sync the data
+    syncHAndDData(device);
+
+    // Get the appropriate data pointer depending upon the device
+    if (typeid(device).name() == typeid(Eigen::DefaultDevice).name()) {
+      return h_data_;
+    }
+    else if (typeid(device).name() == typeid(Eigen::ThreadPoolDevice).name()) {
+      return h_data_;
+    }
+#if COMPILE_WITH_CUDA
+    else if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
+      return d_data_;
+    }
+#endif
+    else {
+      throw("Device not recognized!");
+    }
+  }
 
   /**
     @brief Tensor data class specialization for Eigen::DefaultDevice (single thread CPU)

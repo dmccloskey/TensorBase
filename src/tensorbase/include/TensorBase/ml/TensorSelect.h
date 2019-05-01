@@ -14,6 +14,8 @@ namespace TensorBase
   class SelectClause {
   public:
     SelectClause() = default;
+    SelectClause(const std::string& table_name, const std::string& axis_name, const std::string& dimension_name, const std::shared_ptr<TensorData<TensorT, DeviceT, 1>> labels) :
+      table_name(table_name), axis_name(axis_name), dimension_name(dimension_name), labels(labels) { };
     ~SelectClause() = default;
     std::string table_name;
     std::string axis_name;
@@ -69,8 +71,18 @@ namespace TensorBase
     std::set<std::string> selected_axes_;
   };
 
+  template<typename TensorT>
+  class TensorSelectDefaultDevice : public TensorSelect<TensorT, Eigen::DefaultDevice> {
+  public:
+    void selectClause(TensorCollection& tensor_collection, SelectClause<TensorT, Eigen::DefaultDevice>& select_clause, Eigen::DefaultDevice& device);
+    void whereClause(TensorCollection& tensor_collection, Eigen::DefaultDevice& device);
+    void groupByClause(TensorCollection& tensor_collectiont, SelectClause<TensorT, Eigen::DefaultDevice>& group_by_clause, Eigen::DefaultDevice& device);
+    void havingClause(TensorCollection& tensor_collection, SelectClause<TensorT, Eigen::DefaultDevice>& having_clause, Eigen::DefaultDevice& device);
+    void orderByClause(TensorCollection& tensor_collection, OrderByClause<TensorT, Eigen::DefaultDevice>& order_by_clause, Eigen::DefaultDevice& device);
+  };
+
   template<typename TensorT, typename DeviceT>
-  void TensorSelect<TensorT, DeviceT>::selectClause(TensorCollection& tensor_collection, SelectClause<TensorT, DeviceT>& select_clause, DeviceT& device) {
+  void TensorSelect<TensorT, DeviceT>::selectClause(TensorCollection& tensor_collection, SelectClause<TensorT, Eigen::DefaultDevice>& select_clause, Eigen::DefaultDevice& device) {
     // iterate throgh each table axis
     for (auto& axis : tensor_collection.tables_.at(select_clause.table_name)->getAxes()) {
       if (axis.first == select_clause.axis_name) {
@@ -81,25 +93,10 @@ namespace TensorBase
           if (axis.second->getDimensions()(d) == select_clause.dimension_name) {
             // zero the view for the axis (only once)
             if (selected_axes_.count(select_clause.axis_name) == 0) {
-              // TODO: call to TensorTable
+              tensor_collection.tables_.at(select_clause.table_name)->zeroIndicesView(select_clause.axis_name, device);
             }
             // copy over indices into the view that are in the select clause
-            // TODO: call to TensorTable (const std::string& axis_name, const int& dimension_index, TensorT* select_labels_data, n_labels, const DeviceT& deviceT);
-            // reshape to match the axis labels shape
-            Eigen::TensorMap<Eigen::Tensor<std::string, 2>> labels_reshape(select_clause.labels->getHDataPointer(), 1, labels_selected.size());
-            // broadcast the length of the labels
-            auto labels_names_selected_bcast = labels_reshape.broadcast(Eigen::array<int, 2>({ (int)axis.second->getNLabels(), 1 }));
-            // broadcast the axis labels the size of the labels queried
-            Eigen::TensorMap<Eigen::Tensor<std::string, 3>> labels_reshape(axis.second->getLabels()->getHDataPointer().get(), (int)axis.second->getNDimensions(), (int)axis.second->getNLabels(), 1);
-            auto labels_bcast = (labels_reshape.chip(d, 0)).broadcast(Eigen::array<int, 2>({ 1, (int)labels_selected.size() }));
-            // broadcast the tensor indices the size of the labels queried
-            Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_reshape(tensor_collection.tables_.at(select_clause.table_name)->getIndices().at(select_clause.axis_name)->data(),
-              (int)axis.second->getNLabels(), 1);
-            auto indices_bcast = indices_reshape.broadcast(Eigen::array<int, 2>({ 1, (int)labels_selected.size() }));
-            auto selected = (labels_bcast == labels_names_selected_bcast).select(indices_bcast, indices_bcast.constant(0));
-            auto selected_sum = selected.sum(Eigen::array<int, 1>({ 1 }));
-            Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(tensor_collection.tables_.at(select_clause.table_name)->getIndicesView().at(select_clause.axis_name)->data(), (int)axis.second->getNLabels());
-            indices_view.device(device) += selected_sum;
+            selectIndicesView(select_clause.axis_name, d, select_clause.labels->getHDataPointer().get(), select_clause.labels->getData().size(), device);
           }
         }
       }
