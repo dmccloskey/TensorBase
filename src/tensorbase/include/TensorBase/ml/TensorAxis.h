@@ -38,8 +38,7 @@ namespace TensorBase
 
     virtual void setDimensionsAndLabels(const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) = 0; ///< dimensions and labels setter
     Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> getLabels() { return tensor_dimension_labels_->getData(); };  ///< labels getter
-    std::shared_ptr<TensorT> getLabelsHDataPointer() {return tensor_dimension_labels_->getHDataPointer(); };
-    std::shared_ptr<TensorT> getLabelsDDataPointer() { return tensor_dimension_labels_->getDDataPointer(); };
+    std::shared_ptr<TensorT> getLabelsDataPointer() {return tensor_dimension_labels_->getDataPointer(); };
     Eigen::Tensor<std::string, 1>& getDimensions() { return tensor_dimension_names_; };  ///< dimensions getter
 
   protected:

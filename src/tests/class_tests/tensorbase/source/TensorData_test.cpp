@@ -75,8 +75,7 @@ BOOST_AUTO_TEST_CASE(gettersAndSetters2DefaultDevice)
   BOOST_CHECK_EQUAL(tensordata.getData()(0, 0, 0), 5);
 
   // Test getDataPointer
-  Eigen::DefaultDevice device;
-  Eigen::TensorMap<Eigen::Tensor<float, 3>> data_map(tensordata.getDataPointer(device).get(), 2, 3, 4);
+  Eigen::TensorMap<Eigen::Tensor<float, 3>> data_map(tensordata.getDataPointer().get(), 2, 3, 4);
   BOOST_CHECK_EQUAL(data_map(0, 0, 0), 5);
   BOOST_CHECK_EQUAL(data_map(1, 2, 3), 0);
 }
@@ -202,9 +201,7 @@ BOOST_AUTO_TEST_CASE(gettersAndSetters2Cpu)
   BOOST_CHECK_EQUAL(tensordata.getData()(0, 0, 0), 5);
 
   // Test getDataPointer
-  Eigen::ThreadPool pool(1);
-  Eigen::ThreadPoolDevice device(&pool, 1);
-  Eigen::TensorMap<Eigen::Tensor<float, 3>> data_map(tensordata.getDataPointer(device).get(), 2, 3, 4);
+  Eigen::TensorMap<Eigen::Tensor<float, 3>> data_map(tensordata.getDataPointer().get(), 2, 3, 4);
   BOOST_CHECK_EQUAL(data_map(0, 0, 0), 5);
   BOOST_CHECK_EQUAL(data_map(1, 2, 3), 0);
 }
@@ -270,9 +267,7 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersGpu)
 	BOOST_CHECK_EQUAL(tensordata.getData()(0, 0, 0), 5);
 
   // Test getDataPointer
-  Eigen::GpuStreamDevice stream_device;
-  Eigen::GpuDevice device(&stream_device);
-  Eigen::TensorMap<Eigen::Tensor<float, 3>> data_map(tensordata.getDataPointer(device).get(), 2, 3, 4);
+  Eigen::TensorMap<Eigen::Tensor<float, 3>> data_map(tensordata.getDataPointer().get(), 2, 3, 4);
   BOOST_CHECK_EQUAL(data_map(0, 0, 0), 5);
   BOOST_CHECK_EQUAL(data_map(1, 2, 3), 0);
 }

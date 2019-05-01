@@ -22,8 +22,7 @@ namespace TensorBase
     virtual size_t getNLabels() const = 0;
     virtual size_t getNDimensions() const = 0;
     virtual Eigen::Tensor<std::string, 1>& getDimensions() = 0;
-    virtual std::shared_ptr<void> getLabelsHDataPointer() = 0;
-    virtual std::shared_ptr<void> getLabelsDDataPointer() = 0;
+    virtual std::shared_ptr<void> getLabelsDataPointer() = 0;
   };
 
   /// The erasure wrapper around the Tensor Axis interface
@@ -36,8 +35,7 @@ namespace TensorBase
     size_t getNLabels() const { return tensor_axis_->getNLabels(); };
     size_t getNDimensions() const { return tensor_axis_->getNDimensions(); };
     Eigen::Tensor<std::string, 1>& getDimensions() { return tensor_axis_->getDimensions(); };
-    std::shared_ptr<void> getLabelsHDataPointer() { return tensor_axis_->getLabelsHDataPointer(); }
-    std::shared_ptr<void> getLabelsDDataPointer() { return tensor_axis_->getLabelsDDataPointer(); }
+    std::shared_ptr<void> getLabelsDataPointer() { return tensor_axis_->getLabelsDataPointer(); }
   };
 
   /**
@@ -148,11 +146,11 @@ namespace TensorBase
     Eigen::TensorMap<Eigen::Tensor<LabelsT, 3>> labels_reshape(static_pointer_cast<LabelsT>(getAxes.at(axis_name)->getLabels()->getHDataPointer().get()), (int)getAxes.at(axis_name)->getNDimensions(), (int)getAxes.at(axis_name)->getNLabels(), 1);
     auto labels_bcast = (labels_reshape.chip(dimension_index, 0)).broadcast(Eigen::array<int, 2>({ 1, n_labels }));
     // broadcast the tensor indices the size of the labels queried
-    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_reshape(indices_.at(axis_name)->getHDataPointer()->get(), (int)getAxes.at(axis_name)->getNLabels(), 1);
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_reshape(indices_.at(axis_name)->getDataPointer()->get(), (int)getAxes.at(axis_name)->getNLabels(), 1);
     auto indices_bcast = indices_reshape.broadcast(Eigen::array<int, 2>({ 1, n_labels }));
     auto selected = (labels_bcast == labels_names_selected_bcast).select(indices_bcast, indices_bcast.constant(0));
     auto selected_sum = selected.sum(Eigen::array<int, 1>({ 1 }));
-    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_name)->getHDataPointer()->get(), (int)getAxes.at(axis_name)->getNLabels());
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_name)->getDataPointer()->get(), (int)getAxes.at(axis_name)->getNLabels());
     indices_view.device(device) += selected_sum;
   }
   template<typename TensorT, typename DeviceT, int TDim>
