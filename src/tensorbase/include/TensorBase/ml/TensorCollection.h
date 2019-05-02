@@ -19,7 +19,7 @@ namespace TensorBase
     public: 
       virtual std::string getName() const = 0; 
       virtual std::map<std::string, std::shared_ptr<TensorAxisConcept>>& getAxes() = 0;
-      virtual void selectIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<void>& select_labels_data, const int& n_labels, const std::shared_ptr<void> &device) = 0;
+      virtual void selectIndicesView(const std::string& axis_name, const int& dimension_index, std::shared_ptr<void>& select_labels_data, const int& n_labels, std::shared_ptr<void> &device) = 0;
     };
 
     /// The erasure wrapper around the Tensor Table interface
@@ -30,7 +30,7 @@ namespace TensorBase
       TensorTableWrapper(const std::shared_ptr<T>& tensor_table) : tensor_table_(tensor_table) {};
       std::string getName() const { return tensor_table_->getName(); };
       std::map<std::string, std::shared_ptr<TensorAxisConcept>>& getAxes() { return tensor_table_->getAxes(); };
-      void selectIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<void>& select_labels_data, const int& n_labels, const std::shared_ptr<void> &device) {
+      void selectIndicesView(const std::string& axis_name, const int& dimension_index, std::shared_ptr<void>& select_labels_data, const int& n_labels, std::shared_ptr<void> &device) {
         return tensor_table_->selectIndicesView(axis_name, dimension_index, select_labels_data, n_labels, device);
       }
     };

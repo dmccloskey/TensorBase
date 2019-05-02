@@ -61,10 +61,10 @@ BOOST_AUTO_TEST_CASE(TensorSelectDefaultDevice)
   dimensions2(0) = "y";
   dimensions3(0) = "z";
   int nlabels1 = 2, nlabels2 = 3, nlabels3 = 5;
-  Eigen::Tensor<std::string, 2> labels1(1, nlabels1), labels2(1, nlabels2), labels3(1, nlabels3);
-  labels1.setValues({ { "x-axis-0", "x-axis-1"} });
-  labels2.setValues({ { "y-axis-0", "y-axis-1", "y-axis-2" } });
-  labels3.setValues({ { "z-axis-0", "z-axis-1", "z-axis-2", "z-axis-3", "z-axis-4" } });
+  Eigen::Tensor<int, 2> labels1(1, nlabels1), labels2(1, nlabels2), labels3(1, nlabels3);
+  labels1.setValues({ { 0, 1} });
+  labels2.setValues({ { 0, 1, 2 } });
+  labels3.setValues({ { 0, 1, 2, 3, 4 } });
 
   TensorTableDefaultDevice<float, 3> tensorTable1("1");
   tensorTable1.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
@@ -106,7 +106,6 @@ BOOST_AUTO_TEST_CASE(TensorSelectDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 1);
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(1), 0);
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 3);
-
 }
 
 BOOST_AUTO_TEST_SUITE_END()

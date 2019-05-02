@@ -45,6 +45,8 @@ namespace TensorBase
   template<typename TensorT, typename DeviceT>
   class TensorSelect {
   public:
+    TensorSelect() = default;
+    ~TensorSelect() = default;
     /* Select the table/axis/dimension/labels that will be returned in the view.
 
     Behavior:
@@ -56,16 +58,16 @@ namespace TensorBase
     virtual void selectClause(TensorCollection& tensor_collection, SelectClause<TensorT, DeviceT>& select_clause, DeviceT& device);
 
     /// Select the table/axis/dimension/labels by a boolean expression
-    virtual void whereClause(TensorCollection& tensor_collection, DeviceT& device);
+    virtual void whereClause(TensorCollection& tensor_collection, DeviceT& device) {};
 
     /// Select group the dimensions by non-unique values
-    virtual void groupByClause(TensorCollection& tensor_collectiont, SelectClause<TensorT, DeviceT>& group_by_clause, DeviceT& device);
+    virtual void groupByClause(TensorCollection& tensor_collectiont, SelectClause<TensorT, DeviceT>& group_by_clause, DeviceT& device) {};
 
     /// ?
-    virtual void havingClause(TensorCollection& tensor_collection, SelectClause<TensorT, DeviceT>& having_clause, DeviceT& device);
+    virtual void havingClause(TensorCollection& tensor_collection, SelectClause<TensorT, DeviceT>& having_clause, DeviceT& device) {};
 
     /// Order the selected table/axis/dimension/labels
-    virtual void orderByClause(TensorCollection& tensor_collection, OrderByClause<TensorT, DeviceT>& order_by_clause, DeviceT& device);
+    virtual void orderByClause(TensorCollection& tensor_collection, OrderByClause<TensorT, DeviceT>& order_by_clause, DeviceT& device) {};
   protected:
     std::set<std::string> selected_tables_;
     std::set<std::string> selected_axes_;
@@ -84,7 +86,7 @@ namespace TensorBase
           if (axis.second->getDimensions()(d) == select_clause.dimension_name) {
             // zero the view for the axis (only once)
             if (selected_axes_.count(select_clause.axis_name) == 0) {
-              //tensor_collection.tables_.at(select_clause.table_name)->zeroIndicesView(select_clause.axis_name, device);
+              tensor_collection.tables_.at(select_clause.table_name)->zeroIndicesView(select_clause.axis_name, device);
             }
             // copy over indices into the view that are in the select clause
             tensor_collection.tables_.at(select_clause.table_name)->selectIndicesView(
