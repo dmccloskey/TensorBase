@@ -4,7 +4,7 @@
 #define TENSORBASE_TENSORCOLLECTION_H
 
 #include <unsupported/Eigen/CXX11/Tensor>
-#include <TensorBase/ml/TensorTable.h>
+#include <TensorBase/ml/TensorTableConcept.h>
 #include <map>
 
 namespace TensorBase
@@ -14,26 +14,6 @@ namespace TensorBase
   */
   class TensorCollection
   {
-    /// The erasure interface to Tensor Table
-    class TensorTableConcept {
-    public: 
-      virtual std::string getName() const = 0; 
-      virtual std::map<std::string, std::shared_ptr<TensorAxisConcept>>& getAxes() = 0;
-      virtual void selectIndicesView(const std::string& axis_name, const int& dimension_index, std::shared_ptr<void>& select_labels_data, const int& n_labels, std::shared_ptr<void> &device) = 0;
-    };
-
-    /// The erasure wrapper around the Tensor Table interface
-    template<typename T>
-    class TensorTableWrapper : public TensorTableConcept {
-      std::shared_ptr<T> tensor_table_;
-    public:
-      TensorTableWrapper(const std::shared_ptr<T>& tensor_table) : tensor_table_(tensor_table) {};
-      std::string getName() const { return tensor_table_->getName(); };
-      std::map<std::string, std::shared_ptr<TensorAxisConcept>>& getAxes() { return tensor_table_->getAxes(); };
-      void selectIndicesView(const std::string& axis_name, const int& dimension_index, std::shared_ptr<void>& select_labels_data, const int& n_labels, std::shared_ptr<void> &device) {
-        return tensor_table_->selectIndicesView(axis_name, dimension_index, select_labels_data, n_labels, device);
-      }
-    };
   public:
     TensorCollection() = default;  ///< Default constructor
     ~TensorCollection() = default; ///< Default destructor

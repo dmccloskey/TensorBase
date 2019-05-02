@@ -115,26 +115,30 @@ namespace TensorBase
   inline void TensorTable<TensorT, DeviceT, TDim>::selectIndicesView(const std::string & axis_name, const int& dimension_index, const std::shared_ptr<LabelsT>& select_labels_data, const int & n_labels, const DeviceT & device)
   {
     // reshape to match the axis labels shape
-    Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> labels_reshape(select_labels_data.get(), 1, n_labels);
+    Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> labels_names_selected_reshape(select_labels_data.get(), 1, n_labels);
     // broadcast the length of the labels
-    auto labels_names_selected_bcast = labels_reshape.broadcast(Eigen::array<int, 2>({ (int)getAxes.at(axis_name)->getNLabels(), 1 }));
+    auto labels_names_selected_bcast = labels_names_selected_reshape.broadcast(Eigen::array<int, 2>({ (int)axes_.at(axis_name)->getNLabels(), 1 }));
     // broadcast the axis labels the size of the labels queried
     // TODO: GPU sync the data pointer
-    Eigen::TensorMap<Eigen::Tensor<LabelsT, 3>> labels_reshape(static_pointer_cast<LabelsT>(getAxes.at(axis_name)->getLabels()->getDataPointer().get()), (int)getAxes.at(axis_name)->getNDimensions(), (int)getAxes.at(axis_name)->getNLabels(), 1);
+    std::shared_ptr<LabelsT> labels_data;
+    axes_.at(axis_name)->getLabelsDataPointer(labels_data);
+    Eigen::TensorMap<Eigen::Tensor<LabelsT, 3>> labels_reshape(labels_data.get(), (int)axes_.at(axis_name)->getNDimensions(), (int)axes_.at(axis_name)->getNLabels(), 1);
     auto labels_bcast = (labels_reshape.chip(dimension_index, 0)).broadcast(Eigen::array<int, 2>({ 1, n_labels }));
     // broadcast the tensor indices the size of the labels queried
-    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_reshape(indices_.at(axis_name)->getDataPointer()->get(), (int)getAxes.at(axis_name)->getNLabels(), 1);
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_reshape(indices_.at(axis_name)->getDataPointer().get(), (int)axes_.at(axis_name)->getNLabels(), 1);
     auto indices_bcast = indices_reshape.broadcast(Eigen::array<int, 2>({ 1, n_labels }));
     auto selected = (labels_bcast == labels_names_selected_bcast).select(indices_bcast, indices_bcast.constant(0));
     auto selected_sum = selected.sum(Eigen::array<int, 1>({ 1 }));
-    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_name)->getDataPointer()->get(), (int)getAxes.at(axis_name)->getNLabels());
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_name)->getDataPointer().get(), (int)axes_.at(axis_name)->getNLabels());
     indices_view.device(device) += selected_sum;
   }
+
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorTable<TensorT, DeviceT, TDim>::resetIndicesView(const std::string& axis_name, const DeviceT& device)
   {    
     indices_view_.at(axis_name)->getData().device(device) = indices_.at(axis_name)->getData();
   }
+
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorTable<TensorT, DeviceT, TDim>::zeroIndicesView(const std::string & axis_name, const DeviceT& device)
   {

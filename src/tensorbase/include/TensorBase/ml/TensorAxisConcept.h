@@ -15,6 +15,12 @@ namespace TensorBase
     virtual size_t getNLabels() const = 0;
     virtual size_t getNDimensions() const = 0;
     virtual Eigen::Tensor<std::string, 1>& getDimensions() = 0;
+
+    // All TensorT combos of `getLabelsDatapointer`
+    virtual void getLabelsDataPointer(std::shared_ptr<int>& data_copy) = 0;
+    virtual void getLabelsDataPointer(std::shared_ptr<float>& data_copy) = 0;
+    virtual void getLabelsDataPointer(std::shared_ptr<double>& data_copy) = 0;
+    virtual void getLabelsDataPointer(std::shared_ptr<char>& data_copy) = 0;
   };
 
   /// The erasure wrapper around the Tensor Axis interface
@@ -27,6 +33,19 @@ namespace TensorBase
     size_t getNLabels() const { return tensor_axis_->getNLabels(); };
     size_t getNDimensions() const { return tensor_axis_->getNDimensions(); };
     Eigen::Tensor<std::string, 1>& getDimensions() { return tensor_axis_->getDimensions(); };
+
+    void getLabelsDataPointer(std::shared_ptr<int>& data_copy) {
+      tensor_axis_->getLabelsDataPointer<int>(data_copy);
+    };
+    void getLabelsDataPointer(std::shared_ptr<float>& data_copy) {
+      tensor_axis_->getLabelsDataPointer<float>(data_copy);
+    };
+    void getLabelsDataPointer(std::shared_ptr<double>& data_copy) {
+      tensor_axis_->getLabelsDataPointer<double>(data_copy);
+    };
+    void getLabelsDataPointer(std::shared_ptr<char>& data_copy) {
+      tensor_axis_->getLabelsDataPointer<char>(data_copy);
+    };
   };
 };
 #endif //TENSORBASE_TENSORAXISCONCEPT_H

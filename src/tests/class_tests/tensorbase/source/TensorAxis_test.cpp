@@ -77,4 +77,32 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   BOOST_CHECK_EQUAL(tensoraxis.getLabels()(2, 4), 1);
 }
 
+BOOST_AUTO_TEST_CASE(getLabelsDataPointerDefaultDevice)
+{
+  Eigen::Tensor<std::string, 1> dimensions(3);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  dimensions(2) = "TensorDimension3";
+  Eigen::Tensor<int, 2> labels(3, 5);
+  labels.setConstant(1);
+  TensorAxisDefaultDevice<int> tensoraxis("1", dimensions, labels);
+
+  // Test data copy
+  std::shared_ptr<int> data_int = nullptr;
+  tensoraxis.getLabelsDataPointer<int>(data_int);
+  BOOST_CHECK_EQUAL(data_int.get()[0], 1);
+  BOOST_CHECK_EQUAL(data_int.get()[14], 1);
+
+  // Test that no data is reinterpreted
+  std::shared_ptr<char> data_char = nullptr;
+  tensoraxis.getLabelsDataPointer<char>(data_char);
+  BOOST_CHECK_EQUAL(data_char, nullptr);
+  std::shared_ptr<float> data_float = nullptr;
+  tensoraxis.getLabelsDataPointer<float>(data_float);
+  BOOST_CHECK_EQUAL(data_float, nullptr);
+  std::shared_ptr<double> data_double = nullptr;
+  tensoraxis.getLabelsDataPointer<double>(data_double);
+  BOOST_CHECK_EQUAL(data_double, nullptr);
+}
+
 BOOST_AUTO_TEST_SUITE_END()

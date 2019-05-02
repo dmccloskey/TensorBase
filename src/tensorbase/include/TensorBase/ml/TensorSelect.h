@@ -80,17 +80,17 @@ namespace TensorBase
       if (axis.first == select_clause.axis_name) {
         // record the selected tables and axes
         selected_tables_.insert(select_clause.table_name);
-        selected_axes_.insert(select_clause.axis_name);
         // iterate through each axis dimensions
         for (int d = 0; d < axis.second->getDimensions().size(); ++d) {
           if (axis.second->getDimensions()(d) == select_clause.dimension_name) {
             // zero the view for the axis (only once)
             if (selected_axes_.count(select_clause.axis_name) == 0) {
               tensor_collection.tables_.at(select_clause.table_name)->zeroIndicesView(select_clause.axis_name, device);
+              selected_axes_.insert(select_clause.axis_name);
             }
             // copy over indices into the view that are in the select clause
             tensor_collection.tables_.at(select_clause.table_name)->selectIndicesView(
-              select_clause.axis_name, d, select_clause.labels->getDataPointer(), select_clause.labels->getData().size(), std::make_shared<DeviceT>(device));
+              select_clause.axis_name, d, select_clause.labels->getDataPointer(), select_clause.labels->getData().size(), device);
           }
         }
       }

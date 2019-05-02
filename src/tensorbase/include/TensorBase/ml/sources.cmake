@@ -4,11 +4,13 @@ set(directory include/TensorBase/ml)
 ### list all header files of the directory here
 set(sources_list_h
 	TensorAxis.h
+	TensorAxisConcept.h
 	TensorCollection.h
 	TensorDimension.h
 	TensorData.h
 	TensorOperation.h
 	TensorTable.h
+	TensorTableConcept.h
 	TensorType.h
 )
 

@@ -96,6 +96,13 @@ BOOST_AUTO_TEST_CASE(TensorSelectDefaultDevice)
   select_labels2->setData(labels_values2);
   SelectClause<int, Eigen::DefaultDevice> select_clause2("2", "2", "y", select_labels2);
 
+  // Test the unchanged values
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("1")->getData()(0), 1);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("1")->getData()(1), 2);
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 1);
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(1), 2);
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 3);
+
   TensorSelect<int, Eigen::DefaultDevice> tensorSelect;
   Eigen::DefaultDevice device;
   // Test the expected view indices after the select command

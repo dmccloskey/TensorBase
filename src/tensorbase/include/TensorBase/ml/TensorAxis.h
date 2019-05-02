@@ -41,6 +41,12 @@ namespace TensorBase
     std::shared_ptr<TensorT> getLabelsDataPointer() {return tensor_dimension_labels_->getDataPointer(); };
     Eigen::Tensor<std::string, 1>& getDimensions() { return tensor_dimension_names_; };  ///< dimensions getter
 
+    template<typename T>
+    void getLabelsDataPointer(std::shared_ptr<T>& data_copy) { 
+      if (std::is_same<T, TensorT>::value)
+        data_copy = std::reinterpret_pointer_cast<T>(tensor_dimension_labels_->getDataPointer()); // required for compilation: no conversion should be done
+    }
+
   protected:
     void setNLabels(const size_t& n_labels) { n_labels_ = n_labels; }; ///< n_labels setter
     void setNDimensions(const size_t& n_dimenions) { n_dimensions_ = n_dimenions; }; ///< n_tensor_dimensions setter
