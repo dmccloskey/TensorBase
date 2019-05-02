@@ -88,7 +88,7 @@ namespace TensorBase
     virtual void selectClause(TensorCollection& tensor_collection, SelectClause<LabelsT, DeviceT>& select_clause, DeviceT& device);
 
     /// Select the table/axis/dimension/labels by a boolean expression
-    virtual void whereClause(TensorCollection& tensor_collection, DeviceT& device) {};
+    virtual void whereClause(TensorCollection& tensor_collection, WhereClause<LabelsT, TensorT, DeviceT>& where_clause, DeviceT& device);
 
     /// Select group the dimensions by non-unique values
     virtual void groupByClause(TensorCollection& tensor_collectiont, SelectClause<LabelsT, DeviceT>& group_by_clause, DeviceT& device) {};
@@ -97,13 +97,13 @@ namespace TensorBase
     virtual void havingClause(TensorCollection& tensor_collection, SelectClause<LabelsT, DeviceT>& having_clause, DeviceT& device) {};
 
     /// Order the selected table/axis/dimension/labels
-    virtual void orderByClause(TensorCollection& tensor_collection, OrderByClause<LabelsT, DeviceT>& order_by_clause, DeviceT& device) {};
+    virtual void orderByClause(TensorCollection& tensor_collection, OrderByClause<LabelsT, DeviceT>& order_by_clause, DeviceT& device);
   protected:
     std::set<std::string> selected_tables_;
     std::set<std::string> selected_axes_;
   };
 
-  template<typename LabelsT, typename LabelsT, typename DeviceT>
+  template<typename LabelsT, typename TensorT, typename DeviceT>
   void TensorSelect<LabelsT, TensorT, DeviceT>::selectClause(TensorCollection& tensor_collection, SelectClause<LabelsT, DeviceT>& select_clause, DeviceT& device) {
     // iterate throgh each table axis
     for (auto& axis : tensor_collection.tables_.at(select_clause.table_name)->getAxes()) {
@@ -127,7 +127,24 @@ namespace TensorBase
     }
   };
 
-  template<typename LabelsT, typename LabelsT, typename DeviceT>
+  template<typename LabelsT, typename TensorT, typename DeviceT>
+  void TensorSelect<LabelsT, TensorT, DeviceT>::whereClause(TensorCollection& tensor_collection, WhereClause<LabelsT, TensorT, DeviceT>& where_clause, DeviceT& device) {
+    // iterate throgh each table axis
+    for (auto& axis : tensor_collection.tables_.at(where_clause.table_name)->getAxes()) {
+      if (axis.first == where_clause.axis_name) {
+        // iterate through each axis dimensions
+        for (int d = 0; d < axis.second->getDimensions().size(); ++d) {
+          if (axis.second->getDimensions()(d) == where_clause.dimension_name) {
+            // order the indices view
+            tensor_collection.tables_.at(where_clause.table_name)->orderIndicesView( // TODO: update with where specific call
+              where_clause.axis_name, d, where_clause.labels->getDataPointer(), where_clause.labels->getData().size(), device);
+          }
+        }
+      }
+    }
+  };
+
+  template<typename LabelsT, typename TensorT, typename DeviceT>
   void TensorSelect<LabelsT, TensorT, DeviceT>::orderByClause(TensorCollection& tensor_collection, OrderByClause<LabelsT, DeviceT>& order_by_clause, DeviceT& device) {
     // iterate throgh each table axis
     for (auto& axis : tensor_collection.tables_.at(order_by_clause.table_name)->getAxes()) {
