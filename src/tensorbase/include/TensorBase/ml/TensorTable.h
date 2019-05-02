@@ -70,6 +70,18 @@ namespace TensorBase
     void resetIndicesView(const std::string& axis_name, const DeviceT& device); ///< copy over the indices values to the indices view
     void zeroIndicesView(const std::string& axis_name, const DeviceT& device); ///< set the indices view to zero
 
+    /*
+    @brief Order Tensor Axis View
+
+    @param[in] axis_name
+    @param[in] dimension_index
+    @param[in] select_labels_data
+    @param[in] n_labels
+    @param[in] device
+    */
+    template<typename LabelsT>
+    void orderIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<LabelsT>& select_labels_data, const int& n_labels, const DeviceT& device);
+
   protected:
     int id_ = -1;
     std::string name_ = "";
@@ -119,7 +131,6 @@ namespace TensorBase
     // broadcast the length of the labels
     auto labels_names_selected_bcast = labels_names_selected_reshape.broadcast(Eigen::array<int, 2>({ (int)axes_.at(axis_name)->getNLabels(), 1 }));
     // broadcast the axis labels the size of the labels queried
-    // TODO: GPU sync the data pointer
     std::shared_ptr<LabelsT> labels_data;
     axes_.at(axis_name)->getLabelsDataPointer(labels_data);
     Eigen::TensorMap<Eigen::Tensor<LabelsT, 3>> labels_reshape(labels_data.get(), (int)axes_.at(axis_name)->getNDimensions(), (int)axes_.at(axis_name)->getNLabels(), 1);
@@ -131,6 +142,14 @@ namespace TensorBase
     auto selected_sum = selected.sum(Eigen::array<int, 1>({ 1 }));
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_name)->getDataPointer().get(), (int)axes_.at(axis_name)->getNLabels());
     indices_view.device(device) += selected_sum;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  template<typename LabelsT>
+  inline void TensorTable<TensorT, DeviceT, TDim>::orderIndicesView(const std::string & axis_name, const int & dimension_index, const std::shared_ptr<LabelsT>& select_labels_data, const int & n_labels, const DeviceT & device)
+  {
+    // TODO extract out the columns
+    // TODO sort the columns and update the axes indices according to the sort values
   }
 
   template<typename TensorT, typename DeviceT, int TDim>

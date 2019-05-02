@@ -42,10 +42,7 @@ namespace TensorBase
     Eigen::Tensor<std::string, 1>& getDimensions() { return tensor_dimension_names_; };  ///< dimensions getter
 
     template<typename T>
-    void getLabelsDataPointer(std::shared_ptr<T>& data_copy) { 
-      if (std::is_same<T, TensorT>::value)
-        data_copy = std::reinterpret_pointer_cast<T>(tensor_dimension_labels_->getDataPointer()); // required for compilation: no conversion should be done
-    }
+    void getLabelsDataPointer(std::shared_ptr<T>& data_copy); ///< TensorAxisConcept data getter
 
   protected:
     void setNLabels(const size_t& n_labels) { n_labels_ = n_labels; }; ///< n_labels setter
@@ -70,6 +67,13 @@ namespace TensorBase
     const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) {
     setName(name);
     setDimensionsAndLabels(dimensions, labels);
+  }
+
+  template<typename TensorT, typename DeviceT>
+  template<typename T>
+  void TensorAxis<TensorT, DeviceT>::getLabelsDataPointer(std::shared_ptr<T>& data_copy) {
+    if (std::is_same<T, TensorT>::value)
+      data_copy = std::reinterpret_pointer_cast<T>(tensor_dimension_labels_->getDataPointer()); // required for compilation: no conversion should be done
   }
 
   template<typename TensorT>

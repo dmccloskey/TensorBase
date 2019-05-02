@@ -10,39 +10,69 @@
 
 namespace TensorBase
 {
-  template<typename TensorT, typename DeviceT>
+  template<typename LabelsT, typename DeviceT>
   class SelectClause {
   public:
     SelectClause() = default;
-    SelectClause(const std::string& table_name, const std::string& axis_name, const std::string& dimension_name, const std::shared_ptr<TensorData<TensorT, DeviceT, 1>> labels) :
+    SelectClause(const std::string& table_name, const std::string& axis_name, const std::string& dimension_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>> labels) :
       table_name(table_name), axis_name(axis_name), dimension_name(dimension_name), labels(labels) { };
     ~SelectClause() = default;
     std::string table_name;
     std::string axis_name;
     std::string dimension_name;
-    std::shared_ptr<TensorData<TensorT, DeviceT, 1>> labels;
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 1>> labels;
   };
 
+  enum logicalComparitor {
+    LESS_THAN_OR_EQUAL_TO,
+    GREATER_THAN_OR_EQUAL_TO,
+    LESS_THAN,
+    GREATER_THAN,
+    EQUAL_TO,
+    NOT_EQUAL_TO
+  };
+  enum logicalModifier {
+    NOT
+  };
+  enum logicalContinuator {
+    AND,
+    OR
+  };
   /// Class defining the `Where` clause statements
-  // TODO use type erasure to make a vector of pointers to functors of the type shown
-  template<typename TensorT, typename DeviceT, int TDim>
-  class WhereClause {
+  template<typename LabelsT, typename TensorT, typename DeviceT>
+  class WhereClause : public SelectClause<TensorT, DeviceT> {
   public:
-    std::vector<std::function<void(TensorT* data_in, TensorT* data_out, DeviceT& device)>> tensor_predicate;
+    SelectClause() = default;
+    SelectClause(const std::string& table_name, const std::string& axis_name, const std::string& dimension_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>> labels,
+      const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values, const std::vector<logicalComparitor>& comparitors,
+      const std::vector<logicalModifier>& modifiers, const logicalContinuator& prepend_continuator, const logicalContinuator& within_continuator) :
+      table_name(table_name), axis_name(axis_name), dimension_name(dimension_name), labels(labels),
+      modifiers(modifiers), prepend_continuator(prepend_continuator), within_continuator(within_continuator){ };
+    ~SelectClause() = default;
+    std::shared_ptr<TensorData<TensorT, DeviceT, 1>> values;
+    std::vector<logicalComparitor> comparitors;
+    std::vector<logicalModifier> modifiers;
+    logicalContinuator prepend_continuator;
+    logicalContinuator within_continuator;
   };
 
+  enum order { ASC, DESC };
   /// Class defining the `Order By` clause statements
-  template<typename TensorT, typename DeviceT>
-  class OrderByClause : public SelectClause<TensorT, DeviceT> {
+  template<typename LabelsT, typename DeviceT>
+  class OrderByClause : public SelectClause<LabelsT, DeviceT> {
   public:
-    enum order { ASC, DESC };
+    OrderByClause() = default;
+    OrderByClause(const std::string& table_name, const std::string& axis_name, const std::string& dimension_name, 
+      const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>> labels, const std::vector<order>& order_by) :
+      table_name(table_name), axis_name(axis_name), dimension_name(dimension_name), labels(labels), order_by(order_by) { };
+    ~SelectClause() = default;
     std::vector<order> order_by;
   };
 
   /**
     @brief Template class for all Tensor select operations
   */
-  template<typename TensorT, typename DeviceT>
+  template<typename LabelsT, typename TensorT, typename DeviceT>
   class TensorSelect {
   public:
     TensorSelect() = default;
@@ -55,26 +85,26 @@ namespace TensorBase
       - By default, If the table is not a part of the select clause, the table will not
         be returned
     */
-    virtual void selectClause(TensorCollection& tensor_collection, SelectClause<TensorT, DeviceT>& select_clause, DeviceT& device);
+    virtual void selectClause(TensorCollection& tensor_collection, SelectClause<LabelsT, DeviceT>& select_clause, DeviceT& device);
 
     /// Select the table/axis/dimension/labels by a boolean expression
     virtual void whereClause(TensorCollection& tensor_collection, DeviceT& device) {};
 
     /// Select group the dimensions by non-unique values
-    virtual void groupByClause(TensorCollection& tensor_collectiont, SelectClause<TensorT, DeviceT>& group_by_clause, DeviceT& device) {};
+    virtual void groupByClause(TensorCollection& tensor_collectiont, SelectClause<LabelsT, DeviceT>& group_by_clause, DeviceT& device) {};
 
-    /// ?
-    virtual void havingClause(TensorCollection& tensor_collection, SelectClause<TensorT, DeviceT>& having_clause, DeviceT& device) {};
+    /// Select the grouped table/axis/dimension/labels by a boolean expression
+    virtual void havingClause(TensorCollection& tensor_collection, SelectClause<LabelsT, DeviceT>& having_clause, DeviceT& device) {};
 
     /// Order the selected table/axis/dimension/labels
-    virtual void orderByClause(TensorCollection& tensor_collection, OrderByClause<TensorT, DeviceT>& order_by_clause, DeviceT& device) {};
+    virtual void orderByClause(TensorCollection& tensor_collection, OrderByClause<LabelsT, DeviceT>& order_by_clause, DeviceT& device) {};
   protected:
     std::set<std::string> selected_tables_;
     std::set<std::string> selected_axes_;
   };
 
-  template<typename TensorT, typename DeviceT>
-  void TensorSelect<TensorT, DeviceT>::selectClause(TensorCollection& tensor_collection, SelectClause<TensorT, DeviceT>& select_clause, DeviceT& device) {
+  template<typename LabelsT, typename LabelsT, typename DeviceT>
+  void TensorSelect<LabelsT, TensorT, DeviceT>::selectClause(TensorCollection& tensor_collection, SelectClause<LabelsT, DeviceT>& select_clause, DeviceT& device) {
     // iterate throgh each table axis
     for (auto& axis : tensor_collection.tables_.at(select_clause.table_name)->getAxes()) {
       if (axis.first == select_clause.axis_name) {
@@ -91,6 +121,23 @@ namespace TensorBase
             // copy over indices into the view that are in the select clause
             tensor_collection.tables_.at(select_clause.table_name)->selectIndicesView(
               select_clause.axis_name, d, select_clause.labels->getDataPointer(), select_clause.labels->getData().size(), device);
+          }
+        }
+      }
+    }
+  };
+
+  template<typename LabelsT, typename LabelsT, typename DeviceT>
+  void TensorSelect<LabelsT, TensorT, DeviceT>::orderByClause(TensorCollection& tensor_collection, OrderByClause<LabelsT, DeviceT>& order_by_clause, DeviceT& device) {
+    // iterate throgh each table axis
+    for (auto& axis : tensor_collection.tables_.at(order_by_clause.table_name)->getAxes()) {
+      if (axis.first == order_by_clause.axis_name) {
+        // iterate through each axis dimensions
+        for (int d = 0; d < axis.second->getDimensions().size(); ++d) {
+          if (axis.second->getDimensions()(d) == order_by_clause.dimension_name) {
+            // order the indices view
+            tensor_collection.tables_.at(order_by_clause.table_name)->orderIndicesView(
+              order_by_clause.axis_name, d, order_by_clause.labels->getDataPointer(), order_by_clause.labels->getData().size(), device);
           }
         }
       }
