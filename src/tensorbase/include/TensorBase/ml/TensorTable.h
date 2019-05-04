@@ -12,6 +12,7 @@
 
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/ml/TensorAxisConcept.h>
+#include <TensorBase/ml/TensorClauses.h>
 
 namespace TensorBase
 {
@@ -53,6 +54,7 @@ namespace TensorBase
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getInMemory() { return in_memory_; }; ///< in_memory getter
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIsShardable() { return is_shardable_; }; ///< is_shardable getter
     Eigen::array<Eigen::Index, TDim>& getDimensions() { return dimensions_; }  ///< dimensions getter
+    int getDimFromAxisName(const std::string& axis_name) { return axes_to_dims_.at(axis_name); }
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& getData() { return data_; }; ///< data getter
     void clear();  ///< clears the axes and all associated data
 
@@ -82,6 +84,23 @@ namespace TensorBase
     template<typename LabelsT>
     void orderIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<LabelsT>& select_labels_data, const int& n_labels, const DeviceT& device);
 
+    /*
+    @brief Apply a where selection clause to the Tensor Axis View
+
+    @param[in] axis_name
+    @param[in] dimension_index
+    @param[in] select_labels_data
+    @param[in] n_labels
+    @param[in] n_labels
+    @param[in] n_labels
+    @param[in] n_labels
+    @param[in] device
+    */
+    template<typename LabelsT>
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<LabelsT>& select_labels_data, const int& n_labels, 
+      const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values, const logicalComparitor& comparitor, const logicalModifier& modifier,
+      const logicalContinuator& prepend_continuator, const logicalContinuator& within_continuator, const DeviceT& device);
+
   protected:
     int id_ = -1;
     std::string name_ = "";
@@ -93,7 +112,7 @@ namespace TensorBase
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> is_modified_;
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> in_memory_;
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> is_shardable_;
-
+    std::map<std::string, int> axes_to_dims_;
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> data_; ///< The actual tensor data
     
     //private:
@@ -122,6 +141,7 @@ namespace TensorBase
     is_shardable_.clear();
     data_.reset();
   }
+
   template<typename TensorT, typename DeviceT, int TDim>
   template<typename LabelsT>
   inline void TensorTable<TensorT, DeviceT, TDim>::selectIndicesView(const std::string & axis_name, const int& dimension_index, const std::shared_ptr<LabelsT>& select_labels_data, const int & n_labels, const DeviceT & device)
@@ -150,6 +170,55 @@ namespace TensorBase
   {
     // TODO extract out the columns
     // TODO sort the columns and update the axes indices according to the sort values
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  template<typename LabelsT>
+  inline void TensorTable<TensorT, DeviceT, TDim>::whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<LabelsT>& select_labels_data, const int& n_labels,
+    const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values, const logicalComparitor& comparitor, const logicalModifier& modifier,
+    const logicalContinuator& prepend_continuator, const logicalContinuator& within_continuator, const DeviceT& device) {
+    // #1 Select the `labels` indices from the tensor
+
+    // create a copy of the indices view
+    std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> indicesView_copy(indices_view_.at(axis_name)->getDimensions());
+    indicesView_copy.setData(indices_view_.at(axis_name)->getData());
+
+    // update the indices view
+    selectIndicesView(axis_name, dimension_index, select_labels_data, n_labels, device);
+
+    // #2 Reduce the Tensor to `n_labels` using the `labels` indices as the selection criteria
+
+    Eigen::TensorMap<Eigen::Tensor<int, TDim>> tensor(data_->getDataPointer().get(), dimensions_);
+    if (std::is_arithmetic<TensorT>::value) {
+      // convert the indices to the an identity tensor
+      Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_view(indices_view_.at(axis_name)->getDataPointer().get(), (int)axes_.at(axis_name)->getNLabels(), 1);
+      auto indices_identity_1 = indices_identity / indices_identity;
+      auto indices_identity = indices_identity_1.contract(indices_identity_1, Eigen::array<Eigen::IndexPair<int>, 1>({ Eigen::IndexPair(1, 0) }));
+
+      // zero all non-selected indices using `.cast<T>` and `.contract()`
+      auto tensor_select = tensor.contract(indices_identity.cast<TensorT>(), Eigen::array<Eigen::IndexPair<int>, 1>({ Eigen::IndexPair(axes_to_dims_.at(axis_name), 0) }));
+    }
+    else {
+    // broadcast the indices across the tensor 
+      Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_reshape(indices_view_.at(axis_name)->getDataPointer().get(), (int)axes_.at(axis_name)->getNLabels(), 1, 1);
+      auto indices_bcast = indices_reshape.broadcast(Eigen::array<int, 2>({ 1, n_labels }));
+
+      // zero all non-selected indices using `.select` if char/string type
+    }
+
+    // #3 Apply the logical comparitor and modifier as a selection criteria
+
+    // broadcast the values across the tensor
+
+    // apply the comparitor 
+
+    // #4 Reduce the selected indices using the within continuator (i.e., Sum or Prod)
+    // auto indicesView_update = .Prod(...);
+    // if (OR) indicesView_update = .Sum(...);
+
+    // #5 Update the indices view using the prepend continuator (i.e., += or *= )
+    // if (AND) indicsView_copy->getData().device(device) = indicsView_copy->getData() * indicesView_update;
+    // else indicsView_copy->getData().device(device) += indicesView_update;
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
@@ -184,6 +253,9 @@ namespace TensorBase
     for (auto& axis : axes_) {
       dimensions_.at(axis_cnt) = axis.second->getNLabels();
       Eigen::array<Eigen::Index, 1> axis_dimensions = { (int)axis.second->getNLabels() };
+
+      // Set the axes name to dim map
+      axes_to_dims_.emplace(axis.second->getName(), axis_cnt);
 
       // Set the indices
       Eigen::Tensor<int, 1> indices_values(axis.second->getNLabels());

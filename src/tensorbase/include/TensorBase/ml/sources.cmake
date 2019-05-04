@@ -5,6 +5,7 @@ set(directory include/TensorBase/ml)
 set(sources_list_h
 	TensorAxis.h
 	TensorAxisConcept.h
+	TensorClauses.h
 	TensorCollection.h
 	TensorDimension.h
 	TensorData.h

@@ -5,8 +5,6 @@
 
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/ml/TensorCollection.h>
-#include <TensorBase/core/TupleAlgorithms.h>
-#include <set>
 
 namespace TensorBase
 {
@@ -19,28 +17,15 @@ namespace TensorBase
     virtual void undo(TensorCollection& tensor_collection) = 0;
   };
 
-  class TensorInsertIntoAxis {
-  public:
-    template<typename T>
-    void operator()(T&& t) {};
-    std::vector<std::pair<std::string, std::string>> insert_into_clause; ///< pairs of TensorTable.name and TensorDimension.label
-    //Eigen::Tensor<TensorT, TDim> values; ///< values to insert
-  };
+  /*TODO: Move to seperate files!*/
+
+  class TensorInsertIntoAxis;
 
   class TensorAddAxis;
 
-  class TensorUpdate {
-  public:
-    void whereClause(TensorCollection& tensor_collection);
-    std::vector<std::pair<std::string, std::string>> set_clause; ///< pairs of TensorTable.name and TensorDimension.label
-  };
+  class TensorUpdate;
 
-  class TensorDeleteFromAxis {
-  public:
-    void deleteFromClause(TensorCollection& tensor_collection);
-    void whereClause(TensorCollection& tensor_collection);
-    std::vector<std::pair<std::string, std::string>> delete_clause; ///< pairs of TensorTable.name and TensorDimension.label
-  };
+  class TensorDeleteFromAxis;
 
   class TensorDeleteAxis;
 

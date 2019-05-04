@@ -110,6 +110,11 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("3")->getData()(0), 0);
   BOOST_CHECK_EQUAL(tensorTable.getIsShardable().at("3")->getData()(0), 0);
 
+  // Test expected axis to dims mapping
+  BOOST_CHECK_EQUAL(tensorTable.getDimFromAxisName("1"), 0);
+  BOOST_CHECK_EQUAL(tensorTable.getDimFromAxisName("2"), 1);
+  BOOST_CHECK_EQUAL(tensorTable.getDimFromAxisName("3"), 2);
+
   // Test expected tensor dimensions
   BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(0), 2);
   BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(1), 3);

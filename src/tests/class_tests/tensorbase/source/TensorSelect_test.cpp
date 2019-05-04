@@ -9,88 +9,26 @@ using namespace std;
 
 BOOST_AUTO_TEST_SUITE(TensorSelect1)
 
-/*SelectClause DefaultDevice Tests*/
-BOOST_AUTO_TEST_CASE(constructorSelectClauseDefaultDevice)
-{
-  SelectClause<int, Eigen::DefaultDevice>* ptr = nullptr;
-  SelectClause<int, Eigen::DefaultDevice>* nullPointer = nullptr;
-  ptr = new SelectClause<int, Eigen::DefaultDevice>();
-  BOOST_CHECK_NE(ptr, nullPointer);
-}
-
-BOOST_AUTO_TEST_CASE(destructorSelectClauseDefaultDevice)
-{
-  SelectClause<int, Eigen::DefaultDevice>* ptr = nullptr;
-  ptr = new SelectClause<int, Eigen::DefaultDevice>();
-  delete ptr;
-}
-
-BOOST_AUTO_TEST_CASE(gettersAndSettersSelectClauseDefaultDevice)
-{
-  std::shared_ptr<TensorDataDefaultDevice<int, 1>> select_labels = std::make_shared<TensorDataDefaultDevice<int, 1>>(Eigen::array<Eigen::Index, 1>({ 2 }));
-  Eigen::Tensor<int, 1> labels_values(2);
-  labels_values.setValues({0, 1});
-  select_labels->setData(labels_values);
-  SelectClause<int, Eigen::DefaultDevice> select_clause("1", "2", "3", select_labels);
-  BOOST_CHECK_EQUAL(select_clause.table_name, "1");
-  BOOST_CHECK_EQUAL(select_clause.axis_name, "2");
-  BOOST_CHECK_EQUAL(select_clause.dimension_name, "3");
-  BOOST_CHECK_EQUAL(select_clause.labels->getData()(0), 0);
-  BOOST_CHECK_EQUAL(select_clause.labels->getData()(1), 1);
-}
-
-/*OrderByClause DefaultDevice Tests*/
-BOOST_AUTO_TEST_CASE(constructorOrderByClauseDefaultDevice)
-{
-  OrderByClause<int, Eigen::DefaultDevice>* ptr = nullptr;
-  OrderByClause<int, Eigen::DefaultDevice>* nullPointer = nullptr;
-  ptr = new OrderByClause<int, Eigen::DefaultDevice>();
-  BOOST_CHECK_NE(ptr, nullPointer);
-}
-
-BOOST_AUTO_TEST_CASE(destructorOrderByClauseDefaultDevice)
-{
-  OrderByClause<int, Eigen::DefaultDevice>* ptr = nullptr;
-  ptr = new OrderByClause<int, Eigen::DefaultDevice>();
-  delete ptr;
-}
-
-BOOST_AUTO_TEST_CASE(gettersAndSettersOrderByClauseDefaultDevice)
-{
-  std::shared_ptr<TensorDataDefaultDevice<int, 1>> select_labels = std::make_shared<TensorDataDefaultDevice<int, 1>>(Eigen::array<Eigen::Index, 1>({ 2 }));
-  Eigen::Tensor<int, 1> labels_values(2);
-  labels_values.setValues({ 0, 1 });
-  select_labels->setData(labels_values);
-  OrderByClause<int, Eigen::DefaultDevice> order_by_clause("1", "2", "3", select_labels, 
-    { order::ASC, order::DESC }
-  );
-  BOOST_CHECK_EQUAL(order_by_clause.table_name, "1");
-  BOOST_CHECK_EQUAL(order_by_clause.axis_name, "2");
-  BOOST_CHECK_EQUAL(order_by_clause.dimension_name, "3");
-  BOOST_CHECK_EQUAL(order_by_clause.labels->getData()(0), 0);
-  BOOST_CHECK_EQUAL(order_by_clause.labels->getData()(1), 1);
-  BOOST_CHECK_EQUAL(order_by_clause.order_by.at(0), order::ASC);
-  BOOST_CHECK_EQUAL(order_by_clause.order_by.at(1), order::DESC);
-}
-
 /*TensorSelect DefaultDevice Tests*/
 BOOST_AUTO_TEST_CASE(constructorTensorSelectDefaultDevice)
 {
-  TensorSelect<int, Eigen::DefaultDevice>* ptr = nullptr;
-  TensorSelect<int, Eigen::DefaultDevice>* nullPointer = nullptr;
-	ptr = new TensorSelect<int, Eigen::DefaultDevice>();
+  TensorSelect* ptr = nullptr;
+  TensorSelect* nullPointer = nullptr;
+	ptr = new TensorSelect();
   BOOST_CHECK_NE(ptr, nullPointer);
 }
 
 BOOST_AUTO_TEST_CASE(destructorTensorSelectDefaultDevice)
 {
-  TensorSelect<int, Eigen::DefaultDevice>* ptr = nullptr;
-	ptr = new TensorSelect<int, Eigen::DefaultDevice>();
+  TensorSelect* ptr = nullptr;
+	ptr = new TensorSelect();
   delete ptr;
 }
 
 BOOST_AUTO_TEST_CASE(TensorSelectDefaultDevice) 
 {
+  Eigen::DefaultDevice device;
+
   // Set up the tables
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
   dimensions1(0) = "x";
@@ -139,8 +77,7 @@ BOOST_AUTO_TEST_CASE(TensorSelectDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(1), 2);
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 3);
 
-  TensorSelect<int, Eigen::DefaultDevice> tensorSelect;
-  Eigen::DefaultDevice device;
+  TensorSelect tensorSelect;
   // Test the expected view indices after the select command
   tensorSelect.selectClause(collection_1, select_clause1, device);
   tensorSelect.selectClause(collection_1, select_clause2, device);

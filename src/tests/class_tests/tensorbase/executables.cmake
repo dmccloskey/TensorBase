@@ -12,6 +12,7 @@ set(io_executables_list
 
 set(ml_executables_list
   TensorAxis_test
+  TensorClauses_test
   TensorCollection_test
   TensorDimension_test
   TensorData_test
