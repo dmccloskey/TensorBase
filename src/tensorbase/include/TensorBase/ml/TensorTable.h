@@ -177,48 +177,111 @@ namespace TensorBase
   inline void TensorTable<TensorT, DeviceT, TDim>::whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<LabelsT>& select_labels_data, const int& n_labels,
     const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values, const logicalComparitor& comparitor, const logicalModifier& modifier,
     const logicalContinuator& prepend_continuator, const logicalContinuator& within_continuator, const DeviceT& device) {
-    // #1 Select the `labels` indices from the tensor
-
     // create a copy of the indices view
-    std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> indicesView_copy(indices_view_.at(axis_name)->getDimensions());
+    TensorData<TensorT, DeviceT, 1> indicesView_copy(indices_view_.at(axis_name)->getDimensions());
     indicesView_copy.setData(indices_view_.at(axis_name)->getData());
 
-    // update the indices view
+    // select the `labels` indices from the axis labels and store in the current indices view
     selectIndicesView(axis_name, dimension_index, select_labels_data, n_labels, device);
 
-    // #2 Reduce the Tensor to `n_labels` using the `labels` indices as the selection criteria
+    // determine the dimensions for reshaping and broadcasting the indices, for the making the selected tensor, and for reshaping and boradcasting the values
+    Eigen::array<int, TDim> indices_reshape_dimensions;
+    Eigen::array<int, TDim> indices_bcast_dimensions;
+    Eigen::array<int, TDim> tensor_select_dimensions;
+    Eigen::array<int, TDim> values_reshape_dimensions;
+    Eigen::array<int, TDim> values_bcast_dimensions;
+    for (int i = 0; i < TDim; ++i) {
+      if (i == axes_to_dims_.at(axis_name)) {
+        indices_reshape_dimensions.at(i) = (int)axes_.at(axis_name)->getNLabels();
+        indices_bcast_dimensions.at(i) = 1;
+        tensor_select_dimensions.at(i) = n_labels;
+        values_reshape_dimensions.at(i) = n_labels;
+        values_bcast_dimensions.at(i) = 1;
+      }
+      else {
+        indices_reshape_dimensions.at(i) = 1;
+        indices_bcast_dimensions.at(i) = dimensions_.at(i);
+        tensor_select_dimensions.at(i) = dimensions_.at(i);
+        values_reshape_dimensions.at(i) = 1;
+        values_bcast_dimensions.at(i) = dimensions_.at(i);
+      }
+    }
 
+    // broadcast the indices across the tensor and copy to memory
+    Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_view_reshape(indices_view_.at(axis_name)->getDataPointer().get(), indices_reshape_dimensions);
+    auto indices_view_bcast = indices_view_reshape.broadcast(indices_bcast_dimensions);
+    TensorData<TensorT, DeviceT, 1> indicesView_bcast(dimensions_);
+    indicesView_bcast.setData(indices_view_bcast);
+
+    // allocate memory for the selected tensor
+    TensorData<TensorT, DeviceT, TDim> tensor_select(tensor_select_dimensions);
+    Eigen::Tensor<TensorT, TDim> tensor_select_data(tensor_select_dimensions);
+    tensor_select_data.setZero();
+    tensor_select.setData(tensor_select_data);
+
+    // Reduce the Tensor to `n_labels` using the `labels` indices as the selection criteria
     Eigen::TensorMap<Eigen::Tensor<int, TDim>> tensor(data_->getDataPointer().get(), dimensions_);
-    if (std::is_arithmetic<TensorT>::value) {
-      // convert the indices to the an identity tensor
-      Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_view(indices_view_.at(axis_name)->getDataPointer().get(), (int)axes_.at(axis_name)->getNLabels(), 1);
-      auto indices_identity_1 = indices_identity / indices_identity;
-      auto indices_identity = indices_identity_1.contract(indices_identity_1, Eigen::array<Eigen::IndexPair<int>, 1>({ Eigen::IndexPair(1, 0) }));
+    // TODO: apply the gpu or cpu select algorithm
+    // http://www.cplusplus.com/reference/algorithm/remove_if/ cpu
+    // http://nvlabs.github.io/cub/structcub_1_1_device_select.html#details (DeviceSelect::flagged) gpu
 
-      // zero all non-selected indices using `.cast<T>` and `.contract()`
-      auto tensor_select = tensor.contract(indices_identity.cast<TensorT>(), Eigen::array<Eigen::IndexPair<int>, 1>({ Eigen::IndexPair(axes_to_dims_.at(axis_name), 0) }));
+    // SNIPPET: could be useful for other purposes
+    //if (std::is_arithmetic<TensorT>::value) {
+    //  // convert the indices to the an identity tensor
+    //  Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_view(indices_view_.at(axis_name)->getDataPointer().get(), (int)axes_.at(axis_name)->getNLabels(), 1);
+    //  auto indices_identity_1 = indices_identity / indices_identity;
+    //  auto indices_identity = indices_identity_1.contract(indices_identity_1, Eigen::array<Eigen::IndexPair<int>, 1>({ Eigen::IndexPair(1, 0) }));
+    //  // zero all non-selected indices using `.cast<T>` and `.contract()`
+    //  auto tensor_select = tensor.contract(indices_identity.cast<TensorT>(), Eigen::array<Eigen::IndexPair<int>, 1>({ Eigen::IndexPair(axes_to_dims_.at(axis_name), 0) }));
+    //}
+    //else {
+    //  // broadcast the indices across the tensor 
+    //  // zero all non-selected indices using `.select` if char/string type
+    //}
+
+    // broadcast the comparitor values across the selected tensor dimensions
+    Eigen::TensorMap<Eigen::Tensor<LabelsT, TDim>> values_reshape(values.get(), values_reshape_dimensions);
+    auto values_bcast = values_reshape.broadcast(values_bcast_dimensions);
+
+    // apply the logical comparitor and modifier as a selection criteria
+    if (comparitor == logicalComparitor::EQUAL_TO) {
+      auto pass_selection_criteria = (values_bcast == tensor_select).select(tensor_select.constant(1), tensor_select.constant(0));
     }
-    else {
-    // broadcast the indices across the tensor 
-      Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_reshape(indices_view_.at(axis_name)->getDataPointer().get(), (int)axes_.at(axis_name)->getNLabels(), 1, 1);
-      auto indices_bcast = indices_reshape.broadcast(Eigen::array<int, 2>({ 1, n_labels }));
+    // TODO: all other comparators
+    
+    // update all other tensor indices view based on the selection criteria tensor
+    for (int i = 0; i < TDim; ++i) {
+      if (i == axes_to_dims_.at(axis_name)) continue;
 
-      // zero all non-selected indices using `.select` if char/string type
+      // build the continuator reduction indices
+      Eigen::array<int, TDim - 1> reduction_dims;
+      int index = 0;
+      for (int j = 0; j < TDim; ++j) {
+        if (j != axes_to_dims_.at(axis_name)) {
+          reduction_dims.at(index) = j;
+          ++index;
+        }
+      }
+
+      // apply the continuator reduction
+      if (within_continuator == logicalContinuator::OR) {
+        auto indicesView_update_tmp = pass_selection_criteria.sum(reduction_dims);
+        auto indicesView_update = indicesView_update_tmp / indicesView_update_tmp; //ensure a max value of 1
+      }
+      else if (within_continuator == logicalContinuator::AND) {
+        auto indicesView_update = pass_selection_criteria.prod(reduction_dims);
+      }
+
+      // update the indices view based on the prepend_continuator
+      if (prepend_continuator == logicalContinuator::OR) {
+        Eigen::TensorMap<Eigen::Tensor<int, 1>> indices(indices_.at(axis_name)->getDataPointer().get(), indices_.at(axis_name)->getDimensions());
+        auto indicesView_update_select = (indicesView_update > 0).select(indices, indices.constant(0));
+        indicesView_copy->getData().device(device) += indicesView_update_select;
+      }
+      else if (prepend_continuator == logicalContinuator::AND) {
+        indicesView_copy->getData().device(device) = indicsView_copy->getData() * indicesView_update;
+      }
     }
-
-    // #3 Apply the logical comparitor and modifier as a selection criteria
-
-    // broadcast the values across the tensor
-
-    // apply the comparitor 
-
-    // #4 Reduce the selected indices using the within continuator (i.e., Sum or Prod)
-    // auto indicesView_update = .Prod(...);
-    // if (OR) indicesView_update = .Sum(...);
-
-    // #5 Update the indices view using the prepend continuator (i.e., += or *= )
-    // if (AND) indicsView_copy->getData().device(device) = indicsView_copy->getData() * indicesView_update;
-    // else indicsView_copy->getData().device(device) += indicesView_update;
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
