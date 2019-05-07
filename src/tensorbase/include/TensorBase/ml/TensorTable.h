@@ -101,6 +101,30 @@ namespace TensorBase
       const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values, const logicalComparitor& comparitor, const logicalModifier& modifier,
       const logicalContinuator& prepend_continuator, const logicalContinuator& within_continuator, const DeviceT& device);
 
+    /*
+    @brief Broadcast the axis indices view across the entire tensor
+      and allocate to memory
+
+    @param[out] indices_view_bcast
+    @param[in] axis_name
+    */
+    //virtual void broadcastSelectIndicesView(std::shared_ptr<TensorData<int, DeviceT, TDim>>, const std::string& axis_name) = 0;
+
+    //virtual void broadcastSortIndicesView(std::shared_ptr<TensorData<int, DeviceT, TDim>>, const std::string& axis_name) = 0;
+
+    /*
+    @brief Select data from the Tensor based on a select index tensor
+
+    @param[in] indices_view_bcast The indices (0 or 1) to select from
+    @param[out] tensor_select The selected and reduced tensor
+    */
+    virtual void selectTensorData(const std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_view_bcast, std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, DeviceT& device) = 0;
+
+    /*
+    @brief Sort data from the Tensor based on a sort index tensor
+    */
+    //virtual void sortTensorData(const std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_view_sort, std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& tensor_select, DeviceT& device) = 0;
+
   protected:
     int id_ = -1;
     std::string name_ = "";
@@ -184,104 +208,88 @@ namespace TensorBase
     // select the `labels` indices from the axis labels and store in the current indices view
     selectIndicesView(axis_name, dimension_index, select_labels_data, n_labels, device);
 
-    // determine the dimensions for reshaping and broadcasting the indices, for the making the selected tensor, and for reshaping and boradcasting the values
-    Eigen::array<int, TDim> indices_reshape_dimensions;
-    Eigen::array<int, TDim> indices_bcast_dimensions;
-    Eigen::array<int, TDim> tensor_select_dimensions;
-    Eigen::array<int, TDim> values_reshape_dimensions;
-    Eigen::array<int, TDim> values_bcast_dimensions;
-    for (int i = 0; i < TDim; ++i) {
-      if (i == axes_to_dims_.at(axis_name)) {
-        indices_reshape_dimensions.at(i) = (int)axes_.at(axis_name)->getNLabels();
-        indices_bcast_dimensions.at(i) = 1;
-        tensor_select_dimensions.at(i) = n_labels;
-        values_reshape_dimensions.at(i) = n_labels;
-        values_bcast_dimensions.at(i) = 1;
-      }
-      else {
-        indices_reshape_dimensions.at(i) = 1;
-        indices_bcast_dimensions.at(i) = dimensions_.at(i);
-        tensor_select_dimensions.at(i) = dimensions_.at(i);
-        values_reshape_dimensions.at(i) = 1;
-        values_bcast_dimensions.at(i) = dimensions_.at(i);
-      }
-    }
-
-    // broadcast the indices across the tensor and copy to memory
-    Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_view_reshape(indices_view_.at(axis_name)->getDataPointer().get(), indices_reshape_dimensions);
-    auto indices_view_bcast = indices_view_reshape.broadcast(indices_bcast_dimensions);
-    TensorData<TensorT, DeviceT, 1> indicesView_bcast(dimensions_);
-    indicesView_bcast.setData(indices_view_bcast);
-
-    // allocate memory for the selected tensor
-    TensorData<TensorT, DeviceT, TDim> tensor_select(tensor_select_dimensions);
-    Eigen::Tensor<TensorT, TDim> tensor_select_data(tensor_select_dimensions);
-    tensor_select_data.setZero();
-    tensor_select.setData(tensor_select_data);
-
-    // Reduce the Tensor to `n_labels` using the `labels` indices as the selection criteria
-    Eigen::TensorMap<Eigen::Tensor<int, TDim>> tensor(data_->getDataPointer().get(), dimensions_);
-    // TODO: apply the gpu or cpu select algorithm
-    // http://www.cplusplus.com/reference/algorithm/remove_if/ cpu
-    // http://nvlabs.github.io/cub/structcub_1_1_device_select.html#details (DeviceSelect::flagged) gpu
-
-    // SNIPPET: could be useful for other purposes
-    //if (std::is_arithmetic<TensorT>::value) {
-    //  // convert the indices to the an identity tensor
-    //  Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_view(indices_view_.at(axis_name)->getDataPointer().get(), (int)axes_.at(axis_name)->getNLabels(), 1);
-    //  auto indices_identity_1 = indices_identity / indices_identity;
-    //  auto indices_identity = indices_identity_1.contract(indices_identity_1, Eigen::array<Eigen::IndexPair<int>, 1>({ Eigen::IndexPair(1, 0) }));
-    //  // zero all non-selected indices using `.cast<T>` and `.contract()`
-    //  auto tensor_select = tensor.contract(indices_identity.cast<TensorT>(), Eigen::array<Eigen::IndexPair<int>, 1>({ Eigen::IndexPair(axes_to_dims_.at(axis_name), 0) }));
-    //}
-    //else {
-    //  // broadcast the indices across the tensor 
-    //  // zero all non-selected indices using `.select` if char/string type
+    //// determine the dimensions for reshaping and broadcasting the indices, for the making the selected tensor, and for reshaping and boradcasting the values
+    //Eigen::array<int, TDim> indices_reshape_dimensions;
+    //Eigen::array<int, TDim> indices_bcast_dimensions;
+    //Eigen::array<int, TDim> tensor_select_dimensions;
+    //Eigen::array<int, TDim> values_reshape_dimensions;
+    //Eigen::array<int, TDim> values_bcast_dimensions;
+    //for (int i = 0; i < TDim; ++i) {
+    //  if (i == axes_to_dims_.at(axis_name)) {
+    //    indices_reshape_dimensions.at(i) = (int)axes_.at(axis_name)->getNLabels();
+    //    indices_bcast_dimensions.at(i) = 1;
+    //    tensor_select_dimensions.at(i) = n_labels;
+    //    values_reshape_dimensions.at(i) = n_labels;
+    //    values_bcast_dimensions.at(i) = 1;
+    //  }
+    //  else {
+    //    indices_reshape_dimensions.at(i) = 1;
+    //    indices_bcast_dimensions.at(i) = dimensions_.at(i);
+    //    tensor_select_dimensions.at(i) = dimensions_.at(i);
+    //    values_reshape_dimensions.at(i) = 1;
+    //    values_bcast_dimensions.at(i) = dimensions_.at(i);
+    //  }
     //}
 
-    // broadcast the comparitor values across the selected tensor dimensions
-    Eigen::TensorMap<Eigen::Tensor<LabelsT, TDim>> values_reshape(values.get(), values_reshape_dimensions);
-    auto values_bcast = values_reshape.broadcast(values_bcast_dimensions);
+    //// broadcast the indices across the tensor and copy to memory
+    //Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_view_reshape(indices_view_.at(axis_name)->getDataPointer().get(), indices_reshape_dimensions);
+    //auto indices_view_bcast_values = indices_view_reshape.broadcast(indices_bcast_dimensions);
+    //TensorData<TensorT, DeviceT, 1> indices_view_bcast(dimensions_);
+    //indices_view_bcast.setData(indices_view_bcast_values);
 
-    // apply the logical comparitor and modifier as a selection criteria
-    if (comparitor == logicalComparitor::EQUAL_TO) {
-      auto pass_selection_criteria = (values_bcast == tensor_select).select(tensor_select.constant(1), tensor_select.constant(0));
-    }
-    // TODO: all other comparators
-    
-    // update all other tensor indices view based on the selection criteria tensor
-    for (int i = 0; i < TDim; ++i) {
-      if (i == axes_to_dims_.at(axis_name)) continue;
+    //// allocate memory for the selected tensor
+    //TensorData<TensorT, DeviceT, TDim> tensor_select(tensor_select_dimensions);
+    //Eigen::Tensor<TensorT, TDim> tensor_select_data(tensor_select_dimensions);
+    //tensor_select_data.setZero();
+    //tensor_select.setData(tensor_select_data);
 
-      // build the continuator reduction indices
-      Eigen::array<int, TDim - 1> reduction_dims;
-      int index = 0;
-      for (int j = 0; j < TDim; ++j) {
-        if (j != axes_to_dims_.at(axis_name)) {
-          reduction_dims.at(index) = j;
-          ++index;
-        }
-      }
+    //// Reduce the Tensor to `n_labels` using the `labels` indices as the selection criteria
+    //selectTensorData(indices_view_bcast, tensor_select, axis_name, n_labels, device);
+    //// http://nvlabs.github.io/cub/structcub_1_1_device_select.html#details (DeviceSelect::flagged) gpu
 
-      // apply the continuator reduction
-      if (within_continuator == logicalContinuator::OR) {
-        auto indicesView_update_tmp = pass_selection_criteria.sum(reduction_dims);
-        auto indicesView_update = indicesView_update_tmp / indicesView_update_tmp; //ensure a max value of 1
-      }
-      else if (within_continuator == logicalContinuator::AND) {
-        auto indicesView_update = pass_selection_criteria.prod(reduction_dims);
-      }
+    //// broadcast the comparitor values across the selected tensor dimensions
+    //Eigen::TensorMap<Eigen::Tensor<LabelsT, TDim>> values_reshape(values.get(), values_reshape_dimensions);
+    //auto values_bcast = values_reshape.broadcast(values_bcast_dimensions);
 
-      // update the indices view based on the prepend_continuator
-      if (prepend_continuator == logicalContinuator::OR) {
-        Eigen::TensorMap<Eigen::Tensor<int, 1>> indices(indices_.at(axis_name)->getDataPointer().get(), indices_.at(axis_name)->getDimensions());
-        auto indicesView_update_select = (indicesView_update > 0).select(indices, indices.constant(0));
-        indicesView_copy->getData().device(device) += indicesView_update_select;
-      }
-      else if (prepend_continuator == logicalContinuator::AND) {
-        indicesView_copy->getData().device(device) = indicsView_copy->getData() * indicesView_update;
-      }
-    }
+    //// apply the logical comparitor and modifier as a selection criteria
+    //if (comparitor == logicalComparitor::EQUAL_TO) {
+    //  auto pass_selection_criteria = (values_bcast == tensor_select).select(tensor_select.constant(1), tensor_select.constant(0));
+    //}
+    //// TODO: all other comparators
+    //
+    //// update all other tensor indices view based on the selection criteria tensor
+    //for (int i = 0; i < TDim; ++i) {
+    //  if (i == axes_to_dims_.at(axis_name)) continue;
+
+    //  // build the continuator reduction indices
+    //  Eigen::array<int, TDim - 1> reduction_dims;
+    //  int index = 0;
+    //  for (int j = 0; j < TDim; ++j) {
+    //    if (j != axes_to_dims_.at(axis_name)) {
+    //      reduction_dims.at(index) = j;
+    //      ++index;
+    //    }
+    //  }
+
+    //  // apply the continuator reduction
+    //  if (within_continuator == logicalContinuator::OR) {
+    //    auto indicesView_update_tmp = pass_selection_criteria.sum(reduction_dims);
+    //    auto indicesView_update = indicesView_update_tmp / indicesView_update_tmp; //ensure a max value of 1
+    //  }
+    //  else if (within_continuator == logicalContinuator::AND) {
+    //    auto indicesView_update = pass_selection_criteria.prod(reduction_dims);
+    //  }
+
+    //  // update the indices view based on the prepend_continuator
+    //  if (prepend_continuator == logicalContinuator::OR) {
+    //    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices(indices_.at(axis_name)->getDataPointer().get(), indices_.at(axis_name)->getDimensions());
+    //    auto indicesView_update_select = (indicesView_update > 0).select(indices, indices.constant(0));
+    //    indicesView_copy->getData().device(device) += indicesView_update_select;
+    //  }
+    //  else if (prepend_continuator == logicalContinuator::AND) {
+    //    indicesView_copy->getData().device(device) = indicsView_copy->getData() * indicesView_update;
+    //  }
+    //}
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
@@ -305,6 +313,7 @@ namespace TensorBase
     ~TensorTableDefaultDevice() = default;
     void setAxes() override;
     void initData() override;
+    void selectTensorData(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_view_bcast, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, Eigen::DefaultDevice& device) override;
   };
 
   template<typename TensorT, int TDim>
@@ -369,6 +378,47 @@ namespace TensorBase
   template<typename TensorT, int TDim>
   void TensorTableDefaultDevice<TensorT, TDim>::initData() {
     this->getData().reset(new TensorDataDefaultDevice<TensorT, TDim>(this->getDimensions()));
+  }
+
+  template<typename TensorT, int TDim>
+  inline void TensorTableDefaultDevice<TensorT, TDim>::selectTensorData(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_view_bcast, 
+    std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, Eigen::DefaultDevice& device)
+  {
+    // determine the dimensions for the making the selected tensor
+    Eigen::array<Eigen::Index, TDim> tensor_select_dimensions;
+    Eigen::array<Eigen::Index, 1> tensor_select_1d_dimensions; tensor_select_1d_dimensions.at(0) = 1;
+    Eigen::array<Eigen::Index, 1> tensor_1d_dimensions; tensor_1d_dimensions.at(0) = 1;
+    for (int i = 0; i < TDim; ++i) {
+      if (i == axes_to_dims_.at(axis_name)) {
+        tensor_select_dimensions.at(i) = n_select;
+        tensor_select_1d_dimensions.at(0) *= n_select;
+        tensor_1d_dimensions.at(0) *= dimensions_.at(i);
+      }
+      else {
+        tensor_select_dimensions.at(i) = dimensions_.at(i);
+        tensor_select_1d_dimensions.at(0) *= dimensions_.at(i);
+        tensor_1d_dimensions.at(0) *= dimensions_.at(i);
+      }
+    }
+
+    // allocate memory for the selected tensor
+    TensorDataDefaultDevice<TensorT, TDim> tensor_select_tmp(tensor_select_dimensions);
+    Eigen::Tensor<TensorT, TDim> tensor_select_data(tensor_select_dimensions);
+    tensor_select_data.setZero();
+    tensor_select_tmp.setData(tensor_select_data);
+
+    // apply the device specific select algorithm
+    int iter = 0;
+    std::for_each(indices_view_bcast->getDataPointer().get(), indices_view_bcast->getDataPointer().get() + indices_view_bcast->getData().size(),
+      [&](const int& index) {
+      if (index > 0) {
+        tensor_select_tmp.getData().data()[iter] = this->data_->getData().data()[index];
+        ++iter;
+      }
+    });
+
+    // move over the results
+    tensor_select = std::make_shared<TensorDataDefaultDevice<TensorT, TDim>>(tensor_select_tmp);
   }
 
   template<typename TensorT, int TDim>

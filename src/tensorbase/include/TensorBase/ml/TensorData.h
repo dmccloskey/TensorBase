@@ -45,16 +45,23 @@ namespace TensorBase
       h_data_updated_ = other.h_data_updated_;
       d_data_updated_ = other.d_data_updated_;
       dimensions_ = other.dimensions_;
+      tensor_size_ = other.tensor_size_;
+      device_name_ = other.device_name_;
     };
     virtual ~TensorData() = default; ///< Default destructor
 
-    inline bool operator==(const TensorData& other) const
+    template<typename TensorTOther, typename DeviceTOther, int TDimOther>
+    inline bool operator==(const TensorData<TensorTOther, DeviceTOther, TDimOther>& other) const
     {
+      if (!std::is_same<tensorT, TensorData<TensorTOther, DeviceTOther, TDimOther>::tensorT>::value)
+        return false;
       return
         std::tie(
-          dimensions_
+          dimensions_,
+          device_name_          
         ) == std::tie(
-          other.dimensions_
+          other.dimensions_,
+          other.device_name_          
         )
         ;
     }
@@ -71,6 +78,8 @@ namespace TensorBase
       h_data_updated_ = other.h_data_updated_;
       d_data_updated_ = other.d_data_updated_;
       dimensions_ = other.dimensions_;
+      tensor_size_ = other.tensor_size_;
+      device_name_ = other.device_name_;
       return *this;
     }
 

@@ -31,8 +31,34 @@ BOOST_AUTO_TEST_CASE(destructorDefaultDevice)
 
 BOOST_AUTO_TEST_CASE(comparisonDefaultDevice)
 {
+  // Check null
 	TensorDataDefaultDevice<float, 3> tensordata, tensordata_test;
 	BOOST_CHECK(tensordata == tensordata_test);
+
+  //// Check different types [TODO: fix]
+  //TensorDataDefaultDevice<int, 3> tensordata_int;
+  //BOOST_CHECK(tensordata_int != tensordata_test);
+
+  // Check same dimensions
+  tensordata.setDimensions(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+  tensordata_test.setDimensions(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+  BOOST_CHECK(tensordata == tensordata_test);
+
+  // Check different dimensions
+  tensordata.setDimensions(Eigen::array<Eigen::Index, 3>({ 1, 2, 3 }));
+  BOOST_CHECK(tensordata != tensordata_test);
+}
+
+BOOST_AUTO_TEST_CASE(copyDefaultDevice)
+{
+  TensorDataDefaultDevice<float, 3> tensordata_test(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+  Eigen::Tensor<float, 3> data(2, 3, 4);
+  data.setConstant(1);
+  tensordata_test.setData(data);
+
+  TensorDataDefaultDevice<float, 3> tensordata(tensordata_test);
+  BOOST_CHECK(tensordata == tensordata_test);
+  BOOST_CHECK_EQUAL(tensordata.getData()(0, 0, 0), 1);
 }
 
 BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
@@ -227,7 +253,7 @@ BOOST_AUTO_TEST_CASE(syncHAndDCpu)
   BOOST_CHECK(tensordata.getDataStatus().second);
 }
 
-/* TensorDataDefaultDevice Tests
+/* TensorDataGpuDevice Tests
 */
 #if COMPILE_WITH_CUDA
 BOOST_AUTO_TEST_CASE(constructorGpu)
