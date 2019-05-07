@@ -99,6 +99,7 @@ namespace TensorBase
     std::string getDeviceName() { return device_name_; }; ///< Device name getter
 
     virtual void setData(const Eigen::Tensor<TensorT, TDim>& data) = 0; ///< data setter
+    virtual void setData() = 0; ///< data setter
 
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> getData() { std::shared_ptr<TensorT> h_data = h_data_;  Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data(h_data.get(), this->getDimensions()); return data; } ///< data copy getter
     virtual std::shared_ptr<TensorT> getDataPointer() = 0; ///< data pointer getter
@@ -169,6 +170,12 @@ namespace TensorBase
       this->h_data_updated_ = true;
       this->d_data_updated_ = true;
     }; ///< data setter
+    void setData() {
+      TensorT* h_data = new TensorT[this->tensor_size_];
+      this->h_data_.reset(h_data);
+      this->h_data_updated_ = true;
+      this->d_data_updated_ = true;
+    };
     bool syncHAndDData(Eigen::DefaultDevice& device) { return true; }
     //private:
     //	friend class cereal::access;
@@ -194,12 +201,16 @@ namespace TensorBase
       // copy the tensor
       Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy(h_data, this->getDimensions());
       data_copy = data;
-      //auto h_deleter = [&](TensorT* ptr) { delete[] ptr; };
-      //this->h_data_.reset(h_data, h_deleter);
       this->h_data_.reset(h_data);
       this->h_data_updated_ = true;
       this->d_data_updated_ = true;
     }; ///< data setter
+    void setData() {
+      TensorT* h_data = new TensorT[this->tensor_size_];
+      this->h_data_.reset(h_data);
+      this->h_data_updated_ = true;
+      this->d_data_updated_ = true;
+    };
     bool syncHAndDData(Eigen::ThreadPoolDevice& device) { return true; }
     //private:
     //	friend class cereal::access;
@@ -236,6 +247,20 @@ namespace TensorBase
       this->h_data_updated_ = true;
       this->d_data_updated_ = false;
     }; ///< data setter
+    void setData() {
+      // allocate cuda and pinned host memory
+      TensorT* d_data;
+      TensorT* h_data;
+      assert(cudaMalloc((void**)(&d_data), getTensorSize()) == cudaSuccess);
+      assert(cudaHostAlloc((void**)(&h_data), getTensorSize(), cudaHostAllocDefault) == cudaSuccess);
+      // define the deleters
+      auto h_deleter = [&](TensorT* ptr) { cudaFreeHost(ptr); };
+      auto d_deleter = [&](TensorT* ptr) { cudaFree(ptr); };
+      this->h_data_.reset(h_data, h_deleter);
+      this->d_data_.reset(d_data, d_deleter);
+      this->h_data_updated_ = true;
+      this->d_data_updated_ = false;
+    };
     bool syncHAndDData(Eigen::GpuDevice& device) {
       if (this->h_data_updated_ && !this->d_data_updated_) {
         device.memcpyHostToDevice(this->d_data_.get(), this->h_data_.get(), getTensorSize());

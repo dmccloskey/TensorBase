@@ -141,6 +141,49 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable.getData(), nullptr);
 }
 
+BOOST_AUTO_TEST_CASE(broadcastSelectIndicesViewDefaultDevice)
+{
+  // setup the table
+  TensorTableDefaultDevice<float, 3> tensorTable;
+  Eigen::DefaultDevice device;
+
+  // setup the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels = 4;
+  Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels), labels3(1, nlabels);
+  labels1.setConstant(1);
+  labels2.setConstant(2);
+  labels3.setConstant(3);
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3)));
+  tensorTable.setAxes();
+
+  // setup the indices test
+  Eigen::Tensor<int, 3> indices_test(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        indices_test(i, j, k) = i;
+      }
+    }
+  }
+
+  // test the broadcast indices values
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>> indices_view_bcast;
+  tensorTable.broadcastSelectIndicesView(indices_view_bcast, "1", device);
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        BOOST_CHECK(indices_view_bcast->getData()(i,j,k), indices_test(i, j, k));
+      }
+    }
+  }
+}
+
 BOOST_AUTO_TEST_CASE(selectTensorDataDefaultDevice)
 {
   // setup the table
@@ -173,7 +216,7 @@ BOOST_AUTO_TEST_CASE(selectTensorDataDefaultDevice)
         tensor_values(i, j, k) = value;
         if (i % 2 == 0) {
           indices_values(i, j, k) = 1;
-          indices_values(i/2, j, k) = value;
+          tensor_test(i/2, j, k) = value;
         }
         else {
           indices_values(i, j, k) = 0;
