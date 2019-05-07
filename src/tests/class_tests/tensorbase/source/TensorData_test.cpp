@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(comparisonDefaultDevice)
   BOOST_CHECK(tensordata != tensordata_test);
 }
 
-BOOST_AUTO_TEST_CASE(copyDefaultDevice)
+BOOST_AUTO_TEST_CASE(assignmentDefaultDevice)
 {
   TensorDataDefaultDevice<float, 3> tensordata_test(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
   Eigen::Tensor<float, 3> data(2, 3, 4);
@@ -59,6 +59,21 @@ BOOST_AUTO_TEST_CASE(copyDefaultDevice)
   TensorDataDefaultDevice<float, 3> tensordata(tensordata_test);
   BOOST_CHECK(tensordata == tensordata_test);
   BOOST_CHECK_EQUAL(tensordata.getData()(0, 0, 0), 1);
+}
+
+BOOST_AUTO_TEST_CASE(copyDefaultDevice)
+{
+  TensorDataDefaultDevice<float, 3> tensordata_test(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+  Eigen::Tensor<float, 3> data(2, 3, 4);
+  data.setConstant(1);
+  tensordata_test.setData(data);
+
+  std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 3>> tensordata;
+  tensordata.reset(tensordata_test.copy());
+  BOOST_CHECK(tensordata->getDimensions() == tensordata_test.getDimensions());
+  BOOST_CHECK(tensordata->getTensorSize() == tensordata_test.getTensorSize());
+  BOOST_CHECK(tensordata->getDeviceName() == tensordata_test.getDeviceName());
+  BOOST_CHECK_EQUAL(tensordata->getData()(0, 0, 0), 1);
 }
 
 BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)

@@ -83,6 +83,8 @@ namespace TensorBase
       return *this;
     }
 
+    virtual TensorData* copy() const = 0; ///< returns a copy of the TensorData
+
     /**
       @brief Set the tensor dimensions and calculate the tensor size
     */
@@ -160,6 +162,7 @@ namespace TensorBase
   public:
     using TensorData<TensorT, Eigen::DefaultDevice, TDim>::TensorData;
     ~TensorDataDefaultDevice() = default;
+    TensorData* copy() const { return new TensorDataDefaultDevice(*this); }
     std::shared_ptr<TensorT> getDataPointer() { return h_data_; }
     void setData(const Eigen::Tensor<TensorT, TDim>& data) {
       TensorT* h_data = new TensorT[this->tensor_size_];
@@ -195,6 +198,7 @@ namespace TensorBase
   public:
     using TensorData<TensorT, Eigen::ThreadPoolDevice, TDim>::TensorData;
     ~TensorDataCpu() = default;
+    TensorData* copy() const { return new TensorDataCpu(*this); }
     std::shared_ptr<TensorT> getDataPointer() { return h_data_; }
     void setData(const Eigen::Tensor<TensorT, TDim>& data) {
       TensorT* h_data = new TensorT[this->tensor_size_];
@@ -229,6 +233,7 @@ namespace TensorBase
   public:
     using TensorData<TensorT, Eigen::GpuDevice, TDim>::TensorData;
     ~TensorDataGpu() = default;
+    TensorData* copy() const { return new TensorDataGpu(*this); }
     std::shared_ptr<TensorT> getDataPointer() { return d_data_; }
     void setData(const Eigen::Tensor<TensorT, TDim>& data) {
       // allocate cuda and pinned host memory
