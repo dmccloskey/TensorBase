@@ -184,7 +184,7 @@ BOOST_AUTO_TEST_CASE(broadcastSelectIndicesViewDefaultDevice)
   }
 }
 
-BOOST_AUTO_TEST_CASE(selectTensorDataDefaultDevice)
+BOOST_AUTO_TEST_CASE(extractTensorDataDefaultDevice)
 {
   // setup the table
   TensorTableDefaultDevice<float, 3> tensorTable;
@@ -230,12 +230,144 @@ BOOST_AUTO_TEST_CASE(selectTensorDataDefaultDevice)
   
   // test
   std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 3>> tensor_select;
-  tensorTable.selectTensorData(std::make_shared<TensorDataDefaultDevice<int, 3>>(indices_select), 
+  tensorTable.extractTensorData(std::make_shared<TensorDataDefaultDevice<int, 3>>(indices_select), 
     tensor_select, "1", nlabels / 2, device);
   for (int i = 0; i < nlabels/2; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
         BOOST_CHECK_CLOSE(tensor_select->getData()(i, j, k), tensor_test(i, j, k), 1e-3);
+      }
+    }
+  }
+}
+
+BOOST_AUTO_TEST_CASE(selectTensorIndicesDefaultDevice)
+{
+  // setup the table
+  TensorTableDefaultDevice<float, 3> tensorTable;
+  Eigen::DefaultDevice device;
+
+  // setup the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels = 2;
+  Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels), labels3(1, nlabels);
+  labels1.setConstant(1);
+  labels2.setConstant(2);
+  labels3.setConstant(3);
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3)));
+  tensorTable.setAxes();
+
+  // setup the tensor select and values select data
+  Eigen::Tensor<float, 3> tensor_select_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  Eigen::Tensor<float, 1> values_select_values(Eigen::array<Eigen::Index, 1>({ nlabels }));
+  int iter = 0;
+  for (int i = 0; i < nlabels; ++i) {
+    values_select_values(i) = 2.0;
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        tensor_select_values(i, j, k) = float(iter);
+        ++iter;
+      }
+    }
+  }
+  TensorDataDefaultDevice<float, 3> tensor_select(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  tensor_select.setData(tensor_select_values);
+  std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 3>> tensor_select_ptr = std::make_shared<TensorDataDefaultDevice<float, 3>>(tensor_select);
+  TensorDataDefaultDevice<float, 1> values_select(Eigen::array<Eigen::Index, 1>({ nlabels }));
+  values_select.setData(values_select_values);
+  std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 1>> values_select_ptr = std::make_shared<TensorDataDefaultDevice<float, 1>>(values_select);
+
+  // test inequality
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>> indices_select;
+  tensorTable.selectTensorIndices(indices_select, values_select_ptr, tensor_select_ptr,
+    "1", nlabels, logicalComparitor::NOT_EQUAL_TO, logicalModifier::NONE, device);
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        if (tensor_select_values(i, j, k) == 2.0)
+          BOOST_CHECK_EQUAL(indices_select->getData()(i, j, k), 0);
+        else
+          BOOST_CHECK_EQUAL(indices_select->getData()(i, j, k), 1);
+      }
+    }
+  }
+
+  // test equality
+  indices_select.reset();
+  tensorTable.selectTensorIndices(indices_select, values_select_ptr, tensor_select_ptr,
+    "1", nlabels, logicalComparitor::EQUAL_TO, logicalModifier::NONE, device);
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        if (tensor_select_values(i, j, k) == 2.0)
+          BOOST_CHECK_EQUAL(indices_select->getData()(i, j, k), 1);
+        else
+          BOOST_CHECK_EQUAL(indices_select->getData()(i, j, k), 0);
+      }
+    }
+  }
+
+  // test less than
+  indices_select.reset();
+  tensorTable.selectTensorIndices(indices_select, values_select_ptr, tensor_select_ptr,
+    "1", nlabels, logicalComparitor::LESS_THAN, logicalModifier::NONE, device);
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        if (tensor_select_values(i, j, k) < 2.0)
+          BOOST_CHECK_EQUAL(indices_select->getData()(i, j, k), 1);
+        else
+          BOOST_CHECK_EQUAL(indices_select->getData()(i, j, k), 0);
+      }
+    }
+  }
+
+  // test less than or equal to
+  indices_select.reset();
+  tensorTable.selectTensorIndices(indices_select, values_select_ptr, tensor_select_ptr,
+    "1", nlabels, logicalComparitor::LESS_THAN_OR_EQUAL_TO, logicalModifier::NONE, device);
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        if (tensor_select_values(i, j, k) <= 2.0)
+          BOOST_CHECK_EQUAL(indices_select->getData()(i, j, k), 1);
+        else
+          BOOST_CHECK_EQUAL(indices_select->getData()(i, j, k), 0);
+      }
+    }
+  }
+
+  // test greater than
+  indices_select.reset();
+  tensorTable.selectTensorIndices(indices_select, values_select_ptr, tensor_select_ptr,
+    "1", nlabels, logicalComparitor::GREATER_THAN, logicalModifier::NONE, device);
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        if (tensor_select_values(i, j, k) > 2.0)
+          BOOST_CHECK_EQUAL(indices_select->getData()(i, j, k), 1);
+        else
+          BOOST_CHECK_EQUAL(indices_select->getData()(i, j, k), 0);
+      }
+    }
+  }
+
+  // test greater than or equal to
+  indices_select.reset();
+  tensorTable.selectTensorIndices(indices_select, values_select_ptr, tensor_select_ptr,
+    "1", nlabels, logicalComparitor::GREATER_THAN_OR_EQUAL_TO, logicalModifier::NONE, device);
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        if (tensor_select_values(i, j, k) >= 2.0)
+          BOOST_CHECK_EQUAL(indices_select->getData()(i, j, k), 1);
+        else
+          BOOST_CHECK_EQUAL(indices_select->getData()(i, j, k), 0);
       }
     }
   }

@@ -57,7 +57,8 @@ namespace TensorBase
     NOT_EQUAL_TO
   };
   enum logicalModifier {
-    NOT
+    NOT,
+    NONE
   };
   enum logicalContinuator {
     AND,
