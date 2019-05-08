@@ -1,41 +1,40 @@
 /**TODO:  Add copyright*/
 
-#define BOOST_TEST_MODULE TensorTable test suite 
-#include <boost/test/included/unit_test.hpp>
-#include <TensorBase/ml/TensorTableDefaultDevice.h>
+#if COMPILE_WITH_CUDA
+#include <TensorBase/ml/TensorTableGpu.h>
 
 using namespace TensorBase;
 using namespace std;
 
 BOOST_AUTO_TEST_SUITE(tensorTable)
 
-BOOST_AUTO_TEST_CASE(constructorDefaultDevice) 
+void test_constructorGpu()
 {
-  TensorTableDefaultDevice<float, 3>* ptr = nullptr;
-  TensorTableDefaultDevice<float, 3>* nullPointer = nullptr;
-	ptr = new TensorTableDefaultDevice<float, 3>();
-  BOOST_CHECK_NE(ptr, nullPointer);
+  TensorTableGpu<float, 3>* ptr = nullptr;
+  TensorTableGpu<float, 3>* nullPointer = nullptr;
+  ptr = new TensorTableGpu<float, 3>();
+  assert(ptr != nullPointer);
   delete ptr;
 }
 
-BOOST_AUTO_TEST_CASE(destructorDefaultDevice)
+void test_destructorGpu()
 {
-  TensorTableDefaultDevice<float, 3>* ptr = nullptr;
-	ptr = new TensorTableDefaultDevice<float, 3>();
+  TensorTableGpu<float, 3>* ptr = nullptr;
+  ptr = new TensorTableGpu<float, 3>();
   delete ptr;
 }
 
-BOOST_AUTO_TEST_CASE(constructorNameAndAxesDefaultDevice)
+void test_constructorNameAndAxesGpu()
 {
-  TensorTableDefaultDevice<float, 3> tensorTable("1");
+  TensorTableGpu<float, 3> tensorTable("1");
 
   BOOST_CHECK_EQUAL(tensorTable.getId(), -1);
   BOOST_CHECK_EQUAL(tensorTable.getName(), "1");
 }
 
-BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
+void test_gettersAndSettersGpu()
 {
-  TensorTableDefaultDevice<float, 3> tensorTable;
+  TensorTableGpu<float, 3> tensorTable;
   // Check defaults
   BOOST_CHECK_EQUAL(tensorTable.getId(), -1);
   BOOST_CHECK_EQUAL(tensorTable.getName(), "");
@@ -62,9 +61,9 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   //labels1.setConstant("x-axis");
   //labels2.setConstant("y-axis");
   //labels3.setConstant("z-axis");
-  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
-  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
-  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("1", dimensions1, labels1)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("2", dimensions2, labels2)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("3", dimensions3, labels3)));
   tensorTable.setAxes();
 
   // Test expected axes values
@@ -141,11 +140,11 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable.getData(), nullptr);
 }
 
-BOOST_AUTO_TEST_CASE(broadcastSelectIndicesViewDefaultDevice)
+void test_broadcastSelectIndicesViewGpu()
 {
   // setup the table
-  TensorTableDefaultDevice<float, 3> tensorTable;
-  Eigen::DefaultDevice device;
+  TensorTableGpu<float, 3> tensorTable;
+  Eigen::GpuDevice device;
 
   // setup the axes
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
@@ -157,9 +156,9 @@ BOOST_AUTO_TEST_CASE(broadcastSelectIndicesViewDefaultDevice)
   labels1.setConstant(1);
   labels2.setConstant(2);
   labels3.setConstant(3);
-  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
-  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
-  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("1", dimensions1, labels1)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("2", dimensions2, labels2)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("3", dimensions3, labels3)));
   tensorTable.setAxes();
 
   // setup the indices test
@@ -173,7 +172,7 @@ BOOST_AUTO_TEST_CASE(broadcastSelectIndicesViewDefaultDevice)
   }
 
   // test the broadcast indices values
-  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>> indices_view_bcast;
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 3>> indices_view_bcast;
   tensorTable.broadcastSelectIndicesView(indices_view_bcast, "1", device);
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
@@ -184,11 +183,11 @@ BOOST_AUTO_TEST_CASE(broadcastSelectIndicesViewDefaultDevice)
   }
 }
 
-BOOST_AUTO_TEST_CASE(selectTensorDataDefaultDevice)
+void test_selectTensorDataGpu()
 {
   // setup the table
-  TensorTableDefaultDevice<float, 3> tensorTable;
-  Eigen::DefaultDevice device;
+  TensorTableGpu<float, 3> tensorTable;
+  Eigen::GpuDevice device;
 
   // setup the axes
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
@@ -200,9 +199,9 @@ BOOST_AUTO_TEST_CASE(selectTensorDataDefaultDevice)
   labels1.setConstant(1);
   labels2.setConstant(2);
   labels3.setConstant(3);
-  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
-  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
-  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("1", dimensions1, labels1)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("2", dimensions2, labels2)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("3", dimensions3, labels3)));
   tensorTable.setAxes();
 
   // setup the tensor data, selection indices, and test selection data
@@ -225,12 +224,12 @@ BOOST_AUTO_TEST_CASE(selectTensorDataDefaultDevice)
     }
   }
   tensorTable.getData()->setData(tensor_values);
-  TensorDataDefaultDevice<int, 3> indices_select(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  TensorDataGpu<int, 3> indices_select(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   indices_select.setData(indices_values);
   
   // test
-  std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 3>> tensor_select;
-  tensorTable.selectTensorData(std::make_shared<TensorDataDefaultDevice<int, 3>>(indices_select), 
+  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> tensor_select;
+  tensorTable.selectTensorData(std::make_shared<TensorDataGpu<int, 3>>(indices_select), 
     tensor_select, "1", nlabels / 2, device);
   for (int i = 0; i < nlabels/2; ++i) {
     for (int j = 0; j < nlabels; ++j) {
@@ -241,4 +240,15 @@ BOOST_AUTO_TEST_CASE(selectTensorDataDefaultDevice)
   }
 }
 
-BOOST_AUTO_TEST_SUITE_END()
+int main(int argc, char** argv)
+{	
+  test_constructorGpu();
+  test_destructorGpu();
+  test_constructorNameAndAxesGpu();
+  test_gettersAndSettersGpu();
+  test_broadcastSelectIndicesViewGpu();
+  test_selectTensorDataGpu();
+  return 0;
+}
+
+#endif

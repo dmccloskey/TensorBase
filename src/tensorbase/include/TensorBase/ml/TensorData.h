@@ -83,7 +83,7 @@ namespace TensorBase
       return *this;
     }
 
-    virtual TensorData* copy() const = 0; ///< returns a copy of the TensorData
+    virtual std::shared_ptr<TensorData> copy(DeviceT& device) = 0; ///< returns a copy of the TensorData
 
     /**
       @brief Set the tensor dimensions and calculate the tensor size
@@ -162,7 +162,16 @@ namespace TensorBase
   public:
     using TensorData<TensorT, Eigen::DefaultDevice, TDim>::TensorData;
     ~TensorDataDefaultDevice() = default;
-    TensorData* copy() const { return new TensorDataDefaultDevice(*this); }
+    std::shared_ptr<TensorData> copy(Eigen::DefaultDevice& device) {
+      // initialize the new data
+      TensorDataDefaultDevice<TensorT, TDim> data_new(this->getDimensions());
+      data_new.setData();
+      // copy over the values
+      Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_new_values(data_new.getDataPointer().get(), data_new.getDimensions());
+      const Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(this->getDataPointer().get(), this->getDimensions());
+      data_new_values.device(device) = data_values;
+      return std::make_shared<TensorDataDefaultDevice<TensorT, TDim>>(data_new);
+    }
     std::shared_ptr<TensorT> getDataPointer() { return h_data_; }
     void setData(const Eigen::Tensor<TensorT, TDim>& data) {
       TensorT* h_data = new TensorT[this->tensor_size_];
@@ -198,7 +207,16 @@ namespace TensorBase
   public:
     using TensorData<TensorT, Eigen::ThreadPoolDevice, TDim>::TensorData;
     ~TensorDataCpu() = default;
-    TensorData* copy() const { return new TensorDataCpu(*this); }
+    std::shared_ptr<TensorData> copy(Eigen::ThreadPoolDevice& device) {
+      // initialize the new data
+      TensorDataCpu<TensorT, TDim> data_new(this->getDimensions());
+      data_new.setData();
+      // copy over the values
+      Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_new_values(data_new.getDataPointer().get(), data_new.getDimensions());
+      const Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(this->getDataPointer().get(), this->getDimensions());
+      data_new_values.device(device) = data_values;
+      return std::make_shared<TensorDataCpu<TensorT, TDim>>(data_new);
+    }
     std::shared_ptr<TensorT> getDataPointer() { return h_data_; }
     void setData(const Eigen::Tensor<TensorT, TDim>& data) {
       TensorT* h_data = new TensorT[this->tensor_size_];
@@ -233,8 +251,22 @@ namespace TensorBase
   public:
     using TensorData<TensorT, Eigen::GpuDevice, TDim>::TensorData;
     ~TensorDataGpu() = default;
-    TensorData* copy() const { return new TensorDataGpu(*this); }
-    std::shared_ptr<TensorT> getDataPointer() { return d_data_; }
+    std::shared_ptr<TensorData> copy(Eigen::GpuDevice& device) {
+      // initialize the new data
+      TensorDataGpu<TensorT, TDim> data_new(this->getDimensions());
+      data_new.setData();
+      // copy over the values
+      Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_new_values(data_new.getDataPointer().get(), data_new.getDimensions());
+      const Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(this->getDataPointer().get(), this->getDimensions());
+      data_new_values.device(device) = data_values;
+      return std::make_shared<TensorDataGpu<TensorT, TDim>>(data_new);
+    }
+    std::shared_ptr<TensorT> getDataPointer() {
+      if (!this->d_data_updated_) {
+        this->syncHAndDData(device);
+      }
+      return d_data_; 
+    }
     void setData(const Eigen::Tensor<TensorT, TDim>& data) {
       // allocate cuda and pinned host memory
       TensorT* d_data;
@@ -280,7 +312,7 @@ namespace TensorBase
         return true;
       }
       else {
-        std::cout << "Both host and device are syncHAndDronized." << std::endl;
+        std::cout << "Both host and device are synchronized." << std::endl;
         return false;
       }
     }

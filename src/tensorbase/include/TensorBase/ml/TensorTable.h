@@ -210,9 +210,7 @@ namespace TensorBase
     const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values, const logicalComparitor& comparitor, const logicalModifier& modifier,
     const logicalContinuator& prepend_continuator, const logicalContinuator& within_continuator, const DeviceT& device) {
     // create a copy of the indices view
-    // TODO: device specific copy indices view method (factory copy method for TensorData)
-    TensorData<TensorT, DeviceT, 1> indicesView_copy(indices_view_.at(axis_name)->getDimensions());
-    indicesView_copy.setData(indices_view_.at(axis_name)->getData());
+    std::shared_ptr<TensorData<TensorT, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copy();
 
     // select the `labels` indices from the axis labels and store in the current indices view
     selectIndicesView(axis_name, dimension_index, select_labels_data, n_labels, device);

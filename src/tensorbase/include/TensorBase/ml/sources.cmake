@@ -12,6 +12,9 @@ set(sources_list_h
 	TensorOperation.h
 	TensorTable.h
 	TensorTableConcept.h
+	TensorTableCpu.h
+	TensorTableDefaultDevice.h
+	TensorTableGpu.h
 	TensorType.h
 )
 
