@@ -93,15 +93,17 @@ namespace TensorBase
     @param[in] dimension_index
     @param[in] select_labels_data
     @param[in] n_labels
-    @param[in] n_labels
-    @param[in] n_labels
-    @param[in] n_labels
+    @param[in] values
+    @param[in] comparitor
+    @param[in] modifier
+    @param[in] within_continuator
+    @param[in] prepend_continuator
     @param[in] device
     */
     template<typename LabelsT>
     void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<LabelsT>& select_labels_data, const int& n_labels, 
       const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values, const logicalComparitor& comparitor, const logicalModifier& modifier,
-      const logicalContinuator& prepend_continuator, const logicalContinuator& within_continuator, const DeviceT& device);
+      const logicalContinuator& within_continuator, const logicalContinuator& prepend_continuator, const DeviceT& device);
 
     /*
     @brief Broadcast the axis indices view across the entire tensor
@@ -136,6 +138,20 @@ namespace TensorBase
     @param[in] device
     */
     virtual void selectTensorIndices(std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values_select, const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, const logicalComparitor& comparitor, const logicalModifier& modifier, DeviceT& device) = 0;
+
+    /*
+    @brief Apply the indices select to the indices view for the respective axis
+      using the logical continuator and prepender
+
+    @param[in] indices_select The indices that passed or did not pass the selection criteria
+    @param[in] axis_name_select The name of the axis that the selection was applied to
+    @param[in] axis_name The name of the axis to apply the selection on
+    @param[in] 
+    @param[in] comparitor The logical comparitor to apply
+    @param[in] modifier The logical modifier to apply to the comparitor (i.e., Not; currently not implemented)
+    @param[in] device
+    */
+    virtual void applyIndicesSelectToIndicesView(const std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, const std::string & axis_name_select, const std::string& axis_name, const logicalContinuator& within_continuator, const logicalContinuator& prepend_continuator, DeviceT& device) = 0;
 
     /*
     @brief Broadcast the axis indices view across the entire tensor,
@@ -227,7 +243,7 @@ namespace TensorBase
   template<typename LabelsT>
   inline void TensorTable<TensorT, DeviceT, TDim>::whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<LabelsT>& select_labels_data, const int& n_labels,
     const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values, const logicalComparitor& comparitor, const logicalModifier& modifier,
-    const logicalContinuator& prepend_continuator, const logicalContinuator& within_continuator, const DeviceT& device) {
+    const logicalContinuator& within_continuator, const logicalContinuator& prepend_continuator, const DeviceT& device) {
     // create a copy of the indices view
     std::shared_ptr<TensorData<TensorT, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copy();
 
@@ -235,7 +251,6 @@ namespace TensorBase
     selectIndicesView(axis_name, dimension_index, select_labels_data, n_labels, device);
 
     // Reduce the Tensor to `n_labels` using the `labels` indices as the selection criteria
-    // TODO: GPU version; see http://nvlabs.github.io/cub/structcub_1_1_device_select.html#details (DeviceSelect::flagged) for selectTensorData
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_view_bcast;
     broadcastSelectIndicesView(indices_view_bcast, axis_name, device);
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> tensor_select;
@@ -244,52 +259,30 @@ namespace TensorBase
     // Determine the indices that pass the selection criteria
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_select;
     selectTensorIndices(indices_select, values, tensor_select, axis_name, n_labels, comparitor, modifier, device);
+
+    // revert back to the origin indices view
+    indices_view_.at(axis_name)->getDataPointer() = indices_view_copy->getDataPointer();
     
     // update all other tensor indices view based on the selection criteria tensor
-    for (int i = 0; i < TDim; ++i) {
-      if (i == axes_to_dims_.at(axis_name)) continue;
-
-      // build the continuator reduction indices
-      Eigen::array<int, TDim - 1> reduction_dims;
-      int index = 0;
-      for (int j = 0; j < TDim; ++j) {
-        if (j != axes_to_dims_.at(axis_name)) {
-          reduction_dims.at(index) = j;
-          ++index;
-        }
-      }
-
-      // apply the continuator reduction
-      if (within_continuator == logicalContinuator::OR) {
-        auto indicesView_update_tmp = pass_selection_criteria.sum(reduction_dims);
-        auto indicesView_update = indicesView_update_tmp / indicesView_update_tmp; //ensure a max value of 1
-      }
-      else if (within_continuator == logicalContinuator::AND) {
-        auto indicesView_update = pass_selection_criteria.prod(reduction_dims);
-      }
-
-      // update the indices view based on the prepend_continuator
-      if (prepend_continuator == logicalContinuator::OR) {
-        Eigen::TensorMap<Eigen::Tensor<int, 1>> indices(indices_.at(axis_name)->getDataPointer().get(), indices_.at(axis_name)->getDimensions());
-        auto indicesView_update_select = (indicesView_update > 0).select(indices, indices.constant(0));
-        indicesView_copy->getData().device(device) += indicesView_update_select;
-      }
-      else if (prepend_continuator == logicalContinuator::AND) {
-        indicesView_copy->getData().device(device) = indicsView_copy->getData() * indicesView_update;
-      }
+    for (const auto& axis_to_name: axes_to_dims_) {
+      if (axis_to_name.first == axis_name) continue;
+      applyIndicesSelectToIndicesView(indices_select, axis_name, axis_to_name.first, within_continuator, prepend_continuator, device);
     }
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorTable<TensorT, DeviceT, TDim>::resetIndicesView(const std::string& axis_name, const DeviceT& device)
-  {    
-    indices_view_.at(axis_name)->getData().device(device) = indices_.at(axis_name)->getData();
+  {
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_name)->getDataPointer().get(), indices_view_.at(axis_name)->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices(indices_.at(axis_name)->getDataPointer().get(), indices_.at(axis_name)->getDimensions());
+    indices_view.device(device) = indices;
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorTable<TensorT, DeviceT, TDim>::zeroIndicesView(const std::string & axis_name, const DeviceT& device)
   {
-    indices_view_.at(axis_name)->getData().device(device) = indices_view_.at(axis_name)->getData().constant(0);
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_name)->getDataPointer().get(), indices_view_.at(axis_name)->getDimensions());
+    indices_view.device(device) = indices_view.constant(0);
   };
 };
 #endif //TENSORBASE_TENSORTABLE_H

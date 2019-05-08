@@ -141,6 +141,45 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable.getData(), nullptr);
 }
 
+BOOST_AUTO_TEST_CASE(zeroIndicesViewAndResetIndicesViewDefaultDevice)
+{
+  // setup the table
+  TensorTableDefaultDevice<float, 3> tensorTable;
+  Eigen::DefaultDevice device;
+
+  // setup the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels = 3;
+  Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels), labels3(1, nlabels);
+  labels1.setConstant(1);
+  labels2.setConstant(2);
+  labels3.setConstant(3);
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3)));
+  tensorTable.setAxes();
+
+  // test null
+  Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_1(tensorTable.getIndicesView().at("1")->getDataPointer().get(), tensorTable.getIndicesView().at("1")->getDimensions());
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_EQUAL(indices_view_1(i), i+1);
+  }
+
+  // test zero
+  tensorTable.zeroIndicesView("1", device);
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_EQUAL(indices_view_1(i), 0);
+  }
+  // test reset
+  tensorTable.resetIndicesView("1", device);
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_EQUAL(indices_view_1(i), i+1);
+  }
+}
+
 BOOST_AUTO_TEST_CASE(broadcastSelectIndicesViewDefaultDevice)
 {
   // setup the table
@@ -370,6 +409,104 @@ BOOST_AUTO_TEST_CASE(selectTensorIndicesDefaultDevice)
           BOOST_CHECK_EQUAL(indices_select->getData()(i, j, k), 0);
       }
     }
+  }
+}
+
+BOOST_AUTO_TEST_CASE(applyIndicesSelectToIndicesViewDefaultDevice)
+{
+  // setup the table
+  TensorTableDefaultDevice<float, 3> tensorTable;
+  Eigen::DefaultDevice device;
+
+  // setup the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels = 3;
+  Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels), labels3(1, nlabels);
+  labels1.setConstant(1);
+  labels2.setConstant(2);
+  labels3.setConstant(3);
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3)));
+  tensorTable.setAxes();
+
+  // setup the indices select
+  Eigen::Tensor<int, 3> indices_select_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        if (i == j && j == k && k == i
+          && i < nlabels - 1 && j < nlabels - 1 && k < nlabels - 1) // the first 2 diagonal elements
+          indices_select_values(i, j, k) = 1;
+        else
+          indices_select_values(i, j, k) = 0;
+      }
+    }
+  }
+  TensorDataDefaultDevice<int, 3> indices_select(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  indices_select.setData(indices_select_values);
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>> indices_select_ptr = std::make_shared<TensorDataDefaultDevice<int, 3>>(indices_select);
+
+  // test using the second indices view
+  Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_2(tensorTable.getIndicesView().at("2")->getDataPointer().get(), tensorTable.getIndicesView().at("2")->getDimensions());
+  
+  indices_view_2(nlabels - 1) = 0;
+  // test for OR within continuator and OR prepend continuator
+  tensorTable.applyIndicesSelectToIndicesView(indices_select_ptr, "1", "2", logicalContinuator::OR, logicalContinuator::OR, device);
+  for (int i = 0; i < nlabels; ++i) {
+    if (i == nlabels - 1)
+      BOOST_CHECK_EQUAL(indices_view_2(i), 0);
+    else
+      BOOST_CHECK_EQUAL(indices_view_2(i), i + 1);
+  }
+
+  tensorTable.resetIndicesView("2", device);
+  indices_view_2(0) = 0;
+  // test for AND within continuator and OR prepend continuator
+  tensorTable.applyIndicesSelectToIndicesView(indices_select_ptr, "1", "2", logicalContinuator::AND, logicalContinuator::OR, device);
+  for (int i = 0; i < nlabels; ++i) {
+    if (i == 0)
+      BOOST_CHECK_EQUAL(indices_view_2(i), 0);
+    else
+      BOOST_CHECK_EQUAL(indices_view_2(i), i + 1);
+  }
+
+  tensorTable.resetIndicesView("2", device);
+  indices_view_2(0) = 0;
+  // test for OR within continuator and AND prepend continuator
+  tensorTable.applyIndicesSelectToIndicesView(indices_select_ptr, "1", "2", logicalContinuator::OR, logicalContinuator::AND, device);
+  for (int i = 0; i < nlabels; ++i) {
+    if (i != 0 && i < nlabels - 1)
+      BOOST_CHECK_EQUAL(indices_view_2(i), i + 1);
+    else
+      BOOST_CHECK_EQUAL(indices_view_2(i), 0);
+  }
+
+  tensorTable.resetIndicesView("2", device);
+  Eigen::TensorMap<Eigen::Tensor<int, 3>> indices_values_ANDAND(indices_select_ptr->getDataPointer().get(), indices_select_ptr->getDimensions());
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        if (i == j && j == k && k == i
+          && i < nlabels - 1 && j < nlabels - 1 && k < nlabels - 1) // the first 2 diagonal elements
+          indices_values_ANDAND(i, j, k) = 1;
+        else if (i == 0) // and all i indices
+          indices_values_ANDAND(i, j, k) = 1;
+        else
+          indices_values_ANDAND(i, j, k) = 0;
+      }
+    }
+  }
+  // test for AND within continuator and AND prepend continuator
+  tensorTable.applyIndicesSelectToIndicesView(indices_select_ptr, "1", "2", logicalContinuator::AND, logicalContinuator::AND, device);
+  for (int i = 0; i < nlabels; ++i) {
+    if (i==0)
+      BOOST_CHECK_EQUAL(indices_view_2(i), i+1);
+    else
+      BOOST_CHECK_EQUAL(indices_view_2(i), 0);
   }
 }
 

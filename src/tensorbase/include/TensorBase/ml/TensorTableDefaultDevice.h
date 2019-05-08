@@ -15,11 +15,14 @@ namespace TensorBase
     TensorTableDefaultDevice() = default;
     TensorTableDefaultDevice(const std::string& name) { this->setName(name); };
     ~TensorTableDefaultDevice() = default;
+    // Initialization methods
     void setAxes() override;
     void initData() override;
+    // Select methods
     void broadcastSelectIndicesView(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_view_bcast, const std::string& axis_name, Eigen::DefaultDevice& device) override;
     void extractTensorData(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_view_bcast, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, Eigen::DefaultDevice& device) override;
     void selectTensorIndices(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_select, const std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 1>>& values_select, const std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, const logicalComparitor& comparitor, const logicalModifier& modifier, Eigen::DefaultDevice& device) override;
+    void applyIndicesSelectToIndicesView(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_select, const std::string & axis_name_select, const std::string& axis_name, const logicalContinuator& within_continuator, const logicalContinuator& prepend_continuator, Eigen::DefaultDevice& device) override;
   };
 
   template<typename TensorT, int TDim>
@@ -212,6 +215,48 @@ namespace TensorBase
 
     // move over the results
     indices_select = std::make_shared<TensorDataDefaultDevice<int, TDim>>(indices_select_tmp);
+  }
+
+  template<typename TensorT, int TDim>
+  inline void TensorTableDefaultDevice<TensorT, TDim>::applyIndicesSelectToIndicesView(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_select, const std::string & axis_name_select, const std::string & axis_name, const logicalContinuator & within_continuator, const logicalContinuator & prepend_continuator, Eigen::DefaultDevice & device)
+  {
+    // build the continuator reduction indices
+    Eigen::array<int, TDim - 1> reduction_dims;
+    int index = 0;
+    for (const auto& axis_to_name_red : this->axes_to_dims_) {
+      if (axis_to_name_red.first != axis_name_select) {
+        reduction_dims.at(index) = axis_to_name_red.second;
+        ++index;
+      }
+    }
+
+    // apply the continuator reduction, then...
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(this->indices_view_.at(axis_name)->getDataPointer().get(), this->indices_view_.at(axis_name)->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_select_values(indices_select->getDataPointer().get(), indices_select->getDimensions());
+    if (within_continuator == logicalContinuator::OR) {
+      auto indices_view_update_tmp = indices_select_values.sum(reduction_dims);
+      //ensure a max value of 1 (Note: + 1e-12 is to prevent division by 0; the cast back to "int" rounds down to 0)
+      auto indices_view_update = (indices_view_update_tmp.cast<float>() / (indices_view_update_tmp.cast<float>() + indices_view_update_tmp.cast<float>().constant(1e-12) )).cast<int>();
+
+      // update the indices view based on the prepend_continuator
+      if (prepend_continuator == logicalContinuator::OR) {
+        indices_view.device(device) = (indices_view_update > indices_view_update.constant(0) || indices_view > indices_view.constant(0)).select(indices_view, indices_view.constant(0));
+      }
+      else if (prepend_continuator == logicalContinuator::AND) {
+        indices_view.device(device) = indices_view * indices_view_update;
+      }
+    }
+    else if (within_continuator == logicalContinuator::AND) {
+      auto indices_view_update = indices_select_values.prod(reduction_dims);
+
+      // update the indices view based on the prepend_continuator
+      if (prepend_continuator == logicalContinuator::OR) {
+        indices_view.device(device) = (indices_view_update > indices_view_update.constant(0) || indices_view > indices_view.constant(0)).select(indices_view, indices_view.constant(0));
+      }
+      else if (prepend_continuator == logicalContinuator::AND) {
+        indices_view.device(device) = indices_view * indices_view_update;
+      }
+    }
   }
 };
 #endif //TENSORBASE_TENSORTABLEDEFAULTDEVICE_H
