@@ -531,17 +531,17 @@ BOOST_AUTO_TEST_CASE(applyIndicesSelectToIndicesViewDefaultDevice)
   }
 
   tensorTable.resetIndicesView("2", device);
-  Eigen::TensorMap<Eigen::Tensor<int, 3>> indices_values_ANDAND(indices_select_ptr->getDataPointer().get(), indices_select_ptr->getDimensions());
+  Eigen::TensorMap<Eigen::Tensor<int, 3>> indices_select_values2(indices_select_ptr->getDataPointer().get(), indices_select_ptr->getDimensions());
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
         if (i == j && j == k && k == i
           && i < nlabels - 1 && j < nlabels - 1 && k < nlabels - 1) // the first 2 diagonal elements
-          indices_values_ANDAND(i, j, k) = 1;
-        else if (i == 0) // and all i indices
-          indices_values_ANDAND(i, j, k) = 1;
+          indices_select_values2(i, j, k) = 1;
+        else if (j == 0)
+          indices_select_values2(i, j, k) = 1; // all elements along the first index of the selection dim
         else
-          indices_values_ANDAND(i, j, k) = 0;
+          indices_select_values2(i, j, k) = 0;
       }
     }
   }
@@ -553,6 +553,8 @@ BOOST_AUTO_TEST_CASE(applyIndicesSelectToIndicesViewDefaultDevice)
     else
       BOOST_CHECK_EQUAL(indices_view_2(i), 0);
   }
+
+  // TODO: lacking code coverage for the case of TDim = 2
 }
 
 BOOST_AUTO_TEST_CASE(whereIndicesViewDataDefaultDevice)
@@ -606,6 +608,25 @@ BOOST_AUTO_TEST_CASE(whereIndicesViewDataDefaultDevice)
   tensorTable.whereIndicesView("1", 0, select_labels_ptr,
     std::make_shared<TensorDataDefaultDevice<float, 1>>(select_values), logicalComparitor::EQUAL_TO, logicalModifier::NONE,
     logicalContinuator::OR, logicalContinuator::AND, device);
+  Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_1(tensorTable.getIndicesView().at("1")->getDataPointer().get(), tensorTable.getIndicesView().at("1")->getDimensions());
+  Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_2(tensorTable.getIndicesView().at("2")->getDataPointer().get(), tensorTable.getIndicesView().at("2")->getDimensions());
+  Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_3(tensorTable.getIndicesView().at("3")->getDataPointer().get(), tensorTable.getIndicesView().at("3")->getDimensions());
+  for (int i = 0; i < nlabels; ++i) {
+    // indices view 1
+    BOOST_CHECK_EQUAL(indices_view_1(i), i + 1); // Unchanged
+
+    // indices view 2
+    if (i == 2)
+      BOOST_CHECK_EQUAL(indices_view_2(i), i + 1);
+    else
+      BOOST_CHECK_EQUAL(indices_view_2(i), 0);
+
+    // indices view 2
+    if (i == 1)
+      BOOST_CHECK_EQUAL(indices_view_3(i), i + 1);
+    else
+      BOOST_CHECK_EQUAL(indices_view_3(i), 0);
+  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()

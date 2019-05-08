@@ -141,7 +141,7 @@ namespace TensorBase
       using the logical continuator and prepender
 
     @param[in] indices_select The indices that passed or did not pass the selection criteria
-    @param[in] axis_name_select The name of the axis that the selection was applied to
+    @param[in] axis_name_select The name of the axis that the selection is being applied against
     @param[in] axis_name The name of the axis to apply the selection on
     @param[in] within_continuator
     @param[in] prepend_continuator
@@ -257,7 +257,9 @@ namespace TensorBase
     selectTensorIndices(indices_select, values, tensor_select, axis_name, select_labels->getData().size(), comparitor, modifier, device);
 
     // revert back to the origin indices view
-    indices_view_.at(axis_name)->getDataPointer() = indices_view_copy->getDataPointer();
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indicies_view_values(indices_view_.at(axis_name)->getDataPointer().get(), indices_view_.at(axis_name)->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indicies_view_copy_values(indices_view_copy->getDataPointer().get(), indices_view_copy->getDimensions());
+    indicies_view_values.device(device) = indicies_view_copy_values;
     
     // update all other tensor indices view based on the selection criteria tensor
     for (const auto& axis_to_name: axes_to_dims_) {
