@@ -77,7 +77,7 @@ namespace TensorBase
             }
             // copy over indices into the view that are in the select clause
             tensor_collection.tables_.at(select_clause.table_name)->selectIndicesView(
-              select_clause.axis_name, d, select_clause.labels->getDataPointer(), select_clause.labels->getData().size(), device);
+              select_clause.axis_name, d, select_clause.labels, device);
           }
         }
       }
@@ -94,9 +94,9 @@ namespace TensorBase
           if (axis.second->getDimensions()(d) == where_clause.dimension_name) {
             // select axis indices based on the where clause critiera
             tensor_collection.tables_.at(where_clause.table_name)->whereIndicesView(
-              where_clause.axis_name, d, where_clause.labels->getDataPointer(), where_clause.labels->getData().size(), 
-              where_clause.values->getDataPointer(), where_clause.comparitor, where_clause.modifier, 
-              where_clause.prepend_continuator, where_clause.within_continuator, device);
+              where_clause.axis_name, d, where_clause.labels, 
+              where_clause.values, where_clause.comparitor, where_clause.modifier, 
+              where_clause.within_continuator, where_clause.prepend_continuator, device);
           }
         }
       }
@@ -113,7 +113,7 @@ namespace TensorBase
           if (axis.second->getDimensions()(d) == order_by_clause.dimension_name) {
             // order the indices view
             tensor_collection.tables_.at(order_by_clause.table_name)->orderIndicesView(
-              order_by_clause.axis_name, d, order_by_clause.labels->getDataPointer(), order_by_clause.labels->getData().size(), device);
+              order_by_clause.axis_name, d, order_by_clause.labels, device);
           }
         }
       }

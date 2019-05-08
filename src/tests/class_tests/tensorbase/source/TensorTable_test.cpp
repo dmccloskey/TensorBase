@@ -510,4 +510,50 @@ BOOST_AUTO_TEST_CASE(applyIndicesSelectToIndicesViewDefaultDevice)
   }
 }
 
+BOOST_AUTO_TEST_CASE(whereIndicesViewDataDefaultDevice)
+{
+  // setup the table
+  TensorTableDefaultDevice<float, 3> tensorTable;
+  Eigen::DefaultDevice device;
+
+  // setup the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels = 4;
+  Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels), labels3(1, nlabels);
+  labels1.setValues({ {0, 1, 2, 3} });
+  labels2.setValues({ {0, 1, 2, 3} });
+  labels3.setValues({ {0, 1, 2, 3} });
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3)));
+  tensorTable.setAxes();
+
+  // setup the tensor data
+  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  int iter = 0;
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        tensor_values(i, j, k) = float(iter);
+        ++iter;
+      }
+    }
+  }
+  tensorTable.getData()->setData(tensor_values);
+
+  //// set up the selection criteria
+  //const int n_labels = 2;
+  //int labels_1[n_labels] = { 0, 2 };
+  //std::shared_ptr<int> select_labels;
+  //select_labels.reset(labels_1);
+
+  //// test
+  //tensorTable.whereIndicesView("1", 0, select_labels, n_labels,
+  //const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values, const logicalComparitor& comparitor, const logicalModifier& modifier,
+  //  const logicalContinuator& within_continuator, const logicalContinuator& prepend_continuator, const DeviceT& device)
+}
+
 BOOST_AUTO_TEST_SUITE_END()
