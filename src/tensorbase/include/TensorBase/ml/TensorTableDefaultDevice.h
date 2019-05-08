@@ -234,7 +234,7 @@ namespace TensorBase
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(this->indices_view_.at(axis_name)->getDataPointer().get(), this->indices_view_.at(axis_name)->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_select_values(indices_select->getDataPointer().get(), indices_select->getDimensions());
     if (within_continuator == logicalContinuator::OR) {
-      auto indices_view_update_tmp = indices_select_values.sum(reduction_dims);
+      auto indices_view_update_tmp = indices_select_values.sum(reduction_dims).reshape(Eigen::array<Eigen::Index, 1>({ this->indices_view_.at(axis_name)->getData().size() }));
       //ensure a max value of 1 (Note: + 1e-12 is to prevent division by 0; the cast back to "int" rounds down to 0)
       auto indices_view_update = (indices_view_update_tmp.cast<float>() / (indices_view_update_tmp.cast<float>() + indices_view_update_tmp.cast<float>().constant(1e-12) )).cast<int>();
 
@@ -243,6 +243,7 @@ namespace TensorBase
         indices_view.device(device) = (indices_view_update > indices_view_update.constant(0) || indices_view > indices_view.constant(0)).select(indices_view, indices_view.constant(0));
       }
       else if (prepend_continuator == logicalContinuator::AND) {
+        std::cout << indices_view_update << std::endl;
         indices_view.device(device) = indices_view * indices_view_update;
       }
     }

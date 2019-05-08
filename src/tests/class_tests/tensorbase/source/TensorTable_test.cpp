@@ -180,6 +180,51 @@ BOOST_AUTO_TEST_CASE(zeroIndicesViewAndResetIndicesViewDefaultDevice)
   }
 }
 
+BOOST_AUTO_TEST_CASE(selectIndicesViewDefaultDevice)
+{
+  // setup the table
+  TensorTableDefaultDevice<float, 3> tensorTable;
+  Eigen::DefaultDevice device;
+
+  // setup the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels = 4;
+  Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels), labels3(1, nlabels);
+  labels1.setValues({ {0, 1, 2, 3} });
+  labels2.setValues({ {0, 1, 2, 3} });
+  labels3.setValues({ {0, 1, 2, 3} });
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3)));
+  tensorTable.setAxes();
+
+  // set up the selection labels
+  Eigen::Tensor<int, 1> select_labels_values(nlabels / 2);
+  int iter = 0;
+  for (int i = 0; i < nlabels; ++i) {
+    if (i % 2 == 0) {
+      select_labels_values(iter) = i;
+      ++iter;
+    }
+  }
+  TensorDataDefaultDevice<int, 1> select_labels(Eigen::array<Eigen::Index, 1>({ nlabels/2 }));
+  select_labels.setData(select_labels_values);
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> select_labels_ptr = std::make_shared<TensorDataDefaultDevice<int, 1>>(select_labels);
+
+  // test the updated view
+  tensorTable.selectIndicesView("1", 0, select_labels_ptr, device);
+  Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_1(tensorTable.getIndicesView().at("1")->getDataPointer().get(), tensorTable.getIndicesView().at("1")->getDimensions());
+  for (int i = 0; i < nlabels; ++i) {
+    if (i%2==0)
+      BOOST_CHECK_EQUAL(indices_view_1(i), i + 1);
+    else
+      BOOST_CHECK_EQUAL(indices_view_1(i), 0);
+  }
+}
+
 BOOST_AUTO_TEST_CASE(broadcastSelectIndicesViewDefaultDevice)
 {
   // setup the table
@@ -544,16 +589,23 @@ BOOST_AUTO_TEST_CASE(whereIndicesViewDataDefaultDevice)
   }
   tensorTable.getData()->setData(tensor_values);
 
-  //// set up the selection criteria
-  //const int n_labels = 2;
-  //int labels_1[n_labels] = { 0, 2 };
-  //std::shared_ptr<int> select_labels;
-  //select_labels.reset(labels_1);
+  // set up the selection labels
+  Eigen::Tensor<int, 1> select_labels_values(2);
+  select_labels_values(0) = 0; select_labels_values(1) = 2;
+  TensorDataDefaultDevice<int, 1> select_labels(Eigen::array<Eigen::Index, 1>({ 2 }));
+  select_labels.setData(select_labels_values);
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> select_labels_ptr = std::make_shared<TensorDataDefaultDevice<int, 1>>(select_labels);
 
-  //// test
-  //tensorTable.whereIndicesView("1", 0, select_labels, n_labels,
-  //const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values, const logicalComparitor& comparitor, const logicalModifier& modifier,
-  //  const logicalContinuator& within_continuator, const logicalContinuator& prepend_continuator, const DeviceT& device)
+  // set up the selection values
+  Eigen::Tensor<float, 1> select_values_values(2);
+  select_values_values(0) = 9; select_values_values(1) = 9;
+  TensorDataDefaultDevice<float, 1> select_values(Eigen::array<Eigen::Index, 1>({ 2 }));
+  select_values.setData(select_values_values);
+
+  // test
+  tensorTable.whereIndicesView("1", 0, select_labels_ptr,
+    std::make_shared<TensorDataDefaultDevice<float, 1>>(select_values), logicalComparitor::EQUAL_TO, logicalModifier::NONE,
+    logicalContinuator::OR, logicalContinuator::AND, device);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

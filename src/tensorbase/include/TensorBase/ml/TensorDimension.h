@@ -92,10 +92,10 @@ namespace TensorBase
   class TensorDimensionGpu : public TensorDimension<TensorT, Eigen::GpuDevice>
   {
   public:
-    TensorDataGpu() = default;  ///< Default constructor
-    TensorDataGpu(const std::string& name) { setName(name); };
-    TensorDataGpu(const std::string& name, const Eigen::Tensor<TensorT, 1>& labels) { setName(name); setLabels(labels); };
-    ~TensorDataGpu() = default; ///< Default destructor
+    TensorDimensionGpu() = default;  ///< Default constructor
+    TensorDimensionGpu(const std::string& name) { setName(name); };
+    TensorDimensionGpu(const std::string& name, const Eigen::Tensor<TensorT, 1>& labels) { setName(name); setLabels(labels); };
+    ~TensorDimensionGpu() = default; ///< Default destructor
     void setLabels(const Eigen::Tensor<TensorT, 1>& labels) {
       Eigen::array<Eigen::Index, 1> dimensions = labels.dimensions();
       this->labels_.reset(new TensorDataGpu<TensorT, 1>(dimensions));
