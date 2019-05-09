@@ -629,6 +629,59 @@ BOOST_AUTO_TEST_CASE(whereIndicesViewDataDefaultDevice)
   }
 }
 
+BOOST_AUTO_TEST_CASE(sliceTensorForSortDefaultDevice)
+{
+  // setup the table
+  TensorTableDefaultDevice<float, 3> tensorTable;
+  Eigen::DefaultDevice device;
+
+  // setup the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels = 3;
+  Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels), labels3(1, nlabels);
+  labels1.setValues({ {0, 1, 2} });
+  labels2.setValues({ {0, 1, 2} });
+  labels3.setValues({ {0, 1, 2} });
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3)));
+  tensorTable.setAxes();
+
+  // setup the tensor data
+  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  int iter = 0;
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        tensor_values(i, j, k) = float(iter);
+        ++iter;
+      }
+    }
+  }
+  tensorTable.getData()->setData(tensor_values);
+
+  // test sliceTensorForSort for axis 2
+  std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 1>> tensor_sort;
+  tensorTable.sliceTensorForSort(tensor_sort, "1", 1, "2", device);
+  Eigen::TensorMap<Eigen::Tensor<float, 1>> tensor_sort_2(tensor_sort->getDataPointer().get(), tensor_sort->getDimensions());
+  std::vector<float> tensor_slice_2_test = {9, 12, 15};
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_CLOSE(tensor_sort_2(i), tensor_slice_2_test.at(i), 1e-3);
+  }
+
+  // test sliceTensorForSort for axis 2
+  tensor_sort.reset();
+  tensorTable.sliceTensorForSort(tensor_sort, "1", 1, "3", device);
+  Eigen::TensorMap<Eigen::Tensor<float, 1>> tensor_sort_3(tensor_sort->getDataPointer().get(), tensor_sort->getDimensions());
+  std::vector<float> tensor_slice_3_test = { 9, 10, 11 };
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_CLOSE(tensor_sort_3(i), tensor_slice_3_test.at(i), 1e-3);
+  }
+}
+
 BOOST_AUTO_TEST_CASE(sortIndicesViewDataDefaultDevice)
 {
   // setup the table

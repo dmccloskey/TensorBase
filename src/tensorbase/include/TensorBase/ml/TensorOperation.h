@@ -20,17 +20,17 @@ namespace TensorBase
   /*TODO: Move to seperate files!*/
 
   class TensorInsertIntoAxis;
-
-  class TensorAddAxis;
-
-  class TensorUpdate;
-
   class TensorDeleteFromAxis;
 
+  class TensorAddLabels;
+  class TensorDeleteLabels;
+
+  class TensorAddAxis;
   class TensorDeleteAxis;
 
+  class TensorUpdate;
+  
   class TensorAddTables;
-
   class TensorDropTables;
 };
 #endif //TENSORBASE_TENSOROPERATION_H

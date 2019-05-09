@@ -23,6 +23,10 @@ namespace TensorBase
     void extractTensorData(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_view_bcast, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, Eigen::DefaultDevice& device) override;
     void selectTensorIndices(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_select, const std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 1>>& values_select, const std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, const logicalComparitors::logicalComparitor& comparitor, const logicalComparitors::logicalModifier& modifier, Eigen::DefaultDevice& device) override;
     void applyIndicesSelectToIndicesView(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_select, const std::string & axis_name_select, const std::string& axis_name, const logicalComparitors::logicalContinuator& within_continuator, const logicalComparitors::logicalContinuator& prepend_continuator, Eigen::DefaultDevice& device) override;
+    // Sort methods
+    void sliceTensorForSort(std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 1>>& tensor_sort, const std::string& axis_name_sort, const int& label_index_sort, const std::string& axis_name_apply, Eigen::DefaultDevice& device) override;
+    void sortTensorSlice(const std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 1>>& tensor_sort, const std::string & axis_name_apply, const sortOrder::order& order_by, Eigen::DefaultDevice& device) override;
+
   };
 
   template<typename TensorT, int TDim>
@@ -287,6 +291,58 @@ namespace TensorBase
           indices_view.device(device) = indices_view * indices_view_update;
         }
       }
+    }
+  }
+  template<typename TensorT, int TDim>
+  inline void TensorTableDefaultDevice<TensorT, TDim>::sliceTensorForSort(std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 1>>& tensor_sort, 
+    const std::string & axis_name_sort, const int & label_index_sort, const std::string & axis_name_apply, Eigen::DefaultDevice & device)
+  {
+    // determine the offsets and extents for the slice operation
+    Eigen::array<int, TDim> extents;
+    Eigen::array<int, TDim> offsets;
+    for (const auto& axis_to_name_slice : this->axes_to_dims_) {
+      if (axis_to_name_slice.first == axis_name_sort) {
+        extents.at(axis_to_name_slice.second) = 1;
+        offsets.at(axis_to_name_slice.second) = label_index_sort;
+      }
+      else if (axis_to_name_slice.first == axis_name_apply) {
+        extents.at(axis_to_name_slice.second) = this->axes_.at(axis_to_name_slice.first)->getNLabels();
+        offsets.at(axis_to_name_slice.second) = 0;
+      }
+      else {
+        extents.at(axis_to_name_slice.second) = 1;
+        offsets.at(axis_to_name_slice.second) = 0;
+      }
+    }
+
+    // slice out the 1D tensor
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> tensor_values(this->data_->getDataPointer().get(), this->data_->getDimensions());
+    auto tensor_1d = tensor_values.slice(offsets, extents).reshape(Eigen::array<Eigen::Index, 1>({ (int)this->axes_.at(axis_name_apply)->getNLabels() }));
+
+    // allocate memory for the slice
+    TensorDataDefaultDevice<TensorT, 1> tensor_sort_tmp(Eigen::array<Eigen::Index, 1>({ (int)this->axes_.at(axis_name_apply)->getNLabels() }));
+    tensor_sort_tmp.setData();
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> tensor_sort_values(tensor_sort_tmp.getDataPointer().get(), tensor_sort_tmp.getDimensions());
+    tensor_sort_values.device(device) = tensor_1d;
+
+    // move over the tensor sort data
+    tensor_sort = std::make_shared<TensorDataDefaultDevice<TensorT, 1>>(tensor_sort_tmp);
+  }
+  template<typename TensorT, int TDim>
+  inline void TensorTableDefaultDevice<TensorT, TDim>::sortTensorSlice(const std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 1>>& tensor_sort, const std::string & axis_name_apply, const sortOrder::order& order_by, Eigen::DefaultDevice & device)
+  {
+    // sort the slice
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(this->indices_view_.at(axis_name_apply)->getDataPointer().get(), this->indices_view_.at(axis_name_apply)->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> tensor_sort_values(tensor_sort->getDataPointer().get(), tensor_sort->getDimensions());
+    if (order_by == sortOrder::order::ASC) {
+      std::sort(indices_view.data(), indices_view.data() + indices_view.size(), [&tensor_sort_values](const int& lhs, const int& rhs) {
+        return tensor_sort_values(lhs - 1) < tensor_sort_values(rhs - 1);
+      });
+    }
+    else if (order_by == sortOrder::order::DESC) {
+      std::sort(indices_view.data(), indices_view.data() + indices_view.size(), [&tensor_sort_values](const int& lhs, const int& rhs) {
+        return tensor_sort_values(lhs - 1) > tensor_sort_values(rhs - 1);
+      });
     }
   }
 };
