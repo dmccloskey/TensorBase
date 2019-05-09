@@ -21,8 +21,8 @@ namespace TensorBase
     // Select methods
     void broadcastSelectIndicesView(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_view_bcast, const std::string& axis_name, Eigen::DefaultDevice& device) override;
     void extractTensorData(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_view_bcast, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, Eigen::DefaultDevice& device) override;
-    void selectTensorIndices(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_select, const std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 1>>& values_select, const std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, const logicalComparitor& comparitor, const logicalModifier& modifier, Eigen::DefaultDevice& device) override;
-    void applyIndicesSelectToIndicesView(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_select, const std::string & axis_name_select, const std::string& axis_name, const logicalContinuator& within_continuator, const logicalContinuator& prepend_continuator, Eigen::DefaultDevice& device) override;
+    void selectTensorIndices(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_select, const std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 1>>& values_select, const std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, const logicalComparitors::logicalComparitor& comparitor, const logicalComparitors::logicalModifier& modifier, Eigen::DefaultDevice& device) override;
+    void applyIndicesSelectToIndicesView(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_select, const std::string & axis_name_select, const std::string& axis_name, const logicalComparitors::logicalContinuator& within_continuator, const logicalComparitors::logicalContinuator& prepend_continuator, Eigen::DefaultDevice& device) override;
   };
 
   template<typename TensorT, int TDim>
@@ -124,20 +124,15 @@ namespace TensorBase
   inline void TensorTableDefaultDevice<TensorT, TDim>::extractTensorData(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_view_bcast, 
     std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, Eigen::DefaultDevice& device)
   {
-    // determine the dimensions for the making the selected tensor
+    // [REFACTOR: determining the dimensions could be moved to a seperate method to make this more general]
+    // determine the dimensions for making the selected tensor
     Eigen::array<Eigen::Index, TDim> tensor_select_dimensions;
-    Eigen::array<Eigen::Index, 1> tensor_select_1d_dimensions; tensor_select_1d_dimensions.at(0) = 1;
-    Eigen::array<Eigen::Index, 1> tensor_1d_dimensions; tensor_1d_dimensions.at(0) = 1;
     for (int i = 0; i < TDim; ++i) {
       if (i == axes_to_dims_.at(axis_name)) {
         tensor_select_dimensions.at(i) = n_select;
-        tensor_select_1d_dimensions.at(0) *= n_select;
-        tensor_1d_dimensions.at(0) *= dimensions_.at(i);
       }
       else {
         tensor_select_dimensions.at(i) = dimensions_.at(i);
-        tensor_select_1d_dimensions.at(0) *= dimensions_.at(i);
-        tensor_1d_dimensions.at(0) *= dimensions_.at(i);
       }
     }
 
@@ -164,7 +159,7 @@ namespace TensorBase
   }
 
   template<typename TensorT, int TDim>
-  inline void TensorTableDefaultDevice<TensorT, TDim>::selectTensorIndices(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_select, const std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 1>>& values_select, const std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>>& tensor_select, const std::string & axis_name, const int & n_select, const logicalComparitor& comparitor, const logicalModifier& modifier, Eigen::DefaultDevice & device)
+  inline void TensorTableDefaultDevice<TensorT, TDim>::selectTensorIndices(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_select, const std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 1>>& values_select, const std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>>& tensor_select, const std::string & axis_name, const int & n_select, const logicalComparitors::logicalComparitor& comparitor, const logicalComparitors::logicalModifier& modifier, Eigen::DefaultDevice & device)
   {
     // determine the dimensions for reshaping and broadcasting the values
     Eigen::array<int, TDim> values_reshape_dimensions;
@@ -191,22 +186,22 @@ namespace TensorBase
     // apply the logical comparitor and modifier as a selection criteria
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> tensor_select_values(tensor_select->getDataPointer().get(), tensor_select->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_select_values(indices_select_tmp.getDataPointer().get(), indices_select_tmp.getDimensions());
-    if (comparitor == logicalComparitor::NOT_EQUAL_TO) {
+    if (comparitor == logicalComparitors::logicalComparitor::NOT_EQUAL_TO) {
       indices_select_values.device(device) = ((tensor_select_values != values_bcast).select(tensor_select_values.constant(1), tensor_select_values.constant(0))).cast<int>();
     }
-    else if (comparitor == logicalComparitor::EQUAL_TO) {
+    else if (comparitor == logicalComparitors::logicalComparitor::EQUAL_TO) {
       indices_select_values.device(device) = ((tensor_select_values == values_bcast).select(tensor_select_values.constant(1), tensor_select_values.constant(0))).cast<int>();
     }
-    else if (comparitor == logicalComparitor::LESS_THAN) {
+    else if (comparitor == logicalComparitors::logicalComparitor::LESS_THAN) {
       indices_select_values.device(device) = ((tensor_select_values < values_bcast).select(tensor_select_values.constant(1), tensor_select_values.constant(0))).cast<int>();
     }
-    else if (comparitor == logicalComparitor::LESS_THAN_OR_EQUAL_TO) {
+    else if (comparitor == logicalComparitors::logicalComparitor::LESS_THAN_OR_EQUAL_TO) {
       indices_select_values.device(device) = ((tensor_select_values <= values_bcast).select(tensor_select_values.constant(1), tensor_select_values.constant(0))).cast<int>();
     }
-    else if (comparitor == logicalComparitor::GREATER_THAN) {
+    else if (comparitor == logicalComparitors::logicalComparitor::GREATER_THAN) {
       indices_select_values.device(device) = ((tensor_select_values > values_bcast).select(tensor_select_values.constant(1), tensor_select_values.constant(0))).cast<int>();
     }
-    else if (comparitor == logicalComparitor::GREATER_THAN_OR_EQUAL_TO) {
+    else if (comparitor == logicalComparitors::logicalComparitor::GREATER_THAN_OR_EQUAL_TO) {
       indices_select_values.device(device) = ((tensor_select_values >= values_bcast).select(tensor_select_values.constant(1), tensor_select_values.constant(0))).cast<int>();
     }
     else {
@@ -219,12 +214,12 @@ namespace TensorBase
 
   template<typename TensorT, int TDim>
   inline void TensorTableDefaultDevice<TensorT, TDim>::applyIndicesSelectToIndicesView(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_select, 
-    const std::string & axis_name_select, const std::string & axis_name, const logicalContinuator & within_continuator, const logicalContinuator & prepend_continuator, Eigen::DefaultDevice & device)
+    const std::string & axis_name_select, const std::string & axis_name, const logicalComparitors::logicalContinuator & within_continuator, const logicalComparitors::logicalContinuator & prepend_continuator, Eigen::DefaultDevice & device)
   {
     // apply the continuator reduction, then...
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(this->indices_view_.at(axis_name)->getDataPointer().get(), this->indices_view_.at(axis_name)->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_select_values(indices_select->getDataPointer().get(), indices_select->getDimensions());
-    if (within_continuator == logicalContinuator::OR) {
+    if (within_continuator == logicalComparitors::logicalContinuator::OR) {
 
       // build the continuator reduction indices for the OR within continuator
       Eigen::array<int, TDim - 1> reduction_dims;
@@ -242,14 +237,14 @@ namespace TensorBase
       auto indices_view_update = (indices_view_update_tmp.cast<float>() / (indices_view_update_tmp.cast<float>() + indices_view_update_tmp.cast<float>().constant(1e-12) )).cast<int>();
 
       // update the indices view based on the prepend_continuator
-      if (prepend_continuator == logicalContinuator::OR) {
+      if (prepend_continuator == logicalComparitors::logicalContinuator::OR) {
         indices_view.device(device) = (indices_view_update > indices_view_update.constant(0) || indices_view > indices_view.constant(0)).select(indices_view, indices_view.constant(0));
       }
-      else if (prepend_continuator == logicalContinuator::AND) {
+      else if (prepend_continuator == logicalComparitors::logicalContinuator::AND) {
         indices_view.device(device) = indices_view * indices_view_update;
       }
     }
-    else if (within_continuator == logicalContinuator::AND) {
+    else if (within_continuator == logicalComparitors::logicalContinuator::AND) {
       // apply the AND continuator reduction along the axis_name_selection dim
       Eigen::array<Eigen::Index, 1> reduction_dims = { this->axes_to_dims_.at(axis_name_select) };
       auto indices_view_update_prod = indices_select_values.prod(reduction_dims);
@@ -272,10 +267,10 @@ namespace TensorBase
         auto indices_view_update = (indices_view_update_tmp.cast<float>() / (indices_view_update_tmp.cast<float>() + indices_view_update_tmp.cast<float>().constant(1e-12))).cast<int>();
 
         // update the indices view based on the prepend_continuator
-        if (prepend_continuator == logicalContinuator::OR) {
+        if (prepend_continuator == logicalComparitors::logicalContinuator::OR) {
           indices_view.device(device) = (indices_view_update > indices_view_update.constant(0) || indices_view > indices_view.constant(0)).select(indices_view, indices_view.constant(0));
         }
-        else if (prepend_continuator == logicalContinuator::AND) {
+        else if (prepend_continuator == logicalComparitors::logicalContinuator::AND) {
           indices_view.device(device) = indices_view * indices_view_update;
         }
       }
@@ -285,10 +280,10 @@ namespace TensorBase
         auto indices_view_update = indices_view_update_prod;
 
         // update the indices view based on the prepend_continuator
-        if (prepend_continuator == logicalContinuator::OR) {
+        if (prepend_continuator == logicalComparitors::logicalContinuator::OR) {
           indices_view.device(device) = (indices_view_update > indices_view_update.constant(0) || indices_view > indices_view.constant(0)).select(indices_view, indices_view.constant(0));
         }
-        else if (prepend_continuator == logicalContinuator::AND) {
+        else if (prepend_continuator == logicalComparitors::logicalContinuator::AND) {
           indices_view.device(device) = indices_view * indices_view_update;
         }
       }

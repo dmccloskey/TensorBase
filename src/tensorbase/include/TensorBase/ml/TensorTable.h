@@ -82,7 +82,7 @@ namespace TensorBase
     @param[in] device
     */
     template<typename LabelsT>
-    void orderIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& select_labels, DeviceT& device);
+    void sortIndicesView(const std::string& axis_name, const int& dimension_index, const LabelsT& label, const sortOrder::order& order_by, DeviceT& device);
 
     /*
     @brief Apply a where selection clause to the Tensor Axis View
@@ -99,8 +99,8 @@ namespace TensorBase
     */
     template<typename LabelsT>
     void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& select_labels,
-      const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values, const logicalComparitor& comparitor, const logicalModifier& modifier,
-      const logicalContinuator& within_continuator, const logicalContinuator& prepend_continuator, DeviceT& device);
+      const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalComparitors::logicalModifier& modifier,
+      const logicalComparitors::logicalContinuator& within_continuator, const logicalComparitors::logicalContinuator& prepend_continuator, DeviceT& device);
 
     /*
     @brief Broadcast the axis indices view across the entire tensor
@@ -134,7 +134,7 @@ namespace TensorBase
     @param[in] modifier The logical modifier to apply to the comparitor (i.e., Not; currently not implemented)
     @param[in] device
     */
-    virtual void selectTensorIndices(std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values_select, const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, const logicalComparitor& comparitor, const logicalModifier& modifier, DeviceT& device) = 0;
+    virtual void selectTensorIndices(std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values_select, const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, const logicalComparitors::logicalComparitor& comparitor, const logicalComparitors::logicalModifier& modifier, DeviceT& device) = 0;
 
     /*
     @brief Apply the indices select to the indices view for the respective axis
@@ -147,7 +147,7 @@ namespace TensorBase
     @param[in] prepend_continuator
     @param[in] device
     */
-    virtual void applyIndicesSelectToIndicesView(const std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, const std::string & axis_name_select, const std::string& axis_name, const logicalContinuator& within_continuator, const logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void applyIndicesSelectToIndicesView(const std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, const std::string & axis_name_select, const std::string& axis_name, const logicalComparitors::logicalContinuator& within_continuator, const logicalComparitors::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
 
     /*
     @brief Broadcast the axis indices view across the entire tensor,
@@ -229,17 +229,66 @@ namespace TensorBase
 
   template<typename TensorT, typename DeviceT, int TDim>
   template<typename LabelsT>
-  inline void TensorTable<TensorT, DeviceT, TDim>::orderIndicesView(const std::string & axis_name, const int & dimension_index, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& select_labels, DeviceT & device)
+  inline void TensorTable<TensorT, DeviceT, TDim>::sortIndicesView(const std::string & axis_name, const int & dimension_index, const LabelsT& label, const sortOrder::order& order_by, DeviceT & device)
   {
-    // TODO extract out the columns
-    // TODO sort the columns and update the axes indices according to the sort values
+    // find the index of the label
+    int label_index = 0;
+    std::shared_ptr<LabelsT> labels_data;
+    axes_.at(axis_name)->getLabelsDataPointer(labels_data);
+    Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> labels_values(labels_data.get(), (int)axes_.at(axis_name)->getNDimensions(), (int)axes_.at(axis_name)->getNLabels());
+    for (int i = 0; i < axes_.at(axis_name)->getNLabels(); ++i) {
+      if (labels_values(dimension_index, i) == label) {
+        label_index = i;
+        break;
+      }
+    }
+
+    // iterate through each axis and apply the sort
+    for (const auto& axis_to_name : axes_to_dims_) {
+      if (axis_to_name.first == axis_name) continue;
+
+      // determine the offsets and extents for the slice operation
+      Eigen::array<int, TDim> extents;
+      Eigen::array<int, TDim> offsets;
+      for (const auto& axis_to_name_slice : axes_to_dims_) {
+        if (axis_to_name_slice.first == axis_name) {
+          extents.at(axis_to_name_slice.second) = 1;
+          offsets.at(axis_to_name_slice.second) = label_index;
+        }
+        else if (axis_to_name_slice.first == axis_to_name.first) {
+          extents.at(axis_to_name_slice.second) = axes_.at(axis_to_name_slice.first)->getNLabels();
+          offsets.at(axis_to_name_slice.second) = 0;
+        }
+        else {
+          extents.at(axis_to_name_slice.second) = 1;
+          offsets.at(axis_to_name_slice.second) = 0;
+        }
+      }
+      
+      // slice out the 1D tensor
+      Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> tensor_values(data_->getDataPointer().get(), data_->getDimensions());
+      Eigen::Tensor<TensorT,1> select_tensor_1d = tensor_values.slice(offsets, extents).reshape(Eigen::array<Eigen::Index, 1>({ (int)axes_.at(axis_to_name.first)->getNLabels() }));
+
+      // sort the slice
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_to_name.first)->getDataPointer().get(), indices_view_.at(axis_to_name.first)->getDimensions());
+      if (order_by == sortOrder::order::ASC) {
+        std::sort(indices_view.data(), indices_view.data() + indices_view.size(), [&select_tensor_1d](const int& lhs, const int& rhs) {
+          return select_tensor_1d(lhs - 1) < select_tensor_1d(rhs - 1); 
+        });
+      }
+      else if (order_by == sortOrder::order::DESC) {
+        std::sort(indices_view.data(), indices_view.data() + indices_view.size(), [&select_tensor_1d](const int& lhs, const int& rhs) {
+          return select_tensor_1d(lhs - 1) > select_tensor_1d(rhs - 1); 
+        });
+      }
+    }
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
   template<typename LabelsT>
   inline void TensorTable<TensorT, DeviceT, TDim>::whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& select_labels, 
-    const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values, const logicalComparitor& comparitor, const logicalModifier& modifier,
-    const logicalContinuator& within_continuator, const logicalContinuator& prepend_continuator, DeviceT& device) {
+    const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalComparitors::logicalModifier& modifier,
+    const logicalComparitors::logicalContinuator& within_continuator, const logicalComparitors::logicalContinuator& prepend_continuator, DeviceT& device) {
     // create a copy of the indices view
     std::shared_ptr<TensorData<int, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copy(device);
 

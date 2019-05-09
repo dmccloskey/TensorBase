@@ -14,18 +14,24 @@ namespace TensorBase
     @brief Template class for all Tensor select operations
 
     NOTES: order of execution
-    1. Select
-    2. Where
-    3. Group By
-    4. Aggregate
-    5. Having
-    6. Order By
+    1. Where: axes and data are reduced after all where clauses have been applied
+    2. Select: axes and data are reduced after all select clauses have been applied
+    3. Group By: 
+    4. Aggregate: additional dimension label is and data are added after all aggregate clauses have been applied
+    5. Having: axes and data are reduced after all having clauses have been applied
+    6. Order By: axes and data are sorted after all order by clauses have ben applied
   */
   class TensorSelect {
   public:
     TensorSelect() = default;
     ~TensorSelect() = default;
-    /* Select the table/axis/dimension/labels that will be returned in the view.
+
+    /*
+    @brief apply the current indices view to the TensorCollection
+    */
+    void apply();
+
+    /* @brief Select the table/axis/dimension/labels that will be returned in the view.
 
     Behavior:
       - By default, If the table is a part of a select clause but the axis/dimension is not 
@@ -36,25 +42,17 @@ namespace TensorBase
     template<typename LabelsT, typename DeviceT>
     void selectClause(TensorCollection& tensor_collection, SelectClause<LabelsT, DeviceT>& select_clause, DeviceT& device);
 
-    /// Aggregate table/asxis/dimension/labels by a boolean expression
-    template<typename LabelsT, typename TensorT, typename DeviceT>
-    void aggregateClause(TensorCollection& tensor_collection, AggregateClause<LabelsT, TensorT, DeviceT>& aggregate_clause, DeviceT& device);
+    /// TODO
+    template<typename DeviceT>
+    void reductionClause(TensorCollection& tensor_collection, ReductionClause<DeviceT>& reduction_clause, DeviceT& device);
 
     /// Select the table/axis/dimension/labels by a boolean expression
     template<typename LabelsT, typename TensorT, typename DeviceT>
     void whereClause(TensorCollection& tensor_collection, WhereClause<LabelsT, TensorT, DeviceT>& where_clause, DeviceT& device);
 
-    /// Select group the dimensions by non-unique values
-    template<typename LabelsT, typename DeviceT>
-    void groupByClause(TensorCollection& tensor_collectiont, SelectClause<LabelsT, DeviceT>& group_by_clause, DeviceT& device) {};
-
-    /// Select the aggregate clause labels by a boolean expression
-    template<typename LabelsT, typename TensorT, typename DeviceT>
-    void havingClause(TensorCollection& tensor_collection, WhereClause<LabelsT, TensorT, DeviceT>& having_clause, DeviceT& device) {};
-
     /// Order the selected table/axis/dimension/labels
     template<typename LabelsT, typename DeviceT>
-    void orderByClause(TensorCollection& tensor_collection, OrderByClause<LabelsT, DeviceT>& order_by_clause, DeviceT& device);
+    void sortClause(TensorCollection& tensor_collection, SortClause<LabelsT, DeviceT>& sort_clause, DeviceT& device);
   protected:
     std::set<std::string> selected_tables_;
   };
@@ -98,7 +96,7 @@ namespace TensorBase
   };
 
   template<typename LabelsT, typename DeviceT>
-  void TensorSelect::orderByClause(TensorCollection& tensor_collection, OrderByClause<LabelsT, DeviceT>& order_by_clause, DeviceT& device) {
+  void TensorSelect::sortClause(TensorCollection& tensor_collection, SortClause<LabelsT, DeviceT>& sort_clause, DeviceT& device) {
     // iterate through each table axis
     for (auto& axis : tensor_collection.tables_.at(order_by_clause.table_name)->getAxes()) {
       if (axis.first == order_by_clause.axis_name) {
@@ -106,7 +104,7 @@ namespace TensorBase
         for (int d = 0; d < axis.second->getDimensions().size(); ++d) {
           if (axis.second->getDimensions()(d) == order_by_clause.dimension_name) {
             // order the indices view
-            tensor_collection.tables_.at(order_by_clause.table_name)->orderIndicesView(
+            tensor_collection.tables_.at(order_by_clause.table_name)->sortIndicesView(
               order_by_clause.axis_name, d, order_by_clause.labels, device);
           }
         }
