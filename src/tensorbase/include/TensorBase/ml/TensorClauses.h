@@ -4,7 +4,7 @@
 #define TENSORBASE_TENSORCLAUSE_H
 
 #include <unsupported/Eigen/CXX11/Tensor>
-#include <TensorBase/ml/TensorCollection.h>
+#include <TensorBase/ml/TensorData.h>
 
 namespace TensorBase
 {
@@ -98,10 +98,14 @@ namespace TensorBase
       EQUAL_TO,
       NOT_EQUAL_TO
     };
+  };
+  struct logicalModifiers {
     enum logicalModifier {
       NOT,
       NONE
     };
+  };
+  struct logicalContinuators {
     enum logicalContinuator {
       AND,
       OR
@@ -113,21 +117,21 @@ namespace TensorBase
     an `OR` clause will be applied to aggregate all other non-target selection axis
   */
   template<typename LabelsT, typename TensorT, typename DeviceT>
-  class WhereClause : public SelectClause<TensorT, DeviceT> {
+  class WhereClause : public SelectClause<LabelsT, DeviceT> {
   public:
     WhereClause() = default;
     WhereClause(const std::string& table_name, const std::string& axis_name, const std::string& dimension_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& labels,
       const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor,
-      const logicalComparitors::logicalModifier& modifier, const logicalComparitors::logicalContinuator& prepend_continuator, const logicalComparitors::logicalContinuator& within_continuator) :
-      table_name(table_name), axis_name(axis_name), dimension_name(dimension_name), labels(labels),
+      const logicalModifiers::logicalModifier& modifier, const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator) :
+      SelectClause(table_name, axis_name, dimension_name, labels),
       values(values), comparitor(comparitor),
-      modifier(modifier), prepend_continuator(prepend_continuator), within_continuator(within_continuator) { };
+      modifier(modifier), within_continuator(within_continuator), prepend_continuator(prepend_continuator) { };
     ~WhereClause() = default;
     std::shared_ptr<TensorData<TensorT, DeviceT, 1>> values;
     logicalComparitors::logicalComparitor comparitor;
-    logicalComparitors::logicalModifier modifier;
-    logicalComparitors::logicalContinuator prepend_continuator;
-    logicalComparitors::logicalContinuator within_continuator;
+    logicalModifiers::logicalModifier modifier;
+    logicalContinuators::logicalContinuator prepend_continuator;
+    logicalContinuators::logicalContinuator within_continuator;
   };
 
   struct sortOrder {
@@ -135,8 +139,12 @@ namespace TensorBase
   };
   /*
   @brief Class defining the `Order by` clause that orders the tensor according to the
-    specified axis and label.  If the tensor is of TDims > 2, then the values in the first index of 
-    all non-target sort axis will be used
+    specified axis and label.  
+    
+    If the tensor is of TDims > 2, then the values in the first index of 
+    all non-target sort axis will be used.
+
+  [TODO: implement a means to sort by the labels]
   */
   template<typename LabelsT, typename DeviceT>
   class SortClause {
@@ -150,7 +158,7 @@ namespace TensorBase
     std::string axis_name;
     std::string dimension_name;
     LabelsT label;
-    sortOrder::order order_by;
+    sortOrder::order order_by = sortOrder::ASC;
   };
 };
 #endif //TENSORBASE_TENSORCLAUSE_H

@@ -70,6 +70,7 @@ namespace TensorBase
     */
     template<typename LabelsT>
     void selectIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& select_labels, DeviceT& device);
+    
     void resetIndicesView(const std::string& axis_name, DeviceT& device); ///< copy over the indices values to the indices view
     void zeroIndicesView(const std::string& axis_name, DeviceT& device); ///< set the indices view to zero
 
@@ -97,10 +98,14 @@ namespace TensorBase
     @param[in] prepend_continuator
     @param[in] device
     */
+    template<typename LabelsT, typename T>
+    void whereIndicesViewConcept(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<T, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device);
     template<typename LabelsT>
     void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& select_labels,
-      const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalComparitors::logicalModifier& modifier,
-      const logicalComparitors::logicalContinuator& within_continuator, const logicalComparitors::logicalContinuator& prepend_continuator, DeviceT& device);
+      const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device);
 
     /*
     @brief Broadcast the axis indices view across the entire tensor
@@ -134,7 +139,7 @@ namespace TensorBase
     @param[in] modifier The logical modifier to apply to the comparitor (i.e., Not; currently not implemented)
     @param[in] device
     */
-    virtual void selectTensorIndices(std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values_select, const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, const logicalComparitors::logicalComparitor& comparitor, const logicalComparitors::logicalModifier& modifier, DeviceT& device) = 0;
+    virtual void selectTensorIndices(std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values_select, const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier, DeviceT& device) = 0;
 
     /*
     @brief Apply the indices select to the indices view for the respective axis
@@ -147,7 +152,7 @@ namespace TensorBase
     @param[in] prepend_continuator
     @param[in] device
     */
-    virtual void applyIndicesSelectToIndicesView(const std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, const std::string & axis_name_select, const std::string& axis_name, const logicalComparitors::logicalContinuator& within_continuator, const logicalComparitors::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void applyIndicesSelectToIndicesView(const std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, const std::string & axis_name_select, const std::string& axis_name, const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
 
     /*
     @brief Slice out the 1D Tensor that will be sorted on
@@ -277,10 +282,21 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
+  template<typename LabelsT, typename T>
+  inline void TensorTable<TensorT, DeviceT, TDim>::whereIndicesViewConcept(const std::string & axis_name, const int & dimension_index, 
+    const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& select_labels, const std::shared_ptr<TensorData<T, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor & comparitor, const logicalModifiers::logicalModifier & modifier, const logicalContinuators::logicalContinuator & within_continuator, const logicalContinuators::logicalContinuator & prepend_continuator, DeviceT & device)
+  {
+    if (std::is_same<T, TensorT>::value) {
+      const auto values_cast = std::reinterpret_pointer_cast<TensorData<TensorT, DeviceT, 1>>(values); // required for compilation: no conversion should be done
+      whereIndicesView(axis_name, dimension_index, select_labels, values_cast, comparitor, modifier, within_continuator, prepend_continuator, device);
+    }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
   template<typename LabelsT>
   inline void TensorTable<TensorT, DeviceT, TDim>::whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& select_labels, 
-    const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalComparitors::logicalModifier& modifier,
-    const logicalComparitors::logicalContinuator& within_continuator, const logicalComparitors::logicalContinuator& prepend_continuator, DeviceT& device) {
+    const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+    const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
     // create a copy of the indices view
     std::shared_ptr<TensorData<int, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copy(device);
 

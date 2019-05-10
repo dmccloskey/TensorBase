@@ -3,6 +3,7 @@
 #define BOOST_TEST_MODULE TensorCollection test suite 
 #include <boost/test/included/unit_test.hpp>
 #include <TensorBase/ml/TensorCollection.h>
+#include <TensorBase/ml/TensorTableDefaultDevice.h>
 
 using namespace TensorBase;
 using namespace std;

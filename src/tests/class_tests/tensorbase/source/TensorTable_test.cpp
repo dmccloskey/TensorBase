@@ -369,7 +369,7 @@ BOOST_AUTO_TEST_CASE(selectTensorIndicesDefaultDevice)
   // test inequality
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>> indices_select;
   tensorTable.selectTensorIndices(indices_select, values_select_ptr, tensor_select_ptr,
-    "1", nlabels, logicalComparitors::logicalComparitor::NOT_EQUAL_TO, logicalComparitors::logicalModifier::NONE, device);
+    "1", nlabels, logicalComparitors::logicalComparitor::NOT_EQUAL_TO, logicalModifiers::logicalModifier::NONE, device);
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
@@ -384,7 +384,7 @@ BOOST_AUTO_TEST_CASE(selectTensorIndicesDefaultDevice)
   // test equality
   indices_select.reset();
   tensorTable.selectTensorIndices(indices_select, values_select_ptr, tensor_select_ptr,
-    "1", nlabels, logicalComparitors::logicalComparitor::EQUAL_TO, logicalComparitors::logicalModifier::NONE, device);
+    "1", nlabels, logicalComparitors::logicalComparitor::EQUAL_TO, logicalModifiers::logicalModifier::NONE, device);
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
@@ -399,7 +399,7 @@ BOOST_AUTO_TEST_CASE(selectTensorIndicesDefaultDevice)
   // test less than
   indices_select.reset();
   tensorTable.selectTensorIndices(indices_select, values_select_ptr, tensor_select_ptr,
-    "1", nlabels, logicalComparitors::logicalComparitor::LESS_THAN, logicalComparitors::logicalModifier::NONE, device);
+    "1", nlabels, logicalComparitors::logicalComparitor::LESS_THAN, logicalModifiers::logicalModifier::NONE, device);
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
@@ -414,7 +414,7 @@ BOOST_AUTO_TEST_CASE(selectTensorIndicesDefaultDevice)
   // test less than or equal to
   indices_select.reset();
   tensorTable.selectTensorIndices(indices_select, values_select_ptr, tensor_select_ptr,
-    "1", nlabels, logicalComparitors::logicalComparitor::LESS_THAN_OR_EQUAL_TO, logicalComparitors::logicalModifier::NONE, device);
+    "1", nlabels, logicalComparitors::logicalComparitor::LESS_THAN_OR_EQUAL_TO, logicalModifiers::logicalModifier::NONE, device);
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
@@ -429,7 +429,7 @@ BOOST_AUTO_TEST_CASE(selectTensorIndicesDefaultDevice)
   // test greater than
   indices_select.reset();
   tensorTable.selectTensorIndices(indices_select, values_select_ptr, tensor_select_ptr,
-    "1", nlabels, logicalComparitors::logicalComparitor::GREATER_THAN, logicalComparitors::logicalModifier::NONE, device);
+    "1", nlabels, logicalComparitors::logicalComparitor::GREATER_THAN, logicalModifiers::logicalModifier::NONE, device);
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
@@ -444,7 +444,7 @@ BOOST_AUTO_TEST_CASE(selectTensorIndicesDefaultDevice)
   // test greater than or equal to
   indices_select.reset();
   tensorTable.selectTensorIndices(indices_select, values_select_ptr, tensor_select_ptr,
-    "1", nlabels, logicalComparitors::logicalComparitor::GREATER_THAN_OR_EQUAL_TO, logicalComparitors::logicalModifier::NONE, device);
+    "1", nlabels, logicalComparitors::logicalComparitor::GREATER_THAN_OR_EQUAL_TO, logicalModifiers::logicalModifier::NONE, device);
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
@@ -500,7 +500,7 @@ BOOST_AUTO_TEST_CASE(applyIndicesSelectToIndicesViewDefaultDevice)
   
   indices_view_2(nlabels - 1) = 0;
   // test for OR within continuator and OR prepend continuator
-  tensorTable.applyIndicesSelectToIndicesView(indices_select_ptr, "1", "2", logicalComparitors::logicalComparitors::logicalContinuator::OR, logicalComparitors::logicalComparitors::logicalContinuator::OR, device);
+  tensorTable.applyIndicesSelectToIndicesView(indices_select_ptr, "1", "2", logicalContinuators::logicalContinuator::OR, logicalContinuators::logicalContinuator::OR, device);
   for (int i = 0; i < nlabels; ++i) {
     if (i == nlabels - 1)
       BOOST_CHECK_EQUAL(indices_view_2(i), 0);
@@ -511,7 +511,7 @@ BOOST_AUTO_TEST_CASE(applyIndicesSelectToIndicesViewDefaultDevice)
   tensorTable.resetIndicesView("2", device);
   indices_view_2(0) = 0;
   // test for AND within continuator and OR prepend continuator
-  tensorTable.applyIndicesSelectToIndicesView(indices_select_ptr, "1", "2", logicalComparitors::logicalComparitors::logicalContinuator::AND, logicalComparitors::logicalComparitors::logicalContinuator::OR, device);
+  tensorTable.applyIndicesSelectToIndicesView(indices_select_ptr, "1", "2", logicalContinuators::logicalContinuator::AND, logicalContinuators::logicalContinuator::OR, device);
   for (int i = 0; i < nlabels; ++i) {
     if (i == 0)
       BOOST_CHECK_EQUAL(indices_view_2(i), 0);
@@ -522,7 +522,7 @@ BOOST_AUTO_TEST_CASE(applyIndicesSelectToIndicesViewDefaultDevice)
   tensorTable.resetIndicesView("2", device);
   indices_view_2(0) = 0;
   // test for OR within continuator and AND prepend continuator
-  tensorTable.applyIndicesSelectToIndicesView(indices_select_ptr, "1", "2", logicalComparitors::logicalComparitors::logicalContinuator::OR, logicalComparitors::logicalComparitors::logicalContinuator::AND, device);
+  tensorTable.applyIndicesSelectToIndicesView(indices_select_ptr, "1", "2", logicalContinuators::logicalContinuator::OR, logicalContinuators::logicalContinuator::AND, device);
   for (int i = 0; i < nlabels; ++i) {
     if (i != 0 && i < nlabels - 1)
       BOOST_CHECK_EQUAL(indices_view_2(i), i + 1);
@@ -546,7 +546,7 @@ BOOST_AUTO_TEST_CASE(applyIndicesSelectToIndicesViewDefaultDevice)
     }
   }
   // test for AND within continuator and AND prepend continuator
-  tensorTable.applyIndicesSelectToIndicesView(indices_select_ptr, "1", "2", logicalComparitors::logicalComparitors::logicalContinuator::AND, logicalComparitors::logicalComparitors::logicalContinuator::AND, device);
+  tensorTable.applyIndicesSelectToIndicesView(indices_select_ptr, "1", "2", logicalContinuators::logicalContinuator::AND, logicalContinuators::logicalContinuator::AND, device);
   for (int i = 0; i < nlabels; ++i) {
     if (i==0)
       BOOST_CHECK_EQUAL(indices_view_2(i), i+1);
@@ -606,8 +606,8 @@ BOOST_AUTO_TEST_CASE(whereIndicesViewDataDefaultDevice)
 
   // test
   tensorTable.whereIndicesView("1", 0, select_labels_ptr,
-    std::make_shared<TensorDataDefaultDevice<float, 1>>(select_values), logicalComparitors::logicalComparitor::EQUAL_TO, logicalComparitors::logicalModifier::NONE,
-    logicalComparitors::logicalComparitors::logicalContinuator::OR, logicalComparitors::logicalComparitors::logicalContinuator::AND, device);
+    std::make_shared<TensorDataDefaultDevice<float, 1>>(select_values), logicalComparitors::logicalComparitor::EQUAL_TO, logicalModifiers::logicalModifier::NONE,
+    logicalContinuators::logicalContinuator::OR, logicalContinuators::logicalContinuator::AND, device);
   Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_1(tensorTable.getIndicesView().at("1")->getDataPointer().get(), tensorTable.getIndicesView().at("1")->getDimensions());
   Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_2(tensorTable.getIndicesView().at("2")->getDataPointer().get(), tensorTable.getIndicesView().at("2")->getDimensions());
   Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_3(tensorTable.getIndicesView().at("3")->getDataPointer().get(), tensorTable.getIndicesView().at("3")->getDimensions());
