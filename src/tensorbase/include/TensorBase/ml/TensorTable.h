@@ -452,14 +452,16 @@ namespace TensorBase
     // select the tensor data based on the selection indices and update
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> tensor_select;
     getSelectTensorData(tensor_select, indices_select, device);
-    data_ = tensor_select;
 
     // update the axes
     for (const auto& axis_to_name : axes_to_dims_) {
-      // select out the axis labels based on the indices view
-
-      // remake the indices based on the new labels
+      // resize the axis based on the indices view
+      axes_.at(axis_to_name.first)->select(indices_view_.at(axis_to_name.first)); //TODO
     }
+
+    // remake the axes and move over the tensor data
+    setAxes();
+    data_ = tensor_select;
   }
 
   template<typename TensorT, typename DeviceT, int TDim>

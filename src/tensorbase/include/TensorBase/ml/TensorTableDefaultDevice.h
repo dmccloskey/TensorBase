@@ -248,7 +248,7 @@ namespace TensorBase
   template<typename TensorT, int TDim>
   inline void TensorTableDefaultDevice<TensorT, TDim>::getSelectTensorData(std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_select, Eigen::DefaultDevice & device)
   {
-    // temporary memory for calculatingn the sum of each axis
+    // temporary memory for calculating the sum of each axis
     TensorDataDefaultDevice<int, 1> dim_size(Eigen::array<Eigen::Index, 1>({ 1 }));
     dim_size.setData();
     Eigen::TensorMap<Eigen::Tensor<int, 0>> dim_size_value(dim_size.getDataPointer().get());
