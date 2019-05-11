@@ -736,4 +736,149 @@ BOOST_AUTO_TEST_CASE(sortIndicesViewDataDefaultDevice)
   }
 }
 
+BOOST_AUTO_TEST_CASE(makeSelectIndicesFromIndicesViewDefaultDevice)
+{
+  // setup the table
+  TensorTableDefaultDevice<float, 3> tensorTable;
+  Eigen::DefaultDevice device;
+
+  // setup the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels = 3;
+  Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels), labels3(1, nlabels);
+  labels1.setValues({ {0, 1, 2} });
+  labels2.setValues({ {0, 1, 2} });
+  labels3.setValues({ {0, 1, 2} });
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3)));
+  tensorTable.setAxes();
+
+  // Test null
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>> indices_select;
+  tensorTable.makeSelectIndicesFromIndicesView(indices_select, device);
+  Eigen::TensorMap<Eigen::Tensor<int, 3>> indices_select_values(indices_select->getDataPointer().get(), indices_select->getDimensions());
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        BOOST_CHECK_EQUAL(indices_select_values(i, j, k), 1);
+      }
+    }
+  }
+
+  // make the expected indices tensor
+  Eigen::Tensor<int, 3> indices_select_test(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        if (i == 1)
+          indices_select_test(i, j, k) = 1;
+        else
+          indices_select_test(i, j, k) = 0;
+      }
+    }
+  }
+
+  // select
+  TensorDataDefaultDevice<int, 1> select_labels(Eigen::array<Eigen::Index, 1>({ 1 }));
+  Eigen::Tensor<int,1> select_labels_values(Eigen::array<Eigen::Index, 1>({ 1 }));
+  select_labels_values.setValues({1});
+  select_labels.setData(select_labels_values);
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> select_labels_ptr = std::make_shared<TensorDataDefaultDevice<int, 1>>(select_labels);
+  tensorTable.selectIndicesView("1", 0, select_labels_ptr, device);
+
+  // Test selected
+  indices_select.reset();
+  tensorTable.makeSelectIndicesFromIndicesView(indices_select, device);
+  Eigen::TensorMap<Eigen::Tensor<int, 3>> indices_select_values2(indices_select->getDataPointer().get(), indices_select->getDimensions());
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        BOOST_CHECK_EQUAL(indices_select_values2(i, j, k), indices_select_test(i, j, k));
+      }
+    }
+  }
+}
+
+BOOST_AUTO_TEST_CASE(getSelectTensorDataDefaultDevice)
+{
+  // setup the table
+  TensorTableDefaultDevice<float, 3> tensorTable;
+  Eigen::DefaultDevice device;
+
+  // setup the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels = 3;
+  Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels), labels3(1, nlabels);
+  labels1.setValues({ {0, 1, 2} });
+  labels2.setValues({ {0, 1, 2} });
+  labels3.setValues({ {0, 1, 2} });
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3)));
+  tensorTable.setAxes();
+
+  // setup the tensor data
+  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  int iter = 0;
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        tensor_values(i, j, k) = float(iter);
+        ++iter;
+      }
+    }
+  }
+  tensorTable.getData()->setData(tensor_values);
+
+  // select label 1 from axis 1
+  TensorDataDefaultDevice<int, 1> select_labels(Eigen::array<Eigen::Index, 1>({ 1 }));
+  Eigen::Tensor<int, 1> select_labels_values(Eigen::array<Eigen::Index, 1>({ 1 }));
+  select_labels_values.setValues({ 1 });
+  select_labels.setData(select_labels_values);
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> select_labels_ptr = std::make_shared<TensorDataDefaultDevice<int, 1>>(select_labels);
+  tensorTable.selectIndicesView("1", 0, select_labels_ptr, device);
+
+  // make the expected dimensions
+  Eigen::array<Eigen::Index, 3> select_dimensions = { 1, 3, 3 };
+
+  // make the indices_select
+  Eigen::Tensor<float, 3> tensor_select_test(select_dimensions);
+  Eigen::Tensor<int, 3> indices_select_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  iter = 0;
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        if (i == 1) {
+          indices_select_values(i, j, k) = 1;
+          tensor_select_test(0, j, k) = float(iter);
+        }
+        else {
+          indices_select_values(i, j, k) = 0;
+        }
+        ++iter;
+      }
+    }
+  }
+  TensorDataDefaultDevice<int, 3> indices_select(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  indices_select.setData(indices_select_values);
+
+  // test for the selected data
+  std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 3>> tensor_select_ptr;
+  tensorTable.getSelectTensorData(tensor_select_ptr, std::make_shared<TensorDataDefaultDevice<int, 3>>(indices_select), device);
+  BOOST_CHECK(tensor_select_ptr->getDimensions() == select_dimensions);
+  Eigen::TensorMap<Eigen::Tensor<float, 3>> tensor_select_values(tensor_select_ptr->getDataPointer().get(), tensor_select_ptr->getDimensions());
+  for (int j = 0; j < nlabels; ++j) {
+    for (int k = 0; k < nlabels; ++k) {
+      BOOST_CHECK_CLOSE(tensor_select_values(0, j, k), tensor_select_test(0, j, k), 1e-3);
+    }
+  }
+}
+
 BOOST_AUTO_TEST_SUITE_END()

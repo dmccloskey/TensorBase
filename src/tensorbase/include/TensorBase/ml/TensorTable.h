@@ -152,7 +152,7 @@ namespace TensorBase
     @param[in] prepend_continuator
     @param[in] device
     */
-    virtual void applyIndicesSelectToIndicesView(const std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, const std::string & axis_name_select, const std::string& axis_name, const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    void applyIndicesSelectToIndicesView(const std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, const std::string & axis_name_select, const std::string& axis_name, const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device);
 
     /*
     @brief Slice out the 1D Tensor that will be sorted on
@@ -172,22 +172,35 @@ namespace TensorBase
     @param[in] axis_name_apply The name of the axis that the sort will be applied to
     @param[in] device
     */
-    virtual void sortTensorDataSlice(const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& tensor_sort, const std::string & axis_name_apply, const sortOrder::order& order_by, DeviceT& device) = 0;
+    void sortTensorDataSlice(const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& tensor_sort, const std::string & axis_name_apply, const sortOrder::order& order_by, DeviceT& device);
 
     /*
-    @brief Broadcast the axis indices view across the entire tensor,
-      auto-increment each tensor to preserve order across the entire tensor,
-      and allocate to memory
-
-    @param[out] indices_view_bcast
-    @param[in] axis_name
+    @brief
     */
-    //virtual void broadcastSortIndicesView(std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_view_bcast, const std::string& axis_name) = 0;
+    void selectTensorData(DeviceT& device);
+
+    /*
+    @brief
+    */
+    virtual void makeSelectIndicesFromIndicesView(std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, DeviceT& device) = 0;
+
+    /*
+    @brief
+    */
+    virtual void getSelectTensorData(std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, DeviceT& device) = 0;
 
     /*
     @brief Sort data from the Tensor based on a sort index tensor
     */
-    //virtual void sortTensorData(const std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_view_sort, std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& tensor_select, DeviceT& device) = 0;
+    void sortTensorData(DeviceT& device);
+    
+    /*
+    @brief make the sort indices tensor based off the indices view of each axis
+
+    @param[out] indices_sort
+    @param[in] device
+    */
+    virtual void makeSortIndicesViewFromIndicesView(std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_sort, DeviceT& device) = 0;
 
   protected:
     int id_ = -1;
@@ -338,6 +351,127 @@ namespace TensorBase
   {
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_name)->getDataPointer().get(), indices_view_.at(axis_name)->getDimensions());
     indices_view.device(device) = indices_view.constant(0);
-  };
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::applyIndicesSelectToIndicesView(const std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, const std::string & axis_name_select, const std::string & axis_name, const logicalContinuators::logicalContinuator & within_continuator, const logicalContinuators::logicalContinuator & prepend_continuator, DeviceT & device)
+  {
+    // apply the continuator reduction, then...
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(this->indices_view_.at(axis_name)->getDataPointer().get(), this->indices_view_.at(axis_name)->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_select_values(indices_select->getDataPointer().get(), indices_select->getDimensions());
+    if (within_continuator == logicalContinuators::logicalContinuator::OR) {
+
+      // build the continuator reduction indices for the OR within continuator
+      Eigen::array<int, TDim - 1> reduction_dims;
+      int index = 0;
+      for (const auto& axis_to_name_red : this->axes_to_dims_) {
+        if (axis_to_name_red.first != axis_name) {
+          reduction_dims.at(index) = axis_to_name_red.second;
+          ++index;
+        }
+      }
+
+      // apply the OR continuator reduction
+      auto indices_view_update_tmp = indices_select_values.sum(reduction_dims);
+      //ensure a max value of 1 (Note: + 1e-12 is to prevent division by 0; the cast back to "int" rounds down to 0)
+      auto indices_view_update = (indices_view_update_tmp.cast<float>() / (indices_view_update_tmp.cast<float>() + indices_view_update_tmp.cast<float>().constant(1e-12))).cast<int>();
+
+      // update the indices view based on the prepend_continuator
+      if (prepend_continuator == logicalContinuators::logicalContinuator::OR) {
+        indices_view.device(device) = (indices_view_update > indices_view_update.constant(0) || indices_view > indices_view.constant(0)).select(indices_view, indices_view.constant(0));
+      }
+      else if (prepend_continuator == logicalContinuators::logicalContinuator::AND) {
+        indices_view.device(device) = indices_view * indices_view_update;
+      }
+    }
+    else if (within_continuator == logicalContinuators::logicalContinuator::AND) {
+      // apply the AND continuator reduction along the axis_name_selection dim
+      Eigen::array<Eigen::Index, 1> reduction_dims = { this->axes_to_dims_.at(axis_name_select) };
+      auto indices_view_update_prod = indices_select_values.prod(reduction_dims);
+
+      // apply a normalized sum (OR) continuator across all other dimensions
+      if (TDim - 2 > 0) {
+        Eigen::array<int, TDim - 2> reduction_dims_sum;
+        int index = 0;
+        for (const auto& axis_to_name_red : this->axes_to_dims_) {
+          if (axis_to_name_red.first != axis_name && axis_to_name_red.first != axis_name_select) {
+            if (this->axes_to_dims_.at(axis_name_select) <= this->axes_to_dims_.at(axis_to_name_red.first))
+              reduction_dims_sum.at(index) = axis_to_name_red.second - 1; // prod dim was lost
+            else
+              reduction_dims_sum.at(index) = axis_to_name_red.second;
+            ++index;
+          }
+        }
+        auto indices_view_update_tmp = indices_view_update_prod.sum(reduction_dims_sum);
+        //ensure a max value of 1 (Note: + 1e-12 is to prevent division by 0; the cast back to "int" rounds down to 0)
+        auto indices_view_update = (indices_view_update_tmp.cast<float>() / (indices_view_update_tmp.cast<float>() + indices_view_update_tmp.cast<float>().constant(1e-12))).cast<int>();
+
+        // update the indices view based on the prepend_continuator
+        if (prepend_continuator == logicalContinuators::logicalContinuator::OR) {
+          indices_view.device(device) = (indices_view_update > indices_view_update.constant(0) || indices_view > indices_view.constant(0)).select(indices_view, indices_view.constant(0));
+        }
+        else if (prepend_continuator == logicalContinuators::logicalContinuator::AND) {
+          indices_view.device(device) = indices_view * indices_view_update;
+        }
+      }
+
+      // no other dims to worry about, use as is.
+      else {
+        auto indices_view_update = indices_view_update_prod;
+
+        // update the indices view based on the prepend_continuator
+        if (prepend_continuator == logicalContinuators::logicalContinuator::OR) {
+          indices_view.device(device) = (indices_view_update > indices_view_update.constant(0) || indices_view > indices_view.constant(0)).select(indices_view, indices_view.constant(0));
+        }
+        else if (prepend_continuator == logicalContinuators::logicalContinuator::AND) {
+          indices_view.device(device) = indices_view * indices_view_update;
+        }
+      }
+    }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::sortTensorDataSlice(const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& tensor_sort, const std::string & axis_name_apply, const sortOrder::order & order_by, DeviceT & device)
+  {
+    // sort the slice
+    if (order_by == sortOrder::order::ASC) {
+      tensor_sort->sortIndices(this->indices_view_.at(axis_name_apply), "ASC", device);
+    }
+    else if (order_by == sortOrder::order::DESC) {
+      tensor_sort->sortIndices(this->indices_view_.at(axis_name_apply), "DESC", device);
+    }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::selectTensorData(DeviceT & device)
+  {
+    // make the selection indices from the indices view
+    std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_select;
+    makeSelectIndicesFromIndicesView(indices_select, device);
+
+    // select the tensor data based on the selection indices and update
+    std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> tensor_select;
+    getSelectTensorData(tensor_select, indices_select, device);
+    data_ = tensor_select;
+
+    // update the axes
+    for (const auto& axis_to_name : axes_to_dims_) {
+      // select out the axis labels based on the indices view
+
+      // remake the indices based on the new labels
+    }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::sortTensorData(DeviceT & device)
+  {
+    // make the sort index tensor from the indices view
+    std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_sort;
+    makeSortIndicesViewFromIndicesView(indices_select, device);
+
+    // apply the sort indices to the tensor data and reset the indices view
+    data_->sort(indices_select, device);
+    resetIndicesView();
+  }
 };
 #endif //TENSORBASE_TENSORTABLE_H
