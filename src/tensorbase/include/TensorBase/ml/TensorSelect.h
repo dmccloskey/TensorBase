@@ -53,8 +53,6 @@ namespace TensorBase
     /// Order the selected table/axis/dimension/labels
     template<typename LabelsT, typename DeviceT>
     void sortClause(TensorCollection& tensor_collection, SortClause<LabelsT, DeviceT>& sort_clause, DeviceT& device);
-  protected:
-    std::set<std::string> selected_tables_;
   };
 
   template<typename LabelsT, typename DeviceT>
@@ -62,10 +60,10 @@ namespace TensorBase
     // iterate through each table axis
     for (auto& axis : tensor_collection.tables_.at(select_clause.table_name)->getAxes()) {
       if (axis.first == select_clause.axis_name) {
-        // record the selected tables and axes
-        selected_tables_.insert(select_clause.table_name);
+        // TODO: check for select_clause.axis_name == ""
         // iterate through each axis dimensions
         for (int d = 0; d < axis.second->getDimensions().size(); ++d) {
+          // TODO: check for select_clause.dimension_name == ""
           if (axis.second->getDimensions()(d) == select_clause.dimension_name) {
             // copy over indices into the view that are in the select clause
             tensor_collection.tables_.at(select_clause.table_name)->selectIndicesView(
@@ -98,14 +96,14 @@ namespace TensorBase
   template<typename LabelsT, typename DeviceT>
   void TensorSelect::sortClause(TensorCollection& tensor_collection, SortClause<LabelsT, DeviceT>& sort_clause, DeviceT& device) {
     // iterate through each table axis
-    for (auto& axis : tensor_collection.tables_.at(order_by_clause.table_name)->getAxes()) {
-      if (axis.first == order_by_clause.axis_name) {
+    for (auto& axis : tensor_collection.tables_.at(sort_clause.table_name)->getAxes()) {
+      if (axis.first == sort_clause.axis_name) {
         // iterate through each axis dimensions
         for (int d = 0; d < axis.second->getDimensions().size(); ++d) {
-          if (axis.second->getDimensions()(d) == order_by_clause.dimension_name) {
+          if (axis.second->getDimensions()(d) == sort_clause.dimension_name) {
             // order the indices view
-            tensor_collection.tables_.at(order_by_clause.table_name)->sortIndicesView(
-              order_by_clause.axis_name, d, order_by_clause.labels, device);
+            tensor_collection.tables_.at(sort_clause.table_name)->sortIndicesView(
+              sort_clause.axis_name, d, sort_clause.label, sort_clause.order_by, device);
           }
         }
       }
