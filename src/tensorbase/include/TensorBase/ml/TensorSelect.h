@@ -27,9 +27,18 @@ namespace TensorBase
     ~TensorSelect() = default;
 
     /*
-    @brief apply the current indices view to the TensorCollection
+    @brief reduce the selected Tables in the Tensor according to the selected indices view
+      that have been modified through the `select` and `where` clauses
     */
-    void apply();
+    template<typename DeviceT>
+    void applySelect(TensorCollection& tensor_collection, const std::vector<std::string>& table_names, DeviceT& device);
+
+    /*
+    @brief sort the selected Tables in the Tensor according to the ordering of the indices view
+      that have been modified through the `sort` clause
+    */
+    template<typename DeviceT>
+    void applySort(TensorCollection& tensor_collection, const std::vector<std::string>& table_names, DeviceT& device);
 
     /* @brief Select the table/axis/dimension/labels that will be returned in the view.
 
@@ -42,7 +51,7 @@ namespace TensorBase
     template<typename LabelsT, typename DeviceT>
     void selectClause(TensorCollection& tensor_collection, SelectClause<LabelsT, DeviceT>& select_clause, DeviceT& device);
 
-    /// TODO
+    /// TODO Reduce the table by a reduction function
     template<typename DeviceT>
     void reductionClause(TensorCollection& tensor_collection, ReductionClause<DeviceT>& reduction_clause, DeviceT& device);
 
@@ -53,6 +62,20 @@ namespace TensorBase
     /// Order the selected table/axis/dimension/labels
     template<typename LabelsT, typename DeviceT>
     void sortClause(TensorCollection& tensor_collection, SortClause<LabelsT, DeviceT>& sort_clause, DeviceT& device);
+  };
+
+  template<typename DeviceT>
+  void TensorSelect::applySelect(TensorCollection& tensor_collection, const std::vector<std::string>& table_names, DeviceT& device) {
+    for (const std::string& table_name : table_names) {
+      tensor_collection.tables_.at(select_clause.table_name)->selectTensorData(device);
+    }
+  };
+
+  template<typename DeviceT>
+  void TensorSelect::applySort(TensorCollection& tensor_collection, const std::vector<std::string>& table_names, DeviceT& device) {
+    for (const std::string& table_name : table_names) {
+      tensor_collection.tables_.at(select_clause.table_name)->sortTensorData(device);
+    }
   };
 
   template<typename LabelsT, typename DeviceT>

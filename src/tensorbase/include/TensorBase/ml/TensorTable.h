@@ -125,7 +125,7 @@ namespace TensorBase
     @param[in] n_select The size of the reduced dimensions
     @param[in] device
     */
-    virtual void extractTensorData(const std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_view_bcast, std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, DeviceT& device) = 0;
+    virtual void reduceTensorDataToSelectIndices(const std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_view_bcast, std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, DeviceT& device) = 0;
 
     /*
     @brief Select indices from the tensor based on a selection criteria
@@ -139,7 +139,7 @@ namespace TensorBase
     @param[in] modifier The logical modifier to apply to the comparitor (i.e., Not; currently not implemented)
     @param[in] device
     */
-    virtual void selectTensorIndices(std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values_select, const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier, DeviceT& device) = 0;
+    virtual void selectTensorIndicesOnReducedTensorData(std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values_select, const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier, DeviceT& device) = 0;
 
     /*
     @brief Apply the indices select to the indices view for the respective axis
@@ -163,7 +163,7 @@ namespace TensorBase
     @param[in] axis_name_apply The name of the axis that the sort will be applied to
     @param[in] device
     */
-    virtual void sliceTensorForSort(std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& tensor_sort, const std::string& axis_name_sort, const int& label_index_sort, const std::string& axis_name_apply, DeviceT& device) = 0;
+    virtual void sliceTensorDataForSort(std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& tensor_sort, const std::string& axis_name_sort, const int& label_index_sort, const std::string& axis_name_apply, DeviceT& device) = 0;
 
     /*
     @brief Sort the axis indices view based on the values of the 1D tensor slice
@@ -172,7 +172,7 @@ namespace TensorBase
     @param[in] axis_name_apply The name of the axis that the sort will be applied to
     @param[in] device
     */
-    virtual void sortTensorSlice(const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& tensor_sort, const std::string & axis_name_apply, const sortOrder::order& order_by, DeviceT& device) = 0;
+    virtual void sortTensorDataSlice(const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& tensor_sort, const std::string & axis_name_apply, const sortOrder::order& order_by, DeviceT& device) = 0;
 
     /*
     @brief Broadcast the axis indices view across the entire tensor,
@@ -274,10 +274,10 @@ namespace TensorBase
 
       // Slice out the tensor that will be used for sorting
       std::shared_ptr<TensorData<TensorT, DeviceT, 1>> tensor_sort;
-      sliceTensorForSort(tensor_sort, axis_name, label_index, axis_to_name.first, device);
+      sliceTensorDataForSort(tensor_sort, axis_name, label_index, axis_to_name.first, device);
       
       // Sort the axis index view
-      sortTensorSlice(tensor_sort, axis_to_name.first, order_by, device);
+      sortTensorDataSlice(tensor_sort, axis_to_name.first, order_by, device);
     }
   }
 
@@ -307,11 +307,11 @@ namespace TensorBase
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_view_bcast;
     broadcastSelectIndicesView(indices_view_bcast, axis_name, device);
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> tensor_select;
-    extractTensorData(indices_view_bcast, tensor_select, axis_name, select_labels->getData().size(), device);
+    reduceTensorDataToSelectIndices(indices_view_bcast, tensor_select, axis_name, select_labels->getData().size(), device);
 
     // Determine the indices that pass the selection criteria
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_select;
-    selectTensorIndices(indices_select, values, tensor_select, axis_name, select_labels->getData().size(), comparitor, modifier, device);
+    selectTensorIndicesOnReducedTensorData(indices_select, values, tensor_select, axis_name, select_labels->getData().size(), comparitor, modifier, device);
 
     // revert back to the origin indices view
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indicies_view_values(indices_view_.at(axis_name)->getDataPointer().get(), indices_view_.at(axis_name)->getDimensions());
