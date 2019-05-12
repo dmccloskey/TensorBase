@@ -11,15 +11,7 @@
 namespace TensorBase
 {
   /**
-    @brief Template class for all Tensor select operations
-
-    NOTES: order of execution
-    1. Where: axes and data are reduced after all where clauses have been applied
-    2. Select: axes and data are reduced after all select clauses have been applied
-    3. Group By: 
-    4. Aggregate: additional dimension label is and data are added after all aggregate clauses have been applied
-    5. Having: axes and data are reduced after all having clauses have been applied
-    6. Order By: axes and data are sorted after all order by clauses have ben applied
+    @brief Class for all Tensor select operations
   */
   class TensorSelect {
   public:
