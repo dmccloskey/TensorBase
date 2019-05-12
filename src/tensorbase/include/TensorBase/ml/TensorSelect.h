@@ -74,7 +74,7 @@ namespace TensorBase
   template<typename DeviceT>
   void TensorSelect::applySort(TensorCollection& tensor_collection, const std::vector<std::string>& table_names, DeviceT& device) {
     for (const std::string& table_name : table_names) {
-      tensor_collection.tables_.at(select_clause.table_name)->sortTensorData(device);
+      tensor_collection.tables_.at(table_name)->sortTensorData(device);
     }
   };
 
@@ -132,58 +132,7 @@ namespace TensorBase
       }
     }
   };
-
-  template<int TDim>
-  class TensorSelectSlices {
-  public:
-    TensorSelectSlices(const std::string table_name,
-      const Eigen::array<std::string, TDim>& axes_names,
-      const Eigen::array<std::string, TDim>& dimension_names,
-      const Eigen::array<std::string, TDim>& labels_start,
-      const Eigen::array<std::string, TDim>& labels_stop) :
-      table_name(table_name), axes_names(axes_names), dimension_names(dimension_names),
-      labels_start(labels_start), labels_stop(labels_stop) {
-      for (int iter = 0; iter < TDim; ++iter) {
-        offsets.at(iter) = -1;
-        exten-1;
-      }
-    };
-    template<typename T>
-    void operator()(T&& t){
-      if (std::forward<decltype(t)>(t)->getName() == table_name) {
-        for (auto& axis : std::forward<decltype(t)>(t)->getAxes()) {
-          for (int iter = 0; iter < TDim; ++iter) {
-            if (axis.first == axes_names.at(iter)) {
-              for (int d = 0; d < axis.second->getDimensions().size(); ++d) {
-                if (axis.second->getDimensions()(d) == dimension_names.at(iter)) {
-                  for (int l = 0; l < axis.second->getLabels().dimension(1); ++l) {
-                    if (axis.second->getLabels()(d, l) == labels_start.at(iter)) {
-                      offsets.at(iter) = l;
-                    }
-                    else if (axis.second->getLabels()(d, l) == labels_stop.at(iter)) {
-                      extents.at(iter) = l - d + 1;
-                    }
-                    if (extents.at(iter) != -1 && offsets.at(iter) != -1)
-                      break;
-                  }
-                  break;
-                }
-              }
-              break;
-            }
-          }
-        }
-      }
-    };
-    std::string table_name;
-    Eigen::array<std::string, TDim> axes_names;
-    Eigen::array<std::string, TDim> dimension_names;
-    Eigen::array<std::string, TDim> labels_start;
-    Eigen::array<std::string, TDim> labels_stop;
-    Eigen::array<int, TDim> offsets;
-    Eigen::array<int, TDim> extents;
-  };
-
+  
   class TensorSelectUnion;
   class TensorSelectJoin;
 };

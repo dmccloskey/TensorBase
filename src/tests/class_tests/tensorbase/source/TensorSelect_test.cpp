@@ -313,6 +313,37 @@ BOOST_AUTO_TEST_CASE(sortClauseDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 3);
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(1), 2);
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 1);
+
+  // Apply the select clause
+  tensorSelect.applySort(collection_1, { "1", "2" }, device);
+
+  // Test for the expected table attributes
+  Eigen::array<Eigen::Index, 3> dimensions1_test = { nlabels1, nlabels2, nlabels3 };
+  for (int i = 0; i < 3; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getDimensions().at(i), dimensions1_test.at(i));
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getDimensions().at(i), dimensions1_test.at(i));
+  }
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("1")->getData()(0), 1);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("1")->getData()(1), 2);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(0), 1);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(1), 2);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(2), 3);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(0), 1);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(1), 2);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(2), 3);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(3), 4);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(4), 5);
+
+  Eigen::array<Eigen::Index, 2> dimensions2_test = { nlabels1, nlabels2 };
+  for (int i = 0; i < 2; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable2_ptr->getDimensions().at(i), dimensions2_test.at(i));
+    BOOST_CHECK_EQUAL(tensorTable2_ptr->getData()->getDimensions().at(i), dimensions2_test.at(i));
+  }
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("1")->getData()(0), 1);
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("1")->getData()(1), 2);
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 1);
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(1), 2);
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 3);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

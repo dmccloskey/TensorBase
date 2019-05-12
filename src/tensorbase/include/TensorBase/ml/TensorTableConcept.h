@@ -87,6 +87,7 @@ namespace TensorBase
     /*
     All DeviceT combos of `sortTensorData`
     */
+    virtual void sortTensorData(Eigen::DefaultDevice& device) = 0;
     // TODO: all other LabelsT and DeviceT combos of `sortTensorData` 
   };
 
@@ -174,6 +175,10 @@ namespace TensorBase
 
     void selectTensorData(Eigen::DefaultDevice& device) {
       tensor_table_->selectTensorData(device);
+    };
+
+    void sortTensorData(Eigen::DefaultDevice& device) {
+      tensor_table_->sortTensorData(device);
     };
   };
 };
