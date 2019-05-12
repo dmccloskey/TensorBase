@@ -11,23 +11,24 @@ namespace TensorBase
   /**
     @brief Abstract base class for all Tensor Insert/Update/Delete operations
   */
+  template<typename DeviceT>
   class TensorOperation
   {
-    virtual void redo(TensorCollection& tensor_collection) = 0;
-    virtual void undo(TensorCollection& tensor_collection) = 0;
+    virtual void redo(TensorCollection& tensor_collection, DeviceT& device) = 0;
+    virtual void undo(TensorCollection& tensor_collection, DeviceT& device) = 0;
   };
 
   template<typename LabelsT, typename TensorT, typename DeviceT, int TDim>
-  class TensorAppendToAxis: public TensorOperation {
-    void redo(TensorCollection& tensor_collection);
-    void undo(TensorCollection& tensor_collection);
+  class TensorAppendToAxis: public TensorOperation<DeviceT> {
+    void redo(TensorCollection& tensor_collection, DeviceT& device);
+    void undo(TensorCollection& tensor_collection, DeviceT& device);
     std::string table_name_; // Redo/Undo
     std::string axis_name_; // Redo/Undo
     std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> labels_; // Redo/Undo
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> values_; // Redo/Undo
   };
   template<typename LabelsT, typename TensorT, typename DeviceT, int TDim>
-  inline void TensorAppendToAxis<LabelsT, TensorT, DeviceT, TDim>::redo(TensorCollection & tensor_collection)
+  inline void TensorAppendToAxis<LabelsT, TensorT, DeviceT, TDim>::redo(TensorCollection & tensor_collection, DeviceT& device)
   {
     // iterate through each table axis
     for (auto& axis : tensor_collection.tables_.at(table_name_)->getAxes()) {
@@ -38,7 +39,7 @@ namespace TensorBase
     }
   }
   template<typename LabelsT, typename TensorT, typename DeviceT, int TDim>
-  inline void TensorAppendToAxis<LabelsT, TensorT, DeviceT, TDim>::undo(TensorCollection & tensor_collection)
+  inline void TensorAppendToAxis<LabelsT, TensorT, DeviceT, TDim>::undo(TensorCollection & tensor_collection, DeviceT& device)
   {
     // iterate through each table axis
     for (auto& axis : tensor_collection.tables_.at(table_name_)->getAxes()) {
@@ -50,9 +51,9 @@ namespace TensorBase
   }
 
   template<typename LabelsT, typename TensorT, typename DeviceT, int TDim>
-  class TensorDeleteFromAxis : public TensorOperation {
-    void redo(TensorCollection& tensor_collection);
-    void undo(TensorCollection& tensor_collection);
+  class TensorDeleteFromAxis : public TensorOperation<DeviceT> {
+    void redo(TensorCollection& tensor_collection, DeviceT& device);
+    void undo(TensorCollection& tensor_collection, DeviceT& device);
     std::function<void(TensorCollection& tensor_collection)> select_function_; // Redo
     std::string table_name_; // Undo/Redo
     std::string axis_name_; // Undo/Redo
@@ -60,7 +61,7 @@ namespace TensorBase
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> values_; // Undo
   };
   template<typename LabelsT, typename TensorT, typename DeviceT, int TDim>
-  inline void TensorDeleteFromAxis<LabelsT, TensorT, DeviceT, TDim>::redo(TensorCollection & tensor_collection)
+  inline void TensorDeleteFromAxis<LabelsT, TensorT, DeviceT, TDim>::redo(TensorCollection & tensor_collection, DeviceT& device)
   {
     // Execute the select methods on the tensor_collection
     select_function_(tensor_collection);
@@ -69,12 +70,12 @@ namespace TensorBase
     for (auto& axis : tensor_collection.tables_.at(table_name_)->getAxes()) {
       if (axis.first == axis_name_) {
         //tensor_collection.tables_.at(table_name)->deleteFromAxis(
-        //  axis_name_, labels_, values_, device); // TODO optional overload that returns the labels and values that were deleted
+        //  axis_name_, labels_, values_, device); // TODO overload that returns the values that were deleted
       }
     }
   }
   template<typename LabelsT, typename TensorT, typename DeviceT, int TDim>
-  inline void TensorDeleteFromAxis<LabelsT, TensorT, DeviceT, TDim>::undo(TensorCollection & tensor_collection)
+  inline void TensorDeleteFromAxis<LabelsT, TensorT, DeviceT, TDim>::undo(TensorCollection & tensor_collection, DeviceT& device)
   {
     // iterate through each table axis
     for (auto& axis : tensor_collection.tables_.at(table_name_)->getAxes()) {
@@ -86,38 +87,40 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
-  class TensorUpdate : public TensorOperation {
-    void redo(TensorCollection& tensor_collection);
-    void undo(TensorCollection& tensor_collection);
+  class TensorUpdate : public TensorOperation<DeviceT> {
+    void redo(TensorCollection& tensor_collection, DeviceT& device);
+    void undo(TensorCollection& tensor_collection, DeviceT& device);
     std::function<void(TensorCollection& tensor_collection)> select_function_; // Redo/Undo
     std::string table_name_; // Undo/Redo
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> values_new_; // Redo
-    std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> values_old_; // Undo
+    std::shared_ptr<TensorTable<TensorT, DeviceT, TDim>> values_old_; // Undo
   };
   template<typename TensorT, typename DeviceT, int TDim>
-  inline void TensorUpdate<TensorT, DeviceT, TDim>::redo(TensorCollection & tensor_collection)
+  inline void TensorUpdate<TensorT, DeviceT, TDim>::redo(TensorCollection & tensor_collection, DeviceT& device)
   {
     // Execute the select methods on the tensor_collection
     select_function_(tensor_collection);
 
     // Update the values with the `values_new`
-    //tensor_collection.tables_.at(table_name)->updateTensorData(values_new_, device); // TODO
+    //tensor_collection.tables_.at(table_name)->updateTensorData(values_new_, values_old_, device);
+    // TODO: overload that also returns the selected table with the old values prior to update
   }
   template<typename TensorT, typename DeviceT, int TDim>
-  inline void TensorUpdate<TensorT, DeviceT, TDim>::undo(TensorCollection & tensor_collection)
+  inline void TensorUpdate<TensorT, DeviceT, TDim>::undo(TensorCollection & tensor_collection, DeviceT& device)
   {
     // Execute the select methods on the tensor_collection
     select_function_(tensor_collection);
 
     // Update the values with the `values_old`
-    //tensor_collection.tables_.at(table_name)->updateTensorData(values_old, device); // TODO
+    //tensor_collection.tables_.at(table_name)->updateTensorData(values_old, device); 
+    // TODO: overload that updates the existing table based on a subset of a compatible table
   }
 
   class TensorAppendToDimension;
   class TensorDeleteFromDimension;
 
-  class TensorAddAxis;
-  class TensorDeleteAxis;
+  class TensorAddAxis; // TODO: implement as a Tensor Broadcast
+  class TensorDeleteAxis;  // TODO: implement as a Tensor Chip
   
   class TensorAddTables;
   class TensorDropTables;
