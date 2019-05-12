@@ -184,6 +184,11 @@ namespace TensorBase
     /*
     @brief Convert the 1D indices view into a TDim indices Tensor to use for downstream TensorData selection
 
+    The conversion is done by the following algorithm:
+      1. normalizing all indices (converting to either zero or one)
+      2. broadcasting all indices to the size of the Tensor
+      3. multiplying all indices together
+
     @param[out] indices_select Pointer to the indices Tensor
     @param[in] device
     */
@@ -199,12 +204,21 @@ namespace TensorBase
     virtual void getSelectTensorData(std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, DeviceT& device) = 0;
 
     /*
-    @brief Sort data from the Tensor based on a sort index tensor
+    @brief Sort the Tensor Data based on the sort order defined by the indices view
     */
     void sortTensorData(DeviceT& device);
     
     /*
-    @brief Convert the 1D indices view into a TDim indices tensor that describes the sort order
+    @brief Convert the 1D indices view into a TDim indices tensor that describes the sort order.
+       The Tensor is ordering with respect to the first dimension (i.e., TDim = 0)
+
+    The conversion is done by the following algorithm:
+      1. set Dim = 0 as the reference axis
+      2. compute Tensor indices i, j, k, ... as (index i - 1) + (index j - 1)*axis_i.size() + (index k - 1)*axis_i.size()*axis_j.size() ...
+        where the - 1 is due to the indices starting at 1
+        a. compute an adjusted axis index as (Index - 1) if Dim = 0 or as (Index - 1)*Prod[(Dim - 1).size() to Dim = 1]
+        b. broadcast to the size of the tensor
+        c. add all adjusted axis tensors together
 
     @param[out] indices_sort pointer to the indices sort Tensor
     @param[in] device
@@ -477,11 +491,13 @@ namespace TensorBase
   {
     // make the sort index tensor from the indices view
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_sort;
-    makeSortIndicesViewFromIndicesView(indices_select, device);
+    makeSortIndicesViewFromIndicesView(indices_sort, device);
 
     // apply the sort indices to the tensor data and reset the indices view
-    data_->sort(indices_select, device);
-    resetIndicesView();
+    data_->sort(indices_sort, device);
+    for (const auto& axis_to_index: axes_to_dims_) {
+      resetIndicesView(axis_to_index.first, device);
+    }
   }
 };
 #endif //TENSORBASE_TENSORTABLE_H

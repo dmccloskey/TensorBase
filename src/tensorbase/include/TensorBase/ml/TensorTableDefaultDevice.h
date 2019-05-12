@@ -319,6 +319,44 @@ namespace TensorBase
   template<typename TensorT, int TDim>
   inline void TensorTableDefaultDevice<TensorT, TDim>::makeSortIndicesViewFromIndicesView(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_sort, Eigen::DefaultDevice & device)
   {
+    // allocate memory for the indices
+    TensorDataDefaultDevice<int, TDim> indices_sort_tmp(this->getDimensions());
+    Eigen::Tensor<int, TDim> zeros(this->getDimensions());
+    zeros.setZero();
+    indices_sort_tmp.setData(zeros);
+    Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_sort_values(indices_sort_tmp.getDataPointer().get(), indices_sort_tmp.getDimensions());
+
+    // [PERFORMANCE: Can this be replaced with contractions?]
+    int accumulative_size = 1;
+    for (const auto& axis_to_index : this->axes_to_dims_) {
+      // determine the dimensions for reshaping and broadcasting the indices
+      Eigen::array<int, TDim> indices_reshape_dimensions;
+      Eigen::array<int, TDim> indices_bcast_dimensions;
+      for (int i = 0; i < TDim; ++i) {
+        if (i == this->axes_to_dims_.at(axis_to_index.first)) {
+          indices_reshape_dimensions.at(i) = (int)this->axes_.at(axis_to_index.first)->getNLabels();
+          indices_bcast_dimensions.at(i) = 1;
+        }
+        else {
+          indices_reshape_dimensions.at(i) = 1;
+          indices_bcast_dimensions.at(i) = this->dimensions_.at(i);
+        }
+      }
+
+      // normalize and broadcast the indices across the tensor
+      Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_view_reshape(this->indices_view_.at(axis_to_index.first)->getDataPointer().get(), indices_reshape_dimensions);
+      auto indices_view_norm = (indices_view_reshape - indices_view_reshape.constant(1)) * indices_view_reshape.constant(accumulative_size);
+      auto indices_view_bcast_values = indices_view_norm.broadcast(indices_bcast_dimensions);
+
+      // update the indices_sort_values
+      indices_sort_values.device(device) += indices_view_bcast_values;
+
+      // update the accumulative size
+      accumulative_size *= (int)this->axes_.at(axis_to_index.first)->getNLabels();
+    }
+
+    // move over the results
+    indices_sort = std::make_shared<TensorDataDefaultDevice<int, TDim>>(indices_sort_tmp);
   }
 };
 #endif //TENSORBASE_TENSORTABLEDEFAULTDEVICE_H

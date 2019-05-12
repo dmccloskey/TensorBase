@@ -147,15 +147,9 @@ BOOST_AUTO_TEST_CASE(sortIndicesDefaultDevice)
   int dim_sizes = 3;
   Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
   Eigen::Tensor<int, 3> indices_values(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
-  int iter = 0;
-  for (int i = 0; i < dim_sizes; ++i) {
-    for (int j = 0; j < dim_sizes; ++j) {
-      for (int k = 0; k < dim_sizes; ++k) {
-        tensor_values(i, j, k) = float(iter);
-        indices_values(i, j, k) = iter + 1;
-        ++iter;
-      }
-    }
+  for (int i = 0; i < tensor_values.size(); ++i) {
+    indices_values.data()[i] = i + 1;
+    tensor_values.data()[i] = i;
   }
   TensorDataDefaultDevice<float, 3> tensordata(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
   tensordata.setData(tensor_values);
@@ -166,13 +160,14 @@ BOOST_AUTO_TEST_CASE(sortIndicesDefaultDevice)
   Eigen::DefaultDevice device;
   // Test ASC
   tensordata.sortIndices(indices_ptr, "ASC", device);
+  tensordata.sort(indices_ptr, device);
   Eigen::TensorMap<Eigen::Tensor<int, 3>> sorted_indices_values(indices_ptr->getDataPointer().get(), indices_ptr->getDimensions());
-  iter = 0;
+  Eigen::TensorMap<Eigen::Tensor<float, 3>> tensor_sorted_values(tensordata.getDataPointer().get(), tensordata.getDimensions());
   for (int i = 0; i < dim_sizes; ++i) {
     for (int j = 0; j < dim_sizes; ++j) {
       for (int k = 0; k < dim_sizes; ++k) {
-        BOOST_CHECK_EQUAL(sorted_indices_values(i, j, k), iter + 1);
-        ++iter;
+        BOOST_CHECK_EQUAL(sorted_indices_values(i, j, k), indices_values(i,j,k));
+        BOOST_CHECK_EQUAL(tensor_sorted_values(i, j, k), tensor_values(i, j, k));
       }
     }
   }
@@ -180,34 +175,21 @@ BOOST_AUTO_TEST_CASE(sortIndicesDefaultDevice)
   // Make the expected indices and values
   Eigen::Tensor<int, 3> indices_values_test(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
   Eigen::Tensor<float, 3> tensor_values_test(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
-  iter = dim_sizes * dim_sizes * dim_sizes;
-  for (int i = 0; i < dim_sizes; ++i) {
-    for (int j = 0; j < dim_sizes; ++j) {
-      for (int k = 0; k < dim_sizes; ++k) {
-        indices_values_test(i, j, k) = iter;
-        tensor_values_test(i, j, k) = float(iter);
-        --iter;
-      }
-    }
+  for (int i = 0; i < tensor_values.size(); ++i) {
+    indices_values_test.data()[i] = tensor_values.size() - i;
+    tensor_values_test.data()[i] = tensor_values.size() - i - 1;
   }
 
   // Test DESC
   tensordata.sortIndices(indices_ptr, "DESC", device);
-  for (int i = 0; i < dim_sizes; ++i) {
-    for (int j = 0; j < dim_sizes; ++j) {
-      for (int k = 0; k < dim_sizes; ++k) {
-        BOOST_CHECK_EQUAL(sorted_indices_values(i, j, k), indices_values_test(i, j, k));
-      }
-    }
-  }
-
-  // Test Sorting the values
   tensordata.sort(indices_ptr, device);
-  Eigen::TensorMap<Eigen::Tensor<float, 3>> tensor_sorted_values(tensordata.getDataPointer().get(), tensordata.getDimensions());
+  Eigen::TensorMap<Eigen::Tensor<int, 3>> sorted_indices_values2(indices_ptr->getDataPointer().get(), indices_ptr->getDimensions());
+  Eigen::TensorMap<Eigen::Tensor<float, 3>> tensor_sorted_values2(tensordata.getDataPointer().get(), tensordata.getDimensions());
   for (int i = 0; i < dim_sizes; ++i) {
     for (int j = 0; j < dim_sizes; ++j) {
       for (int k = 0; k < dim_sizes; ++k) {
-        BOOST_CHECK_EQUAL(sorted_indices_values(i, j, k), indices_values_test(i, j, k));
+        BOOST_CHECK_EQUAL(sorted_indices_values2(i, j, k), indices_values_test(i, j, k));
+        BOOST_CHECK_EQUAL(tensor_sorted_values2(i, j, k), tensor_values_test(i, j, k));
       }
     }
   }
