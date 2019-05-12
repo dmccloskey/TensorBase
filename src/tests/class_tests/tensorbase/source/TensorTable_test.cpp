@@ -881,4 +881,101 @@ BOOST_AUTO_TEST_CASE(getSelectTensorDataDefaultDevice)
   }
 }
 
+BOOST_AUTO_TEST_CASE(selectTensorDataDefaultDevice)
+{
+  // setup the table
+  TensorTableDefaultDevice<float, 3> tensorTable;
+  Eigen::DefaultDevice device;
+
+  // setup the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels = 3;
+  Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels), labels3(1, nlabels);
+  labels1.setValues({ {0, 1, 2} });
+  labels2.setValues({ {0, 1, 2} });
+  labels3.setValues({ {0, 1, 2} });
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3)));
+  tensorTable.setAxes();
+
+  // setup the tensor data
+  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  int iter = 0;
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        tensor_values(i, j, k) = float(iter);
+        ++iter;
+      }
+    }
+  }
+  tensorTable.getData()->setData(tensor_values);
+
+  // select label 1 from axis 1
+  TensorDataDefaultDevice<int, 1> select_labels(Eigen::array<Eigen::Index, 1>({ 1 }));
+  Eigen::Tensor<int, 1> select_labels_values(Eigen::array<Eigen::Index, 1>({ 1 }));
+  select_labels_values.setValues({ 1 });
+  select_labels.setData(select_labels_values);
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> select_labels_ptr = std::make_shared<TensorDataDefaultDevice<int, 1>>(select_labels);
+  tensorTable.selectIndicesView("1", 0, select_labels_ptr, device);
+
+  // Test `selectTensorData`
+  tensorTable.selectTensorData(device);
+
+  // Test expected axes values
+  BOOST_CHECK_EQUAL(tensorTable.getAxes().at("1")->getName(), "1");
+  BOOST_CHECK_EQUAL(tensorTable.getAxes().at("1")->getNLabels(), 1);
+  BOOST_CHECK_EQUAL(tensorTable.getAxes().at("1")->getDimensions()(0), "x");
+  BOOST_CHECK_EQUAL(tensorTable.getIndices().at("1")->getData()(0), 1);
+  BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->getData()(0), 1);
+  BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("1")->getData()(0), 0);
+  BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("1")->getData()(0), 0);
+  BOOST_CHECK_EQUAL(tensorTable.getIsShardable().at("1")->getData()(0), 1);
+
+  BOOST_CHECK_EQUAL(tensorTable.getAxes().at("2")->getName(), "2");
+  BOOST_CHECK_EQUAL(tensorTable.getAxes().at("2")->getNLabels(), nlabels);
+  BOOST_CHECK_EQUAL(tensorTable.getAxes().at("2")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(tensorTable.getAxes().at("2")->getDimensions()(0), "y");
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable.getIndices().at("2")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable.getIsShardable().at("2")->getData()(i), 0);
+  }
+
+  BOOST_CHECK_EQUAL(tensorTable.getAxes().at("3")->getName(), "3");
+  BOOST_CHECK_EQUAL(tensorTable.getAxes().at("3")->getNLabels(), nlabels);
+  BOOST_CHECK_EQUAL(tensorTable.getAxes().at("3")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(tensorTable.getAxes().at("3")->getDimensions()(0), "z");
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable.getIndices().at("3")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("3")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("3")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("3")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable.getIsShardable().at("3")->getData()(i), 0);
+  }
+
+  // Test expected axis to dims mapping
+  BOOST_CHECK_EQUAL(tensorTable.getDimFromAxisName("1"), 0);
+  BOOST_CHECK_EQUAL(tensorTable.getDimFromAxisName("2"), 1);
+  BOOST_CHECK_EQUAL(tensorTable.getDimFromAxisName("3"), 2);
+
+  // Test expected tensor dimensions
+  BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(0), 1);
+  BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(1), 3);
+  BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(2), 3);
+
+  // Test expected tensor data values
+  BOOST_CHECK_EQUAL(tensorTable.getData()->getDimensions().at(0), 1);
+  BOOST_CHECK_EQUAL(tensorTable.getData()->getDimensions().at(1), 3);
+  BOOST_CHECK_EQUAL(tensorTable.getData()->getDimensions().at(2), 3);
+  size_t test = 1 * 3 * 3 * sizeof(float);
+  BOOST_CHECK_EQUAL(tensorTable.getData()->getTensorBytes(), test);  
+}
+
 BOOST_AUTO_TEST_SUITE_END()

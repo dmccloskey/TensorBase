@@ -58,6 +58,8 @@ namespace TensorBase
     @param[in] labels The new labels to insert
     @param[in] device
     */
+    template<typename T>
+    void appendLabelsToAxisConcept(const std::shared_ptr<TensorData<T, DeviceT, 2>>& labels, DeviceT& device);
     virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& labels, DeviceT& device) = 0;
 
   protected:
@@ -90,6 +92,16 @@ namespace TensorBase
   void TensorAxis<TensorT, DeviceT>::getLabelsDataPointer(std::shared_ptr<T>& data_copy) {
     if (std::is_same<T, TensorT>::value)
       data_copy = std::reinterpret_pointer_cast<T>(tensor_dimension_labels_->getDataPointer()); // required for compilation: no conversion should be done
+  }
+
+  template<typename TensorT, typename DeviceT>
+  template<typename T>
+  inline void TensorAxis<TensorT, DeviceT>::appendLabelsToAxisConcept(const std::shared_ptr<TensorData<T, DeviceT, 2>>& labels, DeviceT & device)
+  {
+    if (std::is_same<T, TensorT>::value) {
+      auto labels_copy = std::reinterpret_pointer_cast<TensorData<TensorT, DeviceT, 2>>(labels);
+      appendLabelsToAxis(labels_copy, device);
+    }
   }
 
   template<typename TensorT>

@@ -32,6 +32,13 @@ namespace TensorBase
   template<typename TensorT, int TDim>
   void TensorTableDefaultDevice<TensorT, TDim>::setAxes() {
     assert(TDim == this->axes_.size()); // "The number of tensor_axes and the template TDim do not match.";
+    // Clear existing data
+    dimensions_ = Eigen::array<Eigen::Index, TDim>();
+    indices_.clear();
+    indices_view_.clear();
+    is_modified_.clear();
+    in_memory_.clear();
+    is_shardable_.clear();
 
     // Determine the overall dimensions of the tensor
     int axis_cnt = 0;

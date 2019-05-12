@@ -67,7 +67,7 @@ namespace TensorBase
   template<typename DeviceT>
   void TensorSelect::applySelect(TensorCollection& tensor_collection, const std::vector<std::string>& table_names, DeviceT& device) {
     for (const std::string& table_name : table_names) {
-      tensor_collection.tables_.at(select_clause.table_name)->selectTensorData(device);
+      tensor_collection.tables_.at(table_name)->selectTensorData(device);
     }
   };
 

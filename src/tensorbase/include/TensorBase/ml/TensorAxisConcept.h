@@ -21,6 +21,18 @@ namespace TensorBase
     virtual void getLabelsDataPointer(std::shared_ptr<float>& data_copy) = 0;
     virtual void getLabelsDataPointer(std::shared_ptr<double>& data_copy) = 0;
     virtual void getLabelsDataPointer(std::shared_ptr<char>& data_copy) = 0;
+
+    // All DeviceT combos of `deleteFromAxis`
+    virtual void deleteFromAxis(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, Eigen::DefaultDevice& device) = 0;
+    // TODO: add all other DeviceT combos
+
+    // All TensorT and DeviceT combos of `appendLabelsToAxis`
+    virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& labels, Eigen::DefaultDevice& device) = 0;
+    virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 2>>& labels, Eigen::DefaultDevice& device) = 0;
+    virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<double, Eigen::DefaultDevice, 2>>& labels, Eigen::DefaultDevice& device) = 0;
+    virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<char, Eigen::DefaultDevice, 2>>& labels, Eigen::DefaultDevice& device) = 0;
+    // TODO: add all other TensorT and DeviceT combos
+
   };
 
   /// The erasure wrapper around the Tensor Axis interface
@@ -45,6 +57,23 @@ namespace TensorBase
     };
     void getLabelsDataPointer(std::shared_ptr<char>& data_copy) {
       tensor_axis_->getLabelsDataPointer<char>(data_copy);
+    };
+
+    void deleteFromAxis(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, Eigen::DefaultDevice& device) {
+      tensor_axis_->deleteFromAxis(indices, device);
+    };
+
+    void appendLabelsToAxis(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& labels, Eigen::DefaultDevice& device) {
+      tensor_axis_->appendLabelsToAxisConcept(labels, device);
+    };
+    void appendLabelsToAxis(const std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 2>>& labels, Eigen::DefaultDevice& device) {
+      tensor_axis_->appendLabelsToAxisConcept(labels, device);
+    };
+    void appendLabelsToAxis(const std::shared_ptr<TensorData<double, Eigen::DefaultDevice, 2>>& labels, Eigen::DefaultDevice& device) {
+      tensor_axis_->appendLabelsToAxisConcept(labels, device);
+    };
+    void appendLabelsToAxis(const std::shared_ptr<TensorData<char, Eigen::DefaultDevice, 2>>& labels, Eigen::DefaultDevice& device) {
+      tensor_axis_->appendLabelsToAxisConcept(labels, device);
     };
   };
 };

@@ -175,17 +175,26 @@ namespace TensorBase
     void sortTensorDataSlice(const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& tensor_sort, const std::string & axis_name_apply, const sortOrder::order& order_by, DeviceT& device);
 
     /*
-    @brief
+    @brief Select and reduce the tensor data in place according to the current indices view
+
+    @param[in] device
     */
     void selectTensorData(DeviceT& device);
 
     /*
-    @brief
+    @brief Convert the 1D indices view into a TDim indices Tensor to use for downstream TensorData selection
+
+    @param[out] indices_select Pointer to the indices Tensor
+    @param[in] device
     */
     virtual void makeSelectIndicesFromIndicesView(std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, DeviceT& device) = 0;
 
     /*
-    @brief
+    @brief Select the Tensor data and return the selected/reduced data
+
+    @param[out] tensor_select The selected/reduced tensor data
+    @param[in] indices_select The indices to perform the selection on
+    @param[in] device
     */
     virtual void getSelectTensorData(std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, DeviceT& device) = 0;
 
@@ -195,9 +204,9 @@ namespace TensorBase
     void sortTensorData(DeviceT& device);
     
     /*
-    @brief make the sort indices tensor based off the indices view of each axis
+    @brief Convert the 1D indices view into a TDim indices tensor that describes the sort order
 
-    @param[out] indices_sort
+    @param[out] indices_sort pointer to the indices sort Tensor
     @param[in] device
     */
     virtual void makeSortIndicesViewFromIndicesView(std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_sort, DeviceT& device) = 0;
@@ -453,10 +462,9 @@ namespace TensorBase
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> tensor_select;
     getSelectTensorData(tensor_select, indices_select, device);
 
-    // update the axes
+    // resize each axis based on the indices view
     for (const auto& axis_to_name : axes_to_dims_) {
-      // resize the axis based on the indices view
-      axes_.at(axis_to_name.first)->select(indices_view_.at(axis_to_name.first)); //TODO
+      axes_.at(axis_to_name.first)->deleteFromAxis(indices_view_.at(axis_to_name.first), device);
     }
 
     // remake the axes and move over the tensor data

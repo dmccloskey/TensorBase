@@ -84,14 +84,20 @@ BOOST_AUTO_TEST_CASE(selectClauseDefaultDevice)
   tensorSelect.selectClause(collection_1, select_clause2, device);
   BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("1")->getData()(0), 0);
   BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("1")->getData()(1), 2);
-  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 1);
-  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(1), 0);
-  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 3);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(0), 1); // unchanged
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(1), 2); // unchanged
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(2), 3); // unchanged
   BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(0), 1); // unchanged
   BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(1), 2); // unchanged
   BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(2), 3); // unchanged
   BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(3), 4); // unchanged
   BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(4), 5); // unchanged
+
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("1")->getData()(0), 1); // unchanged
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("1")->getData()(1), 2); // unchanged
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 1);
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(1), 0);
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 3);
 }
 
 BOOST_AUTO_TEST_CASE(whereClauseDefaultDevice)
@@ -197,6 +203,31 @@ BOOST_AUTO_TEST_CASE(whereClauseDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 1); // unchanged
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(1), 2); // unchanged
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 3); // unchanged
+
+  // Apply the select clause
+  tensorSelect.applySelect(collection_1, { "1", "2" }, device);
+
+  // Test for the expected table attributes
+  Eigen::array<Eigen::Index, 3> dimensions1_test = { 2, 1, 2 };
+  for (int i = 0; i < 3; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getDimensions().at(i), dimensions1_test.at(i));
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getDimensions().at(i), dimensions1_test.at(i));
+  }
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("1")->getData()(0), 1);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("1")->getData()(1), 2);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(0), 1);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(0), 1);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(1), 2);
+
+  Eigen::array<Eigen::Index, 2> dimensions2_test = { 1, 3 };
+  for (int i = 0; i < 2; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable2_ptr->getDimensions().at(i), dimensions2_test.at(i));
+    BOOST_CHECK_EQUAL(tensorTable2_ptr->getData()->getDimensions().at(i), dimensions2_test.at(i));
+  }
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("1")->getData()(0), 1);
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 1); 
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(1), 2);
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 3);
 }
 
 BOOST_AUTO_TEST_CASE(sortClauseDefaultDevice)

@@ -77,6 +77,17 @@ namespace TensorBase
     virtual void sortIndicesView(const std::string& axis_name, const int& dimension_index, const float& label, const sortOrder::order& order_by, Eigen::DefaultDevice& device) = 0;
     virtual void sortIndicesView(const std::string& axis_name, const int& dimension_index, const double& label, const sortOrder::order& order_by, Eigen::DefaultDevice& device) = 0;
     // TODO: all other LabelsT and DeviceT combos of `sortIndicesView` 
+
+    /*
+    All DeviceT combos of `selectTensorData`
+    */
+    virtual void selectTensorData(Eigen::DefaultDevice& device) = 0;
+    // TODO: all other LabelsT and DeviceT combos of `selectTensorData` 
+
+    /*
+    All DeviceT combos of `sortTensorData`
+    */
+    // TODO: all other LabelsT and DeviceT combos of `sortTensorData` 
   };
 
   /// The erasure wrapper around the Tensor Table interface
@@ -159,6 +170,10 @@ namespace TensorBase
     };
     void sortIndicesView(const std::string& axis_name, const int& dimension_index, const double& label, const sortOrder::order& order_by, Eigen::DefaultDevice& device){
       tensor_table_->sortIndicesView(axis_name, dimension_index, label, order_by, device);
+    };
+
+    void selectTensorData(Eigen::DefaultDevice& device) {
+      tensor_table_->selectTensorData(device);
     };
   };
 };
