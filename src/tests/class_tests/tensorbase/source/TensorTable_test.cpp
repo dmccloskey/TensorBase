@@ -1004,7 +1004,7 @@ BOOST_AUTO_TEST_CASE(makeSortIndicesViewFromIndicesViewDefaultDevice)
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
-        indices_test(i, j, k) = i + j*nlabels + k*nlabels*nlabels;
+        indices_test(i, j, k) = i + j*nlabels + k*nlabels*nlabels + 1;
       }
     }
   }
@@ -1043,33 +1043,39 @@ BOOST_AUTO_TEST_CASE(sortTensorDataDefaultDevice)
   tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3)));
   tensorTable.setAxes();
 
-  // setup the tensor data and the sorted tensor values
+  // setup the tensor data
   Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
-  Eigen::Tensor<float, 3> tensor_sorted_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   int iter = 0;
-  for (int i = 0; i < nlabels; ++i) {
+  for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {
-      for (int k = 0; k < nlabels; ++k) {
+      for (int i = 0; i < nlabels; ++i) {
         tensor_values(i, j, k) = float(iter);
         ++iter;
       }
     }
   }
   tensorTable.getData()->setData(tensor_values);
-  std::cout << "unsorted: \n"<<tensor_values << std::endl;
 
   // sort each of the axes
   tensorTable.sortIndicesView("1", 0, 0, sortOrder::DESC, device);
-  tensorTable.sortIndicesView("2", 0, 0, sortOrder::DESC, device);
-  tensorTable.sortIndicesView("3", 0, 0, sortOrder::DESC, device);
+
+  // make the expected sorted tensor
+  float sorted_data[] = { 24, 25, 26, 21, 22, 23, 18, 19, 20, 15, 16, 17, 12, 13, 14, 9, 10, 11, 6, 7, 8, 3, 4, 5, 0, 1, 2 };
+  Eigen::TensorMap<Eigen::Tensor<float, 3>> tensor_sorted_values(sorted_data, Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
 
   // Test for sorted tensor data and reset indices view
   tensorTable.sortTensorData(device);
-  std::cout << "sorted: \n"<<tensorTable.getData()->getData() << std::endl;
   for (int i = 0; i < nlabels; ++i) {
     BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("3")->getData()(i), i + 1);
+  }
+  for (int k = 0; k < nlabels; ++k) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int i = 0; i < nlabels; ++i) {
+        BOOST_CHECK_CLOSE(tensorTable.getData()->getData()(i,j,k), tensor_sorted_values(i, j, k), 1e-3);
+      }
+    }
   }
 }
 
