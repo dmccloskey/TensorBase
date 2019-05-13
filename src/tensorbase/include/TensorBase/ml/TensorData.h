@@ -8,7 +8,7 @@
 #define EIGEN_USE_GPU
 #include <cuda.h>
 #include <cuda_runtime.h>
-#include <cub/cub.cuh> // Sort
+//#include <cub/cub.cuh> // Sort
 #endif
 
 #define EIGEN_USE_THREADS
@@ -420,7 +420,7 @@ namespace TensorBase
   inline void TensorDataGpu<TensorT, TDim>::sortIndices(std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, const std::string & sort_order, Eigen::GpuDevice & device)
   {
     // Temporary copies for the algorithm 
-    std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>> keys_copy = indices->copy(device);
+    std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>> keys_copy = this->copy(device);
     keys_copy->syncHAndDData(device);
     std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>> values_copy = indices->copy(device);
     values_copy->syncHAndDData(device);
@@ -457,7 +457,7 @@ namespace TensorBase
     // Temporary copies for the algorithm 
     std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>> keys_copy = indices->copy(device);
     keys_copy->syncHAndDData(device);
-    std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>> values_copy = indices->copy(device);
+    std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>> values_copy = this->copy(device);
     values_copy->syncHAndDData(device);
 
     // Determine temporary device storage requirements
@@ -467,11 +467,11 @@ namespace TensorBase
     if (sort_order == "ASC")
       cub::DeviceRadixSort::SortPairs(d_temp_storage, temp_storage_bytes,
         indices->getDataPointer().get(), values_copy->getDataPointer().get(), keys_copy->getDataPointer().get(), this->getDataPointer().get(),
-        indices->getTensorSize(), 0, sizeof(TensorT) * 8, device.stream_);
+        indices->getTensorSize(), 0, sizeof(int) * 8, device.stream_);
     else if (sort_order == "DESC")
       cub::DeviceRadixSort::SortPairsDescending(d_temp_storage, temp_storage_bytes,
         indices->getDataPointer().get(), values_copy->getDataPointer().get(), keys_copy->getDataPointer().get(), this->getDataPointer().get(),
-        indices->getTensorSize(), 0, sizeof(TensorT) * 8, device.stream_);
+        indices->getTensorSize(), 0, sizeof(int) * 8, device.stream_);
 
     // Allocate temporary storage
     assert(cudaMalloc((void**)(&d_temp_storage), temp_storage_bytes) == cudaSuccess);
