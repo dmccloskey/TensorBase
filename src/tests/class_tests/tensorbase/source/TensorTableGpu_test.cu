@@ -1,4 +1,6 @@
 /**TODO:  Add copyright*/
+#define BOOST_TEST_MODULE TensorData test suite 
+#include <boost/test/included/unit_test.hpp>
 
 #if COMPILE_WITH_CUDA
 #include <TensorBase/ml/TensorTableGpu.h>

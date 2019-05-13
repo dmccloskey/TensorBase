@@ -603,7 +603,7 @@ BOOST_AUTO_TEST_CASE(copyGpu)
   Eigen::GpuDevice device(&stream_device);
 
   // Check copy
-  std::shared_ptr<TensorData<float, Eigen::ThreadPoolDevice, 3>> tensordata = tensordata_test.copy(device);
+  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> tensordata = tensordata_test.copy(device);
   BOOST_CHECK(tensordata->getDimensions() == tensordata_test.getDimensions());
   BOOST_CHECK(tensordata->getTensorSize() == tensordata_test.getTensorSize());
   BOOST_CHECK(tensordata->getDeviceName() == tensordata_test.getDeviceName());
@@ -656,15 +656,25 @@ BOOST_AUTO_TEST_CASE(selectGpu)
   tensorselect.setData();
   std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> tensorselect_ptr = std::make_shared<TensorDataGpu<float, 3>>(tensorselect);
 
-  // Test
-  Eigen::GpuStreamDevice stream_device;
+  // Initialize the device
+  cudaStream_t stream;
+  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
+
+  // Test
+  tensordata.syncHAndDData(device);
+  tensorselect_ptr->syncHAndDData(device);
   tensordata.select(tensorselect_ptr, std::make_shared<TensorDataGpu<int, 3>>(indices), device);
-  Eigen::TensorMap<Eigen::Tensor<float, 3>> tensor_select_values(tensorselect_ptr->getDataPointer().get(), tensorselect_ptr->getDimensions());
+  tensordata.syncHAndDData(device);
+  tensorselect_ptr->syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  assert(cudaStreamDestroy(stream) == cudaSuccess);
+
   for (int i = 0; i < dim_sizes_select; ++i) {
     for (int j = 0; j < dim_sizes_select; ++j) {
       for (int k = 0; k < dim_sizes_select; ++k) {
-        BOOST_CHECK_CLOSE(tensor_select_values(i, j, k), tensor_values_test(i, j, k), 1e-3);
+        BOOST_CHECK_CLOSE(tensorselect_ptr->getData()(i, j, k), tensor_values_test(i, j, k), 1e-3);
       }
     }
   }
@@ -676,15 +686,9 @@ BOOST_AUTO_TEST_CASE(sortIndicesGpu)
   int dim_sizes = 3;
   Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
   Eigen::Tensor<int, 3> indices_values(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
-  int iter = 0;
-  for (int i = 0; i < dim_sizes; ++i) {
-    for (int j = 0; j < dim_sizes; ++j) {
-      for (int k = 0; k < dim_sizes; ++k) {
-        tensor_values(i, j, k) = float(iter);
-        indices_values(i, j, k) = iter + 1;
-        ++iter;
-      }
-    }
+  for (int i = 0; i < tensor_values.size(); ++i) {
+    indices_values.data()[i] = i + 1;
+    tensor_values.data()[i] = i;
   }
   TensorDataGpu<float, 3> tensordata(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
   tensordata.setData(tensor_values);
@@ -692,17 +696,25 @@ BOOST_AUTO_TEST_CASE(sortIndicesGpu)
   indices.setData(indices_values);
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 3>> indices_ptr = std::make_shared<TensorDataGpu<int, 3>>(indices);
 
-  Eigen::GpuStreamDevice stream_device;
+  // Initialize the device
+  cudaStream_t stream;
+  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
+
   // Test ASC
+  tensordata.syncHAndDData(device);
+  indices_ptr->syncHAndDData(device);
   tensordata.sortIndices(indices_ptr, "ASC", device);
-  Eigen::TensorMap<Eigen::Tensor<int, 3>> sorted_indices_values(indices_ptr->getDataPointer().get(), indices_ptr->getDimensions());
-  iter = 0;
+  tensordata.sort(indices_ptr, device);
+  tensordata.syncHAndDData(device);
+  indices_ptr->syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < dim_sizes; ++i) {
     for (int j = 0; j < dim_sizes; ++j) {
       for (int k = 0; k < dim_sizes; ++k) {
-        BOOST_CHECK_EQUAL(sorted_indices_values(i, j, k), iter + 1);
-        ++iter;
+        BOOST_CHECK_EQUAL(indices_ptr->getData()(i, j, k), indices_values(i, j, k));
+        BOOST_CHECK_EQUAL(tensordata.getData()(i, j, k), tensor_values(i, j, k));
       }
     }
   }
@@ -710,34 +722,22 @@ BOOST_AUTO_TEST_CASE(sortIndicesGpu)
   // Make the expected indices and values
   Eigen::Tensor<int, 3> indices_values_test(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
   Eigen::Tensor<float, 3> tensor_values_test(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
-  iter = dim_sizes * dim_sizes * dim_sizes;
-  for (int i = 0; i < dim_sizes; ++i) {
-    for (int j = 0; j < dim_sizes; ++j) {
-      for (int k = 0; k < dim_sizes; ++k) {
-        indices_values_test(i, j, k) = iter;
-        tensor_values_test(i, j, k) = float(iter);
-        --iter;
-      }
-    }
+  for (int i = 0; i < tensor_values.size(); ++i) {
+    indices_values_test.data()[i] = tensor_values.size() - i;
+    tensor_values_test.data()[i] = tensor_values.size() - i - 1;
   }
 
   // Test DESC
   tensordata.sortIndices(indices_ptr, "DESC", device);
-  for (int i = 0; i < dim_sizes; ++i) {
-    for (int j = 0; j < dim_sizes; ++j) {
-      for (int k = 0; k < dim_sizes; ++k) {
-        BOOST_CHECK_EQUAL(sorted_indices_values(i, j, k), indices_values_test(i, j, k));
-      }
-    }
-  }
-
-  // Test Sorting the values
   tensordata.sort(indices_ptr, device);
-  Eigen::TensorMap<Eigen::Tensor<float, 3>> tensor_sorted_values(tensordata.getDataPointer().get(), tensordata.getDimensions());
+  tensordata.syncHAndDData(device);
+  indices_ptr->syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < dim_sizes; ++i) {
     for (int j = 0; j < dim_sizes; ++j) {
       for (int k = 0; k < dim_sizes; ++k) {
-        BOOST_CHECK_EQUAL(sorted_indices_values(i, j, k), indices_values_test(i, j, k));
+        BOOST_CHECK_EQUAL(indices_ptr->getData()(i, j, k), indices_values_test(i, j, k));
+        BOOST_CHECK_EQUAL(tensordata.getData()(i, j, k), tensor_values_test(i, j, k));
       }
     }
   }
@@ -764,10 +764,11 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersGpu)
   tensordata.getData()(0, 0, 0) = 5;
 	BOOST_CHECK_EQUAL(tensordata.getData()(0, 0, 0), 5);
 
-  // Test getDataPointer
-  Eigen::TensorMap<Eigen::Tensor<float, 3>> data_map(tensordata.getDataPointer().get(), 2, 3, 4);
-  BOOST_CHECK_EQUAL(data_map(0, 0, 0), 5);
-  BOOST_CHECK_EQUAL(data_map(1, 2, 3), 0);
+  // NOTE: not testable on the Gpu
+  //// Test getDataPointer
+  //Eigen::TensorMap<Eigen::Tensor<float, 3>> data_map(tensordata.getDataPointer().get(), 2, 3, 4);
+  //assert(data_map(0, 0, 0) == 5);
+  //assert(data_map(1, 2, 3) == 0);
 }
 
 BOOST_AUTO_TEST_CASE(syncHAndDGpu)
