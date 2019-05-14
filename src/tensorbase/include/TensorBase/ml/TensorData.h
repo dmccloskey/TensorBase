@@ -8,7 +8,7 @@
 #define EIGEN_USE_GPU
 #include <cuda.h>
 #include <cuda_runtime.h>
-//#include <cub/cub.cuh> // Sort
+#include <cub/cub.cuh> // Sort
 #endif
 
 #define EIGEN_USE_THREADS
@@ -54,8 +54,9 @@ namespace TensorBase
     template<typename TensorTOther, typename DeviceTOther, int TDimOther>
     inline bool operator==(const TensorData<TensorTOther, DeviceTOther, TDimOther>& other) const
     {
-      if (!std::is_same<tensorT, TensorData<TensorTOther, DeviceTOther, TDimOther>::tensorT>::value)
-        return false;
+      // TODO: CUDA comiler error: use the "typename" keyword to treat nontype "TensorBase::TensorData<TensorT, DeviceT, TDim>::tensorT [with TensorT=TensorTOther, DeviceT=DeviceTOther, TDim=TDimOther]" as a type in a dependent context
+      //if (!std::is_same<tensorT, TensorData<TensorTOther, DeviceTOther, TDimOther>::tensorT>::value)
+      //  return false;
       return
         std::tie(
           dimensions_,
@@ -96,8 +97,8 @@ namespace TensorBase
     void setDimensions(const Eigen::array<Eigen::Index, TDim>& dimensions) { 
       dimensions_ = dimensions; 
       size_t tensor_size = 1;
-      for (const auto& index : dimensions)
-        tensor_size *= index;
+      for (int i=0; i<TDim; ++i)
+        tensor_size *= dimensions.at(i);
       tensor_size_ = tensor_size;
     }
     Eigen::array<Eigen::Index, TDim> getDimensions() const { return dimensions_; }  ///< dimensions getter
@@ -415,7 +416,27 @@ namespace TensorBase
   template<typename TensorT, int TDim>
   inline void TensorDataGpu<TensorT, TDim>::select(std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice & device)
   {
+    // Temporary device storage for the size of the selection
+    int *num_select_out = new int[1];
+    assert(cudaMalloc((void**)(&num_select_out), sizeof(int)) == cudaSuccess);
+
+    // Determine temporary device storage requirements
+    void     *d_temp_storage = NULL;
+    size_t   temp_storage_bytes = 0;
+    cub::DeviceSelect::Flagged(d_temp_storage, temp_storage_bytes, this->getDataPointer().get(), indices->getDataPointer().get(), tensor_select->getDataPointer().get(), 
+      num_select_out, indices->getTensorSize(), device.stream());
+
+    // Allocate temporary storage
+    assert(cudaMalloc((void**)(&d_temp_storage), temp_storage_bytes) == cudaSuccess);
+
+    // Run selection
+    cub::DeviceSelect::Flagged(d_temp_storage, temp_storage_bytes, this->getDataPointer().get(), indices->getDataPointer().get(), tensor_select->getDataPointer().get(), 
+      num_select_out, indices->getTensorSize(), device.stream());
+
+    assert(cudaFree(num_select_out) == cudaSuccess);
+    assert(cudaFree(d_temp_storage) == cudaSuccess);
   }
+
   template<typename TensorT, int TDim>
   inline void TensorDataGpu<TensorT, TDim>::sortIndices(std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, const std::string & sort_order, Eigen::GpuDevice & device)
   {
@@ -432,11 +453,11 @@ namespace TensorBase
     if (sort_order == "ASC")
       cub::DeviceRadixSort::SortPairs(d_temp_storage, temp_storage_bytes,
         this->getDataPointer().get(), keys_copy->getDataPointer().get(), values_copy->getDataPointer().get(), indices->getDataPointer().get(),
-        indices->getTensorSize(), 0, sizeof(TensorT) * 8, device.stream_);
+        indices->getTensorSize(), 0, sizeof(TensorT) * 8, device.stream());
     else if (sort_order == "DESC")
       cub::DeviceRadixSort::SortPairsDescending(d_temp_storage, temp_storage_bytes,
         this->getDataPointer().get(), keys_copy->getDataPointer().get(), values_copy->getDataPointer().get(), indices->getDataPointer().get(),
-        indices->getTensorSize(), 0, sizeof(TensorT) * 8, device.stream_);
+        indices->getTensorSize(), 0, sizeof(TensorT) * 8, device.stream());
 
     // Allocate temporary storage
     assert(cudaMalloc((void**)(&d_temp_storage), temp_storage_bytes) == cudaSuccess);
@@ -445,11 +466,13 @@ namespace TensorBase
     if (sort_order == "ASC")
       cub::DeviceRadixSort::SortPairs(d_temp_storage, temp_storage_bytes,
         this->getDataPointer().get(), keys_copy->getDataPointer().get(), values_copy->getDataPointer().get(), indices->getDataPointer().get(),
-        indices->getTensorSize(), 0, sizeof(TensorT) * 8, device.stream_);
+        indices->getTensorSize(), 0, sizeof(TensorT) * 8, device.stream());
     else if (sort_order == "DESC")
       cub::DeviceRadixSort::SortPairsDescending(d_temp_storage, temp_storage_bytes,
         this->getDataPointer().get(), keys_copy->getDataPointer().get(), values_copy->getDataPointer().get(), indices->getDataPointer().get(),
-        indices->getTensorSize(), 0, sizeof(TensorT) * 8, device.stream_);
+        indices->getTensorSize(), 0, sizeof(TensorT) * 8, device.stream());
+
+    assert(cudaFree(d_temp_storage) == cudaSuccess);
   }
   template<typename TensorT, int TDim>
   inline void TensorDataGpu<TensorT, TDim>::sort(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice & device)
@@ -464,27 +487,19 @@ namespace TensorBase
     void *d_temp_storage = NULL;
     size_t temp_storage_bytes = 0;
 
-    if (sort_order == "ASC")
-      cub::DeviceRadixSort::SortPairs(d_temp_storage, temp_storage_bytes,
-        indices->getDataPointer().get(), values_copy->getDataPointer().get(), keys_copy->getDataPointer().get(), this->getDataPointer().get(),
-        indices->getTensorSize(), 0, sizeof(int) * 8, device.stream_);
-    else if (sort_order == "DESC")
-      cub::DeviceRadixSort::SortPairsDescending(d_temp_storage, temp_storage_bytes,
-        indices->getDataPointer().get(), values_copy->getDataPointer().get(), keys_copy->getDataPointer().get(), this->getDataPointer().get(),
-        indices->getTensorSize(), 0, sizeof(int) * 8, device.stream_);
+    cub::DeviceRadixSort::SortPairs(d_temp_storage, temp_storage_bytes,
+      indices->getDataPointer().get(), keys_copy->getDataPointer().get(), values_copy->getDataPointer().get(), this->getDataPointer().get(),
+      indices->getTensorSize(), 0, sizeof(int) * 8, device.stream());
 
     // Allocate temporary storage
     assert(cudaMalloc((void**)(&d_temp_storage), temp_storage_bytes) == cudaSuccess);
 
     // Run sorting operation
-    if (sort_order == "ASC")
-      cub::DeviceRadixSort::SortPairs(d_temp_storage, temp_storage_bytes,
-        indices->getDataPointer().get(), values_copy->getDataPointer().get(), keys_copy->getDataPointer().get(), this->getDataPointer().get(),
-        indices->getTensorSize(), 0, sizeof(TensorT) * 8, device.stream_);
-    else if (sort_order == "DESC")
-      cub::DeviceRadixSort::SortPairsDescending(d_temp_storage, temp_storage_bytes,
-        indices->getDataPointer().get(), values_copy->getDataPointer().get(), keys_copy->getDataPointer().get(), this->getDataPointer().get(),
-        indices->getTensorSize(), 0, sizeof(TensorT) * 8, device.stream_);
+    cub::DeviceRadixSort::SortPairs(d_temp_storage, temp_storage_bytes,
+      indices->getDataPointer().get(), keys_copy->getDataPointer().get(), values_copy->getDataPointer().get(), this->getDataPointer().get(),
+      indices->getTensorSize(), 0, sizeof(int) * 8, device.stream());
+
+    assert(cudaFree(d_temp_storage) == cudaSuccess);
   }
   template<typename TensorT, int TDim>
   std::shared_ptr<TensorT> TensorDataGpu<TensorT, TDim>::getDataPointer() {
