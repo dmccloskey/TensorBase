@@ -13,6 +13,7 @@
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/ml/TensorAxisConcept.h>
 #include <TensorBase/ml/TensorClauses.h>
+#include <map>
 
 namespace TensorBase
 {

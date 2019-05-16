@@ -24,6 +24,9 @@ namespace TensorBase
 
     // All DeviceT combos of `deleteFromAxis`
     virtual void deleteFromAxis(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, Eigen::DefaultDevice& device) = 0;
+#if COMPILE_WITH_CUDA
+    virtual void deleteFromAxis(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, Eigen::GpuDevice& device) = 0;
+#endif
     // TODO: add all other DeviceT combos
 
     // All TensorT and DeviceT combos of `appendLabelsToAxis`
@@ -31,6 +34,12 @@ namespace TensorBase
     virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 2>>& labels, Eigen::DefaultDevice& device) = 0;
     virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<double, Eigen::DefaultDevice, 2>>& labels, Eigen::DefaultDevice& device) = 0;
     virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<char, Eigen::DefaultDevice, 2>>& labels, Eigen::DefaultDevice& device) = 0;
+#if COMPILE_WITH_CUDA
+    virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>>& labels, Eigen::GpuDevice& device) = 0;
+    virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<float, Eigen::GpuDevice, 2>>& labels, Eigen::GpuDevice& device) = 0;
+    virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<double, Eigen::GpuDevice, 2>>& labels, Eigen::GpuDevice& device) = 0;
+    virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<char, Eigen::GpuDevice, 2>>& labels, Eigen::GpuDevice& device) = 0;
+#endif
     // TODO: add all other TensorT and DeviceT combos
 
   };
@@ -62,6 +71,11 @@ namespace TensorBase
     void deleteFromAxis(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, Eigen::DefaultDevice& device) {
       tensor_axis_->deleteFromAxis(indices, device);
     };
+#if COMPILE_WITH_CUDA
+    void deleteFromAxis(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, Eigen::GpuDevice& device) {
+      tensor_axis_->deleteFromAxis(indices, device);
+    };
+#endif
 
     void appendLabelsToAxis(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& labels, Eigen::DefaultDevice& device) {
       tensor_axis_->appendLabelsToAxisConcept(labels, device);
@@ -75,6 +89,20 @@ namespace TensorBase
     void appendLabelsToAxis(const std::shared_ptr<TensorData<char, Eigen::DefaultDevice, 2>>& labels, Eigen::DefaultDevice& device) {
       tensor_axis_->appendLabelsToAxisConcept(labels, device);
     };
+#if COMPILE_WITH_CUDA
+    void appendLabelsToAxis(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>>& labels, Eigen::GpuDevice& device) {
+      tensor_axis_->appendLabelsToAxisConcept(labels, device);
+    };
+    void appendLabelsToAxis(const std::shared_ptr<TensorData<float, Eigen::GpuDevice, 2>>& labels, Eigen::GpuDevice& device) {
+      tensor_axis_->appendLabelsToAxisConcept(labels, device);
+    };
+    void appendLabelsToAxis(const std::shared_ptr<TensorData<double, Eigen::GpuDevice, 2>>& labels, Eigen::GpuDevice& device) {
+      tensor_axis_->appendLabelsToAxisConcept(labels, device);
+    };
+    void appendLabelsToAxis(const std::shared_ptr<TensorData<char, Eigen::GpuDevice, 2>>& labels, Eigen::GpuDevice& device) {
+      tensor_axis_->appendLabelsToAxisConcept(labels, device);
+    };
+#endif
   };
 };
 #endif //TENSORBASE_TENSORAXISCONCEPT_H

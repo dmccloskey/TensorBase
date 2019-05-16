@@ -165,18 +165,18 @@ BOOST_AUTO_TEST_CASE(zeroIndicesViewAndResetIndicesViewDefaultDevice)
   // test null
   Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_1(tensorTable.getIndicesView().at("1")->getDataPointer().get(), tensorTable.getIndicesView().at("1")->getDimensions());
   for (int i = 0; i < nlabels; ++i) {
-    BOOST_CHECK_EQUAL(indices_view_1(i), i+1);
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->getData()(i), i+1);
   }
 
   // test zero
   tensorTable.zeroIndicesView("1", device);
   for (int i = 0; i < nlabels; ++i) {
-    BOOST_CHECK_EQUAL(indices_view_1(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->getData()(i), 0);
   }
   // test reset
   tensorTable.resetIndicesView("1", device);
   for (int i = 0; i < nlabels; ++i) {
-    BOOST_CHECK_EQUAL(indices_view_1(i), i+1);
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->getData()(i), i+1);
   }
 }
 
@@ -216,12 +216,11 @@ BOOST_AUTO_TEST_CASE(selectIndicesViewDefaultDevice)
 
   // test the updated view
   tensorTable.selectIndicesView("1", 0, select_labels_ptr, device);
-  Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_1(tensorTable.getIndicesView().at("1")->getDataPointer().get(), tensorTable.getIndicesView().at("1")->getDimensions());
   for (int i = 0; i < nlabels; ++i) {
     if (i%2==0)
-      BOOST_CHECK_EQUAL(indices_view_1(i), i + 1);
+      BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->getData()(i), i + 1);
     else
-      BOOST_CHECK_EQUAL(indices_view_1(i), 0);
+      BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->getData()(i), 0);
   }
 }
 
@@ -262,7 +261,7 @@ BOOST_AUTO_TEST_CASE(broadcastSelectIndicesViewDefaultDevice)
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
-        BOOST_CHECK(indices_view_bcast->getData()(i,j,k), indices_test(i, j, k));
+        BOOST_CHECK_EQUAL(indices_view_bcast->getData()(i,j,k), indices_test(i, j, k));
       }
     }
   }
@@ -496,38 +495,36 @@ BOOST_AUTO_TEST_CASE(applyIndicesSelectToIndicesViewDefaultDevice)
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>> indices_select_ptr = std::make_shared<TensorDataDefaultDevice<int, 3>>(indices_select);
 
   // test using the second indices view
-  Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_2(tensorTable.getIndicesView().at("2")->getDataPointer().get(), tensorTable.getIndicesView().at("2")->getDimensions());
-  
-  indices_view_2(nlabels - 1) = 0;
+  tensorTable.getIndicesView().at("2")->getData()(nlabels - 1) = 0;
   // test for OR within continuator and OR prepend continuator
   tensorTable.applyIndicesSelectToIndicesView(indices_select_ptr, "1", "2", logicalContinuators::logicalContinuator::OR, logicalContinuators::logicalContinuator::OR, device);
   for (int i = 0; i < nlabels; ++i) {
     if (i == nlabels - 1)
-      BOOST_CHECK_EQUAL(indices_view_2(i), 0);
+      BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(i), 0);
     else
-      BOOST_CHECK_EQUAL(indices_view_2(i), i + 1);
+      BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(i), i + 1);
   }
 
   tensorTable.resetIndicesView("2", device);
-  indices_view_2(0) = 0;
+  tensorTable.getIndicesView().at("2")->getData()(0) = 0;
   // test for AND within continuator and OR prepend continuator
   tensorTable.applyIndicesSelectToIndicesView(indices_select_ptr, "1", "2", logicalContinuators::logicalContinuator::AND, logicalContinuators::logicalContinuator::OR, device);
   for (int i = 0; i < nlabels; ++i) {
     if (i == 0)
-      BOOST_CHECK_EQUAL(indices_view_2(i), 0);
+      BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(i), 0);
     else
-      BOOST_CHECK_EQUAL(indices_view_2(i), i + 1);
+      BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(i), i + 1);
   }
 
   tensorTable.resetIndicesView("2", device);
-  indices_view_2(0) = 0;
+  tensorTable.getIndicesView().at("2")->getData()(0) = 0;
   // test for OR within continuator and AND prepend continuator
   tensorTable.applyIndicesSelectToIndicesView(indices_select_ptr, "1", "2", logicalContinuators::logicalContinuator::OR, logicalContinuators::logicalContinuator::AND, device);
   for (int i = 0; i < nlabels; ++i) {
     if (i != 0 && i < nlabels - 1)
-      BOOST_CHECK_EQUAL(indices_view_2(i), i + 1);
+      BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(i), i + 1);
     else
-      BOOST_CHECK_EQUAL(indices_view_2(i), 0);
+      BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(i), 0);
   }
 
   tensorTable.resetIndicesView("2", device);
@@ -537,11 +534,11 @@ BOOST_AUTO_TEST_CASE(applyIndicesSelectToIndicesViewDefaultDevice)
       for (int k = 0; k < nlabels; ++k) {
         if (i == j && j == k && k == i
           && i < nlabels - 1 && j < nlabels - 1 && k < nlabels - 1) // the first 2 diagonal elements
-          indices_select_values2(i, j, k) = 1;
+          indices_select_ptr->getData()(i, j, k) = 1;
         else if (j == 0)
-          indices_select_values2(i, j, k) = 1; // all elements along the first index of the selection dim
+          indices_select_ptr->getData()(i, j, k) = 1; // all elements along the first index of the selection dim
         else
-          indices_select_values2(i, j, k) = 0;
+          indices_select_ptr->getData()(i, j, k) = 0;
       }
     }
   }
@@ -549,9 +546,9 @@ BOOST_AUTO_TEST_CASE(applyIndicesSelectToIndicesViewDefaultDevice)
   tensorTable.applyIndicesSelectToIndicesView(indices_select_ptr, "1", "2", logicalContinuators::logicalContinuator::AND, logicalContinuators::logicalContinuator::AND, device);
   for (int i = 0; i < nlabels; ++i) {
     if (i==0)
-      BOOST_CHECK_EQUAL(indices_view_2(i), i+1);
+      BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(i), i+1);
     else
-      BOOST_CHECK_EQUAL(indices_view_2(i), 0);
+      BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(i), 0);
   }
 
   // TODO: lacking code coverage for the case of TDim = 2
@@ -608,24 +605,21 @@ BOOST_AUTO_TEST_CASE(whereIndicesViewDataDefaultDevice)
   tensorTable.whereIndicesView("1", 0, select_labels_ptr,
     std::make_shared<TensorDataDefaultDevice<float, 1>>(select_values), logicalComparitors::logicalComparitor::EQUAL_TO, logicalModifiers::logicalModifier::NONE,
     logicalContinuators::logicalContinuator::OR, logicalContinuators::logicalContinuator::AND, device);
-  Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_1(tensorTable.getIndicesView().at("1")->getDataPointer().get(), tensorTable.getIndicesView().at("1")->getDimensions());
-  Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_2(tensorTable.getIndicesView().at("2")->getDataPointer().get(), tensorTable.getIndicesView().at("2")->getDimensions());
-  Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_3(tensorTable.getIndicesView().at("3")->getDataPointer().get(), tensorTable.getIndicesView().at("3")->getDimensions());
   for (int i = 0; i < nlabels; ++i) {
     // indices view 1
-    BOOST_CHECK_EQUAL(indices_view_1(i), i + 1); // Unchanged
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->getData()(i), i + 1); // Unchanged
 
     // indices view 2
     if (i == 2)
-      BOOST_CHECK_EQUAL(indices_view_2(i), i + 1);
+      BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(i), i + 1);
     else
-      BOOST_CHECK_EQUAL(indices_view_2(i), 0);
+      BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(i), 0);
 
     // indices view 2
     if (i == 1)
-      BOOST_CHECK_EQUAL(indices_view_3(i), i + 1);
+      BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("3")->getData()(i), i + 1);
     else
-      BOOST_CHECK_EQUAL(indices_view_3(i), 0);
+      BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("3")->getData()(i), 0);
   }
 }
 
@@ -666,19 +660,17 @@ BOOST_AUTO_TEST_CASE(sliceTensorForSortDefaultDevice)
   // test sliceTensorForSort for axis 2
   std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 1>> tensor_sort;
   tensorTable.sliceTensorDataForSort(tensor_sort, "1", 1, "2", device);
-  Eigen::TensorMap<Eigen::Tensor<float, 1>> tensor_sort_2(tensor_sort->getDataPointer().get(), tensor_sort->getDimensions());
   std::vector<float> tensor_slice_2_test = {9, 12, 15};
   for (int i = 0; i < nlabels; ++i) {
-    BOOST_CHECK_CLOSE(tensor_sort_2(i), tensor_slice_2_test.at(i), 1e-3);
+    BOOST_CHECK_CLOSE(tensor_sort->getData()(i), tensor_slice_2_test.at(i), 1e-3);
   }
 
   // test sliceTensorForSort for axis 2
   tensor_sort.reset();
   tensorTable.sliceTensorDataForSort(tensor_sort, "1", 1, "3", device);
-  Eigen::TensorMap<Eigen::Tensor<float, 1>> tensor_sort_3(tensor_sort->getDataPointer().get(), tensor_sort->getDimensions());
   std::vector<float> tensor_slice_3_test = { 9, 10, 11 };
   for (int i = 0; i < nlabels; ++i) {
-    BOOST_CHECK_CLOSE(tensor_sort_3(i), tensor_slice_3_test.at(i), 1e-3);
+    BOOST_CHECK_CLOSE(tensor_sort->getData()(i), tensor_slice_3_test.at(i), 1e-3);
   }
 }
 
@@ -718,21 +710,18 @@ BOOST_AUTO_TEST_CASE(sortIndicesViewDataDefaultDevice)
 
   // test sort ASC
   tensorTable.sortIndicesView("1", 0, 1, sortOrder::ASC, device);
-  Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_1(tensorTable.getIndicesView().at("1")->getDataPointer().get(), tensorTable.getIndicesView().at("1")->getDimensions());
-  Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_2(tensorTable.getIndicesView().at("2")->getDataPointer().get(), tensorTable.getIndicesView().at("2")->getDimensions());
-  Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_3(tensorTable.getIndicesView().at("3")->getDataPointer().get(), tensorTable.getIndicesView().at("3")->getDimensions());
   for (int i = 0; i < nlabels; ++i) {
-    BOOST_CHECK_EQUAL(indices_view_1(i), i + 1);
-    BOOST_CHECK_EQUAL(indices_view_3(i), i + 1);
-    BOOST_CHECK_EQUAL(indices_view_1(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("3")->getData()(i), i + 1);
   }
 
   // test sort DESC
   tensorTable.sortIndicesView("1", 0, 1, sortOrder::DESC, device);
   for (int i = 0; i < nlabels; ++i) {
-    BOOST_CHECK_EQUAL(indices_view_1(i), i + 1);
-    BOOST_CHECK_EQUAL(indices_view_2(i), nlabels - i);
-    BOOST_CHECK_EQUAL(indices_view_3(i), nlabels - i);
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(i), nlabels - i);
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("3")->getData()(i), nlabels - i);
   }
 }
 
@@ -760,11 +749,10 @@ BOOST_AUTO_TEST_CASE(makeSelectIndicesFromIndicesViewDefaultDevice)
   // Test null
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>> indices_select;
   tensorTable.makeSelectIndicesFromIndicesView(indices_select, device);
-  Eigen::TensorMap<Eigen::Tensor<int, 3>> indices_select_values(indices_select->getDataPointer().get(), indices_select->getDimensions());
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
-        BOOST_CHECK_EQUAL(indices_select_values(i, j, k), 1);
+        BOOST_CHECK_EQUAL(indices_select->getData()(i, j, k), 1);
       }
     }
   }
@@ -793,11 +781,10 @@ BOOST_AUTO_TEST_CASE(makeSelectIndicesFromIndicesViewDefaultDevice)
   // Test selected
   indices_select.reset();
   tensorTable.makeSelectIndicesFromIndicesView(indices_select, device);
-  Eigen::TensorMap<Eigen::Tensor<int, 3>> indices_select_values2(indices_select->getDataPointer().get(), indices_select->getDimensions());
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
-        BOOST_CHECK_EQUAL(indices_select_values2(i, j, k), indices_select_test(i, j, k));
+        BOOST_CHECK_EQUAL(indices_select->getData()(i, j, k), indices_select_test(i, j, k));
       }
     }
   }
@@ -873,10 +860,9 @@ BOOST_AUTO_TEST_CASE(getSelectTensorDataDefaultDevice)
   std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 3>> tensor_select_ptr;
   tensorTable.getSelectTensorData(tensor_select_ptr, std::make_shared<TensorDataDefaultDevice<int, 3>>(indices_select), device);
   BOOST_CHECK(tensor_select_ptr->getDimensions() == select_dimensions);
-  Eigen::TensorMap<Eigen::Tensor<float, 3>> tensor_select_values(tensor_select_ptr->getDataPointer().get(), tensor_select_ptr->getDimensions());
   for (int j = 0; j < nlabels; ++j) {
     for (int k = 0; k < nlabels; ++k) {
-      BOOST_CHECK_CLOSE(tensor_select_values(0, j, k), tensor_select_test(0, j, k), 1e-3);
+      BOOST_CHECK_CLOSE(tensor_select_ptr->getData()(0, j, k), tensor_select_test(0, j, k), 1e-3);
     }
   }
 }
@@ -1012,11 +998,10 @@ BOOST_AUTO_TEST_CASE(makeSortIndicesViewFromIndicesViewDefaultDevice)
   // Test for the sort indices
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>> indices_sort_ptr;
   tensorTable.makeSortIndicesViewFromIndicesView(indices_sort_ptr, device);
-  Eigen::TensorMap<Eigen::Tensor<int, 3>> indices_sort_values(indices_sort_ptr->getDataPointer().get(), indices_sort_ptr->getDimensions());
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
-        BOOST_CHECK_EQUAL(indices_sort_values(i, j, k), indices_test(i, j, k));
+        BOOST_CHECK_EQUAL(indices_sort_ptr->getData()(i, j, k), indices_test(i, j, k));
       }
     }
   }
