@@ -3,13 +3,6 @@
 #ifndef TENSORBASE_TENSORDIMENSION_H
 #define TENSORBASE_TENSORDIMENSION_H
 
-#if COMPILE_WITH_CUDA
-#define EIGEN_DEFAULT_DENSE_INDEX_TYPE int
-#define EIGEN_USE_GPU
-#include <cuda.h>
-#include <cuda_runtime.h>
-#endif
-
 #include <TensorBase/ml/TensorData.h>
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <string>
@@ -86,23 +79,5 @@ namespace TensorBase
       this->setNLabels(labels.size());
     };
   };
-
-#if COMPILE_WITH_CUDA
-  template<typename TensorT>
-  class TensorDimensionGpu : public TensorDimension<TensorT, Eigen::GpuDevice>
-  {
-  public:
-    TensorDimensionGpu() = default;  ///< Default constructor
-    TensorDimensionGpu(const std::string& name) { setName(name); };
-    TensorDimensionGpu(const std::string& name, const Eigen::Tensor<TensorT, 1>& labels) { setName(name); setLabels(labels); };
-    ~TensorDimensionGpu() = default; ///< Default destructor
-    void setLabels(const Eigen::Tensor<TensorT, 1>& labels) {
-      Eigen::array<Eigen::Index, 1> dimensions = labels.dimensions();
-      this->labels_.reset(new TensorDataGpu<TensorT, 1>(dimensions));
-      this->labels_->setData(labels);
-      this->setNLabels(labels.size());
-    };
-  };
-#endif
 };
 #endif //TENSORBASE_TENSORDIMENSION_H

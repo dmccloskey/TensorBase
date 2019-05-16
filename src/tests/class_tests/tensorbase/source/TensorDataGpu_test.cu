@@ -1,7 +1,7 @@
 /**TODO:  Add copyright*/
 
 #if COMPILE_WITH_CUDA
-#include <TensorBase/ml/TensorData.h>
+#include <TensorBase/ml/TensorDataGpu.h>
 
 #include <iostream>
 
@@ -126,8 +126,8 @@ void test_selectGpu()
   for (int i = 0; i < dim_sizes_select; ++i) {
     for (int j = 0; j < dim_sizes_select; ++j) {
       for (int k = 0; k < dim_sizes_select; ++k) {
-        std::cout << "Test Select i,j,k :" << i << "," << j << "," << k << "; Tensor select: " << tensorselect_ptr->getData()(i, j, k) << "; Expected: " << tensor_values_test(i, j, k) << std::endl;
-        //assert(tensorselect_ptr->getData()(i, j, k) == tensor_values_test(i, j, k));
+        //std::cout << "Test Select i,j,k :" << i << "," << j << "," << k << "; Tensor select: " << tensorselect_ptr->getData()(i, j, k) << "; Expected: " << tensor_values_test(i, j, k) << std::endl;
+        assert(tensorselect_ptr->getData()(i, j, k) == tensor_values_test(i, j, k));
       }
     }
   }
@@ -159,17 +159,17 @@ void test_sortIndicesGpu()
   tensordata.syncHAndDData(device);
   indices_ptr->syncHAndDData(device);
   tensordata.sortIndices(indices_ptr, "ASC", device);
-  //tensordata.sort(indices_ptr, device);
+  tensordata.sort(indices_ptr, device);
   tensordata.syncHAndDData(device);
   indices_ptr->syncHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < dim_sizes; ++i) {
     for (int j = 0; j < dim_sizes; ++j) {
       for (int k = 0; k < dim_sizes; ++k) {
-        std::cout << "Test ASC i,j,k :" << i << "," << j << "," << k << "; Indices sorted: " << indices_ptr->getData()(i, j, k) << "; Expected: " << indices_values(i, j, k) << std::endl;
+        //std::cout << "Test ASC i,j,k :" << i << "," << j << "," << k << "; Indices sorted: " << indices_ptr->getData()(i, j, k) << "; Expected: " << indices_values(i, j, k) << std::endl;
         //std::cout << "Test ASC i,j,k :" << i << "," << j << "," << k << "; Tensor select: " << tensordata.getData()(i, j, k) << "; Expected: " << tensor_values(i, j, k) << std::endl;
-        //assert(indices_ptr->getData()(i, j, k) == indices_values(i, j, k));
-        //assert(tensordata.getData()(i, j, k) == tensor_values(i, j, k));
+        assert(indices_ptr->getData()(i, j, k) == indices_values(i, j, k)); 
+        assert(tensordata.getData()(i, j, k) == tensor_values(i, j, k));
       }
     }
   }
@@ -183,20 +183,20 @@ void test_sortIndicesGpu()
   }
 
   // Test DESC
-  tensordata.getDataStatus() = std::make_pair(false, true);
-  indices_ptr->getDataStatus() = std::make_pair(false, true);
+  tensordata.setDataStatus(false, true);
+  indices_ptr->setDataStatus(false, true);
   tensordata.sortIndices(indices_ptr, "DESC", device);
-  //tensordata.sort(indices_ptr, device);
+  tensordata.sort(indices_ptr, device);
   tensordata.syncHAndDData(device);
   indices_ptr->syncHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < dim_sizes; ++i) {
     for (int j = 0; j < dim_sizes; ++j) {
       for (int k = 0; k < dim_sizes; ++k) {
-        std::cout << "Test DESC i,j,k :" << i << "," << j << "," << k << "; Indices sorted: " << indices_ptr->getData()(i, j, k) << "; Expected: " << indices_values_test(i, j, k) << std::endl;
+        //std::cout << "Test DESC i,j,k :" << i << "," << j << "," << k << "; Indices sorted: " << indices_ptr->getData()(i, j, k) << "; Expected: " << indices_values_test(i, j, k) << std::endl;
         //std::cout << "Test DESC i,j,k :" << i << "," << j << "," << k << "; Tensor select: " << tensordata.getData()(i, j, k) << "; Expected: " << tensor_values_test(i, j, k) << std::endl;
-        //assert(indices_ptr->getData()(i, j, k) == indices_values_test(i, j, k));
-        //assert(tensordata.getData()(i, j, k) == tensor_values_test(i, j, k));
+        assert(indices_ptr->getData()(i, j, k) == indices_values_test(i, j, k));
+        assert(tensordata.getData()(i, j, k) == tensor_values_test(i, j, k)); //FIXME
       }
     }
   }
@@ -219,6 +219,11 @@ void test_gettersAndSettersGpu()
 	assert(tensordata.getDataStatus().first);
 	assert(!tensordata.getDataStatus().second);
 
+  // Test manual data status setters
+  tensordata.setDataStatus(false, true);
+  assert(!tensordata.getDataStatus().first);
+  assert(tensordata.getDataStatus().second);
+
 	// Test mutability
   tensordata.getData()(0, 0, 0) = 5;
 	assert(tensordata.getData()(0, 0, 0) == 5);
@@ -236,32 +241,38 @@ void test_syncHAndDGpu()
 
 	Eigen::Tensor<float, 3> data(2, 3, 4);
 	data.setConstant(0.5);
-
   tensordata.setData(data);
 
 	Eigen::GpuStreamDevice stream_device;
 	Eigen::GpuDevice device(&stream_device);
-  tensordata.syncHAndDData(device);
 
+  // Test sync data status
+  tensordata.syncHAndDData(device);
 	assert(!tensordata.getDataStatus().first);
 	assert(tensordata.getDataStatus().second);
 
   tensordata.syncHAndDData(device);
-
 	assert(tensordata.getDataStatus().first);
 	assert(!tensordata.getDataStatus().second);
+
+  // Test that data was copied correctly between device and host
+  assert(tensordata.getData()(0, 0, 0) == 0.5);
+  assert(tensordata.getData()(1, 0, 0) == 0.5);
+  assert(tensordata.getData()(0, 2, 0) == 0.5);
+  assert(tensordata.getData()(0, 0, 3) == 0.5);
+  assert(tensordata.getData()(1, 2, 3) == 0.5);
 }
 
 int main(int argc, char** argv)
 {
   test_constructorGpu();
   test_destructorGpu();
+  test_gettersAndSettersGpu();
+  test_syncHAndDGpu();
   test_assignmentGpu();
   test_copyGpu();
   test_selectGpu();
   test_sortIndicesGpu();
-  test_gettersAndSettersGpu();
-  test_syncHAndDGpu();
   return 0;
 }
 #endif

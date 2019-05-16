@@ -1,14 +1,10 @@
 /**TODO:  Add copyright*/
-#define BOOST_TEST_MODULE TensorData test suite 
-#include <boost/test/included/unit_test.hpp>
 
 #if COMPILE_WITH_CUDA
 #include <TensorBase/ml/TensorTableGpu.h>
 
 using namespace TensorBase;
 using namespace std;
-
-BOOST_AUTO_TEST_SUITE(tensorTable)
 
 void test_constructorGpu()
 {
@@ -30,24 +26,24 @@ void test_constructorNameAndAxesGpu()
 {
   TensorTableGpu<float, 3> tensorTable("1");
 
-  BOOST_CHECK_EQUAL(tensorTable.getId(), -1);
-  BOOST_CHECK_EQUAL(tensorTable.getName(), "1");
+  assert(tensorTable.getId() == -1);
+  assert(tensorTable.getName() == "1");
 }
 
 void test_gettersAndSettersGpu()
 {
   TensorTableGpu<float, 3> tensorTable;
   // Check defaults
-  BOOST_CHECK_EQUAL(tensorTable.getId(), -1);
-  BOOST_CHECK_EQUAL(tensorTable.getName(), "");
-  BOOST_CHECK_EQUAL(tensorTable.getAxes().size(), 0);
+  assert(tensorTable.getId() == -1);
+  assert(tensorTable.getName() == "");
+  assert(tensorTable.getAxes().size() == 0);
 
   // Check getters/setters
   tensorTable.setId(1);
   tensorTable.setName("1");
 
-  BOOST_CHECK_EQUAL(tensorTable.getId(), 1);
-  BOOST_CHECK_EQUAL(tensorTable.getName(), "1");
+  assert(tensorTable.getId() == 1);
+  assert(tensorTable.getName() == "1");
 
   // SetAxes associated getters/setters
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
@@ -69,77 +65,77 @@ void test_gettersAndSettersGpu()
   tensorTable.setAxes();
 
   // Test expected axes values
-  BOOST_CHECK_EQUAL(tensorTable.getAxes().at("1")->getName(), "1");
-  //BOOST_CHECK_EQUAL(tensorTable.getAxes().at("1")->getLabels()(0, 0), 1);
-  ////BOOST_CHECK_EQUAL(tensorTable.getAxes().at("1")->getLabels()(0,0), "x-axis");
-  BOOST_CHECK_EQUAL(tensorTable.getAxes().at("1")->getNLabels(), nlabels1);
-  BOOST_CHECK_EQUAL(tensorTable.getAxes().at("1")->getNDimensions(), 1);
-  BOOST_CHECK_EQUAL(tensorTable.getAxes().at("1")->getDimensions()(0), "x");
-  BOOST_CHECK_EQUAL(tensorTable.getIndices().at("1")->getData()(0), 1);
-  BOOST_CHECK_EQUAL(tensorTable.getIndices().at("1")->getData()(nlabels1 -1), nlabels1);
-  BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->getData()(0), 1);
-  BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->getData()(nlabels1 - 1), nlabels1);
-  BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("1")->getData()(0), 0);
-  BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("1")->getData()(0), 0);
-  BOOST_CHECK_EQUAL(tensorTable.getIsShardable().at("1")->getData()(0), 1);
+  assert(tensorTable.getAxes().at("1")->getName() == "1");
+  //assert(tensorTable.getAxes().at("1")->getLabels()(0, 0) == 1);
+  ////assert(tensorTable.getAxes().at("1")->getLabels()(0,0) == "x-axis");
+  assert(tensorTable.getAxes().at("1")->getNLabels() == nlabels1);
+  assert(tensorTable.getAxes().at("1")->getNDimensions() == 1);
+  assert(tensorTable.getAxes().at("1")->getDimensions()(0) == "x");
+  assert(tensorTable.getIndices().at("1")->getData()(0) == 1);
+  assert(tensorTable.getIndices().at("1")->getData()(nlabels1 -1) == nlabels1);
+  assert(tensorTable.getIndicesView().at("1")->getData()(0) == 1);
+  assert(tensorTable.getIndicesView().at("1")->getData()(nlabels1 - 1) == nlabels1);
+  assert(tensorTable.getIsModified().at("1")->getData()(0) == 0);
+  assert(tensorTable.getInMemory().at("1")->getData()(0) == 0);
+  assert(tensorTable.getIsShardable().at("1")->getData()(0) == 1);
 
-  BOOST_CHECK_EQUAL(tensorTable.getAxes().at("2")->getName(), "2");
-  //BOOST_CHECK_EQUAL(tensorTable.getAxes().at("2")->getLabels()(0, 0), 2);
-  ////BOOST_CHECK_EQUAL(tensorTable.getAxes().at("2")->getLabels()(0, 0), "y-axis");
-  BOOST_CHECK_EQUAL(tensorTable.getAxes().at("2")->getNLabels(), nlabels2);
-  BOOST_CHECK_EQUAL(tensorTable.getAxes().at("2")->getNDimensions(), 1);
-  BOOST_CHECK_EQUAL(tensorTable.getAxes().at("2")->getDimensions()(0), "y");
-  BOOST_CHECK_EQUAL(tensorTable.getIndices().at("2")->getData()(0), 1);
-  BOOST_CHECK_EQUAL(tensorTable.getIndices().at("2")->getData()(nlabels2 - 1), nlabels2);
-  BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(0), 1);
-  BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(nlabels2 - 1), nlabels2);
-  BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("2")->getData()(0), 0);
-  BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("2")->getData()(0), 0);
-  BOOST_CHECK_EQUAL(tensorTable.getIsShardable().at("2")->getData()(0), 0);
+  assert(tensorTable.getAxes().at("2")->getName() == "2");
+  //assert(tensorTable.getAxes().at("2")->getLabels()(0, 0) == 2);
+  ////assert(tensorTable.getAxes().at("2")->getLabels()(0, 0) == "y-axis");
+  assert(tensorTable.getAxes().at("2")->getNLabels() == nlabels2);
+  assert(tensorTable.getAxes().at("2")->getNDimensions() == 1);
+  assert(tensorTable.getAxes().at("2")->getDimensions()(0) == "y");
+  assert(tensorTable.getIndices().at("2")->getData()(0) == 1);
+  assert(tensorTable.getIndices().at("2")->getData()(nlabels2 - 1) == nlabels2);
+  assert(tensorTable.getIndicesView().at("2")->getData()(0) == 1);
+  assert(tensorTable.getIndicesView().at("2")->getData()(nlabels2 - 1) == nlabels2);
+  assert(tensorTable.getIsModified().at("2")->getData()(0) == 0);
+  assert(tensorTable.getInMemory().at("2")->getData()(0) == 0);
+  assert(tensorTable.getIsShardable().at("2")->getData()(0) == 0);
 
-  BOOST_CHECK_EQUAL(tensorTable.getAxes().at("3")->getName(), "3");
-  //BOOST_CHECK_EQUAL(tensorTable.getAxes().at("3")->getLabels()(0, 0), 3);
-  ////BOOST_CHECK_EQUAL(tensorTable.getAxes().at("3")->getLabels()(0, 0), "z-axis");
-  BOOST_CHECK_EQUAL(tensorTable.getAxes().at("3")->getNLabels(), nlabels3);
-  BOOST_CHECK_EQUAL(tensorTable.getAxes().at("3")->getNDimensions(), 1);
-  BOOST_CHECK_EQUAL(tensorTable.getAxes().at("3")->getDimensions()(0), "z");
-  BOOST_CHECK_EQUAL(tensorTable.getIndices().at("3")->getData()(0), 1);
-  BOOST_CHECK_EQUAL(tensorTable.getIndices().at("3")->getData()(nlabels3 - 1), nlabels3);
-  BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("3")->getData()(0), 1);
-  BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("3")->getData()(nlabels3 - 1), nlabels3);
-  BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("3")->getData()(0), 0);
-  BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("3")->getData()(0), 0);
-  BOOST_CHECK_EQUAL(tensorTable.getIsShardable().at("3")->getData()(0), 0);
+  assert(tensorTable.getAxes().at("3")->getName() == "3");
+  //assert(tensorTable.getAxes().at("3")->getLabels()(0, 0) == 3);
+  ////assert(tensorTable.getAxes().at("3")->getLabels()(0, 0) == "z-axis");
+  assert(tensorTable.getAxes().at("3")->getNLabels(), nlabels3);
+  assert(tensorTable.getAxes().at("3")->getNDimensions() == 1);
+  assert(tensorTable.getAxes().at("3")->getDimensions()(0) == "z");
+  assert(tensorTable.getIndices().at("3")->getData()(0) == 1);
+  assert(tensorTable.getIndices().at("3")->getData()(nlabels3 - 1) == nlabels3);
+  assert(tensorTable.getIndicesView().at("3")->getData()(0) == 1);
+  assert(tensorTable.getIndicesView().at("3")->getData()(nlabels3 - 1) == nlabels3);
+  assert(tensorTable.getIsModified().at("3")->getData()(0) == 0);
+  assert(tensorTable.getInMemory().at("3")->getData()(0) == 0);
+  assert(tensorTable.getIsShardable().at("3")->getData()(0) == 0);
 
   // Test expected axis to dims mapping
-  BOOST_CHECK_EQUAL(tensorTable.getDimFromAxisName("1"), 0);
-  BOOST_CHECK_EQUAL(tensorTable.getDimFromAxisName("2"), 1);
-  BOOST_CHECK_EQUAL(tensorTable.getDimFromAxisName("3"), 2);
+  assert(tensorTable.getDimFromAxisName("1") == 0);
+  assert(tensorTable.getDimFromAxisName("2") == 1);
+  assert(tensorTable.getDimFromAxisName("3") == 2);
 
   // Test expected tensor dimensions
-  BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(0), 2);
-  BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(1), 3);
-  BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(2), 5);
+  assert(tensorTable.getDimensions().at(0) == 2);
+  assert(tensorTable.getDimensions().at(1) == 3);
+  assert(tensorTable.getDimensions().at(2) == 5);
 
   // Test expected tensor data values
-  BOOST_CHECK_EQUAL(tensorTable.getData()->getDimensions().at(0), 2);
-  BOOST_CHECK_EQUAL(tensorTable.getData()->getDimensions().at(1), 3);
-  BOOST_CHECK_EQUAL(tensorTable.getData()->getDimensions().at(2), 5);
+  assert(tensorTable.getData()->getDimensions().at(0) == 2);
+  assert(tensorTable.getData()->getDimensions().at(1) == 3);
+  assert(tensorTable.getData()->getDimensions().at(2) == 5);
   size_t test = 2 * 3 * 5 * sizeof(float);
-  BOOST_CHECK_EQUAL(tensorTable.getData()->getTensorSize(), test);
+  assert(tensorTable.getData()->getTensorSize() == test);
 
   // Test clear
   tensorTable.clear();
-  BOOST_CHECK_EQUAL(tensorTable.getAxes().size(), 0);
-  BOOST_CHECK_EQUAL(tensorTable.getIndices().size(), 0);
-  BOOST_CHECK_EQUAL(tensorTable.getIndicesView().size(), 0);
-  BOOST_CHECK_EQUAL(tensorTable.getIsModified().size(), 0);
-  BOOST_CHECK_EQUAL(tensorTable.getInMemory().size(), 0);
-  BOOST_CHECK_EQUAL(tensorTable.getIsShardable().size(), 0);
-  BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(0), 0);
-  BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(1), 0);
-  BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(2), 0);
-  BOOST_CHECK_EQUAL(tensorTable.getData(), nullptr);
+  assert(tensorTable.getAxes().size() == 0);
+  assert(tensorTable.getIndices().size() == 0);
+  assert(tensorTable.getIndicesView().size() == 0);
+  assert(tensorTable.getIsModified().size() == 0);
+  assert(tensorTable.getInMemory().size() == 0);
+  assert(tensorTable.getIsShardable().size() == 0);
+  assert(tensorTable.getDimensions().at(0) == 0);
+  assert(tensorTable.getDimensions().at(1)== 0);
+  assert(tensorTable.getDimensions().at(2)== 0);
+  assert(tensorTable.getData()== nullptr);
 }
 
 void test_broadcastSelectIndicesViewGpu()
@@ -179,7 +175,7 @@ void test_broadcastSelectIndicesViewGpu()
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
-        BOOST_CHECK(indices_view_bcast->getData()(i,j,k), indices_test(i, j, k));
+        assert(indices_view_bcast->getData()(i,j,k) == indices_test(i, j, k));
       }
     }
   }
@@ -236,7 +232,7 @@ void test_selectTensorDataGpu()
   for (int i = 0; i < nlabels/2; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
-        BOOST_CHECK_CLOSE(tensor_select->getData()(i, j, k), tensor_test(i, j, k), 1e-3);
+        assert(tensor_select->getData()(i, j, k) == tensor_test(i, j, k));
       }
     }
   }

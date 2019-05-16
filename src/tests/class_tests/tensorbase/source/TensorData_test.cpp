@@ -233,6 +233,11 @@ BOOST_AUTO_TEST_CASE(gettersAndSetters2DefaultDevice)
   BOOST_CHECK(tensordata.getDataStatus().first);
   BOOST_CHECK(tensordata.getDataStatus().second);
 
+  // Test manual data status setters
+  tensordata.setDataStatus(false, true);
+  assert(!tensordata.getDataStatus().first);
+  assert(tensordata.getDataStatus().second);
+
   // Test mutability
   tensordata.getData()(0, 0, 0) = 5;
   BOOST_CHECK_EQUAL(tensordata.getData()(0, 0, 0), 5);
@@ -526,6 +531,11 @@ BOOST_AUTO_TEST_CASE(gettersAndSetters2Cpu)
   BOOST_CHECK_EQUAL(tensordata.getData()(1, 2, 3), 0);
   BOOST_CHECK(tensordata.getDataStatus().first);
   BOOST_CHECK(tensordata.getDataStatus().second);
+
+  // Test manual data status setters
+  tensordata.setDataStatus(false, true);
+  assert(!tensordata.getDataStatus().first);
+  assert(tensordata.getDataStatus().second);
 
   // Test mutability
   tensordata.getData()(0, 0, 0) = 5;

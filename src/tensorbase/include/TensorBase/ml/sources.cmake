@@ -5,10 +5,13 @@ set(directory include/TensorBase/ml)
 set(sources_list_h
 	TensorAxis.h
 	TensorAxisConcept.h
+	TensorAxisGpu.h
 	TensorClauses.h
 	TensorCollection.h
 	TensorDimension.h
+	TensorDimensionGpu.h
 	TensorData.h
+	TensorDataGpu.h
 	TensorOperation.h
 	TensorTable.h
 	TensorTableConcept.h
