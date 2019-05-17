@@ -592,7 +592,6 @@ BOOST_AUTO_TEST_CASE(applyIndicesSelectToIndicesViewDefaultDevice)
   }
 
   tensorTable.resetIndicesView("2", device);
-  Eigen::TensorMap<Eigen::Tensor<int, 3>> indices_select_values2(indices_select_ptr->getDataPointer().get(), indices_select_ptr->getDimensions());
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {

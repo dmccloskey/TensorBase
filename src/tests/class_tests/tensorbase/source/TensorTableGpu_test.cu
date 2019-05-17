@@ -282,13 +282,14 @@ void test_broadcastSelectIndicesViewGpu()
   // sync the tensorTable indices
   tensorTable.syncIndicesHAndDData(device);
   tensorTable.syncIndicesViewHAndDData(device);
+  tensorTable.syncAxesHAndDData(device);
 
   // setup the indices test
   Eigen::Tensor<int, 3> indices_test(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
-        indices_test(i, j, k) = i;
+        indices_test(i, j, k) = i + 1;
       }
     }
   }
@@ -301,6 +302,7 @@ void test_broadcastSelectIndicesViewGpu()
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
+        //std::cout << "Test broadcastSelectIndicesView i,j,k :" << i << "," << j << "," << k << "; Labels: " << indices_view_bcast->getData()(i, j, k) << "; Expected: " << indices_test(i, j, k) << std::endl;
         assert(indices_view_bcast->getData()(i, j, k) == indices_test(i, j, k));
       }
     }
@@ -362,6 +364,7 @@ void test_extractTensorDataGpu()
   // sync the tensorTable
   tensorTable.syncIndicesHAndDData(device);
   tensorTable.syncIndicesViewHAndDData(device);
+  tensorTable.syncAxesHAndDData(device);
   tensorTable.syncHAndDData(device);
 
   // test
@@ -432,6 +435,7 @@ void test_selectTensorIndicesGpu()
   values_select_ptr->syncHAndDData(device);
   tensorTable.syncIndicesHAndDData(device);
   tensorTable.syncIndicesViewHAndDData(device);
+  tensorTable.syncAxesHAndDData(device);
   tensorTable.syncHAndDData(device);
 
   // test inequality
@@ -564,6 +568,11 @@ void test_applyIndicesSelectToIndicesViewGpu()
   tensorTable.addTensorAxis(std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("3", dimensions3, labels3)));
   tensorTable.setAxes();
 
+  // sync the tensorTable
+  tensorTable.syncIndicesHAndDData(device);
+  tensorTable.syncIndicesViewHAndDData(device);
+  tensorTable.syncHAndDData(device);
+
   // setup the indices select
   Eigen::Tensor<int, 3> indices_select_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   for (int i = 0; i < nlabels; ++i) {
@@ -580,11 +589,17 @@ void test_applyIndicesSelectToIndicesViewGpu()
   TensorDataGpu<int, 3> indices_select(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   indices_select.setData(indices_select_values);
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 3>> indices_select_ptr = std::make_shared<TensorDataGpu<int, 3>>(indices_select);
+  indices_select_ptr->syncHAndDData(device);
 
-  // test using the second indices view
+  // test using the second indices view  
+  tensorTable.syncIndicesViewHAndDData(device);
   tensorTable.getIndicesView().at("2")->getData()(nlabels - 1) = 0;
+  tensorTable.syncIndicesViewHAndDData(device);
+
   // test for OR within continuator and OR prepend continuator
   tensorTable.applyIndicesSelectToIndicesView(indices_select_ptr, "1", "2", logicalContinuators::logicalContinuator::OR, logicalContinuators::logicalContinuator::OR, device);
+  tensorTable.syncIndicesViewHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < nlabels; ++i) {
     if (i == nlabels - 1)
       assert(tensorTable.getIndicesView().at("2")->getData()(i) == 0);
@@ -592,21 +607,32 @@ void test_applyIndicesSelectToIndicesViewGpu()
       assert(tensorTable.getIndicesView().at("2")->getData()(i) == i + 1);
   }
 
+  tensorTable.syncIndicesViewHAndDData(device);
   tensorTable.resetIndicesView("2", device);
+  tensorTable.syncIndicesViewHAndDData(device);
   tensorTable.getIndicesView().at("2")->getData()(0) = 0;
+  tensorTable.syncIndicesViewHAndDData(device);
   // test for AND within continuator and OR prepend continuator
-  tensorTable.applyIndicesSelectToIndicesView(indices_select_ptr, "1", "2", logicalContinuators::logicalContinuator::AND, logicalContinuators::logicalContinuator::OR, device);
+  tensorTable.applyIndicesSelectToIndicesView(indices_select_ptr, "1", "2", logicalContinuators::logicalContinuator::AND, logicalContinuators::logicalContinuator::OR, device);  
+  tensorTable.syncIndicesViewHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < nlabels; ++i) {
+    std::cout << "Test applyIndicesSelectToIndicesView i " << i << "; Indices View: " << tensorTable.getIndicesView().at("2")->getData()(i) << std::endl;
     if (i == 0)
       assert(tensorTable.getIndicesView().at("2")->getData()(i) == 0);
     else
       assert(tensorTable.getIndicesView().at("2")->getData()(i) == i + 1);
   }
 
-  tensorTable.resetIndicesView("2", device);
+  tensorTable.syncIndicesViewHAndDData(device);
+  tensorTable.resetIndicesView("2", device);  
+  tensorTable.syncIndicesViewHAndDData(device);
   tensorTable.getIndicesView().at("2")->getData()(0) = 0;
+  tensorTable.syncIndicesViewHAndDData(device);
   // test for OR within continuator and AND prepend continuator
   tensorTable.applyIndicesSelectToIndicesView(indices_select_ptr, "1", "2", logicalContinuators::logicalContinuator::OR, logicalContinuators::logicalContinuator::AND, device);
+  tensorTable.syncIndicesViewHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < nlabels; ++i) {
     if (i != 0 && i < nlabels - 1)
       assert(tensorTable.getIndicesView().at("2")->getData()(i) == i + 1);
@@ -614,8 +640,10 @@ void test_applyIndicesSelectToIndicesViewGpu()
       assert(tensorTable.getIndicesView().at("2")->getData()(i) == 0);
   }
 
+  tensorTable.syncIndicesViewHAndDData(device);
   tensorTable.resetIndicesView("2", device);
-  Eigen::TensorMap<Eigen::Tensor<int, 3>> indices_select_values2(indices_select_ptr->getDataPointer().get(), indices_select_ptr->getDimensions());
+  tensorTable.syncIndicesViewHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
@@ -629,8 +657,12 @@ void test_applyIndicesSelectToIndicesViewGpu()
       }
     }
   }
+
+  tensorTable.syncIndicesViewHAndDData(device);
   // test for AND within continuator and AND prepend continuator
   tensorTable.applyIndicesSelectToIndicesView(indices_select_ptr, "1", "2", logicalContinuators::logicalContinuator::AND, logicalContinuators::logicalContinuator::AND, device);
+  tensorTable.syncIndicesViewHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < nlabels; ++i) {
     if (i == 0)
       assert(tensorTable.getIndicesView().at("2")->getData()(i) == i + 1);
@@ -680,6 +712,12 @@ void test_whereIndicesViewDataGpu()
     }
   }
   tensorTable.getData()->setData(tensor_values);
+
+  // sync the tensorTable
+  tensorTable.syncIndicesHAndDData(device);
+  tensorTable.syncIndicesViewHAndDData(device);
+  tensorTable.syncHAndDData(device);
+  tensorTable.syncAxesHAndDData(device);
 
   // set up the selection labels
   Eigen::Tensor<int, 1> select_labels_values(2);
