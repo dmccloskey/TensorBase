@@ -61,6 +61,22 @@ namespace TensorBase
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& getData() { return data_; }; ///< data getter
     void clear();  ///< clears the axes and all associated data
 
+    bool syncIndicesHAndDData(DeviceT& device); ///< Sync the host and device indices data
+    void setIndicesDataStatus(const bool& h_data_updated, const bool& d_data_updated);///< Set the status of the host and device indices data
+    std::map<std::string, std::pair<bool, bool>> getIndicesDataStatus(); ///< Get the status of the host and device indices data
+
+    bool syncIndicesViewHAndDData(DeviceT& device); ///< Sync the host and device indices view data
+    void setIndicesViewDataStatus(const bool& h_data_updated, const bool& d_data_updated);///< Set the status of the host and device indices view data
+    std::map<std::string, std::pair<bool, bool>> getIndicesViewDataStatus(); ///< Get the status of the host and device indices view data
+
+    bool syncAxesHAndDData(DeviceT& device); ///< Sync the host and device axes data
+    void setAxesDataStatus(const bool& h_data_updated, const bool& d_data_updated);///< Set the status of the host and device axes data
+    std::map<std::string, std::pair<bool, bool>> getAxesDataStatus(); ///< Get the status of the host and device axes data
+
+    bool syncHAndDData(DeviceT& device) { return data_->syncHAndDData(device); };  ///< Sync the host and device tensor data
+    void setDataStatus(const bool& h_data_updated, const bool& d_data_updated) { data_->setDataStatus(h_data_updated, d_data_updated); } ///< Set the status of the host and device tensor data
+    std::pair<bool, bool> getDataStatus() { return data_->getDataStatus(); };   ///< Get the status of the host and device tensor data
+
     /*
     @brief Select Tensor Axis that will be included in the view
 
@@ -268,6 +284,93 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
+  inline bool TensorTable<TensorT, DeviceT, TDim>::syncIndicesHAndDData(DeviceT & device)
+  {
+    bool synced = true;
+    for (auto& index_map : indices_) {
+      bool synced_tmp = index_map.second->syncHAndDData(device);
+      if (!synced_tmp) synced = false;
+    }
+    return synced;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::setIndicesDataStatus(const bool & h_data_updated, const bool & d_data_updated)
+  {
+    for (auto& index_map : indices_) {
+      index_map.second->setDataStatus(h_data_updated, d_data_updated);
+    }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline std::map<std::string, std::pair<bool, bool>> TensorTable<TensorT, DeviceT, TDim>::getIndicesDataStatus()
+  {
+    std::map<std::string, std::pair<bool, bool>> statuses;
+    for (auto& index_map : indices_) {
+      statuses.emplace(index_map.first, index_map.second->getDataStatus());
+    }
+    return statuses;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline bool TensorTable<TensorT, DeviceT, TDim>::syncIndicesViewHAndDData(DeviceT & device)
+  {
+    bool synced = true;
+    for (auto& index_map : indices_view_) {
+      bool synced_tmp = index_map.second->syncHAndDData(device);
+      if (!synced_tmp) synced = false;
+    }
+    return synced;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::setIndicesViewDataStatus(const bool & h_data_updated, const bool & d_data_updated)
+  {
+    for (auto& index_map : indices_view_) {
+      index_map.second->setDataStatus(h_data_updated, d_data_updated);
+    }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline std::map<std::string, std::pair<bool, bool>> TensorTable<TensorT, DeviceT, TDim>::getIndicesViewDataStatus()
+  {
+    std::map<std::string, std::pair<bool, bool>> statuses;
+    for (auto& index_map : indices_view_) {
+      statuses.emplace(index_map.first, index_map.second->getDataStatus());
+    }
+    return statuses;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline bool TensorTable<TensorT, DeviceT, TDim>::syncAxesHAndDData(DeviceT & device)
+  {
+    bool synced = true;
+    for (auto& axis_map : axes_) {
+      bool synced_tmp = axis_map.second->syncHAndDData(device);
+      if (!synced_tmp) synced = false;
+    }
+    return synced;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::setAxesDataStatus(const bool & h_data_updated, const bool & d_data_updated)
+  {
+    for (auto& axis_map : axes_) {
+      axis_map.second->setDataStatus(h_data_updated, d_data_updated);
+    }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline std::map<std::string, std::pair<bool, bool>> TensorTable<TensorT, DeviceT, TDim>::getAxesDataStatus()
+  {
+    std::map<std::string, std::pair<bool, bool>> statuses;
+    for (auto& axis_map : axes_) {
+      statuses.emplace(axis_map.first, axis_map.second->getDataStatus());
+    }
+    return statuses;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
   template<typename LabelsT>
   inline void TensorTable<TensorT, DeviceT, TDim>::selectIndicesView(const std::string & axis_name, const int& dimension_index, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& select_labels, DeviceT & device)
   {
@@ -396,9 +499,7 @@ namespace TensorBase
       }
 
       // apply the OR continuator reduction
-      auto indices_view_update_tmp = indices_select_values.sum(reduction_dims);
-      //ensure a max value of 1 (Note: + 1e-12 is to prevent division by 0; the cast back to "int" rounds down to 0)
-      auto indices_view_update = (indices_view_update_tmp.cast<float>() / (indices_view_update_tmp.cast<float>() + indices_view_update_tmp.cast<float>().constant(1e-12))).cast<int>();
+      auto indices_view_update = indices_select_values.sum(reduction_dims).clip(0, 1);  //ensure a max value of 1
 
       // update the indices view based on the prepend_continuator
       if (prepend_continuator == logicalContinuators::logicalContinuator::OR) {
@@ -426,9 +527,7 @@ namespace TensorBase
             ++index;
           }
         }
-        auto indices_view_update_tmp = indices_view_update_prod.sum(reduction_dims_sum);
-        //ensure a max value of 1 (Note: + 1e-12 is to prevent division by 0; the cast back to "int" rounds down to 0)
-        auto indices_view_update = (indices_view_update_tmp.cast<float>() / (indices_view_update_tmp.cast<float>() + indices_view_update_tmp.cast<float>().constant(1e-12))).cast<int>();
+        auto indices_view_update = indices_view_update_prod.sum(reduction_dims_sum).clip(0,1); // ensure a max value of 1
 
         // update the indices view based on the prepend_continuator
         if (prepend_continuator == logicalContinuators::logicalContinuator::OR) {

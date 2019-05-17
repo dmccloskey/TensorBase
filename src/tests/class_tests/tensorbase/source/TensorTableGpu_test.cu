@@ -164,6 +164,10 @@ void test_zeroIndicesViewAndResetIndicesViewGpu()
   tensorTable.addTensorAxis(std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("3", dimensions3, labels3)));
   tensorTable.setAxes();
 
+  // sync the tensorTable indices
+  tensorTable.syncIndicesHAndDData(device);
+  tensorTable.syncIndicesViewHAndDData(device);
+
   // test null
   for (int i = 0; i < nlabels; ++i) {
     assert(tensorTable.getIndicesView().at("1")->getData()(i) == i + 1);
@@ -171,11 +175,17 @@ void test_zeroIndicesViewAndResetIndicesViewGpu()
 
   // test zero
   tensorTable.zeroIndicesView("1", device);
+  tensorTable.getIndicesView().at("1")->syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < nlabels; ++i) {
     assert(tensorTable.getIndicesView().at("1")->getData()(i) == 0);
   }
+
   // test reset
+  tensorTable.getIndicesView().at("1")->setDataStatus(false, true);
   tensorTable.resetIndicesView("1", device);
+  tensorTable.getIndicesView().at("1")->syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < nlabels; ++i) {
     assert(tensorTable.getIndicesView().at("1")->getData()(i) == i + 1);
   }
@@ -222,8 +232,17 @@ void test_selectIndicesViewGpu()
   select_labels.setData(select_labels_values);
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> select_labels_ptr = std::make_shared<TensorDataGpu<int, 1>>(select_labels);
 
+  // sync the tensorTable
+  tensorTable.syncIndicesHAndDData(device);
+  tensorTable.syncIndicesViewHAndDData(device);
+  tensorTable.syncAxesHAndDData(device);
+
   // test the updated view
+  select_labels_ptr->syncHAndDData(device);
   tensorTable.selectIndicesView("1", 0, select_labels_ptr, device);
+  tensorTable.syncIndicesViewHAndDData(device);
+  select_labels_ptr->syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < nlabels; ++i) {
     if (i % 2 == 0)
       assert(tensorTable.getIndicesView().at("1")->getData()(i) == i + 1);
@@ -238,6 +257,7 @@ void test_broadcastSelectIndicesViewGpu()
 {
   // setup the table
   TensorTableGpu<float, 3> tensorTable;
+
   // Initialize the device
   cudaStream_t stream;
   assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
@@ -259,6 +279,10 @@ void test_broadcastSelectIndicesViewGpu()
   tensorTable.addTensorAxis(std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("3", dimensions3, labels3)));
   tensorTable.setAxes();
 
+  // sync the tensorTable indices
+  tensorTable.syncIndicesHAndDData(device);
+  tensorTable.syncIndicesViewHAndDData(device);
+
   // setup the indices test
   Eigen::Tensor<int, 3> indices_test(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   for (int i = 0; i < nlabels; ++i) {
@@ -272,6 +296,8 @@ void test_broadcastSelectIndicesViewGpu()
   // test the broadcast indices values
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 3>> indices_view_bcast;
   tensorTable.broadcastSelectIndicesView(indices_view_bcast, "1", device);
+  indices_view_bcast->syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
@@ -331,11 +357,20 @@ void test_extractTensorDataGpu()
   tensorTable.getData()->setData(tensor_values);
   TensorDataGpu<int, 3> indices_select(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   indices_select.setData(indices_values);
+  auto indices_select_ptr = std::make_shared<TensorDataGpu<int, 3>>(indices_select);
+
+  // sync the tensorTable
+  tensorTable.syncIndicesHAndDData(device);
+  tensorTable.syncIndicesViewHAndDData(device);
+  tensorTable.syncHAndDData(device);
 
   // test
+  indices_select_ptr->syncHAndDData(device);
   std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> tensor_select;
-  tensorTable.reduceTensorDataToSelectIndices(std::make_shared<TensorDataGpu<int, 3>>(indices_select),
+  tensorTable.reduceTensorDataToSelectIndices(indices_select_ptr,
     tensor_select, "1", nlabels / 2, device);
+  tensor_select->syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < nlabels / 2; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
@@ -392,10 +427,19 @@ void test_selectTensorIndicesGpu()
   values_select.setData(values_select_values);
   std::shared_ptr<TensorData<float, Eigen::GpuDevice, 1>> values_select_ptr = std::make_shared<TensorDataGpu<float, 1>>(values_select);
 
+  // Sync the data
+  tensor_select_ptr->syncHAndDData(device);
+  values_select_ptr->syncHAndDData(device);
+  tensorTable.syncIndicesHAndDData(device);
+  tensorTable.syncIndicesViewHAndDData(device);
+  tensorTable.syncHAndDData(device);
+
   // test inequality
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 3>> indices_select;
   tensorTable.selectTensorIndicesOnReducedTensorData(indices_select, values_select_ptr, tensor_select_ptr,
     "1", nlabels, logicalComparitors::logicalComparitor::NOT_EQUAL_TO, logicalModifiers::logicalModifier::NONE, device);
+  indices_select->syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
@@ -411,6 +455,8 @@ void test_selectTensorIndicesGpu()
   indices_select.reset();
   tensorTable.selectTensorIndicesOnReducedTensorData(indices_select, values_select_ptr, tensor_select_ptr,
     "1", nlabels, logicalComparitors::logicalComparitor::EQUAL_TO, logicalModifiers::logicalModifier::NONE, device);
+  indices_select->syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
@@ -426,6 +472,8 @@ void test_selectTensorIndicesGpu()
   indices_select.reset();
   tensorTable.selectTensorIndicesOnReducedTensorData(indices_select, values_select_ptr, tensor_select_ptr,
     "1", nlabels, logicalComparitors::logicalComparitor::LESS_THAN, logicalModifiers::logicalModifier::NONE, device);
+  indices_select->syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
@@ -441,6 +489,8 @@ void test_selectTensorIndicesGpu()
   indices_select.reset();
   tensorTable.selectTensorIndicesOnReducedTensorData(indices_select, values_select_ptr, tensor_select_ptr,
     "1", nlabels, logicalComparitors::logicalComparitor::LESS_THAN_OR_EQUAL_TO, logicalModifiers::logicalModifier::NONE, device);
+  indices_select->syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
@@ -456,6 +506,8 @@ void test_selectTensorIndicesGpu()
   indices_select.reset();
   tensorTable.selectTensorIndicesOnReducedTensorData(indices_select, values_select_ptr, tensor_select_ptr,
     "1", nlabels, logicalComparitors::logicalComparitor::GREATER_THAN, logicalModifiers::logicalModifier::NONE, device);
+  indices_select->syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
@@ -471,6 +523,8 @@ void test_selectTensorIndicesGpu()
   indices_select.reset();
   tensorTable.selectTensorIndicesOnReducedTensorData(indices_select, values_select_ptr, tensor_select_ptr,
     "1", nlabels, logicalComparitors::logicalComparitor::GREATER_THAN_OR_EQUAL_TO, logicalModifiers::logicalModifier::NONE, device);
+  indices_select->syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {

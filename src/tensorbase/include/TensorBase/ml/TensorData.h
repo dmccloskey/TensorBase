@@ -168,7 +168,7 @@ namespace TensorBase
     std::shared_ptr<TensorT> getDataPointer() { return h_data_; }
     void setData(const Eigen::Tensor<TensorT, TDim>& data); ///< data setter
     void setData();
-    bool syncHAndDData(Eigen::DefaultDevice& device) { return true; }
+    bool syncHAndDData(Eigen::DefaultDevice& device) { this->d_data_updated_ = true; this->h_data_updated_ = true; return true; }
     //private:
     //	friend class cereal::access;
     //	template<class Archive>
@@ -276,7 +276,7 @@ namespace TensorBase
     std::shared_ptr<TensorT> getDataPointer() { return h_data_; }
     void setData(const Eigen::Tensor<TensorT, TDim>& data); ///< data setter
     void setData();
-    bool syncHAndDData(Eigen::ThreadPoolDevice& device) { return true; }
+    bool syncHAndDData(Eigen::ThreadPoolDevice& device) { this->d_data_updated_ = true; this->h_data_updated_ = true; return true; }
     //private:
     //	friend class cereal::access;
     //	template<class Archive>

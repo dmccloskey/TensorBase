@@ -141,6 +141,70 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable.getData(), nullptr);
 }
 
+BOOST_AUTO_TEST_CASE(tensorDataWrappersDefaultDevice) // TODO: add test to TensorTableGpu_test.cu
+{
+  // Set up the tensor table
+  TensorTableDefaultDevice<float, 3> tensorTable;
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels1 = 2, nlabels2 = 3, nlabels3 = 5;
+  Eigen::Tensor<int, 2> labels1(1, nlabels1), labels2(1, nlabels2), labels3(1, nlabels3);
+  labels1.setConstant(1);
+  labels2.setConstant(2);
+  labels3.setConstant(3);
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3)));
+  tensorTable.setAxes();
+
+  // Set up the device
+  Eigen::DefaultDevice device;
+
+  // Test indices wrappers
+  tensorTable.setIndicesDataStatus(false, false);
+  auto indices_statuses1 = tensorTable.getIndicesDataStatus();
+  for (auto& index_status : indices_statuses1) {
+    BOOST_CHECK(!index_status.second.first);
+    BOOST_CHECK(!index_status.second.second);
+  }
+  tensorTable.syncIndicesHAndDData(device);
+  auto indices_statuses2 = tensorTable.getIndicesDataStatus();
+  for (auto& index_status : indices_statuses2) {
+    BOOST_CHECK(index_status.second.first);
+    BOOST_CHECK(index_status.second.second);
+  }
+
+  // Test indices view wrappers
+  tensorTable.setIndicesViewDataStatus(false, false);
+  auto indices_view_statuses1 = tensorTable.getIndicesViewDataStatus();
+  for (auto& index_status : indices_view_statuses1) {
+    BOOST_CHECK(!index_status.second.first);
+    BOOST_CHECK(!index_status.second.second);
+  }
+  tensorTable.syncIndicesViewHAndDData(device);
+  auto indices_view_statuses2 = tensorTable.getIndicesViewDataStatus();
+  for (auto& index_status : indices_view_statuses2) {
+    BOOST_CHECK(index_status.second.first);
+    BOOST_CHECK(index_status.second.second);
+  }
+
+  // Test axes wrappers
+  tensorTable.setAxesDataStatus(false, false);
+  auto axes_statuses1 = tensorTable.getAxesDataStatus();
+  for (auto& axis_status : axes_statuses1) {
+    BOOST_CHECK(!axis_status.second.first);
+    BOOST_CHECK(!axis_status.second.second);
+  }
+  tensorTable.syncAxesHAndDData(device);
+  auto axes_statuses2 = tensorTable.getAxesDataStatus();
+  for (auto& axis_status : axes_statuses2) {
+    BOOST_CHECK(axis_status.second.first);
+    BOOST_CHECK(axis_status.second.second);
+  }
+}
+
 BOOST_AUTO_TEST_CASE(zeroIndicesViewAndResetIndicesViewDefaultDevice)
 {
   // setup the table

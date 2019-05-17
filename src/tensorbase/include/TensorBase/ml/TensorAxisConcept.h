@@ -32,6 +32,11 @@ namespace TensorBase
     virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, DeviceT& device) = 0;
     virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, DeviceT& device) = 0;
 
+    // All DeviceT combos of tensorDataWrappers
+    virtual bool syncHAndDData(DeviceT& device) = 0;
+    virtual void setDataStatus(const bool& h_data_updated, const bool& d_data_updated) = 0;
+    virtual std::pair<bool, bool> getDataStatus() = 0;
+
   };
 
   /// The erasure wrapper around the Tensor Axis interface
@@ -74,6 +79,10 @@ namespace TensorBase
     void appendLabelsToAxis(const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, DeviceT& device) {
       tensor_axis_->appendLabelsToAxisConcept(labels, device);
     };
+
+    bool syncHAndDData(DeviceT& device) { return  tensor_axis_->syncHAndDData(device); };  
+    void setDataStatus(const bool& h_data_updated, const bool& d_data_updated) { tensor_axis_->setDataStatus(h_data_updated, d_data_updated); } 
+    std::pair<bool, bool> getDataStatus() { return  tensor_axis_->getDataStatus(); };  
   };
 };
 #endif //TENSORBASE_TENSORAXISCONCEPT_H

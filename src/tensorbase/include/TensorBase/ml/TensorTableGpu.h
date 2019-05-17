@@ -198,22 +198,22 @@ namespace TensorBase
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> tensor_select_values(tensor_select->getDataPointer().get(), tensor_select->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_select_values(indices_select_tmp.getDataPointer().get(), indices_select_tmp.getDimensions());
     if (comparitor == logicalComparitors::logicalComparitor::NOT_EQUAL_TO) {
-      indices_select_values.device(device) = ((tensor_select_values != values_bcast).select(tensor_select_values.constant(1), tensor_select_values.constant(0))).cast<int>();
+      indices_select_values.device(device) = ((tensor_select_values != values_bcast).select(indices_select_values.constant(1), indices_select_values.constant(0)));
     }
     else if (comparitor == logicalComparitors::logicalComparitor::EQUAL_TO) {
-      indices_select_values.device(device) = ((tensor_select_values == values_bcast).select(tensor_select_values.constant(1), tensor_select_values.constant(0))).cast<int>();
+      indices_select_values.device(device) = ((tensor_select_values == values_bcast).select(indices_select_values.constant(1), indices_select_values.constant(0)));
     }
     else if (comparitor == logicalComparitors::logicalComparitor::LESS_THAN) {
-      indices_select_values.device(device) = ((tensor_select_values < values_bcast).select(tensor_select_values.constant(1), tensor_select_values.constant(0))).cast<int>();
+      indices_select_values.device(device) = ((tensor_select_values < values_bcast).select(indices_select_values.constant(1), indices_select_values.constant(0)));
     }
     else if (comparitor == logicalComparitors::logicalComparitor::LESS_THAN_OR_EQUAL_TO) {
-      indices_select_values.device(device) = ((tensor_select_values <= values_bcast).select(tensor_select_values.constant(1), tensor_select_values.constant(0))).cast<int>();
+      indices_select_values.device(device) = ((tensor_select_values <= values_bcast).select(indices_select_values.constant(1), indices_select_values.constant(0)));
     }
     else if (comparitor == logicalComparitors::logicalComparitor::GREATER_THAN) {
-      indices_select_values.device(device) = ((tensor_select_values > values_bcast).select(tensor_select_values.constant(1), tensor_select_values.constant(0))).cast<int>();
+      indices_select_values.device(device) = ((tensor_select_values > values_bcast).select(indices_select_values.constant(1), indices_select_values.constant(0)));
     }
     else if (comparitor == logicalComparitors::logicalComparitor::GREATER_THAN_OR_EQUAL_TO) {
-      indices_select_values.device(device) = ((tensor_select_values >= values_bcast).select(tensor_select_values.constant(1), tensor_select_values.constant(0))).cast<int>();
+      indices_select_values.device(device) = ((tensor_select_values >= values_bcast).select(indices_select_values.constant(1), indices_select_values.constant(0)));
     }
     else {
       std::cout << "The comparitor was not recognized.  No comparison will be performed." << std::endl;
@@ -252,8 +252,7 @@ namespace TensorBase
 
       // normalize and broadcast the indices across the tensor
       Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_view_reshape(this->indices_view_.at(axis_to_index.first)->getDataPointer().get(), indices_reshape_dimensions);
-      auto indices_view_norm = (indices_view_reshape.cast<float>() / (indices_view_reshape.cast<float>() + indices_view_reshape.cast<float>().constant(1e-12))).cast<int>();
-      auto indices_view_bcast_values = indices_view_norm.broadcast(indices_bcast_dimensions);
+      auto indices_view_bcast_values = indices_view_reshape.clip(0,1).broadcast(indices_bcast_dimensions);
 
       // update the indices_select_values
       indices_select_values.device(device) = indices_select_values * indices_view_bcast_values;
