@@ -250,7 +250,7 @@ BOOST_AUTO_TEST_CASE(broadcastSelectIndicesViewDefaultDevice)
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
-        indices_test(i, j, k) = i;
+        indices_test(i, j, k) = i + 1;
       }
     }
   }

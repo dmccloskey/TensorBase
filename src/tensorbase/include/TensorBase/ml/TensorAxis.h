@@ -45,8 +45,6 @@ namespace TensorBase
     @param[in] indices The indices to use for selection
     @param[in] device
     */
-    template<typename D>
-    void deleteFromAxisConcept(const std::shared_ptr<TensorData<int, D, 1>>& indices, D& device);
     virtual void deleteFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) = 0;
 
     /*
@@ -55,8 +53,8 @@ namespace TensorBase
     @param[in] labels The new labels to insert
     @param[in] device
     */
-    template<typename T, typename D>
-    void appendLabelsToAxisConcept(const std::shared_ptr<TensorData<T, D, 2>>& labels, D& device);
+    template<typename T>
+    void appendLabelsToAxisConcept(const std::shared_ptr<TensorData<T, DeviceT, 2>>& labels, DeviceT& device);
     virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& labels, DeviceT& device) = 0;
 
   protected:
@@ -92,23 +90,12 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT>
-  template<typename D>
-  void TensorAxis<TensorT, DeviceT>::deleteFromAxisConcept(const std::shared_ptr<TensorData<int, D, 1>>& indices, D& device) {
-    if (std::is_same<D, DeviceT>::value) {
-      std::shared_ptr<TensorData<int, DeviceT, 1>> indices_copy = indices;
-      auto device_copy = device;
-      deleteFromAxis(indices_copy, device_copy);
-    }
-  }
-
-  template<typename TensorT, typename DeviceT>
-  template<typename T, typename D>
-  inline void TensorAxis<TensorT, DeviceT>::appendLabelsToAxisConcept(const std::shared_ptr<TensorData<T, D, 2>>& labels, D & device)
+  template<typename T>
+  inline void TensorAxis<TensorT, DeviceT>::appendLabelsToAxisConcept(const std::shared_ptr<TensorData<T, DeviceT, 2>>& labels, DeviceT & device)
   {
-    if (std::is_same<T, TensorT>::value && std::is_same<D, DeviceT>::value) {
-      std::shared_ptr<TensorData<TensorT, DeviceT, 2>> labels_copy = labels;
-      auto device_copy = device;
-      appendLabelsToAxis(labels_copy, device_copy);
+    if (std::is_same<T, TensorT>::value) {
+      auto labels_copy = std::reinterpret_pointer_cast<TensorData<TensorT, DeviceT, 2>>(labels);
+      appendLabelsToAxis(labels_copy, device);
     }
   }
 
