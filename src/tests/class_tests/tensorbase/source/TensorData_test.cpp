@@ -567,4 +567,26 @@ BOOST_AUTO_TEST_CASE(syncHAndDCpu)
   BOOST_CHECK(tensordata.getDataStatus().second);
 }
 
+BOOST_AUTO_TEST_CASE(castTypeCpu)
+{
+  Eigen::Tensor<float, 3> ones(2, 3, 4);
+  ones.setConstant(1);
+
+  // different cast types
+  TensorDataCpu<float, 3> td_cpu_float_test(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+  td_cpu_float_test.setData(ones);
+
+  TensorDataCpu<float, 3> td_cpu_float = td_cpu_float_test;
+  BOOST_CHECK(td_cpu_float == td_cpu_float_test);
+  BOOST_CHECK_EQUAL(td_cpu_float.getData()(0, 0, 0), td_cpu_float_test.getData()(0, 0, 0));
+
+  TensorDataDefaultDevice<float, 3> td_dd_float(td_cpu_float_test);
+  BOOST_CHECK_NE(td_dd_float.getDeviceName(), td_cpu_float_test.getDeviceName());
+  BOOST_CHECK_EQUAL(td_dd_float.getData()(0, 0, 0), td_cpu_float_test.getData()(0, 0, 0));
+
+  TensorDataCpu<int, 3> td_cpu_int = td_cpu_float_test;
+  BOOST_CHECK(td_cpu_float == td_cpu_float_test);
+  BOOST_CHECK_NE(td_cpu_int.getData()(0, 0, 0), td_cpu_float_test.getData()(0, 0, 0));
+}
+
 BOOST_AUTO_TEST_SUITE_END()

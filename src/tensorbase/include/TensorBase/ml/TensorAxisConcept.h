@@ -69,11 +69,11 @@ namespace TensorBase
     };
 
     void deleteFromAxis(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, Eigen::DefaultDevice& device) {
-      tensor_axis_->deleteFromAxis(indices, device);
+      tensor_axis_->deleteFromAxisConcept(indices, device);
     };
 #if COMPILE_WITH_CUDA
     void deleteFromAxis(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, Eigen::GpuDevice& device) {
-      tensor_axis_->deleteFromAxis(indices, device);
+      tensor_axis_->deleteFromAxisConcept(indices, device);
     };
 #endif
 

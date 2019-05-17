@@ -16,6 +16,7 @@
 
 namespace TensorBase
 {
+
   /**
     @brief Tensor data base class to handle the underlying memory and resource
       allocation of tensor data
@@ -77,6 +78,17 @@ namespace TensorBase
       return *this;
     }
 
+    template<typename T, typename D>
+    TensorData(const TensorData<T,D,TDim>& other) {
+      h_data_ = std::reinterpret_pointer_cast<TensorT>(other.h_data_);
+      d_data_ = std::reinterpret_pointer_cast<TensorT>(other.d_data_);
+      h_data_updated_ = other.h_data_updated_;
+      d_data_updated_ = other.d_data_updated_;
+      dimensions_ = other.dimensions_;
+      tensor_size_ = other.tensor_size_;
+      device_name_ = typeid(DeviceT).name();
+    };
+
     virtual std::shared_ptr<TensorData> copy(DeviceT& device) = 0; ///< returns a copy of the TensorData
 
     virtual void select(std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices, DeviceT& device) = 0; ///< return a selection of the TensorData
@@ -109,7 +121,7 @@ namespace TensorBase
     void setDataStatus(const bool& h_data_updated, const bool& d_data_updated) { h_data_updated_ = h_data_updated; d_data_updated_ = d_data_updated; } ///< Set the status of the host and device data
     std::pair<bool, bool> getDataStatus() { return std::make_pair(h_data_updated_, d_data_updated_); };   ///< Get the status of the host and device data
 
-  protected:
+  //protected:
     std::shared_ptr<TensorT> h_data_ = nullptr;  ///< Shared pointer implementation of the host tensor data
     std::shared_ptr<TensorT> d_data_ = nullptr;  ///< Shared pointer implementation of the device (GPU) tensor data
 
