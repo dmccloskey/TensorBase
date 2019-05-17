@@ -436,7 +436,6 @@ void test_selectTensorIndicesGpu()
   tensorTable.syncIndicesHAndDData(device);
   tensorTable.syncIndicesViewHAndDData(device);
   tensorTable.syncAxesHAndDData(device);
-  tensorTable.syncHAndDData(device);
 
   // test inequality
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 3>> indices_select;
@@ -571,7 +570,7 @@ void test_applyIndicesSelectToIndicesViewGpu()
   // sync the tensorTable
   tensorTable.syncIndicesHAndDData(device);
   tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncHAndDData(device);
+  tensorTable.syncAxesHAndDData(device);
 
   // setup the indices select
   Eigen::Tensor<int, 3> indices_select_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
@@ -794,6 +793,12 @@ void test_sliceTensorForSortGpu()
   }
   tensorTable.getData()->setData(tensor_values);
 
+  // sync the tensorTable
+  tensorTable.syncIndicesHAndDData(device);
+  tensorTable.syncIndicesViewHAndDData(device);
+  tensorTable.syncAxesHAndDData(device);
+  tensorTable.syncHAndDData(device);
+
   // test sliceTensorForSort for axis 2
   std::shared_ptr<TensorData<float, Eigen::GpuDevice, 1>> tensor_sort;
   tensorTable.sliceTensorDataForSort(tensor_sort, "1", 1, "2", device);
@@ -851,6 +856,12 @@ void test_sortIndicesViewDataGpu()
   }
   tensorTable.getData()->setData(tensor_values);
 
+  // sync the tensorTable
+  tensorTable.syncIndicesHAndDData(device);
+  tensorTable.syncIndicesViewHAndDData(device);
+  tensorTable.syncAxesHAndDData(device);
+  tensorTable.syncHAndDData(device);
+
   // test sort ASC
   tensorTable.sortIndicesView("1", 0, 1, sortOrder::ASC, device);
   for (int i = 0; i < nlabels; ++i) {
@@ -895,6 +906,11 @@ void test_makeSelectIndicesFromIndicesViewGpu()
   tensorTable.addTensorAxis(std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("2", dimensions2, labels2)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("3", dimensions3, labels3)));
   tensorTable.setAxes();
+
+  // sync the tensorTable
+  tensorTable.syncIndicesHAndDData(device);
+  tensorTable.syncIndicesViewHAndDData(device);
+  tensorTable.syncAxesHAndDData(device);
 
   // Test null
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 3>> indices_select;
@@ -980,6 +996,12 @@ void test_getSelectTensorDataGpu()
   }
   tensorTable.getData()->setData(tensor_values);
 
+  // sync the tensorTable
+  tensorTable.syncIndicesHAndDData(device);
+  tensorTable.syncIndicesViewHAndDData(device);
+  tensorTable.syncAxesHAndDData(device);
+  tensorTable.syncHAndDData(device);
+
   // select label 1 from axis 1
   TensorDataGpu<int, 1> select_labels(Eigen::array<Eigen::Index, 1>({ 1 }));
   Eigen::Tensor<int, 1> select_labels_values(Eigen::array<Eigen::Index, 1>({ 1 }));
@@ -1062,6 +1084,12 @@ void test_selectTensorDataGpu()
     }
   }
   tensorTable.getData()->setData(tensor_values);
+
+  // sync the tensorTable
+  tensorTable.syncIndicesHAndDData(device);
+  tensorTable.syncIndicesViewHAndDData(device);
+  tensorTable.syncAxesHAndDData(device);
+  tensorTable.syncHAndDData(device);
 
   // select label 1 from axis 1
   TensorDataGpu<int, 1> select_labels(Eigen::array<Eigen::Index, 1>({ 1 }));
@@ -1152,6 +1180,11 @@ void test_makeSortIndicesViewFromIndicesViewGpu()
   tensorTable.addTensorAxis(std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("3", dimensions3, labels3)));
   tensorTable.setAxes();
 
+  // sync the tensorTable
+  tensorTable.syncIndicesHAndDData(device);
+  tensorTable.syncIndicesViewHAndDData(device);
+  tensorTable.syncAxesHAndDData(device);
+
   // make the expected tensor indices
   Eigen::Tensor<int, 3> indices_test(nlabels, nlabels, nlabels);
   for (int i = 0; i < nlabels; ++i) {
@@ -1213,6 +1246,12 @@ void test_sortTensorDataGpu()
     }
   }
   tensorTable.getData()->setData(tensor_values);
+
+  // sync the tensorTable
+  tensorTable.syncIndicesHAndDData(device);
+  tensorTable.syncIndicesViewHAndDData(device);
+  tensorTable.syncAxesHAndDData(device);
+  tensorTable.syncHAndDData(device);
 
   // sort each of the axes
   tensorTable.sortIndicesView("1", 0, 0, sortOrder::DESC, device);
