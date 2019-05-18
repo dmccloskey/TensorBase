@@ -37,6 +37,8 @@ namespace TensorBase
     virtual void setDataStatus(const bool& h_data_updated, const bool& d_data_updated) = 0;
     virtual std::pair<bool, bool> getDataStatus() = 0;
 
+    // All DeviceT combos of `sortLabels`
+    virtual void sortLabels(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) = 0;
   };
 
   /// The erasure wrapper around the Tensor Axis interface
@@ -83,6 +85,10 @@ namespace TensorBase
     bool syncHAndDData(DeviceT& device) { return  tensor_axis_->syncHAndDData(device); };  
     void setDataStatus(const bool& h_data_updated, const bool& d_data_updated) { tensor_axis_->setDataStatus(h_data_updated, d_data_updated); } 
     std::pair<bool, bool> getDataStatus() { return  tensor_axis_->getDataStatus(); };  
+
+    void sortLabels(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) {
+      tensor_axis_->sortLabels(indices, device);
+    };
   };
 };
 #endif //TENSORBASE_TENSORAXISCONCEPT_H

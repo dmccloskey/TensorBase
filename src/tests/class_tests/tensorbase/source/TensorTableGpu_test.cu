@@ -1277,9 +1277,12 @@ void test_sortTensorDataGpu()
   labels1.setValues({ {0, 1, 2} });
   labels2.setValues({ {0, 1, 2} });
   labels3.setValues({ {0, 1, 2} });
-  tensorTable.addTensorAxis(std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("1", dimensions1, labels1)));
-  tensorTable.addTensorAxis(std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("2", dimensions2, labels2)));
-  tensorTable.addTensorAxis(std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("3", dimensions3, labels3)));
+  auto axis_1_ptr = std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("1", dimensions1, labels1));
+  auto axis_2_ptr = std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("2", dimensions2, labels2));
+  auto axis_3_ptr = std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("3", dimensions3, labels3));
+  tensorTable.addTensorAxis(axis_1_ptr);
+  tensorTable.addTensorAxis(axis_2_ptr);
+  tensorTable.addTensorAxis(axis_3_ptr);
   tensorTable.setAxes();
 
   // setup the tensor data
@@ -1327,6 +1330,9 @@ void test_sortTensorDataGpu()
     assert(tensorTable.getIndicesView().at("1")->getData()(i) == i + 1);
     assert(tensorTable.getIndicesView().at("2")->getData()(i) == i + 1);
     assert(tensorTable.getIndicesView().at("3")->getData()(i) == i + 1);
+    assert(axis_1_ptr->getLabels()(0, i) == i);
+    assert(axis_2_ptr->getLabels()(0, i) == nlabels - i - 1);
+    assert(axis_3_ptr->getLabels()(0, i) == nlabels - i - 1);
   }
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {

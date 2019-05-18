@@ -1093,9 +1093,12 @@ BOOST_AUTO_TEST_CASE(sortTensorDataDefaultDevice)
   labels1.setValues({ {0, 1, 2} });
   labels2.setValues({ {0, 1, 2} });
   labels3.setValues({ {0, 1, 2} });
-  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
-  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
-  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3)));
+  auto axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1));
+  auto axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2));
+  auto axis_3_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3));
+  tensorTable.addTensorAxis(axis_1_ptr);
+  tensorTable.addTensorAxis(axis_2_ptr);
+  tensorTable.addTensorAxis(axis_3_ptr);
   tensorTable.setAxes();
 
   // setup the tensor data
@@ -1131,6 +1134,9 @@ BOOST_AUTO_TEST_CASE(sortTensorDataDefaultDevice)
     BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("3")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(axis_1_ptr->getLabels()(0, i), i);
+    BOOST_CHECK_EQUAL(axis_2_ptr->getLabels()(0, i), nlabels - i - 1);
+    BOOST_CHECK_EQUAL(axis_3_ptr->getLabels()(0, i), nlabels - i - 1);
   }
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {
