@@ -883,8 +883,16 @@ void test_sortIndicesViewDataGpu()
   tensorTable.syncAxesHAndDData(device);
   tensorTable.syncHAndDData(device);
 
+  // set up the selection labels
+  Eigen::Tensor<int, 1> select_labels_values(1);
+  select_labels_values(0) = 1;
+  TensorDataGpu<int, 1> select_labels(Eigen::array<Eigen::Index, 1>({ 1 }));
+  select_labels.setData(select_labels_values);
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> select_labels_ptr = std::make_shared<TensorDataGpu<int, 1>>(select_labels);
+  select_labels_ptr->syncHAndDData(device);
+
   // test sort ASC
-  tensorTable.sortIndicesView("1", 0, 1, sortOrder::ASC, device);
+  tensorTable.sortIndicesView("1", 0, select_labels_ptr, sortOrder::ASC, device);
   tensorTable.syncIndicesViewHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < nlabels; ++i) {
@@ -894,8 +902,8 @@ void test_sortIndicesViewDataGpu()
   }
 
   // test sort DESC
-  tensorTable.setIndicesDataStatus(false, true);
-  tensorTable.sortIndicesView("1", 0, 1, sortOrder::DESC, device);
+  tensorTable.setIndicesViewDataStatus(false, true);
+  tensorTable.sortIndicesView("1", 0, select_labels_ptr, sortOrder::DESC, device);
   tensorTable.syncIndicesViewHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < nlabels; ++i) {
@@ -1074,6 +1082,7 @@ void test_getSelectTensorDataGpu()
   tensor_select_ptr->syncHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(tensor_select_ptr->getDimensions() == select_dimensions);
+  std::cout << tensor_select_ptr->getData().chip(0, 0) << std::endl;
   for (int j = 0; j < nlabels; ++j) {
     for (int k = 0; k < nlabels; ++k) {
       assert(tensor_select_ptr->getData()(0, j, k) == tensor_select_test(0, j, k), 1e-3);
@@ -1297,8 +1306,16 @@ void test_sortTensorDataGpu()
   tensorTable.syncAxesHAndDData(device);
   tensorTable.syncHAndDData(device);
 
+  // set up the selection labels
+  Eigen::Tensor<int, 1> select_labels_values(1);
+  select_labels_values(0) = 0;
+  TensorDataGpu<int, 1> select_labels(Eigen::array<Eigen::Index, 1>({ 1 }));
+  select_labels.setData(select_labels_values);
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> select_labels_ptr = std::make_shared<TensorDataGpu<int, 1>>(select_labels);
+  select_labels_ptr->syncHAndDData(device);
+
   // sort each of the axes
-  tensorTable.sortIndicesView("1", 0, 0, sortOrder::DESC, device);
+  tensorTable.sortIndicesView("1", 0, select_labels_ptr, sortOrder::DESC, device);
 
   // make the expected sorted tensor
   float sorted_data[] = { 24, 25, 26, 21, 22, 23, 18, 19, 20, 15, 16, 17, 12, 13, 14, 9, 10, 11, 6, 7, 8, 3, 4, 5, 0, 1, 2 };

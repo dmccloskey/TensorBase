@@ -34,6 +34,7 @@ namespace TensorBase
     // Sort methods
     void sliceTensorDataForSort(std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 1>>& tensor_sort, const std::string& axis_name_sort, const int& label_index_sort, const std::string& axis_name_apply, Eigen::GpuDevice& device) override;
     void makeSortIndicesViewFromIndicesView(std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices_sort, Eigen::GpuDevice& device) override;
+    int getFirstIndexFromIndicesView(const std::string& axis_name, Eigen::GpuDevice& device) override;
   };
 
   template<typename TensorT, int TDim>
@@ -275,21 +276,22 @@ namespace TensorBase
     Eigen::array<Eigen::Index, TDim> select_dimensions;
     for (const auto& axis_to_name : this->axes_to_dims_) {
       dim_size.setDataStatus(false, true);
+
       // calculate the sum
       Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_values(this->indices_view_.at(axis_to_name.first)->getDataPointer().get(), this->indices_view_.at(axis_to_name.first)->getDimensions());
-      auto indices_view_norm = (indices_view_values.cast<float>() / (indices_view_values.cast<float>() + indices_view_values.cast<float>().constant(1e-12))).cast<int>();
-      dim_size_value.device(device) = indices_view_norm.sum();
+      dim_size_value.device(device) = indices_view_values.clip(0,1).sum();
 
       // update the dimensions
       dim_size.syncHAndDData(device);
       assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
-      select_dimensions.at(axis_to_name.second) = dim_size_value(0);
+      select_dimensions.at(axis_to_name.second) = dim_size.getData()(0);
     }
 
     // allocate memory for the selected tensor
     TensorDataGpu<TensorT, TDim> tensor_select_tmp(select_dimensions);
     tensor_select_tmp.setData();
     tensor_select = std::make_shared<TensorDataGpu<TensorT, TDim>>(tensor_select_tmp);
+    tensor_select->syncHAndDData(device);
 
     // select the tensor
     this->data_->select(tensor_select, indices_select, device);
@@ -373,6 +375,12 @@ namespace TensorBase
     indices_sort_values.device(device) += indices_sort_values.constant(1);
     // move over the results
     indices_sort = std::make_shared<TensorDataGpu<int, TDim>>(indices_sort_tmp);
+  }
+  template<typename TensorT, int TDim>
+  inline int TensorTableGpu<TensorT, TDim>::getFirstIndexFromIndicesView(const std::string & axis_name, Eigen::GpuDevice & device)
+  {
+    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+    return this->indices_view_.at(axis_name)->getData()(0); // the first occurance of the label
   }
 };
 #endif

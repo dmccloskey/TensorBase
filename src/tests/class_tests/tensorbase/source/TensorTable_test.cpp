@@ -771,8 +771,15 @@ BOOST_AUTO_TEST_CASE(sortIndicesViewDataDefaultDevice)
   }
   tensorTable.getData()->setData(tensor_values);
 
+  // set up the selection labels
+  Eigen::Tensor<int, 1> select_labels_values(1);
+  select_labels_values(0) = 1;
+  TensorDataDefaultDevice<int, 1> select_labels(Eigen::array<Eigen::Index, 1>({ 1 }));
+  select_labels.setData(select_labels_values);
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> select_labels_ptr = std::make_shared<TensorDataDefaultDevice<int, 1>>(select_labels);
+
   // test sort ASC
-  tensorTable.sortIndicesView("1", 0, 1, sortOrder::ASC, device);
+  tensorTable.sortIndicesView("1", 0, select_labels_ptr, sortOrder::ASC, device);
   for (int i = 0; i < nlabels; ++i) {
     BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(i), i + 1);
@@ -780,7 +787,7 @@ BOOST_AUTO_TEST_CASE(sortIndicesViewDataDefaultDevice)
   }
 
   // test sort DESC
-  tensorTable.sortIndicesView("1", 0, 1, sortOrder::DESC, device);
+  tensorTable.sortIndicesView("1", 0, select_labels_ptr, sortOrder::DESC, device);
   for (int i = 0; i < nlabels; ++i) {
     BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(i), nlabels - i);
@@ -1104,8 +1111,15 @@ BOOST_AUTO_TEST_CASE(sortTensorDataDefaultDevice)
   }
   tensorTable.getData()->setData(tensor_values);
 
+  // set up the selection labels
+  Eigen::Tensor<int, 1> select_labels_values(1);
+  select_labels_values(0) = 0;
+  TensorDataDefaultDevice<int, 1> select_labels(Eigen::array<Eigen::Index, 1>({ 1 }));
+  select_labels.setData(select_labels_values);
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> select_labels_ptr = std::make_shared<TensorDataDefaultDevice<int, 1>>(select_labels);
+
   // sort each of the axes
-  tensorTable.sortIndicesView("1", 0, 0, sortOrder::DESC, device);
+  tensorTable.sortIndicesView("1", 0, select_labels_ptr, sortOrder::DESC, device);
 
   // make the expected sorted tensor
   float sorted_data[] = { 24, 25, 26, 21, 22, 23, 18, 19, 20, 15, 16, 17, 12, 13, 14, 9, 10, 11, 6, 7, 8, 3, 4, 5, 0, 1, 2 };
