@@ -748,25 +748,21 @@ void test_whereIndicesViewDataGpu()
     logicalContinuators::logicalContinuator::OR, logicalContinuators::logicalContinuator::AND, device);
   tensorTable.syncIndicesViewHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  std::cout << "indices view 1: " << tensorTable.getIndicesView().at("1")->getData() << std::endl;
-  std::cout << "indices view 2: " << tensorTable.getIndicesView().at("2")->getData() << std::endl;
-  std::cout << "indices view 3: " << tensorTable.getIndicesView().at("3")->getData() << std::endl;
   for (int i = 0; i < nlabels; ++i) {
     // indices view 1
     assert(tensorTable.getIndicesView().at("1")->getData()(i) == i + 1); // Unchanged
 
-    // FIXME
-    //// indices view 2
-    //if (i == 2)
-    //  assert(tensorTable.getIndicesView().at("2")->getData()(i) == i + 1);
-    //else
-    //  assert(tensorTable.getIndicesView().at("2")->getData()(i) == 0);
+    // indices view 2
+    if (i == 2) // i==0?
+      assert(tensorTable.getIndicesView().at("2")->getData()(i) == i + 1);
+    else
+      assert(tensorTable.getIndicesView().at("2")->getData()(i) == 0);
 
-    //// indices view 3
-    //if (i == 1)
-    //  assert(tensorTable.getIndicesView().at("3")->getData()(i) == i + 1);
-    //else
-    //  assert(tensorTable.getIndicesView().at("3")->getData()(i) == 0);
+    // indices view 3
+    if (i == 1) // i==3?
+      assert(tensorTable.getIndicesView().at("3")->getData()(i) == i + 1);
+    else
+      assert(tensorTable.getIndicesView().at("3")->getData()(i) == 0);
   }
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
@@ -1082,7 +1078,6 @@ void test_getSelectTensorDataGpu()
   tensor_select_ptr->syncHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(tensor_select_ptr->getDimensions() == select_dimensions);
-  std::cout << tensor_select_ptr->getData().chip(0, 0) << std::endl;
   for (int j = 0; j < nlabels; ++j) {
     for (int k = 0; k < nlabels; ++k) {
       assert(tensor_select_ptr->getData()(0, j, k) == tensor_select_test(0, j, k), 1e-3);
