@@ -57,11 +57,15 @@ BOOST_AUTO_TEST_CASE(destructorSortClauseDefaultDevice)
 
 BOOST_AUTO_TEST_CASE(gettersAndSettersSortClauseDefaultDevice)
 {
-  SortClause<int, Eigen::DefaultDevice> order_by_clause("1", "2", "3", 1, sortOrder::order::ASC);
+  std::shared_ptr<TensorDataDefaultDevice<int, 1>> select_labels = std::make_shared<TensorDataDefaultDevice<int, 1>>(Eigen::array<Eigen::Index, 1>({ 1 }));
+  Eigen::Tensor<int, 1> labels_values(1);
+  labels_values.setValues({ 1 });
+  select_labels->setData(labels_values);
+  SortClause<int, Eigen::DefaultDevice> order_by_clause("1", "2", "3", select_labels, sortOrder::order::ASC);
   BOOST_CHECK_EQUAL(order_by_clause.table_name, "1");
   BOOST_CHECK_EQUAL(order_by_clause.axis_name, "2");
   BOOST_CHECK_EQUAL(order_by_clause.dimension_name, "3");
-  BOOST_CHECK_EQUAL(order_by_clause.label, 1);
+  BOOST_CHECK_EQUAL(order_by_clause.labels->getData()(0), 1);
   BOOST_CHECK_EQUAL(order_by_clause.order_by, sortOrder::ASC);
 }
 

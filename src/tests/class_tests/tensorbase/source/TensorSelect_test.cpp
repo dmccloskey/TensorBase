@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE(selectClauseDefaultDevice)
   std::shared_ptr<TensorTableDefaultDevice<int, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(tensorTable2);
 
   // Set up the collection
-  TensorCollection collection_1;
+  TensorCollection<Eigen::DefaultDevice> collection_1;
   collection_1.addTensorTable(tensorTable1_ptr);
   collection_1.addTensorTable(tensorTable2_ptr);
 
@@ -155,7 +155,7 @@ BOOST_AUTO_TEST_CASE(whereClauseDefaultDevice)
   std::shared_ptr<TensorTableDefaultDevice<double, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<double, 2>>(tensorTable2);
 
   // Set up the collection
-  TensorCollection collection_1;
+  TensorCollection<Eigen::DefaultDevice> collection_1;
   collection_1.addTensorTable(tensorTable1_ptr);
   collection_1.addTensorTable(tensorTable2_ptr);
 
@@ -285,13 +285,22 @@ BOOST_AUTO_TEST_CASE(sortClauseDefaultDevice)
   std::shared_ptr<TensorTableDefaultDevice<double, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<double, 2>>(tensorTable2);
 
   // Set up the collection
-  TensorCollection collection_1;
+  TensorCollection<Eigen::DefaultDevice> collection_1;
   collection_1.addTensorTable(tensorTable1_ptr);
   collection_1.addTensorTable(tensorTable2_ptr);
 
   // setup the sort clauses
-  SortClause<int, Eigen::DefaultDevice> sort_clause_1("1", "2", "y", 1, sortOrder::order::DESC);
-  SortClause<int, Eigen::DefaultDevice> sort_clause_2("2", "1", "x", 0, sortOrder::order::DESC);
+  std::shared_ptr<TensorDataDefaultDevice<int, 1>> select_labels1 = std::make_shared<TensorDataDefaultDevice<int, 1>>(Eigen::array<Eigen::Index, 1>({ 1 }));
+  Eigen::Tensor<int, 1> labels_values1(1);
+  labels_values1.setValues({ 1 });
+  select_labels1->setData(labels_values1);
+  SortClause<int, Eigen::DefaultDevice> sort_clause_1("1", "2", "y", select_labels1, sortOrder::order::DESC);
+
+  std::shared_ptr<TensorDataDefaultDevice<int, 1>> select_labels2 = std::make_shared<TensorDataDefaultDevice<int, 1>>(Eigen::array<Eigen::Index, 1>({ 1 }));
+  Eigen::Tensor<int, 1> labels_values2(1);
+  labels_values2.setValues({ 0 });
+  select_labels2->setData(labels_values2);
+  SortClause<int, Eigen::DefaultDevice> sort_clause_2("2", "1", "x", select_labels2, sortOrder::order::DESC);
 
   // Test the expected view indices after the select command
   TensorSelect tensorSelect;

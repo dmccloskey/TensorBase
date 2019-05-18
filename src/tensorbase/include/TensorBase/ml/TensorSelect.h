@@ -23,14 +23,14 @@ namespace TensorBase
       that have been modified through the `select` and `where` clauses
     */
     template<typename DeviceT>
-    void applySelect(TensorCollection& tensor_collection, const std::vector<std::string>& table_names, DeviceT& device);
+    void applySelect(TensorCollection<DeviceT>& tensor_collection, const std::vector<std::string>& table_names, DeviceT& device);
 
     /*
     @brief sort the selected Tables in the Tensor according to the ordering of the indices view
       that have been modified through the `sort` clause
     */
     template<typename DeviceT>
-    void applySort(TensorCollection& tensor_collection, const std::vector<std::string>& table_names, DeviceT& device);
+    void applySort(TensorCollection<DeviceT>& tensor_collection, const std::vector<std::string>& table_names, DeviceT& device);
 
     /* @brief Select the table/axis/dimension/labels that will be returned in the view.
 
@@ -41,37 +41,37 @@ namespace TensorBase
         be returned
     */
     template<typename LabelsT, typename DeviceT>
-    void selectClause(TensorCollection& tensor_collection, SelectClause<LabelsT, DeviceT>& select_clause, DeviceT& device);
+    void selectClause(TensorCollection<DeviceT>& tensor_collection, SelectClause<LabelsT, DeviceT>& select_clause, DeviceT& device);
 
     /// TODO Reduce the table by a reduction function
     template<typename DeviceT>
-    void reductionClause(TensorCollection& tensor_collection, ReductionClause<DeviceT>& reduction_clause, DeviceT& device);
+    void reductionClause(TensorCollection<DeviceT>& tensor_collection, ReductionClause<DeviceT>& reduction_clause, DeviceT& device);
 
     /// Select the table/axis/dimension/labels by a boolean expression
     template<typename LabelsT, typename TensorT, typename DeviceT>
-    void whereClause(TensorCollection& tensor_collection, WhereClause<LabelsT, TensorT, DeviceT>& where_clause, DeviceT& device);
+    void whereClause(TensorCollection<DeviceT>& tensor_collection, WhereClause<LabelsT, TensorT, DeviceT>& where_clause, DeviceT& device);
 
     /// Order the selected table/axis/dimension/labels
     template<typename LabelsT, typename DeviceT>
-    void sortClause(TensorCollection& tensor_collection, SortClause<LabelsT, DeviceT>& sort_clause, DeviceT& device);
+    void sortClause(TensorCollection<DeviceT>& tensor_collection, SortClause<LabelsT, DeviceT>& sort_clause, DeviceT& device);
   };
 
   template<typename DeviceT>
-  void TensorSelect::applySelect(TensorCollection& tensor_collection, const std::vector<std::string>& table_names, DeviceT& device) {
+  void TensorSelect::applySelect(TensorCollection<DeviceT>& tensor_collection, const std::vector<std::string>& table_names, DeviceT& device) {
     for (const std::string& table_name : table_names) {
       tensor_collection.tables_.at(table_name)->selectTensorData(device);
     }
   };
 
   template<typename DeviceT>
-  void TensorSelect::applySort(TensorCollection& tensor_collection, const std::vector<std::string>& table_names, DeviceT& device) {
+  void TensorSelect::applySort(TensorCollection<DeviceT>& tensor_collection, const std::vector<std::string>& table_names, DeviceT& device) {
     for (const std::string& table_name : table_names) {
       tensor_collection.tables_.at(table_name)->sortTensorData(device);
     }
   };
 
   template<typename LabelsT, typename DeviceT>
-  void TensorSelect::selectClause(TensorCollection& tensor_collection, SelectClause<LabelsT, DeviceT>& select_clause, DeviceT& device) {
+  void TensorSelect::selectClause(TensorCollection<DeviceT>& tensor_collection, SelectClause<LabelsT, DeviceT>& select_clause, DeviceT& device) {
     // iterate through each table axis
     for (auto& axis : tensor_collection.tables_.at(select_clause.table_name)->getAxes()) {
       if (axis.first == select_clause.axis_name) {
@@ -90,7 +90,7 @@ namespace TensorBase
   };
 
   template<typename LabelsT, typename TensorT, typename DeviceT>
-  void TensorSelect::whereClause(TensorCollection& tensor_collection, WhereClause<LabelsT, TensorT, DeviceT>& where_clause, DeviceT& device) {
+  void TensorSelect::whereClause(TensorCollection<DeviceT>& tensor_collection, WhereClause<LabelsT, TensorT, DeviceT>& where_clause, DeviceT& device) {
     // iterate through each table axis
     for (auto& axis : tensor_collection.tables_.at(where_clause.table_name)->getAxes()) {
       if (axis.first == where_clause.axis_name) {
@@ -109,7 +109,7 @@ namespace TensorBase
   };
 
   template<typename LabelsT, typename DeviceT>
-  void TensorSelect::sortClause(TensorCollection& tensor_collection, SortClause<LabelsT, DeviceT>& sort_clause, DeviceT& device) {
+  void TensorSelect::sortClause(TensorCollection<DeviceT>& tensor_collection, SortClause<LabelsT, DeviceT>& sort_clause, DeviceT& device) {
     // iterate through each table axis
     for (auto& axis : tensor_collection.tables_.at(sort_clause.table_name)->getAxes()) {
       if (axis.first == sort_clause.axis_name) {
@@ -118,7 +118,7 @@ namespace TensorBase
           if (axis.second->getDimensions()(d) == sort_clause.dimension_name) {
             // order the indices view
             tensor_collection.tables_.at(sort_clause.table_name)->sortIndicesView(
-              sort_clause.axis_name, d, sort_clause.label, sort_clause.order_by, device);
+              sort_clause.axis_name, d, sort_clause.labels, sort_clause.order_by, device);
           }
         }
       }

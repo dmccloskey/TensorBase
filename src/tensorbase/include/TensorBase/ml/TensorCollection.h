@@ -12,6 +12,7 @@ namespace TensorBase
   /**
     @brief Class for managing heterogenous Tensors
   */
+  template<typename DeviceT>
   class TensorCollection
   {
   public:
@@ -47,26 +48,30 @@ namespace TensorBase
     */
     bool readShardsFromDisk();
 
-    std::map<std::string, std::shared_ptr<TensorTableConcept>> tables_; ///< tuple of std::shared_ptr TensorTables<TensorT, DeviceT, TDim>
+    std::map<std::string, std::shared_ptr<TensorTableConcept<DeviceT>>> tables_; ///< tuple of std::shared_ptr TensorTables<TensorT, DeviceT, TDim>
   };
 
+  template<typename DeviceT>
   template<typename T>
-  inline void TensorCollection::addTensorTable(const std::shared_ptr<T>& tensor_table)
+  inline void TensorCollection<DeviceT>::addTensorTable(const std::shared_ptr<T>& tensor_table)
   {
-    auto found = tables_.emplace(tensor_table->getName(), std::shared_ptr<TensorTableConcept>(new TensorTableWrapper<T>(tensor_table)));
+    auto found = tables_.emplace(tensor_table->getName(), std::shared_ptr<TensorTableConcept<DeviceT>>(new TensorTableWrapper<T, DeviceT>(tensor_table)));
   }
 
-  inline void TensorCollection::removeTensorTable(const std::string & table_name)
+  template<typename DeviceT>
+  inline void TensorCollection<DeviceT>::removeTensorTable(const std::string & table_name)
   {
     //TODO
   }
 
-  inline void TensorCollection::clear()
+  template<typename DeviceT>
+  inline void TensorCollection<DeviceT>::clear()
   {
     tables_.clear();
   }
 
-  inline std::vector<std::string> TensorBase::TensorCollection::getTableNames() const
+  template<typename DeviceT>
+  inline std::vector<std::string> TensorCollection<DeviceT>::getTableNames() const
   {
     std::vector<std::string> names;
     for (const auto& ttable : tables_) {

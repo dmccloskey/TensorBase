@@ -147,17 +147,13 @@ namespace TensorBase
   [TODO: implement a means to sort by the labels]
   */
   template<typename LabelsT, typename DeviceT>
-  class SortClause {
+  class SortClause: public SelectClause<LabelsT, DeviceT> {
   public:
     SortClause() = default;
     SortClause(const std::string& table_name, const std::string& axis_name, const std::string& dimension_name,
-      const LabelsT& label, const sortOrder::order& order_by) :
-      table_name(table_name), axis_name(axis_name), dimension_name(dimension_name), label(label), order_by(order_by) { };
+      const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& labels, const sortOrder::order& order_by) :
+      SelectClause(table_name, axis_name, dimension_name, labels), order_by(order_by) { };
     ~SortClause() = default;
-    std::string table_name;
-    std::string axis_name;
-    std::string dimension_name;
-    LabelsT label;
     sortOrder::order order_by = sortOrder::ASC;
   };
 };

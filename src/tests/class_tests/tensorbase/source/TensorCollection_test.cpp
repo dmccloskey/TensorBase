@@ -12,17 +12,17 @@ BOOST_AUTO_TEST_SUITE(tensorCollection)
 
 BOOST_AUTO_TEST_CASE(constructor) 
 {
-  TensorCollection* ptr = nullptr;
-  TensorCollection* nullPointer = nullptr;
-	ptr = new TensorCollection();
+  TensorCollection<Eigen::DefaultDevice>* ptr = nullptr;
+  TensorCollection<Eigen::DefaultDevice>* nullPointer = nullptr;
+	ptr = new TensorCollection<Eigen::DefaultDevice>();
   BOOST_CHECK_NE(ptr, nullPointer);
   delete ptr;
 }
 
 BOOST_AUTO_TEST_CASE(destructor)
 {
-  TensorCollection* ptr = nullptr;
-	ptr = new TensorCollection();
+  TensorCollection<Eigen::DefaultDevice>* ptr = nullptr;
+	ptr = new TensorCollection<Eigen::DefaultDevice>();
   delete ptr;
 }
 
@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(gettersAndSetters)
   tensorTable3.setAxes();
   std::shared_ptr<TensorTableDefaultDevice<char, 3>> tensorTable3_ptr = std::make_shared<TensorTableDefaultDevice<char, 3>>(tensorTable3);
 
-  TensorCollection tensorCollection;
+  TensorCollection<Eigen::DefaultDevice> tensorCollection;
   tensorCollection.addTensorTable(tensorTable1_ptr);
   tensorCollection.addTensorTable(tensorTable2_ptr);
   tensorCollection.addTensorTable(tensorTable3_ptr);
