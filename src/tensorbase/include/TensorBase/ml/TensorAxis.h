@@ -205,25 +205,25 @@ namespace TensorBase
   inline void TensorAxisDefaultDevice<TensorT>::makeSortIndices(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& indices_sort, Eigen::DefaultDevice & device)
   {
     // allocate memory for the indices and set the values to zero
-    TensorDataDefaultDevice<int, 2> indices_sort_tmp(Eigen::array<Eigen::Index, 2>({getNDimensions(), getNLabels()}));
+    TensorDataDefaultDevice<int, 2> indices_sort_tmp(Eigen::array<Eigen::Index, 2>({(int)this->getNDimensions(), (int)this->getNLabels()}));
     indices_sort_tmp.setData();
 
     // create a dummy index along the dimension
-    TensorDataDefaultDevice<int, 2> indices_dimension(Eigen::array<Eigen::Index, 2>({ getNDimensions(), 1 }));
+    TensorDataDefaultDevice<int, 1> indices_dimension(Eigen::array<Eigen::Index, 1>({ (int)this->getNDimensions() }));
     indices_dimension.setData();
-    for (int i = 0; i < getNDimensions(); ++i) {
-      indices_dimension.getData()(i, 0) = i + 1;
+    for (int i = 0; i < this->getNDimensions(); ++i) {
+      indices_dimension.getData()(i) = i + 1;
     }
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_dimension_reshape(indices_dimension.getDataPointer().get(), Eigen::array<Eigen::Index, 2>({ (int)this->getNDimensions(), 1 }));
 
     // normalize and broadcast the dummy indices across the tensor    
-    auto indices_dimension_norm = (indices_dimension - indices_dimension.constant(1)) * indices_dimension.constant(getNLabels());
-    auto indices_dimension_bcast_values = indices_dimension_norm.broadcast(Eigen::array<Eigen::Index, 2>({ 1, getNLabels() }));
+    auto indices_dimension_norm = indices_dimension_reshape - indices_dimension_reshape.constant(1);
+    auto indices_dimension_bcast_values = indices_dimension_norm.broadcast(Eigen::array<Eigen::Index, 2>({ 1, (int)this->getNLabels() }));
 
     // normalize and broadcast the indices across the tensor
-    Eigen::array<Eigen::Index, 2>({getNLabels(), 1});
-    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_view_reshape1(indices->getDataPointer().get(), Eigen::array<Eigen::Index, 2>({ 1, getNLabels() }));
-    auto indices_view_norm = indices_view_reshape - indices_view_reshape.constant(1);
-    auto indices_view_bcast_values = indices_view_norm.broadcast(Eigen::array<Eigen::Index, 2>({ geNDimensions(), 1 }));
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_view_reshape(indices->getDataPointer().get(), Eigen::array<Eigen::Index, 2>({ 1, (int)this->getNLabels() }));
+    auto indices_view_norm = (indices_view_reshape - indices_view_reshape.constant(1)) * indices_view_reshape.constant(this->getNDimensions());
+    auto indices_view_bcast_values = indices_view_norm.broadcast(Eigen::array<Eigen::Index, 2>({ (int)this->getNDimensions(), 1 }));
 
     // update the indices_sort_values
     Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_sort_values(indices_sort_tmp.getDataPointer().get(), indices_sort_tmp.getDimensions());
@@ -243,6 +243,8 @@ namespace TensorBase
     void setDimensionsAndLabels(const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) override;
     void deleteFromAxis(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& indices, Eigen::ThreadPoolDevice& device) override;
     void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>>& labels, Eigen::ThreadPoolDevice & device) override;
+    void makeSortIndices(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>>& indices_sort, Eigen::ThreadPoolDevice& device) override;
+
   };
   template<typename TensorT>
   TensorAxisCpu<TensorT>::TensorAxisCpu(const std::string& name, const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) {
@@ -311,6 +313,38 @@ namespace TensorBase
 
     // Move over the new labels
     this->tensor_dimension_labels_ = std::make_shared<TensorDataCpu<TensorT, 2>>(labels_concat);
+  }
+
+  template<typename TensorT>
+  inline void TensorAxisCpu<TensorT>::makeSortIndices(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>>& indices_sort, Eigen::ThreadPoolDevice & device)
+  {
+    // allocate memory for the indices and set the values to zero
+    TensorDataCpu<int, 2> indices_sort_tmp(Eigen::array<Eigen::Index, 2>({ (int)this->getNDimensions(), (int)this->getNLabels() }));
+    indices_sort_tmp.setData();
+
+    // create a dummy index along the dimension
+    TensorDataCpu<int, 1> indices_dimension(Eigen::array<Eigen::Index, 1>({ (int)this->getNDimensions() }));
+    indices_dimension.setData();
+    for (int i = 0; i < this->getNDimensions(); ++i) {
+      indices_dimension.getData()(i) = i + 1;
+    }
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_dimension_reshape(indices_dimension.getDataPointer().get(), Eigen::array<Eigen::Index, 2>({ (int)this->getNDimensions(), 1 }));
+
+    // normalize and broadcast the dummy indices across the tensor    
+    auto indices_dimension_norm = indices_dimension_reshape - indices_dimension_reshape.constant(1);
+    auto indices_dimension_bcast_values = indices_dimension_norm.broadcast(Eigen::array<Eigen::Index, 2>({ 1, (int)this->getNLabels() }));
+
+    // normalize and broadcast the indices across the tensor
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_view_reshape(indices->getDataPointer().get(), Eigen::array<Eigen::Index, 2>({ 1, (int)this->getNLabels() }));
+    auto indices_view_norm = (indices_view_reshape - indices_view_reshape.constant(1)) * indices_view_reshape.constant(this->getNDimensions());
+    auto indices_view_bcast_values = indices_view_norm.broadcast(Eigen::array<Eigen::Index, 2>({ (int)this->getNDimensions(), 1 }));
+
+    // update the indices_sort_values
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_sort_values(indices_sort_tmp.getDataPointer().get(), indices_sort_tmp.getDimensions());
+    indices_sort_values.device(device) = indices_view_bcast_values + indices_dimension_bcast_values + indices_sort_values.constant(1);
+
+    // move over the results
+    indices_sort = std::make_shared<TensorDataCpu<int, 2>>(indices_sort_tmp);
   }
 };
 #endif //TENSORBASE_TENSORAXIS_H

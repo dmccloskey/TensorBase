@@ -236,10 +236,10 @@ BOOST_AUTO_TEST_CASE(makeSortIndicesDefaultDevice)
   Eigen::Tensor<int, 2> indices_sort_test(n_dimensions, n_labels);
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = 0; j < n_labels; ++j) {
-      indices_sort_test(i, j) = i + j * n_labels + 1;
+      indices_sort_test(i, j) = i + j * n_dimensions + 1;
     }
   }
-
+  
   // test making the sort indices
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> indices_sort;
   tensoraxis.makeSortIndices(indices_view_ptr, indices_sort, device);
@@ -248,9 +248,60 @@ BOOST_AUTO_TEST_CASE(makeSortIndicesDefaultDevice)
       BOOST_CHECK_EQUAL(indices_sort->getData()(i,j), indices_sort_test(i, j));
     }
   }
-
 }
 
+BOOST_AUTO_TEST_CASE(sortLabelsDefaultDevice)
+{
+  // Setup the axis
+  int n_dimensions = 2, n_labels = 5;
+  Eigen::Tensor<std::string, 1> dimensions(n_dimensions);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  Eigen::Tensor<int, 2> labels(n_dimensions, n_labels);
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      labels(i, j) = j;
+    }
+  }
+  TensorAxisDefaultDevice<int> tensoraxis("1", dimensions, labels);
+
+  // setup the device
+  Eigen::DefaultDevice device;
+
+  // setup the sort indices
+  Eigen::Tensor<int, 1> indices_view_values(n_labels);
+  for (int i = 0; i < n_labels; ++i)
+    indices_view_values(i) = i + 1;
+  TensorDataDefaultDevice<int, 1> indices_view(Eigen::array<Eigen::Index, 1>({ n_labels }));
+  indices_view.setData(indices_view_values);
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> indices_view_ptr = std::make_shared<TensorDataDefaultDevice<int, 1>>(indices_view);
+
+  // test sorting ASC
+  tensoraxis.sortLabels(indices_view_ptr, device);
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      BOOST_CHECK_EQUAL(tensoraxis.getLabels()(i, j), labels(i, j));
+    }
+  }
+
+  // make the expected labels
+  Eigen::Tensor<int, 2> labels_sort_test(n_dimensions, n_labels);
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      labels_sort_test(i, j) = n_labels - j - 1;
+    }
+  }
+  for (int i = 0; i < n_labels; ++i)
+    indices_view_ptr->getData()(i) = n_labels - i;
+
+  // test sorting DESC
+  tensoraxis.sortLabels(indices_view_ptr, device);
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      BOOST_CHECK_EQUAL(tensoraxis.getLabels()(i, j), labels_sort_test(i, j));
+    }
+  }
+}
 
 /*TensorAxisCpu Tests*/
 BOOST_AUTO_TEST_CASE(constructorCpu)
@@ -447,6 +498,105 @@ BOOST_AUTO_TEST_CASE(appendLabelsToAxisCpu)
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = n_labels; j < tensoraxis.getNLabels(); ++j) {
       BOOST_CHECK_EQUAL(tensoraxis.getLabels()(i, j), labels_values(i, j - n_labels));
+    }
+  }
+}
+
+BOOST_AUTO_TEST_CASE(makeSortIndicesCpu)
+{
+  // Setup the axis
+  int n_dimensions = 2, n_labels = 5;
+  Eigen::Tensor<std::string, 1> dimensions(n_dimensions);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  Eigen::Tensor<int, 2> labels(n_dimensions, n_labels);
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      labels(i, j) = j;
+    }
+  }
+  TensorAxisCpu<int> tensoraxis("1", dimensions, labels);
+
+  // setup the device
+  Eigen::ThreadPool pool(1);
+  Eigen::ThreadPoolDevice device(&pool, 1);
+
+  // setup the sort indices
+  Eigen::Tensor<int, 1> indices_view_values(n_labels);
+  for (int i = 0; i < n_labels; ++i)
+    indices_view_values(i) = i + 1;
+  TensorDataCpu<int, 1> indices_view(Eigen::array<Eigen::Index, 1>({ n_labels }));
+  indices_view.setData(indices_view_values);
+  std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>> indices_view_ptr = std::make_shared<TensorDataCpu<int, 1>>(indices_view);
+
+  // make the expected indices
+  Eigen::Tensor<int, 2> indices_sort_test(n_dimensions, n_labels);
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      indices_sort_test(i, j) = i + j * n_dimensions + 1;
+    }
+  }
+
+  // test making the sort indices
+  std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>> indices_sort;
+  tensoraxis.makeSortIndices(indices_view_ptr, indices_sort, device);
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      BOOST_CHECK_EQUAL(indices_sort->getData()(i, j), indices_sort_test(i, j));
+    }
+  }
+}
+
+BOOST_AUTO_TEST_CASE(sortLabelsCpu)
+{
+  // Setup the axis
+  int n_dimensions = 2, n_labels = 5;
+  Eigen::Tensor<std::string, 1> dimensions(n_dimensions);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  Eigen::Tensor<int, 2> labels(n_dimensions, n_labels);
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      labels(i, j) = j;
+    }
+  }
+  TensorAxisCpu<int> tensoraxis("1", dimensions, labels);
+
+  // setup the device
+  Eigen::ThreadPool pool(1);
+  Eigen::ThreadPoolDevice device(&pool, 1);
+
+  // setup the sort indices
+  Eigen::Tensor<int, 1> indices_view_values(n_labels);
+  for (int i = 0; i < n_labels; ++i)
+    indices_view_values(i) = i + 1;
+  TensorDataCpu<int, 1> indices_view(Eigen::array<Eigen::Index, 1>({ n_labels }));
+  indices_view.setData(indices_view_values);
+  std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>> indices_view_ptr = std::make_shared<TensorDataCpu<int, 1>>(indices_view);
+
+  // test sorting ASC
+  tensoraxis.sortLabels(indices_view_ptr, device);
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      BOOST_CHECK_EQUAL(tensoraxis.getLabels()(i, j), labels(i, j));
+    }
+  }
+
+  // make the expected labels
+  Eigen::Tensor<int, 2> labels_sort_test(n_dimensions, n_labels);
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      labels_sort_test(i, j) = n_labels - j - 1;
+    }
+  }
+  for (int i = 0; i < n_labels; ++i)
+    indices_view_ptr->getData()(i) = n_labels - i;
+
+  // test sorting DESC
+  tensoraxis.sortLabels(indices_view_ptr, device);
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      BOOST_CHECK_EQUAL(tensoraxis.getLabels()(i, j), labels_sort_test(i, j));
     }
   }
 }

@@ -378,15 +378,15 @@ namespace TensorBase
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_values(indices->getDataPointer().get(), (int)indices->getTensorSize());
 
     // Create a copy
-    TensorDataCpu data_copy(this->getDimensions());
-    data_copy.setData();
-    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> copy_values(data_copy.getDataPointer().get(), (int)data_copy.getTensorSize());
-    copy_values.device(device) = tensor_values;
+    auto data_copy = this->copy(device);
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> copy_values(data_copy->getDataPointer().get(), (int)data_copy->getTensorSize());
 
     // Sort the data in place
+    int iter = 0;
     std::for_each(indices_values.data(), indices_values.data() + indices_values.size(),
-      [&tensor_values, &copy_values, &device](const int& index) {
-      tensor_values(index - 1) = copy_values(index - 1);
+      [&tensor_values, &copy_values, &iter, &device](const int& index) {
+      tensor_values(iter) = copy_values(index - 1);
+      ++iter;
     });
   }
   template<typename TensorT, int TDim>

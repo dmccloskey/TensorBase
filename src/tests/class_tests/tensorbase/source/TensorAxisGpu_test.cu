@@ -122,7 +122,6 @@ void test_deleteFromAxisGpu()
   indices_ptr->syncHAndDData(device);
   tensoraxis.syncHAndDData(device);
   tensoraxis.deleteFromAxis(indices_ptr, device);
-  indices_ptr->syncHAndDData(device);
   tensoraxis.syncHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(cudaStreamDestroy(stream) == cudaSuccess);
@@ -134,7 +133,7 @@ void test_deleteFromAxisGpu()
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = 0; j < n_select_labels; ++j) {
       std::cout << "Test Labels i,j :" << i << "," << j << "; Reduced labels: " << tensoraxis.getLabels()(i, j) << "; Expected: " << labels_test(i, j) << std::endl;
-      //assert(tensoraxis.getLabels()(i, j) == labels_test(i, j)); //FIXME
+      assert(tensoraxis.getLabels()(i, j) == labels_test(i, j)); // FIXME
     }
   }
 }
@@ -202,6 +201,127 @@ void test_appendLabelsToAxisGpu()
   }
 }
 
+void test_makeSortIndicesGpu()
+{
+  // Setup the axis
+  int n_dimensions = 2, n_labels = 5;
+  Eigen::Tensor<std::string, 1> dimensions(n_dimensions);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  Eigen::Tensor<int, 2> labels(n_dimensions, n_labels);
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      labels(i, j) = j;
+    }
+  }
+  TensorAxisGpu<int> tensoraxis("1", dimensions, labels);
+
+  // Initialize the device
+  cudaStream_t stream;
+  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  Eigen::GpuStreamDevice stream_device(&stream, 0);
+  Eigen::GpuDevice device(&stream_device);
+
+  // setup the sort indices
+  Eigen::Tensor<int, 1> indices_view_values(n_labels);
+  for (int i = 0; i < n_labels; ++i)
+    indices_view_values(i) = i + 1;
+  TensorDataGpu<int, 1> indices_view(Eigen::array<Eigen::Index, 1>({ n_labels }));
+  indices_view.setData(indices_view_values);
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_view_ptr = std::make_shared<TensorDataGpu<int, 1>>(indices_view);
+
+  indices_view_ptr->syncHAndDData(device);
+  tensoraxis.syncHAndDData(device);
+
+  // make the expected indices
+  Eigen::Tensor<int, 2> indices_sort_test(n_dimensions, n_labels);
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      indices_sort_test(i, j) = i + j * n_dimensions + 1;
+    }
+  }
+
+  // test making the sort indices
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>> indices_sort;
+  tensoraxis.makeSortIndices(indices_view_ptr, indices_sort, device);
+  indices_sort->syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      assert(indices_sort->getData()(i, j) == indices_sort_test(i, j));
+    }
+  }
+
+  assert(cudaStreamDestroy(stream) == cudaSuccess);
+}
+
+void test_sortLabelsGpu()
+{
+  // Setup the axis
+  int n_dimensions = 2, n_labels = 5;
+  Eigen::Tensor<std::string, 1> dimensions(n_dimensions);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  Eigen::Tensor<int, 2> labels(n_dimensions, n_labels);
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      labels(i, j) = j;
+    }
+  }
+  TensorAxisGpu<int> tensoraxis("1", dimensions, labels);
+
+  // Initialize the device
+  cudaStream_t stream;
+  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  Eigen::GpuStreamDevice stream_device(&stream, 0);
+  Eigen::GpuDevice device(&stream_device);
+
+  // setup the sort indices
+  Eigen::Tensor<int, 1> indices_view_values(n_labels);
+  for (int i = 0; i < n_labels; ++i)
+    indices_view_values(i) = i + 1;
+  TensorDataGpu<int, 1> indices_view(Eigen::array<Eigen::Index, 1>({ n_labels }));
+  indices_view.setData(indices_view_values);
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_view_ptr = std::make_shared<TensorDataGpu<int, 1>>(indices_view);
+
+  indices_view_ptr->syncHAndDData(device);
+  tensoraxis.syncHAndDData(device);
+
+  // test sorting ASC
+  tensoraxis.sortLabels(indices_view_ptr, device);
+  tensoraxis.syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      assert(tensoraxis.getLabels()(i, j) == labels(i, j));
+    }
+  }
+
+  // make the expected labels
+  Eigen::Tensor<int, 2> labels_sort_test(n_dimensions, n_labels);
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      labels_sort_test(i, j) = n_labels - j - 1;
+    }
+  }
+  indices_view_ptr->setDataStatus(true, false);
+  for (int i = 0; i < n_labels; ++i)
+    indices_view_ptr->getData()(i) = n_labels - i;
+  indices_view_ptr->syncHAndDData(device);
+
+  // test sorting DESC
+  tensoraxis.setDataStatus(false, true);
+  tensoraxis.sortLabels(indices_view_ptr, device);
+  tensoraxis.syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      assert(tensoraxis.getLabels()(i, j) == labels_sort_test(i, j));
+    }
+  }
+  assert(cudaStreamDestroy(stream) == cudaSuccess);
+}
+
 int main(int argc, char** argv)
 {
   test_constructorGpu();
@@ -211,6 +331,8 @@ int main(int argc, char** argv)
   //test_getLabelsDataPointerGpu(); // Not needed?
   test_deleteFromAxisGpu();
   test_appendLabelsToAxisGpu();
+  test_makeSortIndicesGpu();
+  test_sortLabelsGpu();
   return 0;
 }
 #endif
