@@ -606,8 +606,12 @@ namespace TensorBase
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_sort;
     makeSortIndicesViewFromIndicesView(indices_sort, device);
 
-    // apply the sort indices to the tensor data and reset the indices view
+    // apply the sort indices to the tensor data
     data_->sort(indices_sort, device);
+
+    // sort each of the axis labels
+
+    // reset the indices view
     for (const auto& axis_to_index: axes_to_dims_) {
       resetIndicesView(axis_to_index.first, device);
     }

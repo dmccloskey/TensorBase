@@ -355,6 +355,7 @@ namespace TensorBase
       accumulative_size *= (int)this->axes_.at(axis_to_index.first)->getNLabels();
     }
     indices_sort_values.device(device) += indices_sort_values.constant(1);
+
     // move over the results
     indices_sort = std::make_shared<TensorDataDefaultDevice<int, TDim>>(indices_sort_tmp);
   }
