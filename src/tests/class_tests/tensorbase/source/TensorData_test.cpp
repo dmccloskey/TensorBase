@@ -141,6 +141,47 @@ BOOST_AUTO_TEST_CASE(selectDefaultDevice)
   }
 }
 
+BOOST_AUTO_TEST_CASE(sortDefaultDevice)
+{
+  // Make the tensor data and select indices
+  int dim_sizes = 3;
+  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+  for (int i = 0; i < tensor_values.size(); ++i) {
+    tensor_values.data()[i] = i;
+  }
+  TensorDataDefaultDevice<float, 3> tensordata(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+  tensordata.setData(tensor_values);
+
+  Eigen::DefaultDevice device;
+  // Test ASC
+  tensordata.sort("ASC", device);
+  Eigen::TensorMap<Eigen::Tensor<float, 3>> tensor_sorted_values(tensordata.getDataPointer().get(), tensordata.getDimensions());
+  for (int i = 0; i < dim_sizes; ++i) {
+    for (int j = 0; j < dim_sizes; ++j) {
+      for (int k = 0; k < dim_sizes; ++k) {
+        BOOST_CHECK_EQUAL(tensor_sorted_values(i, j, k), tensor_values(i, j, k));
+      }
+    }
+  }
+
+  // Make the expected indices and values
+  Eigen::Tensor<float, 3> tensor_values_test(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+  for (int i = 0; i < tensor_values.size(); ++i) {
+    tensor_values_test.data()[i] = tensor_values.size() - i - 1;
+  }
+
+  // Test DESC
+  tensordata.sort("DESC", device);
+  Eigen::TensorMap<Eigen::Tensor<float, 3>> tensor_sorted_values2(tensordata.getDataPointer().get(), tensordata.getDimensions());
+  for (int i = 0; i < dim_sizes; ++i) {
+    for (int j = 0; j < dim_sizes; ++j) {
+      for (int k = 0; k < dim_sizes; ++k) {
+        BOOST_CHECK_EQUAL(tensor_sorted_values2(i, j, k), tensor_values_test(i, j, k));
+      }
+    }
+  }
+}
+
 BOOST_AUTO_TEST_CASE(sortIndicesDefaultDevice)
 {
   // Make the tensor data and select indices
@@ -442,6 +483,48 @@ BOOST_AUTO_TEST_CASE(selectCpu)
   }
 }
 
+BOOST_AUTO_TEST_CASE(sortCpu)
+{
+  // Make the tensor data and select indices
+  int dim_sizes = 3;
+  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+  for (int i = 0; i < tensor_values.size(); ++i) {
+    tensor_values.data()[i] = i;
+  }
+  TensorDataCpu<float, 3> tensordata(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+  tensordata.setData(tensor_values);
+
+  Eigen::ThreadPool pool(1);
+  Eigen::ThreadPoolDevice device(&pool, 1);
+  // Test ASC
+  tensordata.sort("ASC", device);
+  Eigen::TensorMap<Eigen::Tensor<float, 3>> tensor_sorted_values(tensordata.getDataPointer().get(), tensordata.getDimensions());
+  for (int i = 0; i < dim_sizes; ++i) {
+    for (int j = 0; j < dim_sizes; ++j) {
+      for (int k = 0; k < dim_sizes; ++k) {
+        BOOST_CHECK_EQUAL(tensor_sorted_values(i, j, k), tensor_values(i, j, k));
+      }
+    }
+  }
+
+  // Make the expected indices and values
+  Eigen::Tensor<float, 3> tensor_values_test(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+  for (int i = 0; i < tensor_values.size(); ++i) {
+    tensor_values_test.data()[i] = tensor_values.size() - i - 1;
+  }
+
+  // Test DESC
+  tensordata.sort("DESC", device);
+  Eigen::TensorMap<Eigen::Tensor<float, 3>> tensor_sorted_values2(tensordata.getDataPointer().get(), tensordata.getDimensions());
+  for (int i = 0; i < dim_sizes; ++i) {
+    for (int j = 0; j < dim_sizes; ++j) {
+      for (int k = 0; k < dim_sizes; ++k) {
+        BOOST_CHECK_EQUAL(tensor_sorted_values2(i, j, k), tensor_values_test(i, j, k));
+      }
+    }
+  }
+}
+
 BOOST_AUTO_TEST_CASE(sortIndicesCpu)
 {
   // Make the tensor data and select indices
@@ -567,26 +650,27 @@ BOOST_AUTO_TEST_CASE(syncHAndDCpu)
   BOOST_CHECK(tensordata.getDataStatus().second);
 }
 
-BOOST_AUTO_TEST_CASE(castTypeCpu)
-{
-  Eigen::Tensor<float, 3> ones(2, 3, 4);
-  ones.setConstant(1);
-
-  // different cast types
-  TensorDataCpu<float, 3> td_cpu_float_test(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
-  td_cpu_float_test.setData(ones);
-
-  TensorDataCpu<float, 3> td_cpu_float = td_cpu_float_test;
-  BOOST_CHECK(td_cpu_float == td_cpu_float_test);
-  BOOST_CHECK_EQUAL(td_cpu_float.getData()(0, 0, 0), td_cpu_float_test.getData()(0, 0, 0));
-
-  TensorDataDefaultDevice<float, 3> td_dd_float(td_cpu_float_test);
-  BOOST_CHECK_NE(td_dd_float.getDeviceName(), td_cpu_float_test.getDeviceName());
-  BOOST_CHECK_EQUAL(td_dd_float.getData()(0, 0, 0), td_cpu_float_test.getData()(0, 0, 0));
-
-  TensorDataCpu<int, 3> td_cpu_int = td_cpu_float_test;
-  BOOST_CHECK(td_cpu_float == td_cpu_float_test);
-  BOOST_CHECK_NE(td_cpu_int.getData()(0, 0, 0), td_cpu_float_test.getData()(0, 0, 0));
-}
+// NOT NEEDED
+//BOOST_AUTO_TEST_CASE(castTypeCpu)
+//{
+//  Eigen::Tensor<float, 3> ones(2, 3, 4);
+//  ones.setConstant(1);
+//
+//  // different cast types
+//  TensorDataCpu<float, 3> td_cpu_float_test(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+//  td_cpu_float_test.setData(ones);
+//
+//  TensorDataCpu<float, 3> td_cpu_float = td_cpu_float_test;
+//  BOOST_CHECK(td_cpu_float == td_cpu_float_test);
+//  BOOST_CHECK_EQUAL(td_cpu_float.getData()(0, 0, 0), td_cpu_float_test.getData()(0, 0, 0));
+//
+//  TensorDataDefaultDevice<float, 3> td_dd_float(td_cpu_float_test);
+//  BOOST_CHECK_NE(td_dd_float.getDeviceName(), td_cpu_float_test.getDeviceName());
+//  BOOST_CHECK_EQUAL(td_dd_float.getData()(0, 0, 0), td_cpu_float_test.getData()(0, 0, 0));
+//
+//  TensorDataCpu<int, 3> td_cpu_int = td_cpu_float_test;
+//  BOOST_CHECK(td_cpu_float == td_cpu_float_test);
+//  BOOST_CHECK_NE(td_cpu_int.getData()(0, 0, 0), td_cpu_float_test.getData()(0, 0, 0));
+//}
 
 BOOST_AUTO_TEST_SUITE_END()

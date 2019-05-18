@@ -133,6 +133,58 @@ void test_selectGpu()
   }
 }
 
+void test_sortGpu()
+{
+  // Make the tensor data and select indices
+  int dim_sizes = 3;
+  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+  for (int i = 0; i < tensor_values.size(); ++i) {
+    tensor_values.data()[i] = i;
+  }
+  TensorDataGpu<float, 3> tensordata(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+  tensordata.setData(tensor_values);
+
+  // Initialize the device
+  cudaStream_t stream;
+  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  Eigen::GpuStreamDevice stream_device(&stream, 0);
+  Eigen::GpuDevice device(&stream_device);
+
+  // Test ASC
+  tensordata.syncHAndDData(device);
+  tensordata.sort("ASC", device);
+  tensordata.syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  for (int i = 0; i < dim_sizes; ++i) {
+    for (int j = 0; j < dim_sizes; ++j) {
+      for (int k = 0; k < dim_sizes; ++k) {
+        assert(tensordata.getData()(i, j, k) == tensor_values(i, j, k));
+      }
+    }
+  }
+
+  // Make the expected indices and values
+  Eigen::Tensor<float, 3> tensor_values_test(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+  for (int i = 0; i < tensor_values.size(); ++i) {
+    tensor_values_test.data()[i] = tensor_values.size() - i - 1;
+  }
+
+  // Test DESC
+  tensordata.setDataStatus(false, true);
+  tensordata.sort("DESC", device);
+  tensordata.syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  Eigen::TensorMap<Eigen::Tensor<float, 3>> tensor_sorted_values2(tensordata.getDataPointer().get(), tensordata.getDimensions());
+  for (int i = 0; i < dim_sizes; ++i) {
+    for (int j = 0; j < dim_sizes; ++j) {
+      for (int k = 0; k < dim_sizes; ++k) {
+        assert(tensor_sorted_values2(i, j, k) == tensor_values_test(i, j, k));
+      }
+    }
+  }
+  assert(cudaStreamDestroy(stream) == cudaSuccess);
+}
+
 void test_sortIndicesGpu()
 {
   // Make the tensor data and select indices

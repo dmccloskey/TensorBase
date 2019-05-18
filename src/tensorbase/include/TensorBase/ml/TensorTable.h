@@ -100,7 +100,7 @@ namespace TensorBase
     @param[in] device
     */
     template<typename LabelsT>
-    void sortIndicesView(const std::string& axis_name, const int& dimension_index, const LabelsT& label, const sortOrder::order& order_by, DeviceT& device);
+    void sortIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT& device);
 
     /*
     @brief Apply a where selection clause to the Tensor Axis View
@@ -394,19 +394,31 @@ namespace TensorBase
 
   template<typename TensorT, typename DeviceT, int TDim>
   template<typename LabelsT>
-  inline void TensorTable<TensorT, DeviceT, TDim>::sortIndicesView(const std::string & axis_name, const int & dimension_index, const LabelsT& label, const sortOrder::order& order_by, DeviceT & device)
+  inline void TensorTable<TensorT, DeviceT, TDim>::sortIndicesView(const std::string & axis_name, const int & dimension_index, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT & device)
   {
-    // find the index of the label
+    // find the first occurance of the index for the given label
     int label_index = 0;
-    std::shared_ptr<LabelsT> labels_data;
-    axes_.at(axis_name)->getLabelsDataPointer(labels_data);
-    Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> labels_values(labels_data.get(), (int)axes_.at(axis_name)->getNDimensions(), (int)axes_.at(axis_name)->getNLabels());
-    for (int i = 0; i < axes_.at(axis_name)->getNLabels(); ++i) {
-      if (labels_values(dimension_index, i) == label) {
-        label_index = i;
-        break;
-      }
-    }
+    //std::shared_ptr<LabelsT> labels_data;
+    //axes_.at(axis_name)->getLabelsDataPointer(labels_data);
+    //Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> labels_values(labels_data.get(), (int)axes_.at(axis_name)->getNDimensions(), (int)axes_.at(axis_name)->getNLabels());
+    //for (int i = 0; i < axes_.at(axis_name)->getNLabels(); ++i) {
+    //  if (labels_values(dimension_index, i) == label) {
+    //    label_index = i;
+    //    break;
+    //  }
+    //} 
+
+    // create a copy of the indices view
+    std::shared_ptr<TensorData<int, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copy(device);
+    assert(indices_view_copy->syncHAndDData(device));
+
+    // select the `labels` indices from the axis labels and store in the current indices view
+    selectIndicesView(axis_name, dimension_index, select_labels, device);
+
+    // sort the indices view
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indicies_view_values(indices_view_.at(axis_name)->getDataPointer().get(), indices_view_.at(axis_name)->getDimensions());
+    label_index_value.device(device) = (indices_view_values == indices_view_values.constant(0)).select(indices_view_values, indices_view_values(1e24));
+    //indices_view_.at(axis_name)->sort
 
     // iterate through each axis and apply the sort
     for (const auto& axis_to_name : axes_to_dims_) {
@@ -439,6 +451,7 @@ namespace TensorBase
     const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
     // create a copy of the indices view
     std::shared_ptr<TensorData<int, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copy(device);
+    assert(indices_view_copy->syncHAndDData(device));
 
     // select the `labels` indices from the axis labels and store in the current indices view
     selectIndicesView(axis_name, dimension_index, select_labels, device);

@@ -31,6 +31,7 @@ namespace TensorBase
     std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>> copy(Eigen::GpuDevice& device);
     void select(std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice& device);
     void sortIndices(std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, const std::string& sort_order, Eigen::GpuDevice& device);
+    void sort(const std::string& sort_order, Eigen::GpuDevice& device);
     void sort(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice& device);
     std::shared_ptr<TensorT> getDataPointer();
     void setData(const Eigen::Tensor<TensorT, TDim>& data); ///< data setter
@@ -121,6 +122,41 @@ namespace TensorBase
       cub::DeviceRadixSort::SortPairsDescending(d_temp_storage, temp_storage_bytes,
         this->getDataPointer().get(), keys_copy->getDataPointer().get(), values_copy->getDataPointer().get(), indices->getDataPointer().get(),
         indices->getTensorSize(), 0, sizeof(TensorT) * 8, device.stream());
+
+    assert(cudaFree(d_temp_storage) == cudaSuccess);
+  }
+  template<typename TensorT, int TDim>
+  inline void TensorDataGpu<TensorT, TDim>::sort(const std::string & sort_order, Eigen::GpuDevice & device)
+  {
+    // Temporary copies for the algorithm 
+    std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>> keys_copy = this->copy(device);
+    keys_copy->syncHAndDData(device);
+
+    // Determine temporary device storage requirements
+    void *d_temp_storage = NULL;
+    size_t temp_storage_bytes = 0;
+
+    if (sort_order == "ASC")
+      cub::DeviceRadixSort::SortKeys(d_temp_storage, temp_storage_bytes,
+        keys_copy->getDataPointer().get(), this->getDataPointer().get(),
+        this->getTensorSize(), 0, sizeof(TensorT) * 8, device.stream());
+    else if (sort_order == "DESC")
+      cub::DeviceRadixSort::SortKeysDescending(d_temp_storage, temp_storage_bytes,
+        keys_copy->getDataPointer().get(), this->getDataPointer().get(),
+        this->getTensorSize(), 0, sizeof(TensorT) * 8, device.stream());
+
+    // Allocate temporary storage
+    assert(cudaMalloc((void**)(&d_temp_storage), temp_storage_bytes) == cudaSuccess);
+
+    // Run sorting operation
+    if (sort_order == "ASC")
+      cub::DeviceRadixSort::SortKeys(d_temp_storage, temp_storage_bytes,
+        keys_copy->getDataPointer().get(), this->getDataPointer().get(), 
+        this->getTensorSize(), 0, sizeof(TensorT) * 8, device.stream());
+    else if (sort_order == "DESC")
+      cub::DeviceRadixSort::SortKeysDescending(d_temp_storage, temp_storage_bytes,
+        keys_copy->getDataPointer().get(), this->getDataPointer().get(),
+        this->getTensorSize(), 0, sizeof(TensorT) * 8, device.stream());
 
     assert(cudaFree(d_temp_storage) == cudaSuccess);
   }
