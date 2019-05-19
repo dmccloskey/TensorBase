@@ -2,6 +2,7 @@ set(core_executables_list
   Helloworld_test
   Statistics_test
   StringParsing_test
+  TupleAlgorithms_test
 )
 
 set(io_executables_list
@@ -11,10 +12,17 @@ set(io_executables_list
 
 set(ml_executables_list
   TensorAxis_test
+  TensorAxisGpu_test
+  TensorClauses_test
   TensorCollection_test
-  TensorDimension_test
   TensorData_test
+  TensorDataGpu_test
+  TensorDimension_test
+  TensorDimensionGpu_test
+  TensorOperation_test
+  TensorSelect_test
   TensorTable_test
+  TensorTableGpu_test
   TensorType_test
 )
 
