@@ -30,24 +30,14 @@ namespace TensorBase
   template<typename LabelsT, typename TensorT, typename DeviceT, int TDim>
   inline void TensorAppendToAxis<LabelsT, TensorT, DeviceT, TDim>::redo(TensorCollection<DeviceT> & tensor_collection, DeviceT& device)
   {
-    // iterate through each table axis
-    for (auto& axis : tensor_collection.tables_.at(table_name_)->getAxes()) {
-      if (axis.first == axis_name_) {
-        //tensor_collection.tables_.at(table_name)->appendToAxis(
-        //  axis_name_, labels_, values_->getDataPointer(), values_->getDimensions(), device); // TODO
-      }
-    }
+    // Append to the axis
+    tensor_collection.tables_.at(table_name_)->appendToAxis(axis_name_, labels_, values_->getDataPointer(), values_->getDimensions(), device);
   }
   template<typename LabelsT, typename TensorT, typename DeviceT, int TDim>
   inline void TensorAppendToAxis<LabelsT, TensorT, DeviceT, TDim>::undo(TensorCollection<DeviceT> & tensor_collection, DeviceT& device)
   {
-    // iterate through each table axis
-    for (auto& axis : tensor_collection.tables_.at(table_name_)->getAxes()) {
-      if (axis.first == axis_name_) {
-        //tensor_collection.tables_.at(table_name)->deleteFromAxis(
-        //  axis_name_, labels_, device); // TODO
-      }
-    }
+    // Delete from the axis
+    //tensor_collection.tables_.at(table_name)->deleteFromAxis(axis_name_, labels_, device);
   }
 
   template<typename LabelsT, typename TensorT, typename DeviceT, int TDim>
@@ -67,23 +57,13 @@ namespace TensorBase
     select_function_(tensor_collection, device);
 
     // Delete the selected labels
-    for (auto& axis : tensor_collection.tables_.at(table_name_)->getAxes()) {
-      if (axis.first == axis_name_) {
-        //tensor_collection.tables_.at(table_name)->deleteFromAxis(
-        //  axis_name_, labels_, values_, device); // TODO overload that returns the values that were deleted
-      }
-    }
+    //tensor_collection.tables_.at(table_name)->deleteFromAxis(
+    //  axis_name_, labels_, values_->getDataPointer(), device); // TODO overload that returns the values that were deleted
   }
   template<typename LabelsT, typename TensorT, typename DeviceT, int TDim>
   inline void TensorDeleteFromAxis<LabelsT, TensorT, DeviceT, TDim>::undo(TensorCollection<DeviceT> & tensor_collection, DeviceT& device)
   {
-    // iterate through each table axis
-    for (auto& axis : tensor_collection.tables_.at(table_name_)->getAxes()) {
-      if (axis.first == axis_name_) {
-        //tensor_collection.tables_.at(table_name)->appendToAxis(
-        //  axis_name_, labels_, values_, device); // TODO
-      }
-    }
+    tensor_collection.tables_.at(table_name)->appendToAxis(axis_name_, labels_, values_->getDataPointer(), device);
   }
 
   template<typename TensorT, typename DeviceT, int TDim>

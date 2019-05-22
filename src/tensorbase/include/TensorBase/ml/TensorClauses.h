@@ -27,6 +27,18 @@ namespace TensorBase
     std::string dimension_name = ""; ///< the dimension to select
     std::shared_ptr<TensorData<LabelsT, DeviceT, 1>> labels = nullptr; ///< the labels to select
   };
+  // TODO
+  //template<typename LabelsT, typename DeviceT>
+  //class SelectClause {
+  //public:
+  //  SelectClause() = default;
+  //  SelectClause(const std::string& table_name, const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels) :
+  //    table_name(table_name), axis_name(axis_name), labels(labels) { };
+  //  ~SelectClause() = default;
+  //  std::string table_name; ///< the table to select
+  //  std::string axis_name = ""; ///< the axis to select
+  //  std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> labels = nullptr; ///< the labels to select
+  //};
 
   struct reductionFunctions {
     enum reductionFunction {
