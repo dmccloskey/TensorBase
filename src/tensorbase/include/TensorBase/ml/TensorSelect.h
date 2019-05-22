@@ -1,11 +1,10 @@
 /**TODO:  Add copyright*/
 
-#ifndef TENSORBASE_TENSOROPERATION_H
-#define TENSORBASE_TENSOROPERATION_H
+#ifndef TENSORBASE_TENSORSELECT_H
+#define TENSORBASE_TENSORSELECT_H
 
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/ml/TensorCollection.h>
-#include <TensorBase/ml/TensorOperation.h>
 #include <set>
 
 namespace TensorBase
@@ -128,4 +127,4 @@ namespace TensorBase
   class TensorSelectUnion;
   class TensorSelectJoin;
 };
-#endif //TENSORBASE_TENSOROPERATION_H
+#endif //TENSORBASE_TENSORSELECT_H
