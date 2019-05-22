@@ -702,13 +702,22 @@ namespace TensorBase
 
     // Resize and reset the current data
     Eigen::array<Eigen::Index, TDim> new_dimensions = data_->getDimensions();
-    new_dimensions.at(axes_to_dims_.at(axis_name)) += dimensions.at(axes_to_dims_.at(axis_name));
-    data_->setDimensions();
+    new_dimensions.at(axes_to_dims_.at(axis_name)) += labels->getDimensions().at(1);
+    data_->setDimensions(new_dimensions);
     data_->setData();
     data_->syncHAndDData(device);
 
+    // Determine the dimensions for the values
+    Eigen::array<Eigen::Index, TDim> value_dimensions;
+    for (const auto& axis_to_index: axes_to_dims_) {
+      if (axis_to_index.first == axis_name)
+        value_dimensions.at(axis_to_index.second) = labels->getDimensions().at(1);
+      else
+        value_dimensions.at(axis_to_index.second) = 1;
+    }
+
     // Concatenate the new data with the existing tensor data along the axis dimension
-    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> values_new_values(values->getDataPointer().get(), dimensions);
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> values_new_values(values.get(), value_dimensions);
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy_values(data_copy->getDataPointer().get(), data_copy->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(data_->getDataPointer().get(), data_->getDimensions());
     data_values.device(device) = data_copy_values.concatenate(values_new_values, axes_to_dims_.at(axis_name));
