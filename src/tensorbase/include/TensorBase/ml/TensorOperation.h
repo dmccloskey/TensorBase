@@ -34,7 +34,7 @@ namespace TensorBase
     for (auto& axis : tensor_collection.tables_.at(table_name_)->getAxes()) {
       if (axis.first == axis_name_) {
         //tensor_collection.tables_.at(table_name)->appendToAxis(
-        //  axis_name_, labels_, values_, device); // TODO
+        //  axis_name_, labels_, values_->getDataPointer(), values_->getDimensions(), device); // TODO
       }
     }
   }

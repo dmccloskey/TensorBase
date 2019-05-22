@@ -260,6 +260,19 @@ namespace TensorBase
     void updateTensorData(const std::shared_ptr<TensorT>& values_new, std::shared_ptr<TensorT>& values_old, DeviceT& device);
     void updateTensorData(const std::shared_ptr<TensorT>& values_new, DeviceT& device);
 
+    /*
+    @brief Update the tensor data and optionally return the original values
+
+    @param[in] axis_name The axis to append the labels and data to
+    @param[in] labels The labels to append to the axis
+    @param[in] values The values to append to the tensor data along the specified axis
+    @param[in] device
+    */
+    template<typename LabelsT, typename T>
+    void appendToAxisConcept(const std::string& axis_name, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<T>& values, DeviceT& device);
+    template<typename LabelsT>
+    void appendToAxis(const std::string& axis_name, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<TensorT>& values, DeviceT& device);
+
   protected:
     int id_ = -1;
     std::string name_ = "";
@@ -664,6 +677,41 @@ namespace TensorBase
       auto values_new_copy = std::reinterpret_pointer_cast<TensorT>(values_new);
       updateTensorData(values_new_copy, device);
     }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  template<typename LabelsT, typename T>
+  inline void TensorTable<TensorT, DeviceT, TDim>::appendToAxisConcept(const std::string& axis_name, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<T>& values, DeviceT& device)
+  {
+    if (std::is_same<T, TensorT>::value) {
+      auto values_copy = std::reinterpret_pointer_cast<TensorT>(values);
+      appendToAxis(axis_name, labels, values_copy, device);
+    }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  template<typename LabelsT>
+  inline void TensorTable<TensorT, DeviceT, TDim>::appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<TensorT>& values, DeviceT & device)
+  {
+    // Append the new labels to the axis
+    axes_.at(axis_name)->appendLabelsToAxis(labels, device);
+
+    // Copy the current data
+    auto data_copy = data_->copy(device);
+    data_copy->syncHAndDData(device);
+
+    // Resize and reset the current data
+    Eigen::array<Eigen::Index, TDim> new_dimensions = data_->getDimensions();
+    new_dimensions.at(axes_to_dims_.at(axis_name)) += dimensions.at(axes_to_dims_.at(axis_name));
+    data_->setDimensions();
+    data_->setData();
+    data_->syncHAndDData(device);
+
+    // Concatenate the new data with the existing tensor data along the axis dimension
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> values_new_values(values->getDataPointer().get(), dimensions);
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy_values(data_copy->getDataPointer().get(), data_copy->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(data_->getDataPointer().get(), data_->getDimensions());
+    data_values.device(device) = data_copy_values.concatenate(values_new_values, axes_to_dims_.at(axis_name));
   }
 
   template<typename TensorT, typename DeviceT, int TDim>

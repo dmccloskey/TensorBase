@@ -92,6 +92,15 @@ namespace TensorBase
     virtual void updateTensorDataConcept(const std::shared_ptr<float>& values_new, DeviceT& device) = 0;
     virtual void updateTensorDataConcept(const std::shared_ptr<double>& values_new, DeviceT& device) = 0;
     virtual void updateTensorDataConcept(const std::shared_ptr<char>& values_new, DeviceT& device) = 0;
+
+    /*
+    All LabelsT, TensorT, and DeviceT combos of `appendToAxis`
+    */
+    virtual void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<int>& values, DeviceT & device) = 0;
+    virtual void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<int>& values, DeviceT & device) = 0;
+    virtual void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<int>& values, DeviceT & device) = 0;
+    virtual void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<int>& values, DeviceT & device) = 0;
+    // TODO all other combos
   };
 
   /// The erasure wrapper around the Tensor Table interface
