@@ -1301,11 +1301,13 @@ BOOST_AUTO_TEST_CASE(appendToAxisDefaultDevice)
   tensorTable.getData()->setData(tensor_values);
 
   // setup the new tensor data
-  Eigen::Tensor<float, 3> update_values(Eigen::array<Eigen::Index, 3>({ nlabels, 1, 1 }));
+  Eigen::Tensor<float, 3> update_values(Eigen::array<Eigen::Index, 3>({ 1, nlabels, nlabels }));
   for (int i = 0; i < nlabels; ++i) {
-    update_values(i, 0, 0) = i;
+    for (int j = 0; j < nlabels; ++j) {
+      update_values(0, i, j) = i;
+    }
   }
-  TensorDataDefaultDevice<float, 3> values_new(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  TensorDataDefaultDevice<float, 3> values_new(Eigen::array<Eigen::Index, 3>({ 1, nlabels, nlabels }));
   values_new.setData(update_values);
   std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 3>> values_new_ptr = std::make_shared<TensorDataDefaultDevice<float, 3>>(values_new);
 
@@ -1314,10 +1316,11 @@ BOOST_AUTO_TEST_CASE(appendToAxisDefaultDevice)
   labels_values(0, 0) = 3;
   TensorDataDefaultDevice<int, 2> labels_new(Eigen::array<Eigen::Index, 2>({ 1, 1 }));
   labels_new.setData(labels_values);
-  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_new_ptr = std::make_shared<TensorDataDefaultDevice<int, 2>>(labels_values);
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_new_ptr = std::make_shared<TensorDataDefaultDevice<int, 2>>(labels_new);
 
   // test appendToAxis
-  tensorTable.appendToAxis("1", labels_new_ptr, values_new_ptr->getDataPointer(), device);
+  int axis_index = -1;
+  tensorTable.appendToAxis("1", labels_new_ptr, values_new_ptr->getDataPointer(), axis_index, device);
   iter = 0;
   for (int i = 0; i < nlabels; ++i) {
     BOOST_CHECK_EQUAL(axis_1_ptr->getLabels()(0, i), labels1(i));
@@ -1329,8 +1332,11 @@ BOOST_AUTO_TEST_CASE(appendToAxisDefaultDevice)
   }
   BOOST_CHECK_EQUAL(axis_1_ptr->getLabels()(0, nlabels), 3);
   for (int i = 0; i < nlabels; ++i) {
-    BOOST_CHECK_EQUAL(tensorTable.getData()->getData()(nlabels + i, nlabels - 1, nlabels - 1), update_values(i, 0, 0));
+    for (int j = 0; j < nlabels; ++j) {
+      BOOST_CHECK_EQUAL(tensorTable.getData()->getData()(nlabels, i, j), update_values(0, i, j));
+    }
   }
+  BOOST_CHECK_EQUAL(axis_index, nlabels);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

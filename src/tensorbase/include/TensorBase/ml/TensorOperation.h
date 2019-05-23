@@ -25,6 +25,7 @@ namespace TensorBase
     std::string table_name_; // Redo/Undo
     std::string axis_name_; // Redo/Undo
     std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> labels_; // Redo/Undo
+    int axis_index_; //Undo
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> values_; // Redo/Undo
   };
   template<typename LabelsT, typename TensorT, typename DeviceT, int TDim>
