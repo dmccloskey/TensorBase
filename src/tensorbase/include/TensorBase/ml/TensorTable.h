@@ -231,10 +231,10 @@ namespace TensorBase
     @brief Select the Tensor data and return the selected/reduced data
 
     @param[out] tensor_select The selected/reduced tensor data
-    @param[in] indices_select The indices to perform the selection on
+    @param[in] indices_select The broadcasted indices view to perform the selection on
     @param[in] device
     */
-    virtual void getSelectTensorData(std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, DeviceT& device) = 0;
+    virtual void getSelectTensorDataFromIndicesView(std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, DeviceT& device) = 0;
 
     /*
     @brief Sort the Tensor Data based on the sort order defined by the indices view
@@ -701,7 +701,7 @@ namespace TensorBase
 
     // select the tensor data based on the selection indices and update
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> tensor_select;
-    getSelectTensorData(tensor_select, indices_select, device);
+    getSelectTensorDataFromIndicesView(tensor_select, indices_select, device);
 
     // resize each axis based on the indices view
     for (const auto& axis_to_name : axes_to_dims_) {
@@ -860,14 +860,22 @@ namespace TensorBase
     makeIndicesViewSelectFromIndices(axis_name, indices_select_labels_copy, indices, false, device);
 
     // Copy the labels prior to deleting
+    // TODO: could be made more efficient to avoid the memory allocation in `selectFromAxis`
     axes_.at(axis_name)->selectFromAxis(indices_select_labels_copy, labels, device);
 
     // Make the selection indices for copying the tensor data
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_select_data_copy;
-    makeSelectIndicesFromIndices(indices_select_labels_copy, indices_select_data_copy, device);
+    makeSelectIndicesFromIndices(axis_name, indices_select_labels_copy, indices_select_data_copy, device);
 
-    // Copy the data prior to deleting
-    reduceTensorDataToSelectIndices(indices_select_data_copy, values, axis_name, indices->getTensorSize(), device);
+    // Copy the data prior to deleting 
+    // TODO: could be made more efficient to avoid the memory allocation in `reduceTensorDataToSelectIndices`
+    std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> values_copy_ptr;
+    reduceTensorDataToSelectIndices(indices_select_data_copy, values_copy_ptr, axis_name, indices->getTensorSize(), device);
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> values_copy(values_copy_ptr->getDataPointer().get(), values_copy_ptr->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> values_values(values.get(), values_copy_ptr->getDimensions());
+    values_values.device(device) = values_copy;
+
+    // OPTION 1: remake only the changed axis
 
     // Make the selection indices for deleting the labels
     std::shared_ptr<TensorData<int, DeviceT, 1>> indices_select_labels_delete;
@@ -878,11 +886,19 @@ namespace TensorBase
 
     // Make the selection indices for deleting from the tensor data
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_select_data_delete;
-    makeSelectIndicesFromIndices(indices_select_labels_delete, indices_select_data_delete, device);
+    makeSelectIndicesFromIndices(axis_name, indices_select_labels_delete, indices_select_data_delete, device);
 
     // select the tensor data based on the selection indices and update
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> tensor_select;
-    getSelectTensorData(tensor_select, indices_select_data_delete, device);
+    //getSelectTensorDataFromIndices(tensor_select, indices_select_data_delete, device); // TODO
+    //data_ = tensor_select;
+
+    // reduce the indices
+    deleteFromIndices(axis_name, indices, device);
+
+    // OPTION 2:
+    // update the indices view with the select indices
+    // selectTensorData(device);
   }
 
   template<typename TensorT, typename DeviceT, int TDim>

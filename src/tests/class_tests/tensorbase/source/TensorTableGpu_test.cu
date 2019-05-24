@@ -1074,7 +1074,7 @@ void test_getSelectTensorDataGpu()
 
   // test for the selected data
   std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> tensor_select_ptr;
-  tensorTable.getSelectTensorData(tensor_select_ptr, indices_select_ptr, device);
+  tensorTable.getSelectTensorDataFromIndicesView(tensor_select_ptr, indices_select_ptr, device);
   tensor_select_ptr->syncHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(tensor_select_ptr->getDimensions() == select_dimensions);

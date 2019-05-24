@@ -928,7 +928,7 @@ BOOST_AUTO_TEST_CASE(getSelectTensorDataDefaultDevice)
 
   // test for the selected data
   std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 3>> tensor_select_ptr;
-  tensorTable.getSelectTensorData(tensor_select_ptr, std::make_shared<TensorDataDefaultDevice<int, 3>>(indices_select), device);
+  tensorTable.getSelectTensorDataFromIndicesView(tensor_select_ptr, std::make_shared<TensorDataDefaultDevice<int, 3>>(indices_select), device);
   BOOST_CHECK(tensor_select_ptr->getDimensions() == select_dimensions);
   for (int j = 0; j < nlabels; ++j) {
     for (int k = 0; k < nlabels; ++k) {
@@ -1517,14 +1517,29 @@ BOOST_AUTO_TEST_CASE(makeSelectIndicesFromIndicesDefaultDevice)
   tensorTable.addTensorAxis(axis_3_ptr);
   tensorTable.setAxes();
 
-  // setup the selection indices (TODO)
-  Eigen::Tensor<int, 1> indices_to_select_values(Eigen::array<Eigen::Index, 1>({ 1 }));
-  indices_to_select_values.setValues({ 2 });
-  TensorDataDefaultDevice<int, 1> indices_to_select(Eigen::array<Eigen::Index, 1>({ 1 }));
+  // setup the selection indices
+  Eigen::Tensor<int, 1> indices_to_select_values(Eigen::array<Eigen::Index, 1>({ nlabels }));
+  for (int i = 0; i < nlabels; ++i) {
+    if (i % 2 == 0) indices_to_select_values(i) = i + 1;
+    else indices_to_select_values(i) = 0;
+  }
+  TensorDataDefaultDevice<int, 1> indices_to_select(Eigen::array<Eigen::Index, 1>({ nlabels }));
   indices_to_select.setData(indices_to_select_values);
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> indices_to_select_ptr = std::make_shared<TensorDataDefaultDevice<int, 1>>(indices_to_select);
 
-  // TODO...
+  // test the selection indices
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>> indices_select_ptr;
+  tensorTable.makeSelectIndicesFromIndices("1", indices_to_select_ptr, indices_select_ptr, device);
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        if (i % 2 == 0)
+          BOOST_CHECK_EQUAL(indices_select_ptr->getData()(i, j, k), 1);
+        else
+          BOOST_CHECK_EQUAL(indices_select_ptr->getData()(i, j, k), 0);
+      }
+    }
+  }
 }
 
 BOOST_AUTO_TEST_CASE(deleteFromAxisDefaultDevice)
@@ -1582,6 +1597,8 @@ BOOST_AUTO_TEST_CASE(deleteFromAxisDefaultDevice)
   TensorDataDefaultDevice<float, 3> values(Eigen::array<Eigen::Index, 3>({ 1, nlabels, nlabels }));
   values.setData();
   std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 3>> values_ptr = std::make_shared<TensorDataDefaultDevice<float, 3>>(values);
+  //std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_ptr;
+  //std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 3>> values_ptr;
   tensorTable.deleteFromAxis("1", indices_to_select_ptr, labels_ptr, values_ptr->getDataPointer(), device);
 
   // test the expected indices sizes and values

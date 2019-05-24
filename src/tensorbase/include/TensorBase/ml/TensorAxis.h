@@ -74,6 +74,8 @@ namespace TensorBase
     @param[in] labels_select The reduced labels
     @param[in] device
     */
+    template<typename T>
+    void selectFromAxisConcept(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<T, DeviceT, 2>>& labels_select, DeviceT& device);
     virtual void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& labels_select, DeviceT& device) = 0;
 
   protected:
@@ -136,6 +138,17 @@ namespace TensorBase
     if (std::is_same<T, TensorT>::value) {
       auto labels_copy = std::reinterpret_pointer_cast<TensorData<TensorT, DeviceT, 2>>(labels);
       appendLabelsToAxis(labels_copy, device);
+    }
+  }
+
+  template<typename TensorT, typename DeviceT>
+  template<typename T>
+  inline void TensorAxis<TensorT, DeviceT>::selectFromAxisConcept(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<T, DeviceT, 2>>& labels_select, DeviceT & device)
+  {
+    if (std::is_same<T, TensorT>::value) {
+      std::shared_ptr<TensorData<TensorT, DeviceT, 2>> labels_new;
+      selectFromAxis(indices, labels_new, device);
+      labels_select = std::reinterpret_pointer_cast<TensorData<T, DeviceT, 2>>(labels_new);
     }
   }
 
