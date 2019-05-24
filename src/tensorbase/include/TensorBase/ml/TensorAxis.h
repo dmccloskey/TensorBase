@@ -74,7 +74,7 @@ namespace TensorBase
     @param[in] labels_select The reduced labels
     @param[in] device
     */
-    virtual void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels_select, DeviceT& device) = 0;
+    virtual void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& labels_select, DeviceT& device) = 0;
 
   protected:
     void setNLabels(const size_t& n_labels) { n_labels_ = n_labels; }; ///< n_labels setter
@@ -105,10 +105,10 @@ namespace TensorBase
   inline void TensorAxis<TensorT, DeviceT>::deleteFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device)
   {
     // perform the reduction on the labels and update the axis attributes
-    std::shared_ptr<TensorData<int, DeviceT, 2>> indices_select_ptr;
-    selectFromAxis(indices, indices_select_ptr, device);
-    tensor_dimension_labels_ = new_labels_ptr;
-    setNLabels(axis_size.getData()(0));
+    std::shared_ptr<TensorData<TensorT, DeviceT, 2>> labels_select;
+    selectFromAxis(indices, labels_select, device);
+    tensor_dimension_labels_ = labels_select;
+    setNLabels(labels_select->getDimensions().at(1));
   }
 
   template<typename TensorT, typename DeviceT>
@@ -149,7 +149,7 @@ namespace TensorBase
     void setDimensionsAndLabels(const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) override;
     void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& labels, Eigen::DefaultDevice & device) override;
     void makeSortIndices(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& indices_sort, Eigen::DefaultDevice& device) override;
-    void selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& labels_select, Eigen::DefaultDevice& device) override;
+    void selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& labels_select, Eigen::DefaultDevice& device) override;
   };
   template<typename TensorT>
   TensorAxisDefaultDevice<TensorT>::TensorAxisDefaultDevice(const std::string& name, const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) {
@@ -222,7 +222,7 @@ namespace TensorBase
   }
 
   template<typename TensorT>
-  inline void TensorAxisDefaultDevice<TensorT>::selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& labels_select, Eigen::DefaultDevice & device)
+  inline void TensorAxisDefaultDevice<TensorT>::selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& labels_select, Eigen::DefaultDevice & device)
   {
     // temporary memory for calculating the sum of the new axis
     TensorDataDefaultDevice<int, 1> axis_size(Eigen::array<Eigen::Index, 1>({ 1 }));
@@ -245,8 +245,9 @@ namespace TensorBase
     indices_select_values.device(device) = indices_values.broadcast(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, 1 }));
     std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> indices_select_ptr = std::make_shared<TensorDataDefaultDevice<int, 2>>(indices_select);
 
-    // perform the reduction on the labels and update the axis attributes
+    // perform the reduction and move over the output
     this->tensor_dimension_labels_->select(new_labels_ptr, indices_select_ptr, device);
+    labels_select = new_labels_ptr;
   }
 
   template<typename TensorT>
@@ -259,7 +260,7 @@ namespace TensorBase
     void setDimensionsAndLabels(const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) override;
     void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>>& labels, Eigen::ThreadPoolDevice & device) override;
     void makeSortIndices(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>>& indices_sort, Eigen::ThreadPoolDevice& device) override;
-    void selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>>& labels_select, Eigen::ThreadPoolDevice& device) override;
+    void selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>>& labels_select, Eigen::ThreadPoolDevice& device) override;
 
   };
   template<typename TensorT>
@@ -333,7 +334,7 @@ namespace TensorBase
   }
 
   template<typename TensorT>
-  inline void TensorAxisCpu<TensorT>::selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>>& labels_select, Eigen::ThreadPoolDevice & device)
+  inline void TensorAxisCpu<TensorT>::selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>>& labels_select, Eigen::ThreadPoolDevice & device)
   {
     // temporary memory for calculating the sum of the new axis
     TensorDataCpu<int, 1> axis_size(Eigen::array<Eigen::Index, 1>({ 1 }));
@@ -356,8 +357,9 @@ namespace TensorBase
     indices_select_values.device(device) = indices_values.broadcast(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, 1 }));
     std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>> indices_select_ptr = std::make_shared<TensorDataCpu<int, 2>>(indices_select);
 
-    // perform the reduction on the labels and update the axis attributes
+    // perform the reduction and move over the output
     this->tensor_dimension_labels_->select(new_labels_ptr, indices_select_ptr, device);
+    labels_select = new_labels_ptr;
   }
 };
 #endif //TENSORBASE_TENSORAXIS_H
