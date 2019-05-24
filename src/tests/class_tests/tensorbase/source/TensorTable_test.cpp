@@ -1263,7 +1263,7 @@ BOOST_AUTO_TEST_CASE(updateTensorData2DefaultDevice)
   }
 }
 
-BOOST_AUTO_TEST_CASE(appendToAxisDefaultDevice)
+BOOST_AUTO_TEST_CASE(appendToIndicesDefaultDevice)
 {
   // setup the table
   TensorTableDefaultDevice<float, 3> tensorTable;
@@ -1299,12 +1299,19 @@ BOOST_AUTO_TEST_CASE(appendToAxisDefaultDevice)
   // test appendToIndices
   tensorTable.appendToIndices("1", indices_new_ptr, device);
   BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(tensorTable.getDimFromAxisName("1")), nlabels + nlabels - 1);
-
-
-}
-
-BOOST_AUTO_TEST_CASE(shrinkAxisDefaultDevice)
-{
+  for (int i = 0; i < nlabels + nlabels - 1; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable.getIndices().at("1")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable.getIsShardable().at("1")->getData()(i), 1);
+    if (i < nlabels) {
+      BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("1")->getData()(i), 0);
+      BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("1")->getData()(i), 0);
+    }
+    else {
+      BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("1")->getData()(i), 1);
+      BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("1")->getData()(i), 1);
+    }
+  }
 }
 
 BOOST_AUTO_TEST_CASE(appendToAxisDefaultDevice)
@@ -1384,7 +1391,7 @@ BOOST_AUTO_TEST_CASE(appendToAxisDefaultDevice)
       BOOST_CHECK_EQUAL(tensorTable.getData()->getData()(nlabels, i, j), update_values(0, i, j));
     }
   }
-  BOOST_CHECK_EQUAL(indices_new_ptr->getData()(0), nlabels);
+  BOOST_CHECK_EQUAL(indices_new_ptr->getData()(0), nlabels + 1);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
