@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(getLabelsDataPointerDefaultDevice)
 }
 
 BOOST_AUTO_TEST_CASE(deleteFromAxisDefaultDevice)
-{
+{// Test also covers selectFromAxis
   // Setup the axis
   int n_dimensions = 2, n_labels = 5;
   Eigen::Tensor<std::string, 1> dimensions(n_dimensions);

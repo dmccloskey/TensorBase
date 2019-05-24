@@ -43,10 +43,10 @@ namespace TensorBase
     /*
     @brief Delete from axis based on a selection index
 
-    @param[in] indices The indices to use for selection
+    @param[in] indices The indices to use for selected deletion (of size nLabels)
     @param[in] device
     */
-    virtual void deleteFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) = 0;
+    void deleteFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device);
 
     /*
     @brief Append labels to the axes
@@ -61,11 +61,20 @@ namespace TensorBase
     /*
     @brief Sort the labels of the axis
 
-    @param[in] indices The indices to sort the labels by
+    @param[in] indices The indices to sort the labels by (of size nLabels)
     @param[in] device
     */
     void sortLabels(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device);
     virtual void makeSortIndices(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<int, DeviceT, 2>>& indices_sort, DeviceT& device) = 0;
+
+    /*
+    @brief Select labels from the axis
+
+    @param[in] indices The indices to use for selection (of size nLabels)
+    @param[in] labels_select The reduced labels
+    @param[in] device
+    */
+    virtual void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels_select, DeviceT& device) = 0;
 
   protected:
     void setNLabels(const size_t& n_labels) { n_labels_ = n_labels; }; ///< n_labels setter
@@ -90,6 +99,16 @@ namespace TensorBase
     const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) {
     setName(name);
     setDimensionsAndLabels(dimensions, labels);
+  }
+
+  template<typename TensorT, typename DeviceT>
+  inline void TensorAxis<TensorT, DeviceT>::deleteFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device)
+  {
+    // perform the reduction on the labels and update the axis attributes
+    std::shared_ptr<TensorData<int, DeviceT, 2>> indices_select_ptr;
+    selectFromAxis(indices, indices_select_ptr, device);
+    tensor_dimension_labels_ = new_labels_ptr;
+    setNLabels(axis_size.getData()(0));
   }
 
   template<typename TensorT, typename DeviceT>
@@ -128,9 +147,9 @@ namespace TensorBase
     TensorAxisDefaultDevice(const std::string& name, const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels);
     ~TensorAxisDefaultDevice() = default; ///< Default destructor
     void setDimensionsAndLabels(const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) override;
-    void deleteFromAxis(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, Eigen::DefaultDevice& device) override;
     void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& labels, Eigen::DefaultDevice & device) override;
     void makeSortIndices(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& indices_sort, Eigen::DefaultDevice& device) override;
+    void selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& labels_select, Eigen::DefaultDevice& device) override;
   };
   template<typename TensorT>
   TensorAxisDefaultDevice<TensorT>::TensorAxisDefaultDevice(const std::string& name, const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) {
@@ -147,37 +166,6 @@ namespace TensorBase
     this->setNDimensions(labels.dimension(0));
     this->setNLabels(labels.dimension(1));
   };
-
-  template<typename TensorT>
-  inline void TensorAxisDefaultDevice<TensorT>::deleteFromAxis(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, Eigen::DefaultDevice& device)
-  {
-    // temporary memory for calculating the sum of the new axis
-    TensorDataDefaultDevice<int, 1> axis_size(Eigen::array<Eigen::Index, 1>({ 1 }));
-    axis_size.setData();
-    Eigen::TensorMap<Eigen::Tensor<int, 0>> axis_size_value(axis_size.getDataPointer().get());
-
-    // calculate the new axis size
-    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_values(indices->getDataPointer().get(), 1, (int)indices->getTensorSize());
-    auto indices_view_norm = (indices_values.cast<float>() / (indices_values.cast<float>() + indices_values.cast<float>().constant(1e-12))).cast<int>();
-    axis_size_value.device(device) = indices_view_norm.sum();
-
-    // allocate memory for the new labels
-    TensorDataDefaultDevice<TensorT, 2> new_labels(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, axis_size.getData()(0) }));
-    new_labels.setData();
-    std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>> new_labels_ptr = std::make_shared<TensorDataDefaultDevice<TensorT, 2>>(new_labels);
-
-    // broadcast the indices across the dimensions and allocate to memory
-    TensorDataDefaultDevice<int, 2> indices_select(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, (int)this->n_labels_ }));
-    indices_select.setData();
-    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_select_values(indices_select.getDataPointer().get(), indices_select.getDimensions());
-    indices_select_values.device(device) = indices_values.broadcast(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, 1 }));
-    std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> indices_select_ptr = std::make_shared<TensorDataDefaultDevice<int, 2>>(indices_select);
-
-    // perform the reduction on the labels and update the axis attributes
-    this->tensor_dimension_labels_->select(new_labels_ptr, indices_select_ptr, device);
-    this->tensor_dimension_labels_ = new_labels_ptr;
-    this->setNLabels(axis_size.getData()(0));
-  }
 
   template<typename TensorT>
   inline void TensorAxisDefaultDevice<TensorT>::appendLabelsToAxis(const std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& labels, Eigen::DefaultDevice & device)
@@ -234,6 +222,34 @@ namespace TensorBase
   }
 
   template<typename TensorT>
+  inline void TensorAxisDefaultDevice<TensorT>::selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& labels_select, Eigen::DefaultDevice & device)
+  {
+    // temporary memory for calculating the sum of the new axis
+    TensorDataDefaultDevice<int, 1> axis_size(Eigen::array<Eigen::Index, 1>({ 1 }));
+    axis_size.setData();
+    Eigen::TensorMap<Eigen::Tensor<int, 0>> axis_size_value(axis_size.getDataPointer().get());
+
+    // calculate the new axis size
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_values(indices->getDataPointer().get(), 1, (int)indices->getTensorSize());
+    axis_size_value.device(device) = indices_values.clip(0, 1).sum();
+
+    // allocate memory for the new labels
+    TensorDataDefaultDevice<TensorT, 2> new_labels(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, axis_size.getData()(0) }));
+    new_labels.setData();
+    std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>> new_labels_ptr = std::make_shared<TensorDataDefaultDevice<TensorT, 2>>(new_labels);
+
+    // broadcast the indices across the dimensions and allocate to memory
+    TensorDataDefaultDevice<int, 2> indices_select(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, (int)this->n_labels_ }));
+    indices_select.setData();
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_select_values(indices_select.getDataPointer().get(), indices_select.getDimensions());
+    indices_select_values.device(device) = indices_values.broadcast(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, 1 }));
+    std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> indices_select_ptr = std::make_shared<TensorDataDefaultDevice<int, 2>>(indices_select);
+
+    // perform the reduction on the labels and update the axis attributes
+    this->tensor_dimension_labels_->select(new_labels_ptr, indices_select_ptr, device);
+  }
+
+  template<typename TensorT>
   class TensorAxisCpu : public TensorAxis<TensorT, Eigen::ThreadPoolDevice>
   {
   public:
@@ -241,9 +257,9 @@ namespace TensorBase
     TensorAxisCpu(const std::string& name, const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels);
     ~TensorAxisCpu() = default; ///< Default destructor
     void setDimensionsAndLabels(const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) override;
-    void deleteFromAxis(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& indices, Eigen::ThreadPoolDevice& device) override;
     void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>>& labels, Eigen::ThreadPoolDevice & device) override;
     void makeSortIndices(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>>& indices_sort, Eigen::ThreadPoolDevice& device) override;
+    void selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>>& labels_select, Eigen::ThreadPoolDevice& device) override;
 
   };
   template<typename TensorT>
@@ -261,37 +277,6 @@ namespace TensorBase
     this->setNDimensions(labels.dimension(0));
     this->setNLabels(labels.dimension(1));
   };
-
-  template<typename TensorT>
-  inline void TensorAxisCpu<TensorT>::deleteFromAxis(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& indices, Eigen::ThreadPoolDevice& device)
-  {
-    // temporary memory for calculating the sum of the new axis
-    TensorDataCpu<int, 1> axis_size(Eigen::array<Eigen::Index, 1>({ 1 }));
-    axis_size.setData();
-    Eigen::TensorMap<Eigen::Tensor<int, 0>> axis_size_value(axis_size.getDataPointer().get());
-
-    // calculate the new axis size
-    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_values(indices->getDataPointer().get(), 1, (int)indices->getTensorSize());
-    auto indices_view_norm = (indices_values.cast<float>() / (indices_values.cast<float>() + indices_values.cast<float>().constant(1e-12))).cast<int>();
-    axis_size_value.device(device) = indices_view_norm.sum();
-
-    // allocate memory for the new labels
-    TensorDataCpu<TensorT, 2> new_labels(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, axis_size.getData()(0) }));
-    new_labels.setData();
-    std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>> new_labels_ptr = std::make_shared<TensorDataCpu<TensorT, 2>>(new_labels);
-
-    // broadcast the indices across the dimensions and allocate to memory
-    TensorDataCpu<int, 2> indices_select(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, (int)this->n_labels_ }));
-    indices_select.setData();
-    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_select_values(indices_select.getDataPointer().get(), indices_select.getDimensions());
-    indices_select_values.device(device) = indices_values.broadcast(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, 1 }));
-    std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>> indices_select_ptr = std::make_shared<TensorDataCpu<int, 2>>(indices_select);
-
-    // perform the reduction on the labels and update the axis attributes
-    this->tensor_dimension_labels_->select(new_labels_ptr, indices_select_ptr, device);
-    this->tensor_dimension_labels_ = new_labels_ptr;
-    this->setNLabels(axis_size.getData()(0));
-  }
 
   template<typename TensorT>
   inline void TensorAxisCpu<TensorT>::appendLabelsToAxis(const std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>>& labels, Eigen::ThreadPoolDevice & device)
@@ -345,6 +330,34 @@ namespace TensorBase
 
     // move over the results
     indices_sort = std::make_shared<TensorDataCpu<int, 2>>(indices_sort_tmp);
+  }
+
+  template<typename TensorT>
+  inline void TensorAxisCpu<TensorT>::selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>>& labels_select, Eigen::ThreadPoolDevice & device)
+  {
+    // temporary memory for calculating the sum of the new axis
+    TensorDataCpu<int, 1> axis_size(Eigen::array<Eigen::Index, 1>({ 1 }));
+    axis_size.setData();
+    Eigen::TensorMap<Eigen::Tensor<int, 0>> axis_size_value(axis_size.getDataPointer().get());
+
+    // calculate the new axis size
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_values(indices->getDataPointer().get(), 1, (int)indices->getTensorSize());
+    axis_size_value.device(device) = indices_values.clip(0, 1).sum();
+
+    // allocate memory for the new labels
+    TensorDataCpu<TensorT, 2> new_labels(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, axis_size.getData()(0) }));
+    new_labels.setData();
+    std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>> new_labels_ptr = std::make_shared<TensorDataCpu<TensorT, 2>>(new_labels);
+
+    // broadcast the indices across the dimensions and allocate to memory
+    TensorDataCpu<int, 2> indices_select(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, (int)this->n_labels_ }));
+    indices_select.setData();
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_select_values(indices_select.getDataPointer().get(), indices_select.getDimensions());
+    indices_select_values.device(device) = indices_values.broadcast(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, 1 }));
+    std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>> indices_select_ptr = std::make_shared<TensorDataCpu<int, 2>>(indices_select);
+
+    // perform the reduction on the labels and update the axis attributes
+    this->tensor_dimension_labels_->select(new_labels_ptr, indices_select_ptr, device);
   }
 };
 #endif //TENSORBASE_TENSORAXIS_H

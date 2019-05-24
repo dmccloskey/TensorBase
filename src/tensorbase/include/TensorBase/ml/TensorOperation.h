@@ -38,7 +38,7 @@ namespace TensorBase
   inline void TensorAppendToAxis<LabelsT, TensorT, DeviceT, TDim>::undo(TensorCollection<DeviceT> & tensor_collection, DeviceT& device)
   {
     // Delete from the axis
-    tensor_collection.tables_.at(table_name)->deleteFromAxis(axis_name_, axis_index_, labels_->getDimensions().at(1), device);
+    tensor_collection.tables_.at(table_name)->deleteFromAxis(axis_name_, indices_, device);
   }
 
   template<typename LabelsT, typename TensorT, typename DeviceT, int TDim>

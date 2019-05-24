@@ -28,6 +28,8 @@ namespace TensorBase
     void sliceTensorDataForSort(std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 1>>& tensor_sort, const std::string& axis_name_sort, const int& label_index_sort, const std::string& axis_name_apply, Eigen::DefaultDevice& device) override;
     void makeSortIndicesViewFromIndicesView(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_sort, Eigen::DefaultDevice& device) override;
     int getFirstIndexFromIndicesView(const std::string& axis_name, Eigen::DefaultDevice& device) override;
+    // Delete from Axis methods
+    void makeSelectIndicesFromIndices(const std::string& axis_name, const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_select, Eigen::DefaultDevice& device) override;
   };
 
   template<typename TensorT, int TDim>
@@ -242,8 +244,7 @@ namespace TensorBase
       
       // normalize and broadcast the indices across the tensor
       Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_view_reshape(this->indices_view_.at(axis_to_index.first)->getDataPointer().get(), indices_reshape_dimensions);
-      auto indices_view_norm = (indices_view_reshape.cast<float>() / (indices_view_reshape.cast<float>() + indices_view_reshape.cast<float>().constant(1e-12))).cast<int>();
-      auto indices_view_bcast_values = indices_view_norm.broadcast(indices_bcast_dimensions);
+      auto indices_view_bcast_values = indices_view_reshape.clip(0, 1).broadcast(indices_bcast_dimensions);
 
       // update the indices_select_values
       indices_select_values.device(device) = indices_select_values * indices_view_bcast_values;
@@ -363,6 +364,40 @@ namespace TensorBase
   inline int TensorTableDefaultDevice<TensorT, TDim>::getFirstIndexFromIndicesView(const std::string& axis_name, Eigen::DefaultDevice & device)
   {
     return this->indices_view_.at(axis_name)->getData()(0); // the first occurance of the label
+  }
+  template<typename TensorT, int TDim>
+  inline void TensorTableDefaultDevice<TensorT, TDim>::makeSelectIndicesFromIndices(const std::string & axis_name, const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_select, Eigen::DefaultDevice & device)
+  {
+    // allocate memory for the indices
+    TensorDataDefaultDevice<int, TDim> indices_select_tmp(this->getDimensions());
+    Eigen::Tensor<int, TDim> ones(this->getDimensions());
+    ones.setConstant(1);
+    indices_select_tmp.setData(ones);
+    Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_select_values(indices_select_tmp.getDataPointer().get(), indices_select_tmp.getDimensions());
+
+    // Determine the dimensions for reshaping and broadcasting
+    Eigen::array<int, TDim> indices_bcast_reshape;
+    Eigen::array<int, TDim> indices_bcast_dimensions;
+    for (const auto& axis_to_index : this->axes_to_dims_) {
+      if (axis_to_index.first == axis_name) {
+        indices_bcast_dimensions.at(axis_to_index.second) = 1;
+        indices_reshape_dimensions.at(axis_to_index.second) = (int)this->axes_.at(axis_to_index.first)->getNLabels();
+      }
+      else {
+        indices_reshape_dimensions.at(axis_to_index.second) = 1;
+        indices_bcast_dimensions.at(axis_to_index.second) = this->dimensions_.at(axis_to_index.second);
+      }
+    }
+
+    // normalize and broadcast the indices across the tensor
+    Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_view_reshape(indices->getDataPointer().get(), indices_reshape_dimensions);
+    auto indices_view_bcast_values = indices_view_reshape.clip(0, 1).broadcast(indices_bcast_dimensions);
+
+    // update the indices_select_values
+    indices_select_values.device(device) = indices_select_values * indices_view_bcast_values;
+
+    // move over the results
+    indices_select = std::make_shared<TensorDataDefaultDevice<int, TDim>>(indices_select_tmp);
   }
 };
 #endif //TENSORBASE_TENSORTABLEDEFAULTDEVICE_H
