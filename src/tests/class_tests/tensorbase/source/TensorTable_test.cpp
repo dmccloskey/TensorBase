@@ -1591,14 +1591,13 @@ BOOST_AUTO_TEST_CASE(deleteFromAxisDefaultDevice)
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> indices_to_select_ptr = std::make_shared<TensorDataDefaultDevice<int, 1>>(indices_to_select);
 
   // test deleteFromAxis
-  TensorDataDefaultDevice<int, 2> labels(Eigen::array<Eigen::Index, 2>({ 1, 2 }));
-  labels.setData();
-  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_ptr = std::make_shared<TensorDataDefaultDevice<int, 2>>(labels);
+  //TensorDataDefaultDevice<int, 2> labels(Eigen::array<Eigen::Index, 2>({ 1, 2 }));
+  //labels.setData();
+  //std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_ptr = std::make_shared<TensorDataDefaultDevice<int, 2>>(labels);
   TensorDataDefaultDevice<float, 3> values(Eigen::array<Eigen::Index, 3>({ 1, nlabels, nlabels }));
   values.setData();
   std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 3>> values_ptr = std::make_shared<TensorDataDefaultDevice<float, 3>>(values);
-  //std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_ptr;
-  //std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 3>> values_ptr;
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_ptr;
   tensorTable.deleteFromAxis("1", indices_to_select_ptr, labels_ptr, values_ptr->getDataPointer(), device);
 
   // test the expected indices sizes and values

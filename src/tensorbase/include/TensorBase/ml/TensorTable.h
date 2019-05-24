@@ -869,7 +869,6 @@ namespace TensorBase
     makeIndicesViewSelectFromIndices(axis_name, indices_select_labels_copy, indices, false, device);
 
     // Copy the labels prior to deleting
-    // TODO: could be made more efficient to avoid the memory allocation in `selectFromAxis`
     axes_.at(axis_name)->selectFromAxis(indices_select_labels_copy, labels, device);
 
     // Make the selection indices for copying the tensor data
@@ -884,6 +883,12 @@ namespace TensorBase
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> values_values(values.get(), values_copy_ptr->getDimensions());
     values_values.device(device) = values_copy;
 
+    deleteFromAxis(axis_name, indices, device);
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::deleteFromAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device)
+  {
     // Make the selection indices for deleting the labels
     std::shared_ptr<TensorData<int, DeviceT, 1>> indices_select_labels_delete;
     makeIndicesViewSelectFromIndices(axis_name, indices_select_labels_delete, indices, true, device);
