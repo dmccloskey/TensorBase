@@ -30,6 +30,7 @@ namespace TensorBase
     int getFirstIndexFromIndicesView(const std::string& axis_name, Eigen::DefaultDevice& device) override;
     // Delete from Axis methods
     void makeSelectIndicesFromIndices(const std::string& axis_name, const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_select, Eigen::DefaultDevice& device) override;
+    void getSelectTensorDataFromIndices(std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_select, const Eigen::array<Eigen::Index, TDim>& dimensions_select, Eigen::DefaultDevice& device) override;
   };
 
   template<typename TensorT, int TDim>
@@ -233,7 +234,7 @@ namespace TensorBase
       Eigen::array<int, TDim> indices_bcast_dimensions;
       for (int i = 0; i < TDim; ++i) {
         if (i == this->axes_to_dims_.at(axis_to_index.first)) {
-          indices_reshape_dimensions.at(i) = (int)this->axes_.at(axis_to_index.first)->getNLabels();
+          indices_reshape_dimensions.at(i) = this->dimensions_.at(i);
           indices_bcast_dimensions.at(i) = 1;
         }
         else {
@@ -273,13 +274,7 @@ namespace TensorBase
       select_dimensions.at(axis_to_name.second) = dim_size.getData()(0);
     }
 
-    // allocate memory for the selected tensor
-    TensorDataDefaultDevice<TensorT, TDim> tensor_select_tmp(select_dimensions);
-    tensor_select_tmp.setData();
-    tensor_select = std::make_shared<TensorDataDefaultDevice<TensorT, TDim>>(tensor_select_tmp);
-
-    // select the tensor
-    this->data_->select(tensor_select, indices_select, device);
+    this->getSelectTensorDataFromIndices(tensor_select, indices_select, select_dimensions, device);
   }
 
   template<typename TensorT, int TDim>
@@ -396,6 +391,18 @@ namespace TensorBase
 
     // move over the results
     indices_select = std::make_shared<TensorDataDefaultDevice<int, TDim>>(indices_select_tmp);
+  }
+
+  template<typename TensorT, int TDim>
+  inline void TensorTableDefaultDevice<TensorT, TDim>::getSelectTensorDataFromIndices(std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_select, const Eigen::array<Eigen::Index, TDim>& dimensions_select, Eigen::DefaultDevice & device)
+  {
+    // allocate memory for the selected tensor
+    TensorDataDefaultDevice<TensorT, TDim> tensor_select_tmp(dimensions_select);
+    tensor_select_tmp.setData();
+    tensor_select = std::make_shared<TensorDataDefaultDevice<TensorT, TDim>>(tensor_select_tmp);
+
+    // select the tensor
+    this->data_->select(tensor_select, indices_select, device);
   }
 };
 #endif //TENSORBASE_TENSORTABLEDEFAULTDEVICE_H

@@ -317,7 +317,16 @@ namespace TensorBase
     @param[in] device
     */
     virtual void makeSelectIndicesFromIndices(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, DeviceT& device) = 0;
-    
+
+    /*
+    @brief Select the Tensor data and return the selected/reduced data
+
+    @param[out] tensor_select The selected/reduced tensor data
+    @param[in] indices_select The broadcasted indices view to perform the selection on
+    @param[in] device
+    */
+    virtual void getSelectTensorDataFromIndices(std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, const Eigen::array<Eigen::Index, TDim>& dimensions_select, DeviceT& device) = 0;
+
     /*
     @brief Expand the size of the axis by concatenating the new indices
 
@@ -875,8 +884,6 @@ namespace TensorBase
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> values_values(values.get(), values_copy_ptr->getDimensions());
     values_values.device(device) = values_copy;
 
-    // OPTION 1: remake only the changed axis
-
     // Make the selection indices for deleting the labels
     std::shared_ptr<TensorData<int, DeviceT, 1>> indices_select_labels_delete;
     makeIndicesViewSelectFromIndices(axis_name, indices_select_labels_delete, indices, true, device);
@@ -890,15 +897,13 @@ namespace TensorBase
 
     // select the tensor data based on the selection indices and update
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> tensor_select;
-    //getSelectTensorDataFromIndices(tensor_select, indices_select_data_delete, device); // TODO
-    //data_ = tensor_select;
+    Eigen::array<Eigen::Index, TDim> dimensions_select = getDimensions();
+    dimensions_select.at(axes_to_dims_.at(axis_name)) -= indices->getTensorSize();
+    getSelectTensorDataFromIndices(tensor_select, indices_select_data_delete, dimensions_select, device);
+    data_ = tensor_select;
 
     // reduce the indices
     deleteFromIndices(axis_name, indices, device);
-
-    // OPTION 2:
-    // update the indices view with the select indices
-    // selectTensorData(device);
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
