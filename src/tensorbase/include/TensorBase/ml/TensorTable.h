@@ -142,7 +142,7 @@ namespace TensorBase
     @brief Broadcast the axis indices view across the entire tensor
       and allocate to memory
 
-    @param[out] indices_view_bcast
+    @param[out] indices_view_bcast ([in] empty pointer)
     @param[in] axis_name
     */
     virtual void broadcastSelectIndicesView(std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_view_bcast, const std::string& axis_name, DeviceT& device) = 0;
@@ -152,7 +152,7 @@ namespace TensorBase
       and allocate to memory
 
     @param[in] indices_view_bcast The indices (0 or 1) to select from
-    @param[out] tensor_select The selected tensor with reduced dimensions according to the indices_view_bcast indices
+    @param[out] tensor_select The selected tensor with reduced dimensions according to the indices_view_bcast indices (empty pointer)
     @param[in] axis_name The name of the axis to reduce along
     @param[in] n_select The size of the reduced dimensions
     @param[in] device
@@ -163,7 +163,7 @@ namespace TensorBase
     @brief Select indices from the tensor based on a selection criteria
       and allocate to memory
 
-    @param[out] indices_select The indices that passed or did not pass the selection criteria
+    @param[out] indices_select The indices that passed or did not pass the selection criteria ([in] empty pointer)
     @param[in] values_select The values to use for comparison
     @param[in] tensor_select The to apply the selection criteria to
     @param[in] axis_name The name of the axis to reduce along
@@ -190,7 +190,7 @@ namespace TensorBase
     /*
     @brief Slice out the 1D Tensor that will be sorted on
 
-    @param[out] tensor_sort The 1D Tensor to sort
+    @param[out] tensor_sort The 1D Tensor to sort ([in] empty pointer)
     @param[in] axis_name_sort The name of the axis that the sort will be based on
     @param[in] label_index_sort The label index that the sort will be based on
     @param[in] axis_name_apply The name of the axis that the sort will be applied to
@@ -222,7 +222,7 @@ namespace TensorBase
       2. broadcasting all indices to the size of the Tensor
       3. multiplying all indices together
 
-    @param[out] indices_select Pointer to the indices Tensor
+    @param[out] indices_select Pointer to the indices Tensor ([in] empty pointer)
     @param[in] device
     */
     virtual void makeSelectIndicesFromIndicesView(std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, DeviceT& device) = 0;
@@ -230,7 +230,7 @@ namespace TensorBase
     /*
     @brief Select the Tensor data and return the selected/reduced data
 
-    @param[out] tensor_select The selected/reduced tensor data
+    @param[out] tensor_select The selected/reduced tensor data ([in] empty pointer)
     @param[in] indices_select The broadcasted indices view to perform the selection on
     @param[in] device
     */
@@ -253,7 +253,7 @@ namespace TensorBase
         b. broadcast to the size of the tensor
         c. add all adjusted axis tensors together
 
-    @param[out] indices_sort pointer to the indices sort Tensor
+    @param[out] indices_sort pointer to the indices sort Tensor ([in] empty pointer)
     @param[in] device
     */
     virtual void makeSortIndicesViewFromIndicesView(std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_sort, DeviceT& device) = 0;
@@ -262,7 +262,7 @@ namespace TensorBase
     @brief Update the tensor data and optionally return the original values
 
     @param[in] values_new The new tensor data
-    @param[out] values_old The old tensor data
+    @param[out] values_old The old tensor data ([in] memory should already have been allocated and synced)
     @param[in] device
     */
     template<typename T>
@@ -280,13 +280,23 @@ namespace TensorBase
     @param[in] axis_name The axis to append the labels and data to
     @param[in] labels The labels to append to the axis
     @param[in] values The values to append to the tensor data along the specified axis
-    @param[out] indices A 1D Tensor of indices that were added (memory should already have been allocated and synced)
+    @param[out] indices A 1D Tensor of indices that were added ([in] empty pointer)
     @param[in] device
     */
     template<typename LabelsT, typename T>
     void appendToAxisConcept(const std::string& axis_name, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<T>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device);
     template<typename LabelsT>
     void appendToAxis(const std::string& axis_name, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<TensorT>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device);
+    
+    /*
+    @brief Make the extended indices that will be appended to the existing indices
+
+    @param[in] axis_name The axis to append the labels and data to
+    @param[in] n_labels The number of labels to extend the indices by
+    @param[out] indices A 1D Tensor of indices that were added ([in] empty pointer)
+    @param[in] device
+    */
+    virtual void makeAppendIndices(const std::string& axis_name, const int& n_labels, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) = 0;
 
     /*
     @brief Delete a specified number of labels and sized slice of the TensorData at a specified position
@@ -294,8 +304,8 @@ namespace TensorBase
 
     @param[in] axis_name The axis to append the labels and data to
     @param[in] indices A 1D Tensor of indices to delete
-    @param[out] labels The labels that were deleted (memory should already have been allocated and synced)
-    @param[out] values The values that were deleted (memory should already have been allocated and synced)
+    @param[out] labels The labels that were deleted ([in] empty pointer)
+    @param[out] values The values that were deleted ([in] memory should already have been allocated and synced)
     @param[in] device
     */
     template<typename LabelsT, typename T>
@@ -313,7 +323,7 @@ namespace TensorBase
 
     @param[in] axis_name The name of the axis that the indices correspond to
     @param[in] indices The `indices_view` -like Tensor to broadcast for selection
-    @param[out] indices_select Pointer to the indices Tensor
+    @param[out] indices_select Pointer to the indices Tensor ([in] empty pointer)
     @param[in] device
     */
     virtual void makeSelectIndicesFromIndices(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, DeviceT& device) = 0;
@@ -321,7 +331,7 @@ namespace TensorBase
     /*
     @brief Select the Tensor data and return the selected/reduced data
 
-    @param[out] tensor_select The selected/reduced tensor data
+    @param[out] tensor_select The selected/reduced tensor data ([in] empty pointer)
     @param[in] indices_select The broadcasted indices view to perform the selection on
     @param[in] device
     */
@@ -827,10 +837,7 @@ namespace TensorBase
     data_copy->syncHAndDData(device);
 
     // Make the extended axis indices
-    int axis_index = data_->getDimensions().at(axes_to_dims_.at(axis_name));
-    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_values(indices->getDataPointer().get(), labels->getDimensions().at(1));
-    auto indices_values_tmp = indices_values.constant(axis_index + 1).cumsum(0, false);
-    indices_values.device(device) = indices_values_tmp;
+    makeAppendIndices(axis_name, labels->getDimensions().at(1), indices, device);
 
     // Update the axis indices
     Eigen::array<Eigen::Index, 1> axis_dimensions = indices_.at(axis_name)->getDimensions();

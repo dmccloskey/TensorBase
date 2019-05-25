@@ -84,7 +84,7 @@ namespace TensorBase
     // Execute the select methods on the tensor_collection
     select_function_(tensor_collection, device);
 
-    // Update the values with the `values_new`
+    // Update the values with the `values_new` and copy the original values into the `values_old`
     values_old_ = values_new_->copy(device);
     values_new_->syncHAndDData(device);
     values_old_->syncHAndDData(device);

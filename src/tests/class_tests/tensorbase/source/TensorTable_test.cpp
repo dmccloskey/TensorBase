@@ -1263,6 +1263,38 @@ BOOST_AUTO_TEST_CASE(updateTensorData2DefaultDevice)
   }
 }
 
+BOOST_AUTO_TEST_CASE(makeAppendIndicesDefaultDevice)
+{
+  // setup the table
+  TensorTableDefaultDevice<float, 3> tensorTable;
+  Eigen::DefaultDevice device;
+
+  // setup the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels = 3;
+  Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels), labels3(1, nlabels);
+  labels1.setValues({ {0, 1, 2} });
+  labels2.setValues({ {0, 1, 2} });
+  labels3.setValues({ {0, 1, 2} });
+  auto axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1));
+  auto axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2));
+  auto axis_3_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3));
+  tensorTable.addTensorAxis(axis_1_ptr);
+  tensorTable.addTensorAxis(axis_2_ptr);
+  tensorTable.addTensorAxis(axis_3_ptr);
+  tensorTable.setAxes();
+
+  // test the making the append indices
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> indices_ptr;
+  tensorTable.makeAppendIndices("1", nlabels, indices_ptr, device);
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_EQUAL(indices_ptr->getData()(i), nlabels + i + 1);
+  }
+}
+
 BOOST_AUTO_TEST_CASE(appendToIndicesDefaultDevice)
 {
   // setup the table
@@ -1591,9 +1623,6 @@ BOOST_AUTO_TEST_CASE(deleteFromAxisDefaultDevice)
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> indices_to_select_ptr = std::make_shared<TensorDataDefaultDevice<int, 1>>(indices_to_select);
 
   // test deleteFromAxis
-  //TensorDataDefaultDevice<int, 2> labels(Eigen::array<Eigen::Index, 2>({ 1, 2 }));
-  //labels.setData();
-  //std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_ptr = std::make_shared<TensorDataDefaultDevice<int, 2>>(labels);
   TensorDataDefaultDevice<float, 3> values(Eigen::array<Eigen::Index, 3>({ 1, nlabels, nlabels }));
   values.setData();
   std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 3>> values_ptr = std::make_shared<TensorDataDefaultDevice<float, 3>>(values);
