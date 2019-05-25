@@ -366,16 +366,19 @@ namespace TensorBase
   template<typename TensorT, int TDim>
   inline void TensorTableDefaultDevice<TensorT, TDim>::makeAppendIndices(const std::string & axis_name, const int & n_labels, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, Eigen::DefaultDevice & device)
   {
-    // Allocate memory for the extendiced axis indices
+    // Allocate memory for the extend axis indices
     TensorDataDefaultDevice<int, 1> indices_tmp(Eigen::array<Eigen::Index, 1>({n_labels}));
     indices_tmp.setData();
     indices_tmp.syncHAndDData(device);
 
+    // Determine the maximum index value
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_view_values(this->indices_view_.at(axis_name)->getDataPointer().get(), this->indices_view_.at(axis_name)->getTensorSize(), 1);
+    auto max_bcast = indices_view_values.maximum(Eigen::array<Eigen::Index, 1>({ 0 })).broadcast(Eigen::array<Eigen::Index, 1>({ n_labels }));
+
     // Make the extended axis indices
-    int axis_index = data_->getDimensions().at(axes_to_dims_.at(axis_name));
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_values(indices_tmp.getDataPointer().get(), n_labels);
     auto tmp = indices_values.constant(1).cumsum(0, false);
-    indices_values.device(device) = indices_values.constant(axis_index) + tmp;
+    indices_values.device(device) = max_bcast + tmp;
 
     // Move over the indices to the output
     indices = std::make_shared<TensorDataDefaultDevice<int, 1>>(indices_tmp);

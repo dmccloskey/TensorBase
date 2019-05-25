@@ -877,12 +877,8 @@ namespace TensorBase
     auto data_copy = data_->copy(device);
     data_copy->syncHAndDData(device);
 
-    // Make the extended axis indices
+    // Make the extended axis indices and append to the index
     makeAppendIndices(axis_name, labels->getDimensions().at(1), indices, device);
-
-    // Update the axis indices
-    Eigen::array<Eigen::Index, 1> axis_dimensions = indices_.at(axis_name)->getDimensions();
-    axis_dimensions.at(0) += labels->getDimensions().at(1);
     appendToIndices(axis_name, indices, device);
 
     // Resize and reset the current data
@@ -1124,10 +1120,15 @@ namespace TensorBase
 
     // Swap the appended indices for the original indices
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_values(indices_view_.at(axis_name)->getDataPointer().get(), indices_view_.at(axis_name)->getDimensions());
-    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_values(indices->getDataPointer().get(), indices->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_values(indices_.at(axis_name)->getDataPointer().get(), indices_.at(axis_name)->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_old_values(indices->getDataPointer().get(), indices->getDimensions());
     Eigen::array<int, 1> offsets = { indices_view_.at(axis_name)->getTensorSize() - indices->getTensorSize() };
     Eigen::array<int, 1> extents = { indices->getTensorSize() };
-    indices_view_values.slice(offsets, extents).device(device) = indices_values;
+    indices_view_values.slice(offsets, extents).device(device) = indices_old_values;
+    indices_values.slice(offsets, extents).device(device) = indices_old_values;
+
+    // Sort the indices
+    indices_.at(axis_name)->sort("ASC", device); // NOTE: this could fail if there are 0's in the index!
 
     // Sort the axis and tensor based on the indices view
     sortTensorData(device);

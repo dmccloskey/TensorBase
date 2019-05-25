@@ -1734,12 +1734,10 @@ BOOST_AUTO_TEST_CASE(insertIntoAxisDefaultDevice)
 
   // setup the tensor data
   Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
-  int iter = 0;
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {
       for (int i = 0; i < nlabels; ++i) {
-        tensor_values(i, j, k) = float(iter);
-        ++iter;
+        tensor_values(i, j, k) = i + j * nlabels + k * nlabels*nlabels;
       }
     }
   }
@@ -1749,7 +1747,7 @@ BOOST_AUTO_TEST_CASE(insertIntoAxisDefaultDevice)
   Eigen::Tensor<float, 3> update_values(Eigen::array<Eigen::Index, 3>({ 1, nlabels, nlabels }));
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
-      update_values(0, i, j) = i;
+      update_values(0, i, j) = 100;
     }
   }
   TensorDataDefaultDevice<float, 3> values_new(Eigen::array<Eigen::Index, 3>({ 1, nlabels, nlabels }));
@@ -1758,36 +1756,46 @@ BOOST_AUTO_TEST_CASE(insertIntoAxisDefaultDevice)
 
   // setup the new axis labels
   Eigen::Tensor<int, 2> labels_values(Eigen::array<Eigen::Index, 2>({ 1, 1 }));
-  labels_values(0, 0) = 3;
+  labels_values(0, 0) = 100;
   TensorDataDefaultDevice<int, 2> labels_new(Eigen::array<Eigen::Index, 2>({ 1, 1 }));
   labels_new.setData(labels_values);
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_new_ptr = std::make_shared<TensorDataDefaultDevice<int, 2>>(labels_new);
 
   // setup the new indices
   Eigen::Tensor<int, 1> indices_values(Eigen::array<Eigen::Index, 1>({ 1 }));
-  indices_values(0) = 2;
+  indices_values(0) = 3;
   TensorDataDefaultDevice<int, 1> indices_new(Eigen::array<Eigen::Index, 1>({ 1 }));
   indices_new.setData(indices_values);
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> indices_new_ptr = std::make_shared<TensorDataDefaultDevice<int, 1>>(indices_new);
 
+  // Change the indices and indices view to simulate a deletion
+  tensorTable.getIndices().at("1")->getData()(nlabels - 1) = 4;
+  tensorTable.getIndicesView().at("1")->getData()(nlabels - 1) = 4;
+
   // test appendToAxis
   tensorTable.insertIntoAxis("1", labels_new_ptr, values_new_ptr->getDataPointer(), indices_new_ptr, device);
-  iter = 0;
-  for (int i = 0; i < nlabels; ++i) {
-    BOOST_CHECK_EQUAL(axis_1_ptr->getLabels()(0, i), labels1(i));
+  int iter = 0;
+  for (int i = 0; i < nlabels + 1; ++i) {
+    // check the axis
+    if (i == 2)
+      BOOST_CHECK_EQUAL(axis_1_ptr->getLabels()(0, i), 100);
+    else
+      BOOST_CHECK_EQUAL(axis_1_ptr->getLabels()(0, i), labels1(iter));
+
+    // check the indices
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->getData()(i), i + 1);
+
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
-        BOOST_CHECK_EQUAL(tensorTable.getData()->getData()(i, j, k), tensor_values(i, j, k));
+        // check the tensor data
+        if (i == 2)
+          BOOST_CHECK_EQUAL(tensorTable.getData()->getData()(i, j, k), 100);
+        else
+          BOOST_CHECK_EQUAL(tensorTable.getData()->getData()(i, j, k), tensor_values(iter, j, k));
       }
     }
+    if (i != 2) ++iter;
   }
-  BOOST_CHECK_EQUAL(axis_1_ptr->getLabels()(0, nlabels), 3);
-  for (int i = 0; i < nlabels; ++i) {
-    for (int j = 0; j < nlabels; ++j) {
-      BOOST_CHECK_EQUAL(tensorTable.getData()->getData()(nlabels, i, j), update_values(0, i, j));
-    }
-  }
-  BOOST_CHECK_EQUAL(indices_new_ptr->getData()(0), nlabels + 1);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
