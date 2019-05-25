@@ -229,16 +229,16 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorAppendToAxis)
 /*TensorDeleteFromAxis Tests*/
 BOOST_AUTO_TEST_CASE(constructorTensorDeleteFromAxis)
 {
-  TensorDeleteFromAxis<int, float, Eigen::DefaultDevice, 3>* ptr = nullptr;
-  TensorDeleteFromAxis<int, float, Eigen::DefaultDevice, 3>* nullPointer = nullptr;
-  ptr = new TensorDeleteFromAxis<int, float, Eigen::DefaultDevice, 3>();
+  TensorDeleteFromAxisDefaultDevice<int, float, 3>* ptr = nullptr;
+  TensorDeleteFromAxisDefaultDevice<int, float, 3>* nullPointer = nullptr;
+  ptr = new TensorDeleteFromAxisDefaultDevice<int, float, 3>();
   BOOST_CHECK_NE(ptr, nullPointer);
 }
 
 BOOST_AUTO_TEST_CASE(destructorTensorDeleteFromAxis)
 {
-  TensorDeleteFromAxis<int, float, Eigen::DefaultDevice, 3>* ptr = nullptr;
-  ptr = new TensorDeleteFromAxis<int, float, Eigen::DefaultDevice, 3>();
+  TensorDeleteFromAxisDefaultDevice<int, float, 3>* ptr = nullptr;
+  ptr = new TensorDeleteFromAxisDefaultDevice<int, float, 3>();
   delete ptr;
 }
 
@@ -312,7 +312,7 @@ BOOST_AUTO_TEST_CASE(redoAndTensorDeleteFromAxis)
   }
 
   // Test redo to delete the specified values
-  TensorDeleteFromAxis<int, float, Eigen::DefaultDevice, 3> deleteFromAxis("1", "2", DeleteTable1());
+  TensorDeleteFromAxisDefaultDevice<int, float, 3> deleteFromAxis("1", "2", DeleteTable1());
   deleteFromAxis.redo(collection_1, device);
 
   // Test for the expected table data

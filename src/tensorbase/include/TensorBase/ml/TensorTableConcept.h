@@ -28,6 +28,7 @@ namespace TensorBase
     virtual std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIsShardable() = 0;
     virtual void resetIndicesView(const std::string& axis_name, DeviceT& device) = 0;
     virtual void makeIndicesFromIndicesView(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) = 0;
+    virtual int getDimFromAxisName(const std::string& axis_name) = 0;
 
     /*
     All LabelT and DeviceT combos of `selectIndicesView`
@@ -155,6 +156,7 @@ namespace TensorBase
     void makeIndicesFromIndicesView(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) { 
       tensor_table_->makeIndicesFromIndicesView(axis_name, indices, device);
     };
+    int getDimFromAxisName(const std::string& axis_name) { return tensor_table_->getDimFromAxisName(axis_name); };
 
     void selectIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<int, DeviceT, 1>>& select_labels, DeviceT& device) {
       tensor_table_->selectIndicesView(axis_name, dimension_index, select_labels, device);

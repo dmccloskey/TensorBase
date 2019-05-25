@@ -29,7 +29,7 @@ namespace TensorBase
       table_name_(table_name), axis_name_(axis_name), labels_(labels), values_(values) {};
     void redo(TensorCollection<DeviceT>& tensor_collection, DeviceT& device);
     void undo(TensorCollection<DeviceT>& tensor_collection, DeviceT& device);
-  private:
+  protected:
     std::string table_name_; // Redo/Undo
     std::string axis_name_; // Redo/Undo
     std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> labels_; // Redo/Undo
@@ -57,7 +57,8 @@ namespace TensorBase
       table_name_(table_name), axis_name_(axis_name), select_function_(select_function) {};
     void redo(TensorCollection<DeviceT>& tensor_collection, DeviceT& device);
     void undo(TensorCollection<DeviceT>& tensor_collection, DeviceT& device);
-  private:
+    virtual void allocateMemoryForValues(TensorCollection<DeviceT>& tensor_collection, DeviceT& device) = 0;
+  protected:
     std::function<void(TensorCollection<DeviceT>& tensor_collection, DeviceT& device)> select_function_; // Redo
     std::string table_name_; // Undo/Redo
     std::string axis_name_; // Undo/Redo
@@ -76,11 +77,10 @@ namespace TensorBase
     tensor_collection.tables_.at(table_name_)->resetIndicesView(axis_name_, device);
 
     // Determine the dimensions of the deletion and allocate to memory
-    // tensor_collection.tables_.at(table_name_)->allocateSelectedValuesToMemory(axis_name_, indices_, device);
+    allocateMemoryForValues(tensor_collection, device);
 
     // Delete the selected labels
-    //tensor_collection.tables_.at(table_name_)->deleteFromAxis(axis_name_, indices_, labels_, values_->getDataPointer(), device);
-    tensor_collection.tables_.at(table_name_)->deleteFromAxis(axis_name_, indices_, device);
+    tensor_collection.tables_.at(table_name_)->deleteFromAxis(axis_name_, indices_, labels_, values_->getDataPointer(), device);
   }
   template<typename LabelsT, typename TensorT, typename DeviceT, int TDim>
   inline void TensorDeleteFromAxis<LabelsT, TensorT, DeviceT, TDim>::undo(TensorCollection<DeviceT> & tensor_collection, DeviceT& device)
@@ -92,6 +92,29 @@ namespace TensorBase
     // Sort based on the indices
   }
 
+  template<typename LabelsT, typename TensorT, int TDim>
+  class TensorDeleteFromAxisDefaultDevice : public TensorDeleteFromAxis<LabelsT, TensorT, Eigen::DefaultDevice, TDim> {
+  public:
+    using TensorDeleteFromAxis<LabelsT, TensorT, Eigen::DefaultDevice, TDim>::TensorDeleteFromAxis;
+    void allocateMemoryForValues(TensorCollection<Eigen::DefaultDevice>& tensor_collection, Eigen::DefaultDevice& device) override;
+  };
+
+  template<typename LabelsT, typename TensorT, int TDim>
+  inline void TensorDeleteFromAxisDefaultDevice<LabelsT, TensorT, TDim>::allocateMemoryForValues(TensorCollection<Eigen::DefaultDevice>& tensor_collection, Eigen::DefaultDevice & device)
+  {
+    // Determine the dimensions of the values that will be deleted
+    Eigen::array<Eigen::Index, TDim> dimensions_new;
+    for (auto& axis_map: tensor_collection.tables_.at(this->table_name_)->getAxes()) {
+      dimensions_new.at(tensor_collection.tables_.at(this->table_name_)->getDimFromAxisName(axis_map.second->getName())) = axis_map.second->getNLabels();
+    }
+    dimensions_new.at(tensor_collection.tables_.at(this->table_name_)->getDimFromAxisName(this->axis_name_)) -= this->indices_->getTensorSize();
+
+    // Allocate memory for the values
+    TensorDataDefaultDevice<TensorT, TDim> values_tmp(dimensions_new);
+    values_tmp.setData();
+    this->values_ = std::make_shared<TensorDataDefaultDevice<TensorT, TDim>>(values_tmp);
+  }
+
   template<typename TensorT, typename DeviceT, int TDim>
   class TensorUpdate : public TensorOperation<DeviceT> {
   public:
@@ -101,7 +124,7 @@ namespace TensorBase
     void redo(TensorCollection<DeviceT>& tensor_collection, DeviceT& device);
     void undo(TensorCollection<DeviceT>& tensor_collection, DeviceT& device);
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> getValuesOld() const { return values_old_; };
-  private:
+  protected:
     std::function<void(TensorCollection<DeviceT>& tensor_collection, DeviceT& device)> select_function_; // Redo/Undo
     std::string table_name_; // Undo/Redo
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> values_new_; // Redo
