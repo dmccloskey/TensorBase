@@ -277,6 +277,8 @@ namespace TensorBase
     /*
     @brief Append new labels to the specified axis and append new data to the Tensor Data at the specified axis
 
+    NOTE: that the existing indexes of each axis are not changed to allow for undo operations
+
     @param[in] axis_name The axis to append the labels and data to
     @param[in] labels The labels to append to the axis
     @param[in] values The values to append to the tensor data along the specified axis
@@ -301,6 +303,8 @@ namespace TensorBase
     /*
     @brief Delete a specified number of labels and sized slice of the TensorData at a specified position
       with an optional return of the deleted labels and tensordata
+
+    NOTE: that the existing indexes of each axis are not changed to allow for undo operations
 
     @param[in] axis_name The axis to append the labels and data to
     @param[in] indices A 1D Tensor of indices to delete
@@ -360,6 +364,20 @@ namespace TensorBase
     @param[in] device
     */
     void makeIndicesViewSelectFromIndices(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices_select, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, const bool& invert_selection, DeviceT& device);
+
+    /*
+    @brief Convert the indices view to a reduced 1D tensor of non zero indices
+
+    The conversion is done by the following algorithm:
+      1. normalize the `indices_view` to zero and 1
+      2. determine the size of the indices and allocate to memory
+      3. select only the non-zero indices
+
+    @param[in] axis_name The name of the axis
+    @param[out] indices Pointer to the indices Tensor ([in] empty pointer)
+    @param[in] device
+    */
+    virtual void makeIndicesFromIndicesView(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) = 0;
 
     /*
     @brief Shrink the size of the axis by removing the selected indices
@@ -871,7 +889,7 @@ namespace TensorBase
   template<typename LabelsT, typename T>
   inline void TensorTable<TensorT, DeviceT, TDim>::deleteFromAxisConcept(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<T>& values, DeviceT & device)
   {
-    if (std::is_same<T, TensorT>::values) {
+    if (std::is_same<T, TensorT>::value) {
       auto values_copy = std::reinterpret_pointer_cast<TensorT>(values);
       deleteFromAxis(axis_name, indices, labels, values_copy, device);
     }

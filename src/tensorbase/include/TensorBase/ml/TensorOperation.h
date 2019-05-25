@@ -71,14 +71,25 @@ namespace TensorBase
     // Execute the select methods on the tensor_collection
     select_function_(tensor_collection, device);
 
+    // Extract out the labels to delete from the `indices_view`
+    tensor_collection.tables_.at(table_name_)->makeIndicesFromIndicesView(axis_name_, indices_, device);
+    tensor_collection.tables_.at(table_name_)->resetIndicesView(axis_name_, device);
+
+    // Determine the dimensions of the deletion and allocate to memory
+    // tensor_collection.tables_.at(table_name_)->allocateSelectedValuesToMemory(axis_name_, indices_, device);
+
     // Delete the selected labels
-    //tensor_collection.tables_.at(table_name)->deleteFromAxis(axis_name_, indices_, labels_, values_->getDataPointer(), device); // TODO overload that returns the values that were deleted
+    //tensor_collection.tables_.at(table_name_)->deleteFromAxis(axis_name_, indices_, labels_, values_->getDataPointer(), device);
+    tensor_collection.tables_.at(table_name_)->deleteFromAxis(axis_name_, indices_, device);
   }
   template<typename LabelsT, typename TensorT, typename DeviceT, int TDim>
   inline void TensorDeleteFromAxis<LabelsT, TensorT, DeviceT, TDim>::undo(TensorCollection<DeviceT> & tensor_collection, DeviceT& device)
   {
     // Append the deleted labels
     //tensor_collection.tables_.at(table_name)->insertIntoAxis(axis_name_, indices_, labels_, values_->getDataPointer(), device); // TODO
+    // Append to the axis
+    // Replace the new indices with the previous indices
+    // Sort based on the indices
   }
 
   template<typename TensorT, typename DeviceT, int TDim>

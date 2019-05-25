@@ -1673,4 +1673,39 @@ BOOST_AUTO_TEST_CASE(deleteFromAxisDefaultDevice)
   }
 }
 
+BOOST_AUTO_TEST_CASE(makeIndicesFromIndicesViewDefaultDevice)
+{
+  // setup the table
+  TensorTableDefaultDevice<float, 3> tensorTable;
+  Eigen::DefaultDevice device;
+
+  // setup the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels = 3;
+  Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels), labels3(1, nlabels);
+  labels1.setValues({ {0, 1, 2} });
+  labels2.setValues({ {0, 1, 2} });
+  labels3.setValues({ {0, 1, 2} });
+  auto axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1));
+  auto axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2));
+  auto axis_3_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3));
+  tensorTable.addTensorAxis(axis_1_ptr);
+  tensorTable.addTensorAxis(axis_2_ptr);
+  tensorTable.addTensorAxis(axis_3_ptr);
+  tensorTable.setAxes();
+
+  // modify the indices view for axis 1
+  tensorTable.getIndicesView().at("1")->getData()(0) = 0;
+
+  // test makeIndicesFromIndicesView
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> indices_ptr;
+  tensorTable.makeIndicesFromIndicesView("1", indices_ptr, device);
+  for (int i = 0; i < nlabels - 1; ++i) {
+    BOOST_CHECK_EQUAL(indices_ptr->getData()(i), i + 2);
+  }
+}
+
 BOOST_AUTO_TEST_SUITE_END()

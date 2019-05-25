@@ -33,6 +33,7 @@ namespace TensorBase
     // Delete from Axis methods
     void makeSelectIndicesFromIndices(const std::string& axis_name, const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_select, Eigen::DefaultDevice& device) override;
     void getSelectTensorDataFromIndices(std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_select, const Eigen::array<Eigen::Index, TDim>& dimensions_select, Eigen::DefaultDevice& device) override;
+    void makeIndicesFromIndicesView(const std::string & axis_name, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, Eigen::DefaultDevice& device) override;
   };
 
   template<typename TensorT, int TDim>
@@ -422,6 +423,29 @@ namespace TensorBase
 
     // select the tensor
     this->data_->select(tensor_select, indices_select, device);
+  }
+  template<typename TensorT, int TDim>
+  inline void TensorTableDefaultDevice<TensorT, TDim>::makeIndicesFromIndicesView(const std::string & axis_name, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, Eigen::DefaultDevice & device)
+  {
+    // Normalize the indices view
+    auto indices_view_copy = this->indices_view_.at(axis_name)->copy(device);
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_copy_values(indices_view_copy->getDataPointer().get(), indices_view_copy->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_values(this->indices_view_.at(axis_name)->getDataPointer().get(), this->indices_view_.at(axis_name)->getDimensions());
+    indices_view_copy_values.device(device) = indices_view_values.clip(0, 1);
+
+    // Determine the size of the indices
+    TensorDataDefaultDevice<int, 1> dim_size(Eigen::array<Eigen::Index, 1>({ 1 }));
+    dim_size.setData();
+    Eigen::TensorMap<Eigen::Tensor<int, 0>> dim_size_value(dim_size.getDataPointer().get());
+    dim_size_value.device(device) = indices_view_copy_values.sum();
+
+    // Allocate memory for the indices
+    TensorDataDefaultDevice<int, 1> indices_tmp(Eigen::array<Eigen::Index, 1>({ dim_size.getData()(0) }));
+    indices_tmp.setData();
+    indices = std::make_shared<TensorDataDefaultDevice<int, 1>>(indices_tmp);
+
+    // Select out the non zero indices
+    this->indices_view_.at(axis_name)->select(indices, indices_view_copy, device);
   }
 };
 #endif //TENSORBASE_TENSORTABLEDEFAULTDEVICE_H
