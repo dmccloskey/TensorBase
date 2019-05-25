@@ -868,6 +868,16 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
+  template<typename LabelsT, typename T>
+  inline void TensorTable<TensorT, DeviceT, TDim>::deleteFromAxisConcept(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<T>& values, DeviceT & device)
+  {
+    if (std::is_same<T, TensorT>::values) {
+      auto values_copy = std::reinterpret_pointer_cast<TensorT>(values);
+      deleteFromAxis(axis_name, indices, labels, values_copy, device);
+    }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
   template<typename LabelsT>
   inline void TensorTable<TensorT, DeviceT, TDim>::deleteFromAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<TensorT>& values, DeviceT & device)
   {
@@ -991,8 +1001,8 @@ namespace TensorBase
 
     // Select and reduce
     if (invert_selection) {
-      auto indices_selected_2d = (indices_view_bcast != indices_bcast).select(indices_view_bcast, indices_view_bcast.constant(0));
-      auto indices_selected = indices_selected_2d.sum(Eigen::array<int, 1>({ 1 })).clip(0, 1);
+      auto indices_selected_2d = (indices_view_bcast == indices_bcast).select(indices_view_bcast.constant(0), indices_view_bcast);
+      auto indices_selected = indices_selected_2d.prod(Eigen::array<int, 1>({ 1 })).clip(0, 1);
       indices_select_values.device(device) = indices_selected;
     }
     else {

@@ -84,34 +84,39 @@ namespace TensorBase
     /*
     All TensorT and DeviceT combos of `updateTensorData`
     */
-    virtual void updateTensorDataConcept(const std::shared_ptr<int>& values_new, std::shared_ptr<int>& values_old, DeviceT& device) = 0;
-    virtual void updateTensorDataConcept(const std::shared_ptr<float>& values_new, std::shared_ptr<float>& values_old, DeviceT& device) = 0;
-    virtual void updateTensorDataConcept(const std::shared_ptr<double>& values_new, std::shared_ptr<double>& values_old, DeviceT& device) = 0;
-    virtual void updateTensorDataConcept(const std::shared_ptr<char>& values_new, std::shared_ptr<char>& values_old, DeviceT& device) = 0;
-    virtual void updateTensorDataConcept(const std::shared_ptr<int>& values_new, DeviceT& device) = 0;
-    virtual void updateTensorDataConcept(const std::shared_ptr<float>& values_new, DeviceT& device) = 0;
-    virtual void updateTensorDataConcept(const std::shared_ptr<double>& values_new, DeviceT& device) = 0;
-    virtual void updateTensorDataConcept(const std::shared_ptr<char>& values_new, DeviceT& device) = 0;
+    virtual void updateTensorData(const std::shared_ptr<int>& values_new, std::shared_ptr<int>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorData(const std::shared_ptr<float>& values_new, std::shared_ptr<float>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorData(const std::shared_ptr<double>& values_new, std::shared_ptr<double>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorData(const std::shared_ptr<char>& values_new, std::shared_ptr<char>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorData(const std::shared_ptr<int>& values_new, DeviceT& device) = 0;
+    virtual void updateTensorData(const std::shared_ptr<float>& values_new, DeviceT& device) = 0;
+    virtual void updateTensorData(const std::shared_ptr<double>& values_new, DeviceT& device) = 0;
+    virtual void updateTensorData(const std::shared_ptr<char>& values_new, DeviceT& device) = 0;
 
     /*
     All LabelsT, TensorT, and DeviceT combos of `appendToAxis`
     */
-    virtual void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<int>& values, int& axis_index, DeviceT & device) = 0;
-    virtual void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<int>& values, int& axis_index, DeviceT & device) = 0;
-    virtual void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<int>& values, int& axis_index, DeviceT & device) = 0;
-    virtual void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<int>& values, int& axis_index, DeviceT & device) = 0;
-    virtual void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<float>& values, int& axis_index, DeviceT & device) = 0;
-    virtual void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<float>& values, int& axis_index, DeviceT & device) = 0;
-    virtual void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<float>& values, int& axis_index, DeviceT & device) = 0;
-    virtual void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<float>& values, int& axis_index, DeviceT & device) = 0;
-    virtual void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<double>& values, int& axis_index, DeviceT & device) = 0;
-    virtual void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<double>& values, int& axis_index, DeviceT & device) = 0;
-    virtual void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<double>& values, int& axis_index, DeviceT & device) = 0;
-    virtual void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<double>& values, int& axis_index, DeviceT & device) = 0;
-    virtual void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<char>& values, int& axis_index, DeviceT & device) = 0;
-    virtual void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<char>& values, int& axis_index, DeviceT & device) = 0;
-    virtual void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<char>& values, int& axis_index, DeviceT & device) = 0;
-    virtual void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<char>& values, int& axis_index, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<int>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<int>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<int>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<int>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<float>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<float>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<float>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<float>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<double>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<double>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<double>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<double>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<char>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<char>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<char>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<char>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+
+    /*
+    All LabelsT, TensorT, and DeviceT combos of `deleteFromAxis`
+    */
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) = 0;
   };
 
   /// The erasure wrapper around the Tensor Table interface
@@ -200,79 +205,83 @@ namespace TensorBase
       tensor_table_->sortTensorData(device);
     };
 
-    void updateTensorDataConcept(const std::shared_ptr<int>& values_new, std::shared_ptr<int>& values_old, DeviceT& device) {
+    void updateTensorData(const std::shared_ptr<int>& values_new, std::shared_ptr<int>& values_old, DeviceT& device) {
       tensor_table_->updateTensorDataConcept(values_new, values_old, device);
     };
-    void updateTensorDataConcept(const std::shared_ptr<float>& values_new, std::shared_ptr<float>& values_old, DeviceT& device) {
+    void updateTensorData(const std::shared_ptr<float>& values_new, std::shared_ptr<float>& values_old, DeviceT& device) {
       tensor_table_->updateTensorDataConcept(values_new, values_old, device);
     };
-    void updateTensorDataConcept(const std::shared_ptr<double>& values_new, std::shared_ptr<double>& values_old, DeviceT& device) {
+    void updateTensorData(const std::shared_ptr<double>& values_new, std::shared_ptr<double>& values_old, DeviceT& device) {
       tensor_table_->updateTensorDataConcept(values_new, values_old, device);
     };
-    void updateTensorDataConcept(const std::shared_ptr<char>& values_new, std::shared_ptr<char>& values_old, DeviceT& device) {
+    void updateTensorData(const std::shared_ptr<char>& values_new, std::shared_ptr<char>& values_old, DeviceT& device) {
       tensor_table_->updateTensorDataConcept(values_new, values_old, device);
     };
-    void updateTensorDataConcept(const std::shared_ptr<int>& values_new, DeviceT& device) {
+    void updateTensorData(const std::shared_ptr<int>& values_new, DeviceT& device) {
       tensor_table_->updateTensorDataConcept(values_new, device);
     };
-    void updateTensorDataConcept(const std::shared_ptr<float>& values_new, DeviceT& device) {
+    void updateTensorData(const std::shared_ptr<float>& values_new, DeviceT& device) {
       tensor_table_->updateTensorDataConcept(values_new, device);
     };
-    void updateTensorDataConcept(const std::shared_ptr<double>& values_new, DeviceT& device) {
+    void updateTensorData(const std::shared_ptr<double>& values_new, DeviceT& device) {
       tensor_table_->updateTensorDataConcept(values_new, device);
     };
-    void updateTensorDataConcept(const std::shared_ptr<char>& values_new, DeviceT& device) {
+    void updateTensorData(const std::shared_ptr<char>& values_new, DeviceT& device) {
       tensor_table_->updateTensorDataConcept(values_new, device);
     };
 
-    void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<int>& values, int& axis_index, DeviceT & device) {
-      tensor_table_->appendToAxisConcept(axis_name, labels, values, axis_index, device);
+    void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<int>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
     };
-    void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<int>& values, int& axis_index, DeviceT & device) {
-      tensor_table_->appendToAxisConcept(axis_name, labels, values, axis_index, device);
+    void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<int>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
     };;
-    void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<int>& values, int& axis_index, DeviceT & device) {
-      tensor_table_->appendToAxisConcept(axis_name, labels, values, axis_index, device);
+    void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<int>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
     };
-    void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<int>& values, int& axis_index, DeviceT & device) {
-      tensor_table_->appendToAxisConcept(axis_name, labels, values, axis_index, device);
+    void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<int>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
     };
-    void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<float>& values, int& axis_index, DeviceT & device) {
-      tensor_table_->appendToAxisConcept(axis_name, labels, values, axis_index, device);
+    void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<float>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
     };
-    void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<float>& values, int& axis_index, DeviceT & device) {
-      tensor_table_->appendToAxisConcept(axis_name, labels, values, axis_index, device);
+    void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<float>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
     };
-    void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<float>& values, int& axis_index, DeviceT & device) {
-      tensor_table_->appendToAxisConcept(axis_name, labels, values, axis_index, device);
+    void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<float>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
     };
-    void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<float>& values, int& axis_index, DeviceT & device) {
-      tensor_table_->appendToAxisConcept(axis_name, labels, values, axis_index, device);
+    void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<float>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
     };
-    void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<double>& values, int& axis_index, DeviceT & device) {
-      tensor_table_->appendToAxisConcept(axis_name, labels, values, axis_index, device);
+    void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<double>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
     };
-    void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<double>& values, int& axis_index, DeviceT & device) {
-      tensor_table_->appendToAxisConcept(axis_name, labels, values, axis_index, device);
+    void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<double>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
     };
-    void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<double>& values, int& axis_index, DeviceT & device) {
-      tensor_table_->appendToAxisConcept(axis_name, labels, values, axis_index, device);
+    void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<double>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
     };
-    void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<double>& values, int& axis_index, DeviceT & device) {
-      tensor_table_->appendToAxisConcept(axis_name, labels, values, axis_index, device);
+    void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<double>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
     };
-    void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<char>& values, int& axis_index, DeviceT & device) {
-      tensor_table_->appendToAxisConcept(axis_name, labels, values, axis_index, device);
+    void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<char>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
     };
-    void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<char>& values, int& axis_index, DeviceT & device) {
-      tensor_table_->appendToAxisConcept(axis_name, labels, values, axis_index, device);
+    void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<char>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
     };
-    void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<char>& values, int& axis_index, DeviceT & device) {
-      tensor_table_->appendToAxisConcept(axis_name, labels, values, axis_index, device);
+    void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<char>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
     };
-    void appendToAxisConcept(const std::string & axis_name, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<char>& values, int& axis_index, DeviceT & device) {
-      tensor_table_->appendToAxisConcept(axis_name, labels, values, axis_index, device);
+    void appendToAxis(const std::string & axis_name, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<char>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
     };
+
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) {
+      tensor_table_->deleteFromAxis(axis_name, indices, device);
+    }
   };
 };
 #endif //TENSORBASE_TENSORTABLECONCEPT_H

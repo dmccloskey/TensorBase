@@ -1451,9 +1451,9 @@ BOOST_AUTO_TEST_CASE(makeIndicesViewSelectFromIndicesDefaultDevice)
   tensorTable.setAxes();
 
   // setup the selection indices
-  Eigen::Tensor<int, 1> indices_to_select_values(Eigen::array<Eigen::Index, 1>({ 1 }));
-  indices_to_select_values.setValues({2});
-  TensorDataDefaultDevice<int, 1> indices_to_select(Eigen::array<Eigen::Index, 1>({ 1 }));
+  Eigen::Tensor<int, 1> indices_to_select_values(Eigen::array<Eigen::Index, 1>({ 2 }));
+  indices_to_select_values.setValues({1, 2});
+  TensorDataDefaultDevice<int, 1> indices_to_select(Eigen::array<Eigen::Index, 1>({ 2 }));
   indices_to_select.setData(indices_to_select_values);
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> indices_to_select_ptr = std::make_shared<TensorDataDefaultDevice<int, 1>>(indices_to_select);
 
@@ -1461,7 +1461,7 @@ BOOST_AUTO_TEST_CASE(makeIndicesViewSelectFromIndicesDefaultDevice)
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> indices_select_ptr;
   tensorTable.makeIndicesViewSelectFromIndices("1", indices_select_ptr, indices_to_select_ptr, true, device);
   for (int i = 0; i < nlabels; ++i) {
-    if (i != 1)
+    if (i > 1)
       BOOST_CHECK_EQUAL(indices_select_ptr->getData()(i), 1);
     else
       BOOST_CHECK_EQUAL(indices_select_ptr->getData()(i), 0);
@@ -1469,7 +1469,7 @@ BOOST_AUTO_TEST_CASE(makeIndicesViewSelectFromIndicesDefaultDevice)
   indices_select_ptr.reset();
   tensorTable.makeIndicesViewSelectFromIndices("1", indices_select_ptr, indices_to_select_ptr, false, device);
   for (int i = 0; i < nlabels; ++i) {
-    if (i == 1)
+    if (i <= 1)
       BOOST_CHECK_EQUAL(indices_select_ptr->getData()(i), 1);
     else
       BOOST_CHECK_EQUAL(indices_select_ptr->getData()(i), 0);
