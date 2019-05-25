@@ -85,11 +85,8 @@ namespace TensorBase
   template<typename LabelsT, typename TensorT, typename DeviceT, int TDim>
   inline void TensorDeleteFromAxis<LabelsT, TensorT, DeviceT, TDim>::undo(TensorCollection<DeviceT> & tensor_collection, DeviceT& device)
   {
-    // Append the deleted labels
-    //tensor_collection.tables_.at(table_name)->insertIntoAxis(axis_name_, indices_, labels_, values_->getDataPointer(), device); // TODO
-    // Append to the axis
-    // Replace the new indices with the previous indices
-    // Sort based on the indices
+    // Insert the deleted labels
+    tensor_collection.tables_.at(table_name_)->insertIntoAxis(axis_name_, labels_, values_->getDataPointer(), indices_, device);
   }
 
   template<typename LabelsT, typename TensorT, int TDim>

@@ -349,33 +349,33 @@ BOOST_AUTO_TEST_CASE(redoAndTensorDeleteFromAxis)
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsShardable().at("2")->getData()(i), 0);
   }
 
-  //// Test redo to restore the deleted values
-  //deleteFromAxis.undo(collection_1, device);
+  // Test redo to restore the deleted values
+  deleteFromAxis.undo(collection_1, device);
 
-  //// Test for the expected table data
-  //for (int i = 0; i < nlabels1; ++i) {
-  //  for (int j = 0; j < nlabels2; ++j) {
-  //    for (int k = 0; k < nlabels3; ++k) {
-  //      BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getData()(i, j, k), tensor_values1(i, j, k));
-  //    }
-  //  }
-  //}
+  // Test for the expected table data
+  for (int i = 0; i < nlabels1; ++i) {
+    for (int j = 0; j < nlabels2; ++j) {
+      for (int k = 0; k < nlabels3; ++k) {
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getData()(i, j, k), tensor_values1(i, j, k));
+      }
+    }
+  }
 
-  //// Test for the expected axis data
-  //BOOST_CHECK_EQUAL(axis_2_ptr->getNLabels(), nlabels2);
-  //for (int i = 0; i < nlabels2; ++i) {
-  //  BOOST_CHECK_EQUAL(axis_2_ptr->getLabels()(0, i), i);
-  //}
+  // Test for the expected axis data
+  BOOST_CHECK_EQUAL(axis_2_ptr->getNLabels(), nlabels2);
+  for (int i = 0; i < nlabels2; ++i) {
+    BOOST_CHECK_EQUAL(axis_2_ptr->getLabels()(0, i), i);
+  }
 
-  //// Test for the expected indices data
-  //BOOST_CHECK_EQUAL(tensorTable1_ptr->getDimensions().at(tensorTable1_ptr->getDimFromAxisName("2")), nlabels2);
-  //for (int i = 0; i < nlabels2; ++i) {
-  //  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
-  //  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
-  //  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsShardable().at("2")->getData()(i), 0);
-  //  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
-  //  BOOST_CHECK_EQUAL(tensorTable1_ptr->getInMemory().at("2")->getData()(i), 0);
-  //}
+  // Test for the expected indices data
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getDimensions().at(tensorTable1_ptr->getDimFromAxisName("2")), nlabels2);
+  for (int i = 0; i < nlabels2; ++i) { // TODO...
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsShardable().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getInMemory().at("2")->getData()(i), 0);
+  }
 }
 
 /*TensorUpdate Tests*/
