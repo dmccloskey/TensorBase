@@ -141,8 +141,6 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorAppendToAxis)
   appendToAxis.redo(collection_1, device);
 
   // Test for the expected table data
-  std::cout << "expected:\n" << tensor_values1 << std::endl;
-  std::cout << "predicted:\n" << tensorTable1_ptr->getData()->getData() << std::endl;
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
@@ -169,14 +167,15 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorAppendToAxis)
   for (int i = 0; i < nlabels2 + nlabels2; ++i) {
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
-    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsShardable().at("2")->getData()(i), 1);
     if (i < nlabels2) {
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getInMemory().at("2")->getData()(i), 0);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsShardable().at("2")->getData()(i), 0);
     }
     else {
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getInMemory().at("2")->getData()(i), 1);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsShardable().at("2")->getData()(i), 1); // TODO...
     }
   }
 
@@ -184,8 +183,6 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorAppendToAxis)
   appendToAxis.undo(collection_1, device);
 
   // Test for the expected table data
-  std::cout << "expected:\n" << tensor_values1 << std::endl;
-  std::cout << "predicted:\n" << tensorTable1_ptr->getData()->getData() << std::endl;
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
@@ -205,7 +202,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorAppendToAxis)
   for (int i = 0; i < nlabels2; ++i) {
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
-    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsShardable().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsShardable().at("2")->getData()(i), 0);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getInMemory().at("2")->getData()(i), 0);
   }
