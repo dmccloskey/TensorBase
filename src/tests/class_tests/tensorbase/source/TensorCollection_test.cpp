@@ -63,8 +63,18 @@ BOOST_AUTO_TEST_CASE(gettersAndSetters)
   tensorCollection.addTensorTable(tensorTable2_ptr);
   tensorCollection.addTensorTable(tensorTable3_ptr);
 
-  // name setters and getters
+  // name getter
   BOOST_CHECK(tensorCollection.getTableNames() == std::vector<std::string>({ "1", "2", "3" }));
+
+  // table concept getter
+  auto tt1_ptr = tensorCollection.getTensorTableConcept("1");
+  BOOST_CHECK_EQUAL(tt1_ptr->getName(), tensorTable1_ptr->getName());
+  BOOST_CHECK(tt1_ptr->getAxes() == tensorTable1_ptr->getAxes());
+  BOOST_CHECK(tt1_ptr->getIndices() == tensorTable1_ptr->getIndices());
+  BOOST_CHECK(tt1_ptr->getIndicesView() == tensorTable1_ptr->getIndicesView());
+  BOOST_CHECK(tt1_ptr->getIsModified() == tensorTable1_ptr->getIsModified());
+  BOOST_CHECK(tt1_ptr->getInMemory() == tensorTable1_ptr->getInMemory());
+  BOOST_CHECK(tt1_ptr->getIsShardable() == tensorTable1_ptr->getIsShardable());
 
   // remove tensor tables
   tensorCollection.removeTensorTable("2");
@@ -73,6 +83,60 @@ BOOST_AUTO_TEST_CASE(gettersAndSetters)
   // clear the collection
   tensorCollection.clear();
   BOOST_CHECK(tensorCollection.getTableNames() == std::vector<std::string>());
+}
+
+BOOST_AUTO_TEST_CASE(addTensorTableConcept)
+{
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels1 = 2, nlabels2 = 3, nlabels3 = 5;
+  Eigen::Tensor<int, 2> labels1(1, nlabels1), labels2(1, nlabels2), labels3(1, nlabels3);
+  labels1.setConstant(1);
+  labels2.setConstant(2);
+  labels3.setConstant(3);
+
+  TensorTableDefaultDevice<float, 3> tensorTable1("1");
+  tensorTable1.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
+  tensorTable1.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
+  tensorTable1.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3)));
+  tensorTable1.setAxes();
+  std::shared_ptr<TensorTableDefaultDevice<float, 3>> tensorTable1_ptr = std::make_shared<TensorTableDefaultDevice<float, 3>>(tensorTable1);
+
+  TensorTableDefaultDevice<int, 2> tensorTable2("2");
+  tensorTable2.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
+  tensorTable2.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
+  tensorTable2.setAxes();
+  std::shared_ptr<TensorTableDefaultDevice<int, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(tensorTable2);
+
+  TensorTableDefaultDevice<char, 3> tensorTable3("3");
+  tensorTable3.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
+  tensorTable3.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
+  tensorTable3.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3)));
+  tensorTable3.setAxes();
+  std::shared_ptr<TensorTableDefaultDevice<char, 3>> tensorTable3_ptr = std::make_shared<TensorTableDefaultDevice<char, 3>>(tensorTable3);
+
+  TensorCollection<Eigen::DefaultDevice> tensorCollection;
+  tensorCollection.addTensorTable(tensorTable1_ptr);
+  tensorCollection.addTensorTable(tensorTable2_ptr);
+  tensorCollection.addTensorTable(tensorTable3_ptr);
+
+  // table concept getter
+  const std::shared_ptr<TensorTableConcept<Eigen::DefaultDevice>> tt1_ptr = tensorCollection.getTensorTableConcept("1");
+  BOOST_CHECK_EQUAL(tt1_ptr->getName(), tensorTable1_ptr->getName());
+  BOOST_CHECK(tt1_ptr->getAxes() == tensorTable1_ptr->getAxes());
+  BOOST_CHECK(tt1_ptr->getIndices() == tensorTable1_ptr->getIndices());
+  BOOST_CHECK(tt1_ptr->getIndicesView() == tensorTable1_ptr->getIndicesView());
+  BOOST_CHECK(tt1_ptr->getIsModified() == tensorTable1_ptr->getIsModified());
+  BOOST_CHECK(tt1_ptr->getInMemory() == tensorTable1_ptr->getInMemory());
+  BOOST_CHECK(tt1_ptr->getIsShardable() == tensorTable1_ptr->getIsShardable());
+
+  // table concept adder
+  tensorCollection.removeTensorTable("1");
+  BOOST_CHECK(tensorCollection.getTableNames() == std::vector<std::string>({ "2", "3" }));
+  tensorCollection.addTensorTableConcept(tt1_ptr);
+  BOOST_CHECK(tensorCollection.getTableNames() == std::vector<std::string>({ "1", "2", "3" }));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

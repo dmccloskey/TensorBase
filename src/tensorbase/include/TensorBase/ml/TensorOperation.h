@@ -167,7 +167,54 @@ namespace TensorBase
   class TensorAddAxis; // TODO: implement as a Tensor Broadcast
   class TensorDeleteAxis;  // TODO: implement as a Tensor Chip
   
-  class TensorAddTables;
-  class TensorDropTables;
+  template<typename T, typename DeviceT>
+  class TensorAddTable : public TensorOperation<DeviceT> {
+  public:
+    TensorAddTable() = default;
+    TensorAddTable(const std::shared_ptr<T>& table) :
+      table_(table) {};
+    void redo(TensorCollection<DeviceT>& tensor_collection, DeviceT& device);
+    void undo(TensorCollection<DeviceT>& tensor_collection, DeviceT& device);
+  protected:
+    std::shared_ptr<T> table_; // undo/redo
+  };
+
+  template<typename T, typename DeviceT>
+  inline void TensorAddTable<T, DeviceT>::redo(TensorCollection<DeviceT>& tensor_collection, DeviceT & device)
+  {
+    tensor_collection.addTensorTable(table_);
+  }
+
+  template<typename T, typename DeviceT>
+  inline void TensorAddTable<T, DeviceT>::undo(TensorCollection<DeviceT>& tensor_collection, DeviceT & device)
+  {
+    tensor_collection.removeTensorTable(table_->getName());
+  }
+
+  template<typename DeviceT>
+  class TensorDropTable : public TensorOperation<DeviceT> {
+  public:
+    TensorDropTable() = default;
+    TensorDropTable(const std::string& table_name) :
+      table_name_(table_name) {};
+    void redo(TensorCollection<DeviceT>& tensor_collection, DeviceT& device);
+    void undo(TensorCollection<DeviceT>& tensor_collection, DeviceT& device);
+  protected:
+    std::string table_name_; // redo
+    std::shared_ptr<TensorTableConcept<DeviceT>> table_; // undo
+  };
+  template<typename DeviceT>
+  inline void TensorDropTable<DeviceT>::redo(TensorCollection<DeviceT>& tensor_collection, DeviceT & device)
+  {
+    // Copy the table and then remove it from the collection
+    table_ = tensor_collection.getTensorTableConcept(table_name_);
+    tensor_collection.removeTensorTable(table_name_);
+  }
+  template<typename DeviceT>
+  inline void TensorDropTable<DeviceT>::undo(TensorCollection<DeviceT>& tensor_collection, DeviceT & device)
+  {
+    // Restore the table to the collection
+    tensor_collection.addTensorTable(table_);
+  }
 };
 #endif //TENSORBASE_TENSOROPERATION_H
