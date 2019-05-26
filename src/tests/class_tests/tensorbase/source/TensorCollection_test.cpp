@@ -65,6 +65,14 @@ BOOST_AUTO_TEST_CASE(gettersAndSetters)
 
   // name setters and getters
   BOOST_CHECK(tensorCollection.getTableNames() == std::vector<std::string>({ "1", "2", "3" }));
+
+  // remove tensor tables
+  tensorCollection.removeTensorTable("2");
+  BOOST_CHECK(tensorCollection.getTableNames() == std::vector<std::string>({ "1", "3" }));
+
+  // clear the collection
+  tensorCollection.clear();
+  BOOST_CHECK(tensorCollection.getTableNames() == std::vector<std::string>());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

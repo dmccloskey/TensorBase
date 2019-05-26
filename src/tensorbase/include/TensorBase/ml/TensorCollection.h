@@ -56,12 +56,18 @@ namespace TensorBase
   inline void TensorCollection<DeviceT>::addTensorTable(const std::shared_ptr<T>& tensor_table)
   {
     auto found = tables_.emplace(tensor_table->getName(), std::shared_ptr<TensorTableConcept<DeviceT>>(new TensorTableWrapper<T, DeviceT>(tensor_table)));
+    if (!found.second)
+      std::cout << "The table " << tensor_table->getName() << " already exists in the collection." << std::endl;
   }
 
   template<typename DeviceT>
   inline void TensorCollection<DeviceT>::removeTensorTable(const std::string & table_name)
   {
-    //TODO
+    auto it = tables_.find(table_name);
+    if (it != tables_.end())
+      tables_.erase(it);
+    else
+      std::cout << "The table " << table_name << " doest not exist in the collection." << std::endl;
   }
 
   template<typename DeviceT>

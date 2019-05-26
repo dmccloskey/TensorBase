@@ -39,6 +39,10 @@ namespace TensorBase
   template<typename LabelsT, typename TensorT, typename DeviceT, int TDim>
   inline void TensorAppendToAxis<LabelsT, TensorT, DeviceT, TDim>::redo(TensorCollection<DeviceT> & tensor_collection, DeviceT& device)
   {
+    // TODO: check that the table_name and axis name exist
+    // TODO: check that the dimensions of the values are compatible with a tensor concatenation give the dimensions of the Tensor table and specified axis
+    // TODO: check that the dimensions of the labels match the dimensions of the axis labels
+
     // Append to the axis
     tensor_collection.tables_.at(table_name_)->appendToAxis(axis_name_, labels_, values_->getDataPointer(), indices_, device);
   }
@@ -69,12 +73,16 @@ namespace TensorBase
   template<typename LabelsT, typename TensorT, typename DeviceT, int TDim>
   inline void TensorDeleteFromAxis<LabelsT, TensorT, DeviceT, TDim>::redo(TensorCollection<DeviceT> & tensor_collection, DeviceT& device)
   {
+    // TODO: check that the table_name and axis name exist
+
     // Execute the select methods on the tensor_collection
     select_function_(tensor_collection, device);
 
     // Extract out the labels to delete from the `indices_view`
     tensor_collection.tables_.at(table_name_)->makeIndicesFromIndicesView(axis_name_, indices_, device);
     tensor_collection.tables_.at(table_name_)->resetIndicesView(axis_name_, device);
+
+    // TOOD: report the number of slices that will be deleted
 
     // Determine the dimensions of the deletion and allocate to memory
     allocateMemoryForValues(tensor_collection, device);
@@ -130,8 +138,12 @@ namespace TensorBase
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorUpdate<TensorT, DeviceT, TDim>::redo(TensorCollection<DeviceT> & tensor_collection, DeviceT& device)
   {
+    // TODO: check that the table_name exist
+
     // Execute the select methods on the tensor_collection
     select_function_(tensor_collection, device);
+
+    // TODO: check that the dimensions of the values are compatible with the selected Tensor Table Data
 
     // Update the values with the `values_new` and copy the original values into the `values_old`
     values_old_ = values_new_->copy(device);
