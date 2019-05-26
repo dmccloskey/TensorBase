@@ -214,7 +214,7 @@ namespace TensorBase
   inline void TensorDropTable<DeviceT>::undo(TensorCollection<DeviceT>& tensor_collection, DeviceT & device)
   {
     // Restore the table to the collection
-    tensor_collection.addTensorTable(table_);
+    tensor_collection.addTensorTableConcept(table_);
   }
 };
 #endif //TENSORBASE_TENSOROPERATION_H

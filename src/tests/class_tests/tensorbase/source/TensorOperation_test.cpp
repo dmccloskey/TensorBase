@@ -627,8 +627,13 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorDropTable)
   collection_1.addTensorTable(tensorTable2_ptr);
 
   // Test redo drop table
+  TensorDropTable<Eigen::DefaultDevice> tensorDropTable("1");
+  tensorDropTable.redo(collection_1, device);
+  BOOST_CHECK(collection_1.getTableNames() == std::vector<std::string>({ "2" }));
 
   // Test undo drop table
+  tensorDropTable.undo(collection_1, device);
+  BOOST_CHECK(collection_1.getTableNames() == std::vector<std::string>({ "1", "2" }));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
