@@ -73,6 +73,18 @@ namespace TensorBase
     void setIndicesViewDataStatus(const bool& h_data_updated, const bool& d_data_updated);///< Set the status of the host and device indices view data
     std::map<std::string, std::pair<bool, bool>> getIndicesViewDataStatus(); ///< Get the status of the host and device indices view data
 
+    bool syncIsModifiedHAndDData(DeviceT& device); ///< Sync the host and device indices view data
+    void setIsModifiedDataStatus(const bool& h_data_updated, const bool& d_data_updated);///< Set the status of the host and device indices view data
+    std::map<std::string, std::pair<bool, bool>> getIsModifiedDataStatus(); ///< Get the status of the host and device indices view data
+
+    bool syncInMemoryHAndDData(DeviceT& device); ///< Sync the host and device indices view data
+    void setInMemoryDataStatus(const bool& h_data_updated, const bool& d_data_updated);///< Set the status of the host and device indices view data
+    std::map<std::string, std::pair<bool, bool>> getInMemoryDataStatus(); ///< Get the status of the host and device indices view data
+
+    bool syncIsShardableHAndDData(DeviceT& device); ///< Sync the host and device indices view data
+    void setIsShardableDataStatus(const bool& h_data_updated, const bool& d_data_updated);///< Set the status of the host and device indices view data
+    std::map<std::string, std::pair<bool, bool>> getIsShardableDataStatus(); ///< Get the status of the host and device indices view data
+
     bool syncAxesHAndDData(DeviceT& device); ///< Sync the host and device axes data
     void setAxesDataStatus(const bool& h_data_updated, const bool& d_data_updated);///< Set the status of the host and device axes data
     std::map<std::string, std::pair<bool, bool>> getAxesDataStatus(); ///< Get the status of the host and device axes data
@@ -513,6 +525,93 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
+  inline bool TensorTable<TensorT, DeviceT, TDim>::syncIsModifiedHAndDData(DeviceT & device)
+  {
+    bool synced = true;
+    for (auto& index_map : is_modified_) {
+      bool synced_tmp = index_map.second->syncHAndDData(device);
+      if (!synced_tmp) synced = false;
+    }
+    return synced;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::setIsModifiedDataStatus(const bool & h_data_updated, const bool & d_data_updated)
+  {
+    for (auto& index_map : is_modified_) {
+      index_map.second->setDataStatus(h_data_updated, d_data_updated);
+    }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline std::map<std::string, std::pair<bool, bool>> TensorTable<TensorT, DeviceT, TDim>::getIsModifiedDataStatus()
+  {
+    std::map<std::string, std::pair<bool, bool>> statuses;
+    for (auto& index_map : is_modified_) {
+      statuses.emplace(index_map.first, index_map.second->getDataStatus());
+    }
+    return statuses;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline bool TensorTable<TensorT, DeviceT, TDim>::syncInMemoryHAndDData(DeviceT & device)
+  {
+    bool synced = true;
+    for (auto& index_map : in_memory_) {
+      bool synced_tmp = index_map.second->syncHAndDData(device);
+      if (!synced_tmp) synced = false;
+    }
+    return synced;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::setInMemoryDataStatus(const bool & h_data_updated, const bool & d_data_updated)
+  {
+    for (auto& index_map : in_memory_) {
+      index_map.second->setDataStatus(h_data_updated, d_data_updated);
+    }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline std::map<std::string, std::pair<bool, bool>> TensorTable<TensorT, DeviceT, TDim>::getInMemoryDataStatus()
+  {
+    std::map<std::string, std::pair<bool, bool>> statuses;
+    for (auto& index_map : in_memory_) {
+      statuses.emplace(index_map.first, index_map.second->getDataStatus());
+    }
+    return statuses;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline bool TensorTable<TensorT, DeviceT, TDim>::syncIsShardableHAndDData(DeviceT & device)
+  {
+    bool synced = true;
+    for (auto& index_map : is_shardable_) {
+      bool synced_tmp = index_map.second->syncHAndDData(device);
+      if (!synced_tmp) synced = false;
+    }
+    return synced;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::setIsShardableDataStatus(const bool & h_data_updated, const bool & d_data_updated)
+  {
+    for (auto& index_map : is_shardable_) {
+      index_map.second->setDataStatus(h_data_updated, d_data_updated);
+    }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline std::map<std::string, std::pair<bool, bool>> TensorTable<TensorT, DeviceT, TDim>::getIsShardableDataStatus()
+  {
+    std::map<std::string, std::pair<bool, bool>> statuses;
+    for (auto& index_map : is_shardable_) {
+      statuses.emplace(index_map.first, index_map.second->getDataStatus());
+    }
+    return statuses;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
   inline bool TensorTable<TensorT, DeviceT, TDim>::syncAxesHAndDData(DeviceT & device)
   {
     bool synced = true;
@@ -922,11 +1021,21 @@ namespace TensorBase
     // resize and reset the indices
     Eigen::array<Eigen::Index, 1> new_dimensions = indices_.at(axis_name)->getDimensions();
     new_dimensions.at(0) += indices->getDimensions().at(0);
-    indices_.at(axis_name)->setDimensions(new_dimensions); indices_.at(axis_name)->setData();
-    indices_view_.at(axis_name)->setDimensions(new_dimensions); indices_view_.at(axis_name)->setData();
-    is_modified_.at(axis_name)->setDimensions(new_dimensions); is_modified_.at(axis_name)->setData();
-    in_memory_.at(axis_name)->setDimensions(new_dimensions); in_memory_.at(axis_name)->setData();
-    is_shardable_.at(axis_name)->setDimensions(new_dimensions); is_shardable_.at(axis_name)->setData();
+    indices_.at(axis_name)->setDimensions(new_dimensions); 
+    indices_.at(axis_name)->setData();
+    indices_.at(axis_name)->syncHAndDData(device);
+    indices_view_.at(axis_name)->setDimensions(new_dimensions); 
+    indices_view_.at(axis_name)->setData();
+    indices_view_.at(axis_name)->syncHAndDData(device);
+    is_modified_.at(axis_name)->setDimensions(new_dimensions); 
+    is_modified_.at(axis_name)->setData();
+    is_modified_.at(axis_name)->syncHAndDData(device);
+    in_memory_.at(axis_name)->setDimensions(new_dimensions); 
+    in_memory_.at(axis_name)->setData();
+    in_memory_.at(axis_name)->syncHAndDData(device);
+    is_shardable_.at(axis_name)->setDimensions(new_dimensions); 
+    is_shardable_.at(axis_name)->setData();
+    is_shardable_.at(axis_name)->syncHAndDData(device);
 
     // create a dummy single value tensor of 1 of the same length as the indices
     std::shared_ptr<TensorData<int, DeviceT, 1>> ones = indices->copy(device);
@@ -1122,8 +1231,8 @@ namespace TensorBase
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_values(indices_view_.at(axis_name)->getDataPointer().get(), indices_view_.at(axis_name)->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_values(indices_.at(axis_name)->getDataPointer().get(), indices_.at(axis_name)->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_old_values(indices->getDataPointer().get(), indices->getDimensions());
-    Eigen::array<int, 1> offsets = { indices_view_.at(axis_name)->getTensorSize() - indices->getTensorSize() };
-    Eigen::array<int, 1> extents = { indices->getTensorSize() };
+    Eigen::array<int, 1> offsets = { (int)indices_view_.at(axis_name)->getTensorSize() - (int)indices->getTensorSize() };
+    Eigen::array<int, 1> extents = { (int)indices->getTensorSize() };
     indices_view_values.slice(offsets, extents).device(device) = indices_old_values;
     indices_values.slice(offsets, extents).device(device) = indices_old_values;
 

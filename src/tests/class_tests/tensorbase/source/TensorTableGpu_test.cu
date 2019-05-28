@@ -1579,6 +1579,9 @@ void test_appendToIndicesGpu()
   // sync the tensorTable
   tensorTable.syncIndicesHAndDData(device);
   tensorTable.syncIndicesViewHAndDData(device);
+  tensorTable.syncIsModifiedHAndDData(device);
+  tensorTable.syncInMemoryHAndDData(device);
+  tensorTable.syncIsShardableHAndDData(device);
   tensorTable.syncAxesHAndDData(device);
   indices_new_ptr->syncHAndDData(device);
 
@@ -1586,6 +1589,9 @@ void test_appendToIndicesGpu()
   tensorTable.appendToIndices("1", indices_new_ptr, device);
   tensorTable.syncIndicesHAndDData(device);
   tensorTable.syncIndicesViewHAndDData(device);
+  tensorTable.syncIsModifiedHAndDData(device);
+  tensorTable.syncInMemoryHAndDData(device);
+  tensorTable.syncIsShardableHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(tensorTable.getDimensions().at(tensorTable.getDimFromAxisName("1")) == nlabels + nlabels - 1);
   for (int i = 0; i < nlabels + nlabels - 1; ++i) {
@@ -1680,6 +1686,7 @@ void test_appendToAxisGpu()
 
   // test appendToAxis
   tensorTable.appendToAxis("1", labels_new_ptr, values_new_ptr->getDataPointer(), indices_new_ptr, device);
+  tensorTable.syncAxesHAndDData(device);
   tensorTable.syncHAndDData(device);
   indices_new_ptr->syncHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
@@ -1807,6 +1814,9 @@ void test_deleteFromIndicesGpu()
   tensorTable.syncIndicesHAndDData(device);
   tensorTable.syncIndicesViewHAndDData(device);
   tensorTable.syncAxesHAndDData(device);
+  tensorTable.syncIsModifiedHAndDData(device);
+  tensorTable.syncInMemoryHAndDData(device);
+  tensorTable.syncIsShardableHAndDData(device);
   indices_to_select_ptr->syncHAndDData(device);
 
   // test deleteFromIndices
@@ -1814,6 +1824,9 @@ void test_deleteFromIndicesGpu()
   tensorTable.syncIndicesHAndDData(device);
   tensorTable.syncIndicesViewHAndDData(device);
   tensorTable.syncAxesHAndDData(device);
+  tensorTable.syncIsModifiedHAndDData(device);
+  tensorTable.syncInMemoryHAndDData(device);
+  tensorTable.syncIsShardableHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(tensorTable.getDimensions().at(tensorTable.getDimFromAxisName("1")) == nlabels - 1);
   for (int i = 0; i < nlabels - 1; ++i) {
@@ -1953,6 +1966,9 @@ void test_deleteFromAxisGpu()
   tensorTable.syncIndicesViewHAndDData(device);
   tensorTable.syncAxesHAndDData(device);
   tensorTable.syncHAndDData(device);
+  tensorTable.syncIsModifiedHAndDData(device);
+  tensorTable.syncInMemoryHAndDData(device);
+  tensorTable.syncIsShardableHAndDData(device);
   indices_to_select_ptr->syncHAndDData(device);
 
   // test deleteFromAxis
@@ -1968,7 +1984,11 @@ void test_deleteFromAxisGpu()
   tensorTable.syncIndicesViewHAndDData(device);
   tensorTable.syncAxesHAndDData(device);
   tensorTable.syncHAndDData(device);
+  tensorTable.syncIsModifiedHAndDData(device);
+  tensorTable.syncInMemoryHAndDData(device);
+  tensorTable.syncIsShardableHAndDData(device);
   values_ptr->syncHAndDData(device);
+  labels_ptr->syncHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(tensorTable.getDimensions().at(tensorTable.getDimFromAxisName("1")) == nlabels - 1);
   for (int i = 0; i < nlabels - 1; ++i) {
@@ -2191,7 +2211,7 @@ int main(int argc, char** argv)
   test_selectTensorDataGpu();
   test_makeSortIndicesViewFromIndicesViewGpu();
   test_sortTensorDataGpu();
-
+  // TODO
   test_updateTensorData1Gpu();
   test_updateTensorData2Gpu();
   test_makeAppendIndicesGpu();
