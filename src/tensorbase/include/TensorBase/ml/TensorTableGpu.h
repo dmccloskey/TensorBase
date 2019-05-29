@@ -471,6 +471,7 @@ namespace TensorBase
     dim_size.syncHAndDData(device);
     Eigen::TensorMap<Eigen::Tensor<int, 0>> dim_size_value(dim_size.getDataPointer().get());
     dim_size_value.device(device) = indices_view_copy_values.sum();
+    dim_size.syncHAndDData(device);
     assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
 
     // Allocate memory for the indices

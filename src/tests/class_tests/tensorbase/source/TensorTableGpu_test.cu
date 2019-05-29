@@ -2150,6 +2150,9 @@ void test_insertIntoAxisGpu()
   // Change the indices and indices view to simulate a deletion
   tensorTable.getIndices().at("1")->getData()(nlabels - 1) = 4;
   tensorTable.getIndicesView().at("1")->getData()(nlabels - 1) = 4;
+  std::cout << "IndicesView:\n" << tensorTable.getIndicesView().at("1")->getData() << std::endl;
+  std::cout << "Labels:\n" << axis_1_ptr->getLabels() << std::endl;
+  std::cout << "TensorTable:\n" << tensorTable.getData()->getData() << std::endl;
 
   // sync the tensorTable
   tensorTable.syncIndicesHAndDData(device);
@@ -2167,6 +2170,9 @@ void test_insertIntoAxisGpu()
   tensorTable.syncAxesHAndDData(device);
   tensorTable.syncHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  std::cout << "IndicesView:\n" << tensorTable.getIndicesView().at("1")->getData() << std::endl;
+  std::cout << "Labels:\n" << axis_1_ptr->getLabels() << std::endl;
+  std::cout << "TensorTable:\n" << tensorTable.getData()->getData() << std::endl;
   int iter = 0;
   for (int i = 0; i < nlabels + 1; ++i) {
     // check the axis
