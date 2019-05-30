@@ -2154,6 +2154,9 @@ void test_insertIntoAxisGpu()
   // sync the tensorTable
   tensorTable.syncIndicesHAndDData(device);
   tensorTable.syncIndicesViewHAndDData(device);
+  tensorTable.syncInMemoryHAndDData(device);
+  tensorTable.syncIsModifiedHAndDData(device);
+  tensorTable.syncIsShardableHAndDData(device);
   tensorTable.syncAxesHAndDData(device);
   tensorTable.syncHAndDData(device);
   values_new_ptr->syncHAndDData(device);
@@ -2167,9 +2170,9 @@ void test_insertIntoAxisGpu()
   tensorTable.syncAxesHAndDData(device);
   tensorTable.syncHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  std::cout << "IndicesView:\n" << tensorTable.getIndicesView().at("1")->getData() << std::endl;
-  std::cout << "Labels:\n" << axis_1_ptr->getLabels() << std::endl;
-  std::cout << "TensorTable:\n" << tensorTable.getData()->getData() << std::endl;
+  //std::cout << "IndicesView:\n" << tensorTable.getIndicesView().at("1")->getData() << std::endl;
+  //std::cout << "Labels:\n" << axis_1_ptr->getLabels() << std::endl;
+  //std::cout << "TensorTable:\n" << tensorTable.getData()->getData() << std::endl;
   int iter = 0;
   for (int i = 0; i < nlabels + 1; ++i) {
     // check the axis
