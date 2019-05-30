@@ -1236,8 +1236,20 @@ namespace TensorBase
     indices_view_values.slice(offsets, extents).device(device) = indices_old_values;
     indices_values.slice(offsets, extents).device(device) = indices_old_values;
 
+    this->syncIndicesHAndDData(device);
+    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+    std::cout << "Indices:\n" << this->getIndices().at("1")->getData() << std::endl;
+    this->syncIndicesHAndDData(device);
+
     // Sort the indices
     indices_.at(axis_name)->sort("ASC", device); // NOTE: this could fail if there are 0's in the index!
+
+    this->syncHAndDData(device);
+    this->syncAxesHAndDData(device);
+    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+    std::cout << "TensorTable:\n" << this->getData()->getData() << std::endl;
+    this->syncHAndDData(device);
+    this->syncAxesHAndDData(device);
 
     // Sort the axis and tensor based on the indices view
     sortTensorData(device);
