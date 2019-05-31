@@ -8,13 +8,17 @@
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <iostream>
 #include <fstream>
+
 #include <cereal/archives/binary.hpp>
+#undef min // clashes with std::limit on windows in polymorphic.hpp
+#undef max // clashes with std::limit on windows in polymorphic.hpp
 
 namespace TensorBase
 {
   /**
     @brief Class reading and writing TensorCollections
   */
+  template<typename DeviceT>
   class TensorCollectionFile
   {
 public:
@@ -29,7 +33,6 @@ public:
 
       @returns Status True on success, False if not
     */ 
-    template<typename DeviceT>
     bool loadTensorCollectionBinary(const std::string& filename, TensorCollection<DeviceT>& tensor_collection);
  
     /**
@@ -40,9 +43,10 @@ public:
 
       @returns Status True on success, False if not
     */ 
-    template<typename DeviceT>
     bool storeDataBinary(const std::string& filename, const TensorCollection<DeviceT>& tensor_collection);
   };
+
+  class TensorCollectionFileDefaultDevice: public TensorCollectionFile<Eigen::DefaultDevice>{};
 }
 
 #endif //SMARTPEAK_TENSORCOLLECTIONFILE_H

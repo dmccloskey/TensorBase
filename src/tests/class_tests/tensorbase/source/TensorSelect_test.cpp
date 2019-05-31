@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE(selectClauseDefaultDevice)
   std::shared_ptr<TensorTableDefaultDevice<int, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(tensorTable2);
 
   // Set up the collection
-  TensorCollection<Eigen::DefaultDevice> collection_1;
+  TensorCollectionDefaultDevice collection_1;
   collection_1.addTensorTable(tensorTable1_ptr);
   collection_1.addTensorTable(tensorTable2_ptr);
 
@@ -155,7 +155,7 @@ BOOST_AUTO_TEST_CASE(whereClauseDefaultDevice)
   std::shared_ptr<TensorTableDefaultDevice<double, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<double, 2>>(tensorTable2);
 
   // Set up the collection
-  TensorCollection<Eigen::DefaultDevice> collection_1;
+  TensorCollectionDefaultDevice collection_1;
   collection_1.addTensorTable(tensorTable1_ptr);
   collection_1.addTensorTable(tensorTable2_ptr);
 
@@ -285,7 +285,7 @@ BOOST_AUTO_TEST_CASE(sortClauseDefaultDevice)
   std::shared_ptr<TensorTableDefaultDevice<double, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<double, 2>>(tensorTable2);
 
   // Set up the collection
-  TensorCollection<Eigen::DefaultDevice> collection_1;
+  TensorCollectionDefaultDevice collection_1;
   collection_1.addTensorTable(tensorTable1_ptr);
   collection_1.addTensorTable(tensorTable2_ptr);
 

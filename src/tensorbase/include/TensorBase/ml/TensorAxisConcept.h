@@ -8,7 +8,6 @@
 #define EIGEN_USE_GPU
 #include <cuda.h>
 #include <cuda_runtime.h>
-#include <TensorBase/ml/TensorAxisGpu.h>
 #endif
 
 #include <unsupported/Eigen/CXX11/Tensor>
@@ -26,6 +25,9 @@ namespace TensorBase
   template<typename DeviceT>
   class TensorAxisConcept {
   public:
+    TensorAxisConcept() = default;
+    virtual ~TensorAxisConcept() = default;
+
     virtual std::string getName() const = 0;
     virtual size_t getNLabels() const = 0;
     virtual size_t getNDimensions() const = 0;
@@ -72,6 +74,8 @@ namespace TensorBase
     std::shared_ptr<T> tensor_axis_;
   public:
     TensorAxisWrapper(const std::shared_ptr<T>& tensor_axis) : tensor_axis_(tensor_axis) {};
+    TensorAxisWrapper() = default;
+    ~TensorAxisWrapper() = default;
     std::string getName() const { return tensor_axis_->getName(); };
     size_t getNLabels() const { return tensor_axis_->getNLabels(); };
     size_t getNDimensions() const { return tensor_axis_->getNDimensions(); };
@@ -147,11 +151,4 @@ CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisCpu<int
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisCpu<float>, Eigen::ThreadPoolDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisCpu<double>, Eigen::ThreadPoolDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisCpu<char>, Eigen::ThreadPoolDevice>);
-
-#if COMPILE_WITH_CUDA
-CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisGpu<int>, Eigen::GpuDevice>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisGpu<float>, Eigen::GpuDevice>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisGpu<double>, Eigen::GpuDevice>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisGpu<char>, Eigen::GpuDevice>);
-#endif
 #endif //TENSORBASE_TENSORAXISCONCEPT_H

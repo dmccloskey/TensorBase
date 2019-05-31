@@ -13,8 +13,7 @@ BOOST_AUTO_TEST_SUITE(TensorOperation1)
 
 /// The select Functor for table 1
 struct SelectTable1 {
-  template<typename DeviceT>
-  void operator() (TensorCollection<DeviceT> & tensor_collection, DeviceT& device) {
+  void operator() (TensorCollectionDefaultDevice & tensor_collection, Eigen::DefaultDevice& device) {
     // Set up the SelectClauses for table 1:  all values in dim 0 for labels = 0 in dims 1 and 2
     std::shared_ptr<TensorDataDefaultDevice<int, 1>> select_labels_t1a1 = std::make_shared<TensorDataDefaultDevice<int, 1>>(Eigen::array<Eigen::Index, 1>({ 2 }));
     Eigen::Tensor<int, 1> labels_values_t1a1(2);
@@ -46,8 +45,7 @@ struct SelectTable1 {
 
 /// The delete select Functor for table 1
 struct DeleteTable1 {
-  template<typename DeviceT>
-  void operator() (TensorCollection<DeviceT> & tensor_collection, DeviceT& device) {
+  void operator() (TensorCollectionDefaultDevice & tensor_collection, Eigen::DefaultDevice& device) {
     // Set up the SelectClauses for table 1 and axis 2 where labels=1
     std::shared_ptr<TensorDataDefaultDevice<int, 1>> select_labels_t1a2 = std::make_shared<TensorDataDefaultDevice<int, 1>>(Eigen::array<Eigen::Index, 1>({ 1 }));
     Eigen::Tensor<int, 1> labels_values_t1a2(1);
@@ -130,7 +128,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorAppendToAxis)
   std::shared_ptr<TensorTableDefaultDevice<int, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(tensorTable2);
 
   // Set up the collection
-  TensorCollection<Eigen::DefaultDevice> collection_1;
+  TensorCollectionDefaultDevice collection_1;
   collection_1.addTensorTable(tensorTable1_ptr);
   collection_1.addTensorTable(tensorTable2_ptr);
 
@@ -294,7 +292,7 @@ BOOST_AUTO_TEST_CASE(redoAndTensorDeleteFromAxis)
   std::shared_ptr<TensorTableDefaultDevice<int, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(tensorTable2);
 
   // Set up the collection
-  TensorCollection<Eigen::DefaultDevice> collection_1;
+  TensorCollectionDefaultDevice collection_1;
   collection_1.addTensorTable(tensorTable1_ptr);
   collection_1.addTensorTable(tensorTable2_ptr);
 
@@ -443,7 +441,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdate)
   std::shared_ptr<TensorTableDefaultDevice<int, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(tensorTable2);
 
   // Set up the collection
-  TensorCollection<Eigen::DefaultDevice> collection_1;
+  TensorCollectionDefaultDevice collection_1;
   collection_1.addTensorTable(tensorTable1_ptr);
   collection_1.addTensorTable(tensorTable2_ptr);
 
@@ -544,7 +542,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorAddTable)
   std::shared_ptr<TensorTableDefaultDevice<int, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(tensorTable2);
 
   // Set up the collection
-  TensorCollection<Eigen::DefaultDevice> collection_1;
+  TensorCollectionDefaultDevice collection_1;
   collection_1.addTensorTable(tensorTable1_ptr);
 
   // Test Redo
@@ -622,7 +620,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorDropTable)
   std::shared_ptr<TensorTableDefaultDevice<int, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(tensorTable2);
 
   // Set up the collection
-  TensorCollection<Eigen::DefaultDevice> collection_1;
+  TensorCollectionDefaultDevice collection_1;
   collection_1.addTensorTable(tensorTable1_ptr);
   collection_1.addTensorTable(tensorTable2_ptr);
 

@@ -9,6 +9,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <TensorBase/ml/TensorAxisGpu.h>
+#include <TensorBase/ml/TensorAxisConceptGpu.h>
 
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/ml/TensorTable.h>

@@ -11,24 +11,24 @@ BOOST_AUTO_TEST_SUITE(TensorCollectionFile1)
 
 BOOST_AUTO_TEST_CASE(constructor) 
 {
-  TensorCollectionFile* ptr = nullptr;
-  TensorCollectionFile* nullPointer = nullptr;
-  ptr = new TensorCollectionFile();
+  TensorCollectionFileDefaultDevice* ptr = nullptr;
+  TensorCollectionFileDefaultDevice* nullPointer = nullptr;
+  ptr = new TensorCollectionFileDefaultDevice();
   BOOST_CHECK_NE(ptr, nullPointer);
 }
 
 BOOST_AUTO_TEST_CASE(destructor) 
 {
-  TensorCollectionFile* ptr = nullptr;
-	ptr = new TensorCollectionFile();
+  TensorCollectionFileDefaultDevice* ptr = nullptr;
+	ptr = new TensorCollectionFileDefaultDevice();
   delete ptr;
 }
 
 BOOST_AUTO_TEST_CASE(storeAndLoadBinary) 
 {
-  TensorCollectionFile data;
+  TensorCollectionFileDefaultDevice data;
 
-  std::string filename = "TensorCollectionFileTest.dat";
+  std::string filename = "TensorCollectionFileDefaultDeviceTest.dat";
 }
 
 BOOST_AUTO_TEST_SUITE_END()

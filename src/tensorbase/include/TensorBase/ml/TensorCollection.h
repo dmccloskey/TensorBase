@@ -132,5 +132,25 @@ namespace TensorBase
     }
     return names;
   }
+
+  class TensorCollectionDefaultDevice : public TensorCollection<Eigen::DefaultDevice>
+  {
+  private:
+    friend class cereal::access;
+    template<class Archive>
+    void serialize(Archive& archive) {
+      archive(cereal::base_class<TensorCollection<Eigen::DefaultDevice>>(this));
+    }
+  };
+
+  class TensorCollectionCpu : public TensorCollection<Eigen::ThreadPoolDevice>
+  {
+  private:
+    friend class cereal::access;
+    template<class Archive>
+    void serialize(Archive& archive) {
+      archive(cereal::base_class<TensorCollection<Eigen::ThreadPoolDevice>>(this));
+    }
+  };
 };
 #endif //TENSORBASE_TENSORCOLLECTION_H

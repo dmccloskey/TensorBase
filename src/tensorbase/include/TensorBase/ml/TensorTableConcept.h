@@ -8,7 +8,6 @@
 #define EIGEN_USE_GPU
 #include <cuda.h>
 #include <cuda_runtime.h>
-#include <TensorBase/ml/TensorTableGpu.h>
 #endif
 
 #include <unsupported/Eigen/CXX11/Tensor>
@@ -28,6 +27,9 @@ namespace TensorBase
   template<typename DeviceT>
   class TensorTableConcept {
   public:
+    TensorTableConcept() = default;
+    virtual ~TensorTableConcept() = default;
+
     virtual std::string getName() const = 0;
     virtual std::map<std::string, std::shared_ptr<TensorAxisConcept<DeviceT>>>& getAxes() = 0;
     virtual std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIndices() = 0;
@@ -179,6 +181,8 @@ namespace TensorBase
     std::shared_ptr<T> tensor_table_;
   public:
     TensorTableWrapper(const std::shared_ptr<T>& tensor_table) : tensor_table_(tensor_table) {};
+    TensorTableWrapper() = default;
+    ~TensorTableWrapper() = default;
     std::string getName() const { return tensor_table_->getName(); };
     std::map<std::string, std::shared_ptr<TensorAxisConcept<DeviceT>>>& getAxes() { return tensor_table_->getAxes(); };
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIndices() { return tensor_table_->getIndices(); };
@@ -475,23 +479,4 @@ CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableCpu<i
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableCpu<float, 4>, Eigen::ThreadPoolDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableCpu<double, 4>, Eigen::ThreadPoolDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableCpu<char, 4>, Eigen::ThreadPoolDevice>);
-
-#if COMPILE_WITH_CUDA
-CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableGpu<int, 1>, Eigen::GpuDevice>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableGpu<float, 1>, Eigen::GpuDevice>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableGpu<double, 1>, Eigen::GpuDevice>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableGpu<char, 1>, Eigen::GpuDevice>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableGpu<int, 2>, Eigen::GpuDevice>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableGpu<float, 2>, Eigen::GpuDevice>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableGpu<double, 2>, Eigen::GpuDevice>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableGpu<char, 2>, Eigen::GpuDevice>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableGpu<int, 3>, Eigen::GpuDevice>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableGpu<float, 3>, Eigen::GpuDevice>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableGpu<double, 3>, Eigen::GpuDevice>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableGpu<char, 3>, Eigen::GpuDevice>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableGpu<int, 4>, Eigen::GpuDevice>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableGpu<float, 4>, Eigen::GpuDevice>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableGpu<double, 4>, Eigen::GpuDevice>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableGpu<char, 4>, Eigen::GpuDevice>);
-#endif
 #endif //TENSORBASE_TENSORTABLECONCEPT_H
