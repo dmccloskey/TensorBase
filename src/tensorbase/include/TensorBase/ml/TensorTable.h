@@ -51,11 +51,15 @@ namespace TensorBase
     virtual void initData() = 0;
 
     std::map<std::string, std::shared_ptr<TensorAxisConcept<DeviceT>>>& getAxes() { return axes_; }; ///< axes getter
+
+    // TODO: combine into a single member called `indices` of Tensor dimensions 5 x indices_length
+    //       in order to improve performance of all TensorInsert and TensorDelete methods
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIndices() { return indices_; }; ///< indices getter
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIndicesView() { return indices_view_; }; ///< indices_view getter
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIsModified() { return is_modified_; }; ///< is_modified getter
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getInMemory() { return in_memory_; }; ///< in_memory getter
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIsShardable() { return is_shardable_; }; ///< is_shardable getter
+
     Eigen::array<Eigen::Index, TDim>& getDimensions() { return dimensions_; }  ///< dimensions getter
     int getDimFromAxisName(const std::string& axis_name) { return axes_to_dims_.at(axis_name); }
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& getData() { return data_; }; ///< data getter
@@ -69,6 +73,18 @@ namespace TensorBase
     void setIndicesViewDataStatus(const bool& h_data_updated, const bool& d_data_updated);///< Set the status of the host and device indices view data
     std::map<std::string, std::pair<bool, bool>> getIndicesViewDataStatus(); ///< Get the status of the host and device indices view data
 
+    bool syncIsModifiedHAndDData(DeviceT& device); ///< Sync the host and device indices view data
+    void setIsModifiedDataStatus(const bool& h_data_updated, const bool& d_data_updated);///< Set the status of the host and device indices view data
+    std::map<std::string, std::pair<bool, bool>> getIsModifiedDataStatus(); ///< Get the status of the host and device indices view data
+
+    bool syncInMemoryHAndDData(DeviceT& device); ///< Sync the host and device indices view data
+    void setInMemoryDataStatus(const bool& h_data_updated, const bool& d_data_updated);///< Set the status of the host and device indices view data
+    std::map<std::string, std::pair<bool, bool>> getInMemoryDataStatus(); ///< Get the status of the host and device indices view data
+
+    bool syncIsShardableHAndDData(DeviceT& device); ///< Sync the host and device indices view data
+    void setIsShardableDataStatus(const bool& h_data_updated, const bool& d_data_updated);///< Set the status of the host and device indices view data
+    std::map<std::string, std::pair<bool, bool>> getIsShardableDataStatus(); ///< Get the status of the host and device indices view data
+
     bool syncAxesHAndDData(DeviceT& device); ///< Sync the host and device axes data
     void setAxesDataStatus(const bool& h_data_updated, const bool& d_data_updated);///< Set the status of the host and device axes data
     std::map<std::string, std::pair<bool, bool>> getAxesDataStatus(); ///< Get the status of the host and device axes data
@@ -79,6 +95,14 @@ namespace TensorBase
 
     /*
     @brief Select Tensor Axis that will be included in the view
+
+    The selection is done according to the following algorithm:
+      1. The `select_labels` are reshaped and broadcasted to a 2D tensor of labels_size x select_labels_size
+      2. The `labels` for the axis are broadcasted to a 2D tensor of labels_size x select_labels_size
+      3. The `indices` for the axis are broadcasted to a 2D tensor of labels_size x select_labels_size
+      4. The indices that correspond to matches between the `select_labels` and `labels` bcast tensors are selected
+      5. The result is reduced and normalized to a 1D Tensor of 0 or 1 of size labels_size
+      6. The `indices_view` is updated by multiplication by the 1D select Tensor
 
     @param[in] axis_name
     @param[in] dimension_index
@@ -130,16 +154,17 @@ namespace TensorBase
     @brief Broadcast the axis indices view across the entire tensor
       and allocate to memory
 
-    @param[out] indices_view_bcast
+    @param[out] indices_view_bcast ([in] empty pointer)
     @param[in] axis_name
     */
     virtual void broadcastSelectIndicesView(std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_view_bcast, const std::string& axis_name, DeviceT& device) = 0;
     
     /*
     @brief Extract data from the Tensor based on a select index tensor
+      and allocate to memory
 
     @param[in] indices_view_bcast The indices (0 or 1) to select from
-    @param[out] tensor_select The selected tensor with reduced dimensions according to the indices_view_bcast indices
+    @param[out] tensor_select The selected tensor with reduced dimensions according to the indices_view_bcast indices (empty pointer)
     @param[in] axis_name The name of the axis to reduce along
     @param[in] n_select The size of the reduced dimensions
     @param[in] device
@@ -148,8 +173,9 @@ namespace TensorBase
 
     /*
     @brief Select indices from the tensor based on a selection criteria
+      and allocate to memory
 
-    @param[out] indices_select The indices that passed or did not pass the selection criteria
+    @param[out] indices_select The indices that passed or did not pass the selection criteria ([in] empty pointer)
     @param[in] values_select The values to use for comparison
     @param[in] tensor_select The to apply the selection criteria to
     @param[in] axis_name The name of the axis to reduce along
@@ -176,7 +202,7 @@ namespace TensorBase
     /*
     @brief Slice out the 1D Tensor that will be sorted on
 
-    @param[out] tensor_sort The 1D Tensor to sort
+    @param[out] tensor_sort The 1D Tensor to sort ([in] empty pointer)
     @param[in] axis_name_sort The name of the axis that the sort will be based on
     @param[in] label_index_sort The label index that the sort will be based on
     @param[in] axis_name_apply The name of the axis that the sort will be applied to
@@ -208,7 +234,7 @@ namespace TensorBase
       2. broadcasting all indices to the size of the Tensor
       3. multiplying all indices together
 
-    @param[out] indices_select Pointer to the indices Tensor
+    @param[out] indices_select Pointer to the indices Tensor ([in] empty pointer)
     @param[in] device
     */
     virtual void makeSelectIndicesFromIndicesView(std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, DeviceT& device) = 0;
@@ -216,14 +242,17 @@ namespace TensorBase
     /*
     @brief Select the Tensor data and return the selected/reduced data
 
-    @param[out] tensor_select The selected/reduced tensor data
-    @param[in] indices_select The indices to perform the selection on
+    @param[out] tensor_select The selected/reduced tensor data ([in] empty pointer)
+    @param[in] indices_select The broadcasted indices view to perform the selection on
     @param[in] device
     */
-    virtual void getSelectTensorData(std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, DeviceT& device) = 0;
+    virtual void getSelectTensorDataFromIndicesView(std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, DeviceT& device) = 0;
 
     /*
     @brief Sort the Tensor Data based on the sort order defined by the indices view
+
+    The tensor data and all of the axes are sorted according to the values of the indices view.
+    The indices view are reset at the end of the operation
     */
     void sortTensorData(DeviceT& device);
     
@@ -239,22 +268,174 @@ namespace TensorBase
         b. broadcast to the size of the tensor
         c. add all adjusted axis tensors together
 
-    @param[out] indices_sort pointer to the indices sort Tensor
+    @param[out] indices_sort pointer to the indices sort Tensor ([in] empty pointer)
     @param[in] device
     */
     virtual void makeSortIndicesViewFromIndicesView(std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_sort, DeviceT& device) = 0;
 
+    /*
+    @brief Update the tensor data and optionally return the original values
+
+    @param[in] values_new The new tensor data
+    @param[out] values_old The old tensor data ([in] memory should already have been allocated and synced)
+    @param[in] device
+    */
+    template<typename T>
+    void updateTensorDataConcept(const std::shared_ptr<T>& values_new, std::shared_ptr<T>& values_old, DeviceT& device);
+    template<typename T>
+    void updateTensorDataConcept(const std::shared_ptr<T>& values_new, DeviceT& device);
+    void updateTensorData(const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_new, std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_old, DeviceT& device);
+    void updateTensorData(const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_new, DeviceT& device);
+    void updateTensorData(const std::shared_ptr<TensorT>& values_new, std::shared_ptr<TensorT>& values_old, DeviceT& device);
+    void updateTensorData(const std::shared_ptr<TensorT>& values_new, DeviceT& device);
+
+    /*
+    @brief Append new labels to the specified axis and append new data to the Tensor Data at the specified axis
+
+    NOTE: that the existing indexes of each axis are not changed to allow for undo operations
+
+    @param[in] axis_name The axis to append the labels and data to
+    @param[in] labels The labels to append to the axis
+    @param[in] values The values to append to the tensor data along the specified axis
+    @param[out] indices A 1D Tensor of indices that were added ([in] empty pointer)
+    @param[in] device
+    */
+    template<typename LabelsT, typename T>
+    void appendToAxisConcept(const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<T>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device);
+    template<typename LabelsT>
+    void appendToAxis(const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<TensorT>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device);
+    
+    /*
+    @brief Make the extended indices that will be appended to the existing indices
+
+    @param[in] axis_name The axis to append the labels and data to
+    @param[in] n_labels The number of labels to extend the indices by
+    @param[out] indices A 1D Tensor of indices that were added ([in] empty pointer)
+    @param[in] device
+    */
+    virtual void makeAppendIndices(const std::string& axis_name, const int& n_labels, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) = 0;
+
+    /*
+    @brief Expand the size of the axis by concatenating the new indices
+
+    @param[in] indices The indices to add
+    */
+    void appendToIndices(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device);
+
+    /*
+    @brief Delete a specified number of labels and sized slice of the TensorData at a specified position
+      with an optional return of the deleted labels and tensordata
+
+    NOTE: that the existing indexes of each axis are not changed to allow for undo operations
+
+    @param[in] axis_name The axis to append the labels and data to
+    @param[in] indices A 1D Tensor of indices to delete
+    @param[out] labels The labels that were deleted ([in] empty pointer)
+    @param[out] values The values that were deleted ([in] memory should already have been allocated and synced)
+    @param[in] device
+    */
+    template<typename LabelsT, typename T>
+    void deleteFromAxisConcept(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<T>& values, DeviceT& device);
+    template<typename LabelsT>
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<TensorT>& values, DeviceT& device);
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device);
+
+    /*
+    @brief Convert a 1D indices tensor to a TDim indices Tensor to use for downstream TensorData selection
+
+    The conversion is done by the following algorithm:
+      1. normalizing the indices (converting to either zero or one)
+      2. broadcasting the indices to the size of the Tensor
+
+    @param[in] axis_name The name of the axis that the indices correspond to
+    @param[in] indices The `indices_view` -like Tensor to broadcast for selection
+    @param[out] indices_select Pointer to the indices Tensor ([in] empty pointer)
+    @param[in] device
+    */
+    virtual void makeSelectIndicesFromIndices(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, DeviceT& device) = 0;
+
+    /*
+    @brief Select the Tensor data and return the selected/reduced data
+
+    @param[out] tensor_select The selected/reduced tensor data ([in] empty pointer)
+    @param[in] indices_select The broadcasted indices view to perform the selection on
+    @param[in] device
+    */
+    virtual void getSelectTensorDataFromIndices(std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, const Eigen::array<Eigen::Index, TDim>& dimensions_select, DeviceT& device) = 0;
+
+    /*
+    @brief Convert a 1D tensor of indices to a selection indices the size of the indices view
+
+    The conversion is done by the following algorithm:
+      1. broadcast the `indices_view` to a 2D tensor of indices_view_size x indices_size
+      2. broadcast the `indices` to a 2D tensor of indices_view_size x indics_size
+      3. select and return 0 or 1 for a match
+      4. reduce to a 1D tensor of size indices_view_size
+
+    @param[in] axis_name The name of the axis
+    @param[out] indices_select Pointer to the indices Tensor
+    @param[in] indices Pointer to the indices Tensor
+    @param[in] invert_selection Boolean option to invert the selection (i.e., select indices that do not match)
+    @param[in] device
+    */
+    void makeIndicesViewSelectFromIndices(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices_select, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, const bool& invert_selection, DeviceT& device);
+
+    /*
+    @brief Convert the indices view to a reduced 1D tensor of non zero indices
+
+    The conversion is done by the following algorithm:
+      1. normalize the `indices_view` to zero and 1
+      2. determine the size of the indices and allocate to memory
+      3. select only the non-zero indices
+
+    @param[in] axis_name The name of the axis
+    @param[out] indices Pointer to the indices Tensor ([in] empty pointer)
+    @param[in] device
+    */
+    virtual void makeIndicesFromIndicesView(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) = 0;
+
+    /*
+    @brief Shrink the size of the axis by removing the selected indices
+
+    @param[in] indices
+    */
+    void deleteFromIndices(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device);
+
+    /*
+    @brief Insert new labels to the specified axis and insert new data to the Tensor Data at the specified axis
+
+    The insert operation is done using the following algorithm:
+      1. Append the new labels to the axis and append the new data to the Tensor Data
+      2. Swap the append indices for the user provided indices
+      3. Apply the `indices_view` sort to the Tensor Data and the Axis labels
+      4. Reset the `indices_view`
+
+    @param[in] axis_name The axis to append the labels and data to
+    @param[in] labels The labels to insert into the axis
+    @param[in] values The values to insert into the tensor data along the specified axis
+    @param[in] indices A 1D Tensor of indices to specify where the labels and data should be inserted
+    @param[in] device
+    */
+    template<typename LabelsT, typename T>
+    void insertIntoAxisConcept(const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<T>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device);
+    template<typename LabelsT>
+    void insertIntoAxis(const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<TensorT>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device);
+    
   protected:
     int id_ = -1;
     std::string name_ = "";
 
     Eigen::array<Eigen::Index, TDim> dimensions_ = Eigen::array<Eigen::Index, TDim>();
     std::map<std::string, std::shared_ptr<TensorAxisConcept<DeviceT>>> axes_; ///< primary axis is dim=0
+
+    // TODO: combine into a single member called `indices` of Tensor dimensions 5 x indices_length
+    //       in order to improve performance of all TensorInsert and TensorDelete methods
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> indices_; ///< starting at 1
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> indices_view_; ///< sorted and/or selected indices
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> is_modified_;
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> in_memory_;
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> is_shardable_;
+
     std::map<std::string, int> axes_to_dims_;
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> data_; ///< The actual tensor data
     
@@ -344,6 +525,93 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
+  inline bool TensorTable<TensorT, DeviceT, TDim>::syncIsModifiedHAndDData(DeviceT & device)
+  {
+    bool synced = true;
+    for (auto& index_map : is_modified_) {
+      bool synced_tmp = index_map.second->syncHAndDData(device);
+      if (!synced_tmp) synced = false;
+    }
+    return synced;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::setIsModifiedDataStatus(const bool & h_data_updated, const bool & d_data_updated)
+  {
+    for (auto& index_map : is_modified_) {
+      index_map.second->setDataStatus(h_data_updated, d_data_updated);
+    }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline std::map<std::string, std::pair<bool, bool>> TensorTable<TensorT, DeviceT, TDim>::getIsModifiedDataStatus()
+  {
+    std::map<std::string, std::pair<bool, bool>> statuses;
+    for (auto& index_map : is_modified_) {
+      statuses.emplace(index_map.first, index_map.second->getDataStatus());
+    }
+    return statuses;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline bool TensorTable<TensorT, DeviceT, TDim>::syncInMemoryHAndDData(DeviceT & device)
+  {
+    bool synced = true;
+    for (auto& index_map : in_memory_) {
+      bool synced_tmp = index_map.second->syncHAndDData(device);
+      if (!synced_tmp) synced = false;
+    }
+    return synced;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::setInMemoryDataStatus(const bool & h_data_updated, const bool & d_data_updated)
+  {
+    for (auto& index_map : in_memory_) {
+      index_map.second->setDataStatus(h_data_updated, d_data_updated);
+    }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline std::map<std::string, std::pair<bool, bool>> TensorTable<TensorT, DeviceT, TDim>::getInMemoryDataStatus()
+  {
+    std::map<std::string, std::pair<bool, bool>> statuses;
+    for (auto& index_map : in_memory_) {
+      statuses.emplace(index_map.first, index_map.second->getDataStatus());
+    }
+    return statuses;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline bool TensorTable<TensorT, DeviceT, TDim>::syncIsShardableHAndDData(DeviceT & device)
+  {
+    bool synced = true;
+    for (auto& index_map : is_shardable_) {
+      bool synced_tmp = index_map.second->syncHAndDData(device);
+      if (!synced_tmp) synced = false;
+    }
+    return synced;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::setIsShardableDataStatus(const bool & h_data_updated, const bool & d_data_updated)
+  {
+    for (auto& index_map : is_shardable_) {
+      index_map.second->setDataStatus(h_data_updated, d_data_updated);
+    }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline std::map<std::string, std::pair<bool, bool>> TensorTable<TensorT, DeviceT, TDim>::getIsShardableDataStatus()
+  {
+    std::map<std::string, std::pair<bool, bool>> statuses;
+    for (auto& index_map : is_shardable_) {
+      statuses.emplace(index_map.first, index_map.second->getDataStatus());
+    }
+    return statuses;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
   inline bool TensorTable<TensorT, DeviceT, TDim>::syncAxesHAndDData(DeviceT & device)
   {
     bool synced = true;
@@ -376,22 +644,27 @@ namespace TensorBase
   template<typename LabelsT>
   inline void TensorTable<TensorT, DeviceT, TDim>::selectIndicesView(const std::string & axis_name, const int& dimension_index, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& select_labels, DeviceT & device)
   {
-    // reshape to match the axis labels shape
+    // reshape to match the axis labels shape and broadcast the length of the labels
     Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> labels_names_selected_reshape(select_labels->getDataPointer().get(), 1, (int)select_labels->getData().size());
-    // broadcast the length of the labels
+ 
     auto labels_names_selected_bcast = labels_names_selected_reshape.broadcast(Eigen::array<int, 2>({ (int)axes_.at(axis_name)->getNLabels(), 1 }));
     // broadcast the axis labels the size of the labels queried
     std::shared_ptr<LabelsT> labels_data;
     axes_.at(axis_name)->getLabelsDataPointer(labels_data);
     Eigen::TensorMap<Eigen::Tensor<LabelsT, 3>> labels_reshape(labels_data.get(), (int)axes_.at(axis_name)->getNDimensions(), (int)axes_.at(axis_name)->getNLabels(), 1);
     auto labels_bcast = (labels_reshape.chip(dimension_index, 0)).broadcast(Eigen::array<int, 2>({ 1, (int)select_labels->getData().size() }));
+
     // broadcast the tensor indices the size of the labels queried
     Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_reshape(indices_.at(axis_name)->getDataPointer().get(), (int)axes_.at(axis_name)->getNLabels(), 1);
     auto indices_bcast = indices_reshape.broadcast(Eigen::array<int, 2>({ 1, (int)select_labels->getData().size() }));
+
+    // select the indices and reduce back to a 1D Tensor
     auto selected = (labels_bcast == labels_names_selected_bcast).select(indices_bcast, indices_bcast.constant(0));
-    auto selected_sum = selected.sum(Eigen::array<int, 1>({ 1 }));
+    auto selected_sum = selected.sum(Eigen::array<int, 1>({ 1 })).clip(0, 1);
+
+    // update the indices view based on the selection
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_name)->getDataPointer().get(), (int)axes_.at(axis_name)->getNLabels());
-    indices_view.device(device) = (indices_view * selected_sum) / indices_view;
+    indices_view.device(device) = indices_view * selected_sum;
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
@@ -587,7 +860,7 @@ namespace TensorBase
 
     // select the tensor data based on the selection indices and update
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> tensor_select;
-    getSelectTensorData(tensor_select, indices_select, device);
+    getSelectTensorDataFromIndicesView(tensor_select, indices_select, device);
 
     // resize each axis based on the indices view
     for (const auto& axis_to_name : axes_to_dims_) {
@@ -614,6 +887,372 @@ namespace TensorBase
       axes_.at(axis_to_index.first)->sortLabels(indices_view_.at(axis_to_index.first), device);
       resetIndicesView(axis_to_index.first, device);
     }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  template<typename T>
+  inline void TensorTable<TensorT, DeviceT, TDim>::updateTensorDataConcept(const std::shared_ptr<T>& values_new, std::shared_ptr<T>& values_old, DeviceT & device)
+  {
+    if (std::is_same<T, TensorT>::value) {
+      auto values_new_copy = std::reinterpret_pointer_cast<TensorT>(values_new);
+      auto values_old_copy = std::reinterpret_pointer_cast<TensorT>(values_old);
+      updateTensorData(values_new_copy, values_old_copy, device);
+    }
+  }
+  template<typename TensorT, typename DeviceT, int TDim>
+  template<typename T>
+  inline void TensorTable<TensorT, DeviceT, TDim>::updateTensorDataConcept(const std::shared_ptr<T>& values_new, DeviceT & device)
+  {
+    if (std::is_same<T, TensorT>::value) {
+      auto values_new_copy = std::reinterpret_pointer_cast<TensorT>(values_new);
+      updateTensorData(values_new_copy, device);
+    }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::updateTensorData(const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_new, std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_old, DeviceT & device)
+  {
+    assert(values_new->getDimensions() == data_->getDimensions());
+
+    // copy the old values
+    values_old = data_->copy(device);
+
+    // assign the new values
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> values_new_values(values_new->getDataPointer().get(), values_new->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(data_->getDataPointer().get(), data_->getDimensions());
+    data_values.device(device) = values_new_values;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::updateTensorData(const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_new, DeviceT & device)
+  {
+    assert(values_new->getDimensions() == data_->getDimensions());
+
+    // assign the new values
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> values_new_values(values_new->getDataPointer().get(), values_new->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(data_->getDataPointer().get(), data_->getDimensions());
+    data_values.device(device) = values_new_values;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::updateTensorData(const std::shared_ptr<TensorT>& values_new, std::shared_ptr<TensorT>& values_old, DeviceT & device)
+  {
+    // copy the old values
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> values_old_values(values_old.get(), data_->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(data_->getDataPointer().get(), data_->getDimensions());
+    values_old_values.device(device) = data_values;
+
+    // assign the new values
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> values_new_values(values_new.get(), data_->getDimensions());
+    data_values.device(device) = values_new_values;
+  }
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::updateTensorData(const std::shared_ptr<TensorT>& values_new, DeviceT & device)
+  {
+    // assign the new values
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> values_new_values(values_new.get(), data_->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(data_->getDataPointer().get(), data_->getDimensions());
+    data_values.device(device) = values_new_values;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  template<typename LabelsT, typename T>
+  inline void TensorTable<TensorT, DeviceT, TDim>::appendToAxisConcept(const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<T>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device)
+  {
+    if (std::is_same<T, TensorT>::value) {
+      auto values_copy = std::reinterpret_pointer_cast<TensorT>(values);
+      appendToAxis(axis_name, labels, values_copy, indices, device);
+    }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  template<typename LabelsT>
+  inline void TensorTable<TensorT, DeviceT, TDim>::appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<TensorT>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device)
+  {
+    // Append the new labels to the axis
+    axes_.at(axis_name)->appendLabelsToAxis(labels, device);
+
+    // Copy the current data
+    auto data_copy = data_->copy(device);
+    data_copy->syncHAndDData(device);
+
+    // Make the extended axis indices and append to the index
+    makeAppendIndices(axis_name, labels->getDimensions().at(1), indices, device);
+    appendToIndices(axis_name, indices, device);
+
+    // Resize and reset the current data
+    Eigen::array<Eigen::Index, TDim> new_dimensions = data_->getDimensions();
+    new_dimensions.at(axes_to_dims_.at(axis_name)) += labels->getDimensions().at(1);
+    data_->setDimensions(new_dimensions);
+    data_->setData();
+    data_->syncHAndDData(device);
+
+    // Determine the dimensions for the values
+    Eigen::array<Eigen::Index, TDim> value_dimensions;
+    for (const auto& axis_to_index: axes_to_dims_) {
+      if (axis_to_index.first == axis_name)
+        value_dimensions.at(axis_to_index.second) = labels->getDimensions().at(1);
+      else
+        value_dimensions.at(axis_to_index.second) = data_->getDimensions().at(axes_to_dims_.at(axis_to_index.first));
+    }
+
+    // Concatenate the new data with the existing tensor data along the axis dimension
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> values_new_values(values.get(), value_dimensions);
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy_values(data_copy->getDataPointer().get(), data_copy->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(data_->getDataPointer().get(), data_->getDimensions());
+    data_values.device(device) = data_copy_values.concatenate(values_new_values, axes_to_dims_.at(axis_name));
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::appendToIndices(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device)
+  {
+    // copy the current indices
+    std::shared_ptr<TensorData<int, DeviceT, 1>> indices_copy = indices_.at(axis_name)->copy(device);
+    std::shared_ptr<TensorData<int, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copy(device);
+    std::shared_ptr<TensorData<int, DeviceT, 1>> is_modified_copy = is_modified_.at(axis_name)->copy(device);
+    std::shared_ptr<TensorData<int, DeviceT, 1>> in_memory_copy = in_memory_.at(axis_name)->copy(device);
+    std::shared_ptr<TensorData<int, DeviceT, 1>> is_shardable_copy = is_shardable_.at(axis_name)->copy(device);
+    indices_copy->syncHAndDData(device);
+    indices_view_copy->syncHAndDData(device);
+    is_modified_copy->syncHAndDData(device);
+    in_memory_copy->syncHAndDData(device);
+    is_shardable_copy->syncHAndDData(device);
+
+    // resize and reset the indices
+    Eigen::array<Eigen::Index, 1> new_dimensions = indices_.at(axis_name)->getDimensions();
+    new_dimensions.at(0) += indices->getDimensions().at(0);
+    indices_.at(axis_name)->setDimensions(new_dimensions); 
+    indices_.at(axis_name)->setData();
+    indices_.at(axis_name)->syncHAndDData(device);
+    indices_view_.at(axis_name)->setDimensions(new_dimensions); 
+    indices_view_.at(axis_name)->setData();
+    indices_view_.at(axis_name)->syncHAndDData(device);
+    is_modified_.at(axis_name)->setDimensions(new_dimensions); 
+    is_modified_.at(axis_name)->setData();
+    is_modified_.at(axis_name)->syncHAndDData(device);
+    in_memory_.at(axis_name)->setDimensions(new_dimensions); 
+    in_memory_.at(axis_name)->setData();
+    in_memory_.at(axis_name)->syncHAndDData(device);
+    is_shardable_.at(axis_name)->setDimensions(new_dimensions); 
+    is_shardable_.at(axis_name)->setData();
+    is_shardable_.at(axis_name)->syncHAndDData(device);
+
+    // create a dummy single value tensor of 1 of the same length as the indices
+    std::shared_ptr<TensorData<int, DeviceT, 1>> ones = indices->copy(device);
+    ones->syncHAndDData(device);
+
+    // concatenate the new indices
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_new_values(indices->getDataPointer().get(), (int)indices->getTensorSize(), 1);
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> ones_concatenate(ones->getDataPointer().get(), (int)ones->getTensorSize(), 1);
+    ones_concatenate.device(device) = indices_new_values.constant(1);
+
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_copy_values(indices_copy->getDataPointer().get(), (int)indices_copy->getTensorSize(), 1);
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_view_copy_values(indices_view_copy->getDataPointer().get(), (int)indices_view_copy->getTensorSize(), 1);
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> is_modified_copy_values(is_modified_copy->getDataPointer().get(), (int)is_modified_copy->getTensorSize(), 1);
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> in_memory_copy_values(in_memory_copy->getDataPointer().get(), (int)in_memory_copy->getTensorSize(), 1);
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> is_shardable_copy_values(is_shardable_copy->getDataPointer().get(), (int)is_shardable_copy->getTensorSize(), 1);
+
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_values(indices_.at(axis_name)->getDataPointer().get(), new_dimensions.at(0), 1);
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_view_values(indices_view_.at(axis_name)->getDataPointer().get(), new_dimensions.at(0), 1);
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> is_modified_values(is_modified_.at(axis_name)->getDataPointer().get(), new_dimensions.at(0), 1);
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> in_memory_values(in_memory_.at(axis_name)->getDataPointer().get(), new_dimensions.at(0), 1);
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> is_shardable_values(is_shardable_.at(axis_name)->getDataPointer().get(), new_dimensions.at(0), 1);
+
+    indices_values.device(device) = indices_copy_values.concatenate(indices_new_values, 0);
+    indices_view_values.device(device) = indices_view_copy_values.concatenate(indices_new_values, 0);
+    is_modified_values.device(device) = is_modified_copy_values.concatenate(ones_concatenate, 0);
+    in_memory_values.device(device) = in_memory_copy_values.concatenate(ones_concatenate, 0);
+    is_shardable_values.device(device) = is_shardable_copy_values.concatenate(ones_concatenate, 0);
+
+    // update the dimensions
+    dimensions_.at(axes_to_dims_.at(axis_name)) += indices->getTensorSize();
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  template<typename LabelsT, typename T>
+  inline void TensorTable<TensorT, DeviceT, TDim>::deleteFromAxisConcept(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<T>& values, DeviceT & device)
+  {
+    if (std::is_same<T, TensorT>::value) {
+      auto values_copy = std::reinterpret_pointer_cast<TensorT>(values);
+      deleteFromAxis(axis_name, indices, labels, values_copy, device);
+    }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  template<typename LabelsT>
+  inline void TensorTable<TensorT, DeviceT, TDim>::deleteFromAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<TensorT>& values, DeviceT & device)
+  {
+    // Make the selection indices for copying from the labels
+    std::shared_ptr<TensorData<int, DeviceT, 1>> indices_select_labels_copy;
+    makeIndicesViewSelectFromIndices(axis_name, indices_select_labels_copy, indices, false, device);
+
+    // Copy the labels prior to deleting
+    axes_.at(axis_name)->selectFromAxis(indices_select_labels_copy, labels, device);
+
+    // Make the selection indices for copying the tensor data
+    std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_select_data_copy;
+    makeSelectIndicesFromIndices(axis_name, indices_select_labels_copy, indices_select_data_copy, device);
+
+    // Copy the data prior to deleting 
+    // TODO: could be made more efficient to avoid the memory allocation in `reduceTensorDataToSelectIndices`
+    std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> values_copy_ptr;
+    reduceTensorDataToSelectIndices(indices_select_data_copy, values_copy_ptr, axis_name, indices->getTensorSize(), device);
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> values_copy(values_copy_ptr->getDataPointer().get(), values_copy_ptr->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> values_values(values.get(), values_copy_ptr->getDimensions());
+    values_values.device(device) = values_copy;
+
+    deleteFromAxis(axis_name, indices, device);
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::deleteFromAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device)
+  {
+    // Make the selection indices for deleting the labels
+    std::shared_ptr<TensorData<int, DeviceT, 1>> indices_select_labels_delete;
+    makeIndicesViewSelectFromIndices(axis_name, indices_select_labels_delete, indices, true, device);
+
+    // Delete from the axis
+    axes_.at(axis_name)->deleteFromAxis(indices_select_labels_delete, device);
+
+    // Make the selection indices for deleting from the tensor data
+    std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_select_data_delete;
+    makeSelectIndicesFromIndices(axis_name, indices_select_labels_delete, indices_select_data_delete, device);
+
+    // select the tensor data based on the selection indices and update
+    std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> tensor_select;
+    Eigen::array<Eigen::Index, TDim> dimensions_select = getDimensions();
+    dimensions_select.at(axes_to_dims_.at(axis_name)) -= indices->getTensorSize();
+    getSelectTensorDataFromIndices(tensor_select, indices_select_data_delete, dimensions_select, device);
+    data_ = tensor_select;
+
+    // reduce the indices
+    deleteFromIndices(axis_name, indices, device);
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::makeIndicesViewSelectFromIndices(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices_select, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, const bool& invert_selection, DeviceT & device)
+  {
+    // Reshape and broadcast the indices
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_values(indices->getDataPointer().get(), 1, (int)indices->getTensorSize());
+    auto indices_bcast = indices_values.broadcast(Eigen::array<Eigen::Index, 2>({ (int)indices_view_.at(axis_name)->getTensorSize(), 1 }));
+
+    // broadcast the indices view
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_view(indices_view_.at(axis_name)->getDataPointer().get(), (int)indices_view_.at(axis_name)->getTensorSize(), 1);
+    auto indices_view_bcast = indices_view.broadcast(Eigen::array<Eigen::Index, 2>({ 1, (int)indices->getTensorSize() }));
+
+    // assign the output data
+    indices_select = indices_view_.at(axis_name)->copy(device);
+    indices_select->syncHAndDData(device);
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_select_values(indices_select->getDataPointer().get(), indices_select->getDimensions());
+
+    // Select and reduce
+    if (invert_selection) {
+      auto indices_selected_2d = (indices_view_bcast == indices_bcast).select(indices_view_bcast.constant(0), indices_view_bcast);
+      auto indices_selected = indices_selected_2d.prod(Eigen::array<int, 1>({ 1 })).clip(0, 1);
+      indices_select_values.device(device) = indices_selected;
+    }
+    else {
+      auto indices_selected_2d = (indices_view_bcast == indices_bcast).select(indices_view_bcast, indices_view_bcast.constant(0));
+      auto indices_selected = indices_selected_2d.sum(Eigen::array<int, 1>({ 1 })).clip(0, 1);
+      indices_select_values.device(device) = indices_selected;
+    }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::deleteFromIndices(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device)
+  {
+    // determine the new indices sizes
+    Eigen::array<Eigen::Index, 1> new_dimensions = indices_.at(axis_name)->getDimensions();
+    new_dimensions.at(0) -= indices->getDimensions().at(0);
+
+    // copy and resize the current indices
+    std::shared_ptr<TensorData<int, DeviceT, 1>> indices_copy = indices_.at(axis_name)->copy(device);
+    std::shared_ptr<TensorData<int, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copy(device);
+    std::shared_ptr<TensorData<int, DeviceT, 1>> is_modified_copy = is_modified_.at(axis_name)->copy(device);
+    std::shared_ptr<TensorData<int, DeviceT, 1>> in_memory_copy = in_memory_.at(axis_name)->copy(device);
+    std::shared_ptr<TensorData<int, DeviceT, 1>> is_shardable_copy = is_shardable_.at(axis_name)->copy(device);
+    indices_copy->setDimensions(new_dimensions); 
+    indices_copy->setData();
+    indices_view_copy->setDimensions(new_dimensions); 
+    indices_view_copy->setData();
+    is_modified_copy->setDimensions(new_dimensions); 
+    is_modified_copy->setData();
+    in_memory_copy->setDimensions(new_dimensions); 
+    in_memory_copy->setData();
+    is_shardable_copy->setDimensions(new_dimensions); 
+    is_shardable_copy->setData();
+    indices_copy->syncHAndDData(device);
+    indices_view_copy->syncHAndDData(device);
+    is_modified_copy->syncHAndDData(device);
+    in_memory_copy->syncHAndDData(device);
+    is_shardable_copy->syncHAndDData(device);
+
+    // make the selection tensor based off of the selection indices
+    std::shared_ptr<TensorData<int, DeviceT, 1>> selection_indices;
+    makeIndicesViewSelectFromIndices(axis_name, selection_indices, indices, true, device);
+
+    // select the values based on the indices
+    indices_.at(axis_name)->select(indices_copy, selection_indices, device);
+    indices_view_.at(axis_name)->select(indices_view_copy, selection_indices, device);
+    is_modified_.at(axis_name)->select(is_modified_copy, selection_indices, device);
+    in_memory_.at(axis_name)->select(in_memory_copy, selection_indices, device);
+    is_shardable_.at(axis_name)->select(is_shardable_copy, selection_indices, device);
+
+    // swap the indices
+    indices_.at(axis_name) = indices_copy;
+    indices_view_.at(axis_name) = indices_view_copy;
+    is_modified_.at(axis_name) = is_modified_copy;
+    in_memory_.at(axis_name) = in_memory_copy;
+    is_shardable_.at(axis_name) = is_shardable_copy;
+
+    // update the dimensions
+    dimensions_.at(axes_to_dims_.at(axis_name)) -= indices->getTensorSize();
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  template<typename LabelsT, typename T>
+  inline void TensorTable<TensorT, DeviceT, TDim>::insertIntoAxisConcept(const std::string & axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<T>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device)
+  {
+    if (std::is_same<T, TensorT>::value) {
+      auto values_copy = std::reinterpret_pointer_cast<TensorT>(values);
+      insertIntoAxis(axis_name, labels, values_copy, indices, device);
+    }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  template<typename LabelsT>
+  inline void TensorTable<TensorT, DeviceT, TDim>::insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<TensorT>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device)
+  {
+    // Append the new labels and values
+    std::shared_ptr<TensorData<int, DeviceT, 1>> indices_append;
+    appendToAxis(axis_name, labels, values, indices_append, device);
+
+    // Swap the appended indices for the original indices
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_values(indices_view_.at(axis_name)->getDataPointer().get(), indices_view_.at(axis_name)->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_values(indices_.at(axis_name)->getDataPointer().get(), indices_.at(axis_name)->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_old_values(indices->getDataPointer().get(), indices->getDimensions());
+    Eigen::array<int, 1> offsets = { (int)indices_view_.at(axis_name)->getTensorSize() - (int)indices->getTensorSize() };
+    Eigen::array<int, 1> extents = { (int)indices->getTensorSize() };
+    indices_view_values.slice(offsets, extents).device(device) = indices_old_values;
+    indices_values.slice(offsets, extents).device(device) = indices_old_values;
+
+    // TODO: Why is this needed on the GPU?
+    // BUG: Indices and Data appear not to sync correctly
+#if COMPILE_WITH_CUDA
+    this->syncIndicesHAndDData(device);
+    this->syncHAndDData(device);
+    this->syncAxesHAndDData(device);
+    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+    this->syncIndicesHAndDData(device);
+    this->syncHAndDData(device);
+    this->syncAxesHAndDData(device);
+#endif
+
+     Sort the indices
+    indices_.at(axis_name)->sort("ASC", device); // NOTE: this could fail if there are 0's in the index!
+
+    // Sort the axis and tensor based on the indices view
+    sortTensorData(device);
   }
 };
 #endif //TENSORBASE_TENSORTABLE_H

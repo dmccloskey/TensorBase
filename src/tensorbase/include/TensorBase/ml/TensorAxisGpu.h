@@ -23,7 +23,7 @@ namespace TensorBase
     TensorAxisGpu(const std::string& name, const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels);
     ~TensorAxisGpu() = default; ///< Default destructor
     void setDimensionsAndLabels(const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) override;
-    void deleteFromAxis(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, Eigen::GpuDevice& device) override;
+    void selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 2>>& labels_select, Eigen::GpuDevice& device) override;
     void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 2>>& labels, Eigen::GpuDevice & device) override;
     void makeSortIndices(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>>& indices_sort, Eigen::GpuDevice& device) override;
   };
@@ -44,7 +44,7 @@ namespace TensorBase
   };
 
   template<typename TensorT>
-  inline void TensorAxisGpu<TensorT>::deleteFromAxis(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, Eigen::GpuDevice& device)
+  inline void TensorAxisGpu<TensorT>::selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 2>>& labels_select, Eigen::GpuDevice & device)
   {
     // temporary memory for calculating the sum of the new axis
     TensorDataGpu<int, 1> axis_size(Eigen::array<Eigen::Index, 1>({ 1 }));
@@ -73,11 +73,10 @@ namespace TensorBase
     Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_select_values(indices_select_ptr->getDataPointer().get(), indices_select_ptr->getDimensions());
     indices_select_values.device(device) = indices_values.broadcast(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, 1 }));
 
-    // perform the reduction on the labels and update the axis attributes
+    // perform the reduction on the labels and move over the results
     this->tensor_dimension_labels_->select(new_labels_ptr, indices_select_ptr, device);
-    this->tensor_dimension_labels_ = new_labels_ptr;
-    this->setNLabels(axis_size.getData()(0));
-  }
+    labels_select = new_labels_ptr;
+  };
 
   template<typename TensorT>
   inline void TensorAxisGpu<TensorT>::appendLabelsToAxis(const std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 2>>& labels, Eigen::GpuDevice & device)

@@ -21,7 +21,9 @@ namespace TensorBase
 
     template<typename T>
     void addTensorTable(const std::shared_ptr<T>& tensor_table);  ///< Tensor table adder
+    void addTensorTableConcept(const std::shared_ptr<TensorTableConcept<DeviceT>>& tensor_table);  ///< Tensor table concept adder
     void removeTensorTable(const std::string& table_name); ///< Tensor table remover
+    std::shared_ptr<TensorTableConcept<DeviceT>> getTensorTableConcept(const std::string& table_name) const; ///< Tensor table concept getter
     void clear(); ///< clear the map of Tensor tables
 
     /*
@@ -48,7 +50,7 @@ namespace TensorBase
     */
     bool readShardsFromDisk();
 
-    std::map<std::string, std::shared_ptr<TensorTableConcept<DeviceT>>> tables_; ///< tuple of std::shared_ptr TensorTables<TensorT, DeviceT, TDim>
+    std::map<std::string, std::shared_ptr<TensorTableConcept<DeviceT>>> tables_; ///< map of Tensor tables
   };
 
   template<typename DeviceT>
@@ -56,12 +58,38 @@ namespace TensorBase
   inline void TensorCollection<DeviceT>::addTensorTable(const std::shared_ptr<T>& tensor_table)
   {
     auto found = tables_.emplace(tensor_table->getName(), std::shared_ptr<TensorTableConcept<DeviceT>>(new TensorTableWrapper<T, DeviceT>(tensor_table)));
+    if (!found.second)
+      std::cout << "The table " << tensor_table->getName() << " already exists in the collection." << std::endl;
+  }
+
+  template<typename DeviceT>
+  inline void TensorCollection<DeviceT>::addTensorTableConcept(const std::shared_ptr<TensorTableConcept<DeviceT>>& tensor_table)
+  {
+    auto found = tables_.emplace(tensor_table->getName(), tensor_table);
+    if (!found.second)
+      std::cout << "The table " << tensor_table->getName() << " already exists in the collection." << std::endl;
   }
 
   template<typename DeviceT>
   inline void TensorCollection<DeviceT>::removeTensorTable(const std::string & table_name)
   {
-    //TODO
+    auto it = tables_.find(table_name);
+    if (it != tables_.end())
+      tables_.erase(it);
+    else
+      std::cout << "The table " << table_name << " doest not exist in the collection." << std::endl;
+  }
+
+  template<typename DeviceT>
+  inline std::shared_ptr<TensorTableConcept<DeviceT>> TensorCollection<DeviceT>::getTensorTableConcept(const std::string & table_name) const
+  {
+    if (tables_.count(table_name) > 0) {
+      return tables_.at(table_name);
+    }
+    else {
+      std::cout << "The table " << table_name << " doest not exist in the collection." << std::endl;
+      return nullptr;
+    }
   }
 
   template<typename DeviceT>

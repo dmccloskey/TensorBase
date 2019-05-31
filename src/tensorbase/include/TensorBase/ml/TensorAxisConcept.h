@@ -26,6 +26,12 @@ namespace TensorBase
     // All DeviceT combos of `deleteFromAxis`
     virtual void deleteFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) = 0;
 
+    // All TensorT DeviceT combos of `selectFromAxis`
+    virtual void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels_select, DeviceT& device) = 0;
+    virtual void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels_select, DeviceT& device) = 0;
+    virtual void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels_select, DeviceT& device) = 0;
+    virtual void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels_select, DeviceT& device) = 0;
+
     // All TensorT and DeviceT combos of `appendLabelsToAxis`
     virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, DeviceT& device) = 0;
     virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, DeviceT& device) = 0;
@@ -67,6 +73,19 @@ namespace TensorBase
 
     void deleteFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) {
       tensor_axis_->deleteFromAxis(indices, device);
+    };
+
+    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels_select, DeviceT& device) {
+      tensor_axis_->selectFromAxisConcept(indices, labels_select, device);
+    };
+    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels_select, DeviceT& device) {
+      tensor_axis_->selectFromAxisConcept(indices, labels_select, device);
+    };
+    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels_select, DeviceT& device) {
+      tensor_axis_->selectFromAxisConcept(indices, labels_select, device);
+    };
+    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels_select, DeviceT& device) {
+      tensor_axis_->selectFromAxisConcept(indices, labels_select, device);
     };
 
     void appendLabelsToAxis(const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, DeviceT& device) {

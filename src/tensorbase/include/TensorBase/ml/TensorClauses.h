@@ -9,11 +9,19 @@
 namespace TensorBase
 {
   /*
-  @brief Class defining the `Select` clause statements that selects particular axis, dimensions, and/or label indices
-    to be returned or further used.  Specifying only an axis has the effect of selecting all dimensions and indices in the axis.
-    Specifying the axis and dimension has the effect of selecting all indices in the axis/dimension.
-    Specifying the axis, dimension, and labels has the effect of selecting only the axis indices corresponding to the
-    named axis/dimension/labels.
+  @brief Class defining the `Select` clause statements that selects particular axis, dimensions, and/or label indices.  
+
+  The class provides two interfaces for querying according to "Option 1" and "Option 2"
+    Option 1: labels (1D tensor) that match on the `table_name`, `axis_name`, and `dimension_name` are selected
+    Option 2: labels (2D tensor) that match on the `table_name` and `axis_name` are selected
+
+  [TODO]
+  The class also allows the user to omit specifying the `labels`, `dimensions_name`, and/or `axis_name` attributes
+    in order to more rapidly query all labels/dimensions/axes of a table.  The behavior is as followings:  
+    - Specifying only an axis has the effect of selecting all dimensions and indices in the axis.
+    - Specifying the axis and dimension has the effect of selecting all indices in the axis/dimension.
+    - Specifying the axis, dimension, and labels has the effect of selecting only the axis indices corresponding to the
+      named axis/dimension/labels.
   */
   template<typename LabelsT, typename DeviceT>
   class SelectClause {
@@ -21,11 +29,14 @@ namespace TensorBase
     SelectClause() = default;
     SelectClause(const std::string& table_name, const std::string& axis_name, const std::string& dimension_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& labels) :
       table_name(table_name), axis_name(axis_name), dimension_name(dimension_name), labels(labels) { };
+    SelectClause(const std::string& table_name, const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& axis_labels) :
+      table_name(table_name), axis_name(axis_name), axis_labels(axis_labels) { };
     ~SelectClause() = default;
-    std::string table_name; ///< the table to select
-    std::string axis_name = ""; ///< the axis to select
-    std::string dimension_name = ""; ///< the dimension to select
-    std::shared_ptr<TensorData<LabelsT, DeviceT, 1>> labels = nullptr; ///< the labels to select
+    std::string table_name; ///< the table to select (option 1 and 2)
+    std::string axis_name = ""; ///< the axis to select (option 1 and 2)
+    std::string dimension_name = ""; ///< the dimension to select (option 1)
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 1>> labels = nullptr; ///< the labels to select (option 1)
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> axis_labels = nullptr; ///< the labels to select (option 2)
   };
 
   struct reductionFunctions {
@@ -126,6 +137,12 @@ namespace TensorBase
       SelectClause(table_name, axis_name, dimension_name, labels),
       values(values), comparitor(comparitor),
       modifier(modifier), within_continuator(within_continuator), prepend_continuator(prepend_continuator) { };
+    WhereClause(const std::string& table_name, const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& axis_labels,
+      const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor,
+      const logicalModifiers::logicalModifier& modifier, const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator) :
+      SelectClause(table_name, axis_name, axis_labels),
+      values(values), comparitor(comparitor),
+      modifier(modifier), within_continuator(within_continuator), prepend_continuator(prepend_continuator) { };
     ~WhereClause() = default;
     std::shared_ptr<TensorData<TensorT, DeviceT, 1>> values;
     logicalComparitors::logicalComparitor comparitor;
@@ -153,6 +170,9 @@ namespace TensorBase
     SortClause(const std::string& table_name, const std::string& axis_name, const std::string& dimension_name,
       const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& labels, const sortOrder::order& order_by) :
       SelectClause(table_name, axis_name, dimension_name, labels), order_by(order_by) { };
+    SortClause(const std::string& table_name, const std::string& axis_name,
+      const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& axis_labels, const sortOrder::order& order_by) :
+      SelectClause(table_name, axis_name, axis_labels), order_by(order_by) { };
     ~SortClause() = default;
     sortOrder::order order_by = sortOrder::ASC;
   };

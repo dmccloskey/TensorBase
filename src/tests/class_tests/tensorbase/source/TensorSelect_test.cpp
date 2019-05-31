@@ -1,6 +1,6 @@
 /**TODO:  Add copyright*/
 
-#define BOOST_TEST_MODULE TensorSelect test suite 
+#define BOOST_TEST_MODULE TensorSelect1 test suite 
 #include <boost/test/included/unit_test.hpp>
 #include <TensorBase/ml/TensorSelect.h>
 #include <TensorBase/ml/TensorTableDefaultDevice.h>
