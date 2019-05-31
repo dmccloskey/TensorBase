@@ -14,8 +14,6 @@
 #include <TensorBase/ml/TensorCollection.h>
 
 #include <cereal/access.hpp>  // serialiation of private members
-#include <cereal/types/memory.hpp>
-#include <cereal/types/map.hpp>
 #undef min // clashes with std::limit on windows in polymorphic.hpp
 #undef max // clashes with std::limit on windows in polymorphic.hpp
 #include <cereal/types/polymorphic.hpp>

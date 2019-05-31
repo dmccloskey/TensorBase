@@ -3,6 +3,8 @@
 #ifndef SMARTPEAK_TENSORCOLLECTIONFILE_H
 #define SMARTPEAK_TENSORCOLLECTIONFILE_H
 
+#undef min // clashes with std::limit on windows in polymorphic.hpp
+#undef max // clashes with std::limit on windows in polymorphic.hpp
 #include <TensorBase/ml/TensorCollection.h>
 
 #include <unsupported/Eigen/CXX11/Tensor>
@@ -10,8 +12,6 @@
 #include <fstream>
 
 #include <cereal/archives/binary.hpp>
-#undef min // clashes with std::limit on windows in polymorphic.hpp
-#undef max // clashes with std::limit on windows in polymorphic.hpp
 
 namespace TensorBase
 {
@@ -47,6 +47,5 @@ public:
   };
 
   class TensorCollectionFileDefaultDevice: public TensorCollectionFile<Eigen::DefaultDevice>{};
-}
-
+};
 #endif //SMARTPEAK_TENSORCOLLECTIONFILE_H
