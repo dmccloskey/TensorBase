@@ -17,8 +17,6 @@ namespace TensorBase
 
     based on the following:
       https://stackoverflow.com/questions/25389480/how-to-write-read-an-eigen-matrix-from-binary-file
-
-    TODO copy over tests
   */
   class DataFile
   {
@@ -50,7 +48,7 @@ public:
           // printf("dimension loaded: %d = %d\n", i, dims[i]); // DEBUGGING
         }
         data = Eigen::Tensor<T, R>(dims);
-        in.read((char *) data.data(), sizeof(data.data()));
+        in.read((char *)data.data(), data.size() * sizeof(T));
         in.close();
 		    return true;
       }
@@ -86,9 +84,8 @@ public:
           // printf("dimension stored: %d = %d\n", i, data.dimension(i)); // DEBUGGING
           sprintf(value_char, "%d", data.dimension(i));
           out.write((char*) (&value_char), sizeof(value_char));
-          // out.write((char*) (&data.dimension(i)), sizeof(typename Eigen::Tensor<T, R>::Index));
         }
-        out.write((char*) data.data(), data.size()*sizeof(typename Eigen::Tensor<T, R>::Scalar));
+        out.write((char*)data.data(), data.size() * sizeof(T));
         out.close();
 		return true;
       }

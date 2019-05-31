@@ -3,7 +3,6 @@
 #define BOOST_TEST_MODULE DataFile test suite 
 #include <boost/test/included/unit_test.hpp>
 #include <TensorBase/io/DataFile.h>
-// #include <filesystem> C++ 17
 
 using namespace TensorBase;
 using namespace std;
@@ -29,20 +28,25 @@ BOOST_AUTO_TEST_CASE(storeAndLoadBinary)
 {
   DataFile data;
 
-  // std::path data_path = std::current_path().replace_filename("data");  C++ 17
-  // data_path /= "DataFileTest.dat";  C++ 17
   std::string filename = "DataFileTest.dat";
 
   Eigen::Tensor<float, 3> random_dat(2,2,2);
   random_dat.setRandom();
 	data.storeDataBinary<float, 3>(filename, random_dat);
-	// data.storeDataBinary(data_path.string(), random_dat);  C++ 17
 
   Eigen::Tensor<float, 3> test_dat(2,2,2);
 	data.loadDataBinary<float, 3>(filename, test_dat);
-	// data.loadDataBinary(data_path.string(), test_dat);  C++ 17
 
-  BOOST_CHECK_CLOSE(test_dat(0, 0, 0), random_dat(0, 0, 0), 1e-6);
+  std::cout << "Random:\n" << random_dat << std::endl;
+  std::cout << "Test:\n" << test_dat << std::endl;
+
+  for (int i = 0; i < 2; ++i) {
+    for (int j = 0; j < 2; ++j) {
+      for (int k = 0; k < 2; ++k) {
+        BOOST_CHECK_CLOSE(test_dat(i, j, k), random_dat(i, j, k), 1e-6);
+      }
+    }
+  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()

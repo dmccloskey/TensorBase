@@ -1238,6 +1238,7 @@ namespace TensorBase
 
     // TODO: Why is this needed on the GPU?
     // BUG: Indices and Data appear not to sync correctly
+#if COMPILE_WITH_CUDA
     this->syncIndicesHAndDData(device);
     this->syncHAndDData(device);
     this->syncAxesHAndDData(device);
@@ -1245,8 +1246,9 @@ namespace TensorBase
     this->syncIndicesHAndDData(device);
     this->syncHAndDData(device);
     this->syncAxesHAndDData(device);
+#endif
 
-    // Sort the indices
+     Sort the indices
     indices_.at(axis_name)->sort("ASC", device); // NOTE: this could fail if there are 0's in the index!
 
     // Sort the axis and tensor based on the indices view
