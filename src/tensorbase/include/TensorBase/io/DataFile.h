@@ -11,12 +11,10 @@
 
 namespace TensorBase
 {
-
   /**
-    @brief DataFile
+    @brief Class for storing Tensor data in a binary format
 
-    based on the following:
-      https://stackoverflow.com/questions/25389480/how-to-write-read-an-eigen-matrix-from-binary-file
+    based on the following:  https://stackoverflow.com/questions/25389480/how-to-write-read-an-eigen-matrix-from-binary-file
   */
   class DataFile
   {

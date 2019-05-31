@@ -6,6 +6,11 @@
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/ml/TensorTable.h>
 
+#include <cereal/access.hpp>  // serialiation of private members
+#undef min // clashes with std::limit on windows in polymorphic.hpp
+#undef max // clashes with std::limit on windows in polymorphic.hpp
+#include <cereal/types/polymorphic.hpp>
+
 namespace TensorBase
 {
   template<typename TensorT, int TDim>
@@ -34,6 +39,12 @@ namespace TensorBase
     void makeSelectIndicesFromIndices(const std::string& axis_name, const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_select, Eigen::DefaultDevice& device) override;
     void getSelectTensorDataFromIndices(std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_select, const Eigen::array<Eigen::Index, TDim>& dimensions_select, Eigen::DefaultDevice& device) override;
     void makeIndicesFromIndicesView(const std::string & axis_name, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, Eigen::DefaultDevice& device) override;
+  private:
+    friend class cereal::access;
+    template<class Archive>
+    void serialize(Archive& archive) {
+      archive(cereal::base_class<TensorTable<TensorT, Eigen::DefaultDevice, TDim>>(this));
+    }
   };
 
   template<typename TensorT, int TDim>
@@ -451,4 +462,22 @@ namespace TensorBase
     this->indices_view_.at(axis_name)->select(indices, indices_view_copy, device);
   }
 };
+
+// Cereal registration of TensorTs: float, int, char, double and TDims: 1, 2, 3, 4
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<int, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<float, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<double, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<char, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<int, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<float, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<double, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<char, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<int, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<float, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<double, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<char, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<int, 4>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<float, 4>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<double, 4>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<char, 4>);
 #endif //TENSORBASE_TENSORTABLEDEFAULTDEVICE_H

@@ -7,6 +7,11 @@
 #include <TensorBase/ml/TensorData.h>
 #include <string>
 
+#include <cereal/access.hpp>  // serialiation of private members
+#undef min // clashes with std::limit on windows in polymorphic.hpp
+#undef max // clashes with std::limit on windows in polymorphic.hpp
+#include <cereal/types/polymorphic.hpp>
+
 namespace TensorBase
 {
   /**
@@ -89,12 +94,12 @@ namespace TensorBase
     Eigen::Tensor<std::string, 1> tensor_dimension_names_;  ///< array of TensorDimension names
     std::shared_ptr<TensorData<TensorT, DeviceT, 2>> tensor_dimension_labels_; ///< dim=0: tensor_dimension_name; dim=1 tensor_dimension_labels
 
-    //private:
-    //	friend class cereal::access;
-    //	template<class Archive>
-    //	void serialize(Archive& archive) {
-    //		archive(id_, name_, n_dimensions_, n_labels_, tensor_dimension_names_, tensor_dimension_labels_);
-    //	}
+  private:
+    friend class cereal::access;
+    template<class Archive>
+    void serialize(Archive& archive) {
+    	archive(id_, name_, n_dimensions_, n_labels_, tensor_dimension_names_);
+    }
   };
   template<typename TensorT, typename DeviceT>
   TensorAxis<TensorT, DeviceT>::TensorAxis(const std::string& name,
@@ -163,6 +168,12 @@ namespace TensorBase
     void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& labels, Eigen::DefaultDevice & device) override;
     void makeSortIndices(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& indices_sort, Eigen::DefaultDevice& device) override;
     void selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& labels_select, Eigen::DefaultDevice& device) override;
+  private:
+    friend class cereal::access;
+    template<class Archive>
+    void serialize(Archive& archive) {
+      archive(cereal::base_class<TensorAxis<TensorT, Eigen::DefaultDevice>>(this));
+    }
   };
   template<typename TensorT>
   TensorAxisDefaultDevice<TensorT>::TensorAxisDefaultDevice(const std::string& name, const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) {
@@ -274,7 +285,12 @@ namespace TensorBase
     void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>>& labels, Eigen::ThreadPoolDevice & device) override;
     void makeSortIndices(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>>& indices_sort, Eigen::ThreadPoolDevice& device) override;
     void selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>>& labels_select, Eigen::ThreadPoolDevice& device) override;
-
+  private:
+    friend class cereal::access;
+    template<class Archive>
+    void serialize(Archive& archive) {
+      archive(cereal::base_class<TensorAxis<TensorT, Eigen::ThreadPoolDevice>>(this));
+    }
   };
   template<typename TensorT>
   TensorAxisCpu<TensorT>::TensorAxisCpu(const std::string& name, const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) {
@@ -375,4 +391,15 @@ namespace TensorBase
     labels_select = new_labels_ptr;
   }
 };
+
+// Cereal registration of TensorTs: float, int, char, double
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisDefaultDevice<int>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisDefaultDevice<float>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisDefaultDevice<double>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisDefaultDevice<char>);
+
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisCpu<int>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisCpu<float>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisCpu<double>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisCpu<char>);
 #endif //TENSORBASE_TENSORAXIS_H

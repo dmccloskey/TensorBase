@@ -13,6 +13,11 @@
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/ml/TensorTable.h>
 
+#include <cereal/access.hpp>  // serialiation of private members
+#undef min // clashes with std::limit on windows in polymorphic.hpp
+#undef max // clashes with std::limit on windows in polymorphic.hpp
+#include <cereal/types/polymorphic.hpp>
+
 namespace TensorBase
 {
   template<typename TensorT, int TDim>
@@ -41,6 +46,12 @@ namespace TensorBase
     void makeSelectIndicesFromIndices(const std::string& axis_name, const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices_select, Eigen::GpuDevice& device) override;
     void getSelectTensorDataFromIndices(std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices_select, const Eigen::array<Eigen::Index, TDim>& dimensions_select, Eigen::GpuDevice& device) override;
     void makeIndicesFromIndicesView(const std::string & axis_name, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, Eigen::GpuDevice& device) override;
+  private:
+    friend class cereal::access;
+    template<class Archive>
+    void serialize(Archive& archive) {
+      archive(cereal::base_class<TensorTable<TensorT, Eigen::GpuDevice, TDim>>(this));
+    }
   };
 
   template<typename TensorT, int TDim>
@@ -484,5 +495,23 @@ namespace TensorBase
     this->indices_view_.at(axis_name)->select(indices, indices_view_copy, device);
   }
 };
+
+// Cereal registration of TensorTs: float, int, char, double and TDims: 1, 2, 3, 4
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableGpu<int, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableGpu<float, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableGpu<double, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableGpu<char, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableGpu<int, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableGpu<float, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableGpu<double, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableGpu<char, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableGpu<int, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableGpu<float, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableGpu<double, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableGpu<char, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableGpu<int, 4>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableGpu<float, 4>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableGpu<double, 4>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableGpu<char, 4>);
 #endif
 #endif //TENSORBASE_TENSORTABLEGPU_H

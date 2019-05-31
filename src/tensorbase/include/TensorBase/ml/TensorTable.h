@@ -15,6 +15,13 @@
 #include <TensorBase/ml/TensorClauses.h>
 #include <map>
 
+#include <cereal/access.hpp>  // serialiation of private members
+#include <cereal/types/memory.hpp>
+#include <cereal/types/map.hpp>
+#undef min // clashes with std::limit on windows in polymorphic.hpp
+#undef max // clashes with std::limit on windows in polymorphic.hpp
+#include <cereal/types/polymorphic.hpp>
+
 namespace TensorBase
 {
   /**
@@ -439,12 +446,13 @@ namespace TensorBase
     std::map<std::string, int> axes_to_dims_;
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> data_; ///< The actual tensor data
     
-    //private:
-    //	friend class cereal::access;
-    //	template<class Archive>
-    //	void serialize(Archive& archive) {
-    //		archive(id_, name_, n_dimensions_, n_labels_, tensor_dimension_names_, tensor_dimension_labels_);
-    //	}
+  private:
+  	friend class cereal::access;
+  	template<class Archive>
+  	void serialize(Archive& archive) {
+  		archive(id_, name_, dimensions_, axes_, indices_, indices_view_, is_modified_, in_memory_, is_shardable_,
+        axes_to_dims_, data_);
+  	}
   };
 
   template<typename TensorT, typename DeviceT, int TDim>
@@ -1248,7 +1256,7 @@ namespace TensorBase
     this->syncAxesHAndDData(device);
 #endif
 
-     Sort the indices
+    // Sort the indices
     indices_.at(axis_name)->sort("ASC", device); // NOTE: this could fail if there are 0's in the index!
 
     // Sort the axis and tensor based on the indices view

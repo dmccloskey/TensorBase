@@ -8,11 +8,11 @@
 #include <Eigen/src/Core/util/Meta.h>
 #include <memory>
 
-//#include <cereal/access.hpp>  // serialiation of private members
-//#include <cereal/types/memory.hpp>
-//#undef min // clashes with std::limit on windows in polymorphic.hpp
-//#undef max // clashes with std::limit on windows in polymorphic.hpp
-//#include <cereal/types/polymorphic.hpp>
+#include <cereal/access.hpp>  // serialiation of private members
+#include <cereal/types/memory.hpp>
+#undef min // clashes with std::limit on windows in polymorphic.hpp
+#undef max // clashes with std::limit on windows in polymorphic.hpp
+#include <cereal/types/polymorphic.hpp>
 
 namespace TensorBase
 {
@@ -147,13 +147,12 @@ namespace TensorBase
     size_t tensor_size_ = 0;  ///< Tensor size
     std::string device_name_ = "";
 
-    //private:
-    //	friend class cereal::access;
-    //	template<class Archive>
-    //	void serialize(Archive& archive) {
-    //		archive(dimensions_, tensor_size_,
-    //		h_data_, d_data_, h_data_updated_, d_data_updated_);
-    //	}
+  private:
+    friend class cereal::access;
+    template<class Archive>
+    void serialize(Archive& archive) {
+    	archive(dimensions_, tensor_size_, device_name_, h_data_updated_, d_data_updated_);
+    }
   };
 
   /**
@@ -173,12 +172,12 @@ namespace TensorBase
     void setData(const Eigen::Tensor<TensorT, TDim>& data); ///< data setter
     void setData();
     bool syncHAndDData(Eigen::DefaultDevice& device) { this->d_data_updated_ = true; this->h_data_updated_ = true; return true; }
-    //private:
-    //	friend class cereal::access;
-    //	template<class Archive>
-    //	void serialize(Archive& archive) {
-    //		archive(cereal::base_class<TensorData<TensorT, Eigen::DefaultDevice>>(this));
-    //	}
+  private:
+    friend class cereal::access;
+    template<class Archive>
+    void serialize(Archive& archive) {
+    	archive(cereal::base_class<TensorData<TensorT, Eigen::DefaultDevice, TDim>>(this));
+    }
   };
 
   template<typename TensorT, int TDim>
@@ -299,12 +298,12 @@ namespace TensorBase
     void setData(const Eigen::Tensor<TensorT, TDim>& data); ///< data setter
     void setData();
     bool syncHAndDData(Eigen::ThreadPoolDevice& device) { this->d_data_updated_ = true; this->h_data_updated_ = true; return true; }
-    //private:
-    //	friend class cereal::access;
-    //	template<class Archive>
-    //	void serialize(Archive& archive) {
-    //		archive(cereal::base_class<TensorData<TensorT, Eigen::DefaultDevice>>(this));
-    //	}
+  private:
+    friend class cereal::access;
+    template<class Archive>
+    void serialize(Archive& archive) {
+    	archive(cereal::base_class<TensorData<TensorT, Eigen::ThreadPoolDevice, TDim>>(this));
+    }
   };
 
   template<typename TensorT, int TDim>
@@ -408,7 +407,39 @@ namespace TensorBase
   };
 }
 
-//CEREAL_REGISTER_TYPE(TensorData::TensorDataDefaultDevice<float>);
-//// TODO: add double, int, etc.
+// Cereal registration of TensorTs: float, int, char, double and TDims: 1, 2, 3, 4
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<int, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<float, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<double, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<char, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<int, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<float, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<double, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<char, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<int, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<float, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<double, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<char, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<int, 4>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<float, 4>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<double, 4>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<char, 4>);
+
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<int, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<float, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<double, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<char, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<int, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<float, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<double, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<char, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<int, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<float, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<double, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<char, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<int, 4>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<float, 4>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<double, 4>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<char, 4>);
 
 #endif //TENSORBASE_TENSORDATA_H

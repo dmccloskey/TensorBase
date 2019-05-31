@@ -13,6 +13,11 @@
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/ml/TensorAxis.h>
 
+#include <cereal/access.hpp>  // serialiation of private members
+#undef min // clashes with std::limit on windows in polymorphic.hpp
+#undef max // clashes with std::limit on windows in polymorphic.hpp
+#include <cereal/types/polymorphic.hpp>
+
 namespace TensorBase
 {
   template<typename TensorT>
@@ -26,6 +31,12 @@ namespace TensorBase
     void selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 2>>& labels_select, Eigen::GpuDevice& device) override;
     void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 2>>& labels, Eigen::GpuDevice & device) override;
     void makeSortIndices(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>>& indices_sort, Eigen::GpuDevice& device) override;
+  private:
+    friend class cereal::access;
+    template<class Archive>
+    void serialize(Archive& archive) {
+      archive(cereal::base_class<TensorAxis<TensorT, Eigen::ThreadPoolDevice>>(this));
+    }
   };
   template<typename TensorT>
   TensorAxisGpu<TensorT>::TensorAxisGpu(const std::string& name, const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) {
@@ -135,5 +146,11 @@ namespace TensorBase
     indices_sort = std::make_shared<TensorDataGpu<int, 2>>(indices_sort_tmp);
   }
 };
+
+// Cereal registration of TensorTs: float, int, char, double
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisGpu<int>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisGpu<float>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisGpu<double>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisGpu<char>);
 #endif
 #endif //TENSORBASE_TENSORAXISGPU_H
