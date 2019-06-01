@@ -33,6 +33,47 @@ BOOST_AUTO_TEST_CASE(constructorNameAndAxesDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable.getName(), "1");
 }
 
+BOOST_AUTO_TEST_CASE(comparatorDefaultDevice)
+{
+  // Set the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels1 = 2, nlabels2 = 3, nlabels3 = 5;
+  Eigen::Tensor<int, 2> labels1(1, nlabels1), labels2(1, nlabels2), labels3(1, nlabels3);
+  labels1.setConstant(1);
+  labels2.setConstant(2);
+  labels3.setConstant(3);
+
+  // Make the test tables
+  TensorTableDefaultDevice<float, 3> tensorTable_test("1");
+  tensorTable_test.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
+  tensorTable_test.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
+  tensorTable_test.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3)));
+  tensorTable_test.setAxes();
+
+  // Test expected comparison
+  TensorTableDefaultDevice<float, 3> tensorTable1("1");
+  tensorTable1.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
+  tensorTable1.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
+  tensorTable1.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3)));
+  tensorTable1.setAxes();
+
+  BOOST_CHECK(tensorTable_test == tensorTable1); // expected
+  tensorTable1.setName("1.1");
+  BOOST_CHECK(tensorTable_test != tensorTable1); // difference names but same axes
+
+  // Test differen axes but same name
+  TensorTableDefaultDevice<float, 3> tensorTable2("1");
+  tensorTable2.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("4", dimensions1, labels1)));
+  tensorTable2.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("5", dimensions2, labels2)));
+  tensorTable2.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("6", dimensions3, labels3)));
+  tensorTable2.setAxes();
+
+  BOOST_CHECK(tensorTable_test != tensorTable2); // different axes
+}
+
 BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
 {
   TensorTableDefaultDevice<float, 3> tensorTable;

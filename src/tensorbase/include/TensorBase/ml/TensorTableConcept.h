@@ -30,6 +30,39 @@ namespace TensorBase
     TensorTableConcept() = default;
     virtual ~TensorTableConcept() = default;
 
+    template<typename DeviceTOther>
+    inline bool operator==(const TensorTableConcept<DeviceTOther>& other) const
+    {
+      bool meta_equal = (this->getId() == other.getId() && this->getName() == other.getName());
+      auto compare_maps = [](auto lhs, auto rhs) {return *(lhs.second.get()) == *(rhs.second.get()); };
+      auto axes = this->getAxes();
+      if (axes.size() != other.getAxes().size()) return false;
+      bool axes_equal = std::equal(axes.begin(), axes.end(), other.getAxes().begin(), compare_maps);
+      auto indices = this->getIndices();
+      if (indices.size() != other.getIndices().size()) return false;
+      bool indices_equal = std::equal(indices.begin(), indices.end(), other.getIndices().begin(), compare_maps);
+      auto indices_view = this->getIndicesView();
+      if (indices_view.size() != other.getIndicesView().size()) return false;
+      bool indices_view_equal = std::equal(indices_view.begin(), indices_view.end(), other.getIndicesView().begin(), compare_maps);
+      auto is_shardable = this->getIsShardable();
+      if (indices_view.size() != other.getIndicesView().size()) return false;
+      bool is_shardable_equal = std::equal(is_shardable.begin(), is_shardable.end(), other.getIsShardable().begin(), compare_maps);
+      auto in_memory = this->getInMemory();
+      if (in_memory.size() != other.getInMemory().size()) return false;
+      bool in_memory_equal = std::equal(in_memory.begin(), in_memory.end(), other.getInMemory().begin(), compare_maps);
+      auto is_modified = this->getIsModified();
+      if (is_modified.size() != other.getIsModified().size()) return false;
+      bool is_modified_equal = std::equal(is_modified.begin(), is_modified.end(), other.getIsModified().begin(), compare_maps);
+      return meta_equal && axes_equal && indices_equal && indices_view_equal && is_shardable_equal
+        && in_memory_equal && is_modified_equal;
+    }
+
+    inline bool operator!=(const TensorTableConcept& other) const
+    {
+      return !(*this == other);
+    }
+
+    virtual int getId() const = 0;
     virtual std::string getName() const = 0;
     virtual std::map<std::string, std::shared_ptr<TensorAxisConcept<DeviceT>>>& getAxes() = 0;
     virtual std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIndices() = 0;
@@ -37,6 +70,12 @@ namespace TensorBase
     virtual std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIsModified() = 0;
     virtual std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getInMemory() = 0;
     virtual std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIsShardable() = 0;
+    virtual std::map<std::string, std::shared_ptr<TensorAxisConcept<DeviceT>>> getAxes() const = 0;
+    virtual std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getIndices() const = 0;
+    virtual std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getIndicesView() const = 0;
+    virtual std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getIsModified() const = 0;
+    virtual std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getInMemory() const = 0;
+    virtual std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getIsShardable() const = 0;
     virtual void resetIndicesView(const std::string& axis_name, DeviceT& device) = 0;
     virtual void makeIndicesFromIndicesView(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) = 0;
     virtual int getDimFromAxisName(const std::string& axis_name) = 0;
@@ -183,6 +222,7 @@ namespace TensorBase
     TensorTableWrapper(const std::shared_ptr<T>& tensor_table) : tensor_table_(tensor_table) {};
     TensorTableWrapper() = default;
     ~TensorTableWrapper() = default;
+    int getId() const { return tensor_table_->getId(); }
     std::string getName() const { return tensor_table_->getName(); };
     std::map<std::string, std::shared_ptr<TensorAxisConcept<DeviceT>>>& getAxes() { return tensor_table_->getAxes(); };
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIndices() { return tensor_table_->getIndices(); };
@@ -190,6 +230,12 @@ namespace TensorBase
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIsModified() { return tensor_table_->getIsModified(); };
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getInMemory() { return tensor_table_->getInMemory(); };
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIsShardable() { return tensor_table_->getIsShardable(); };
+    std::map<std::string, std::shared_ptr<TensorAxisConcept<DeviceT>>> getAxes() const { return tensor_table_->getAxes(); };
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getIndices() const { return tensor_table_->getIndices(); };
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getIndicesView() const { return tensor_table_->getIndicesView(); };
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getIsModified() const { return tensor_table_->getIsModified(); };
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getInMemory() const { return tensor_table_->getInMemory(); };
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getIsShardable() const { return tensor_table_->getIsShardable(); };
     void resetIndicesView(const std::string& axis_name, DeviceT& device) { tensor_table_->resetIndicesView(axis_name, device); };
     void makeIndicesFromIndicesView(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) { 
       tensor_table_->makeIndicesFromIndicesView(axis_name, indices, device);

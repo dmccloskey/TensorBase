@@ -27,20 +27,16 @@ namespace TensorBase
     TensorCollection(const std::string& name) : name_(name) {};
     ~TensorCollection() = default; ///< Default destructor
 
-    template<typename TensorTOther, typename DeviceTOther, int TDimOther>
-    inline bool operator==(const TensorTable<TensorTOther, DeviceTOther, TDimOther>& other) const
+    template<typename DeviceTOther>
+    inline bool operator==(const TensorCollection<DeviceTOther>& other) const
     {
-      return std::tie(
-        id_,
-        name_,
-        tables_
-      ) == std::tie(
-        other.id_,
-        other.name_,
-        other.tables_);
+      bool meta_equal = std::tie(id_, name_) == std::tie(other.id_, other.name_);
+      auto compare_maps = [](auto lhs, auto rhs) {return *(lhs.second.get()) == *(rhs.second.get()); };
+      bool tables_equal = std::equal(tables_.begin(), tables_.end(), other.tables_.begin(), compare_maps);
+      return meta_equal && tables_equal;
     }
 
-    inline bool operator!=(const TensorAxis& other) const
+    inline bool operator!=(const TensorCollection& other) const
     {
       return !(*this == other);
     }
@@ -153,6 +149,8 @@ namespace TensorBase
 
   class TensorCollectionDefaultDevice : public TensorCollection<Eigen::DefaultDevice>
   {
+  public:
+    using TensorCollection<Eigen::DefaultDevice>::TensorCollection;
   private:
     friend class cereal::access;
     template<class Archive>
@@ -163,6 +161,8 @@ namespace TensorBase
 
   class TensorCollectionCpu : public TensorCollection<Eigen::ThreadPoolDevice>
   {
+  public:
+    using TensorCollection<Eigen::ThreadPoolDevice>::TensorCollection;
   private:
     friend class cereal::access;
     template<class Archive>

@@ -28,6 +28,19 @@ namespace TensorBase
     TensorAxisConcept() = default;
     virtual ~TensorAxisConcept() = default;
 
+    inline bool operator==(const TensorAxisConcept& other) const
+    {
+      bool meta_equal = (this->getId() == other.getId() && this->getName() == other.getName() &&
+        this->getNLabels() == other.getNLabels(), this->getNDimensions() == other.getNDimensions());
+      return meta_equal;
+    }
+
+    inline bool operator!=(const TensorAxisConcept& other) const
+    {
+      return !(*this == other);
+    }
+
+    virtual int getId() const = 0;
     virtual std::string getName() const = 0;
     virtual size_t getNLabels() const = 0;
     virtual size_t getNDimensions() const = 0;
@@ -76,6 +89,8 @@ namespace TensorBase
     TensorAxisWrapper(const std::shared_ptr<T>& tensor_axis) : tensor_axis_(tensor_axis) {};
     TensorAxisWrapper() = default;
     ~TensorAxisWrapper() = default;
+
+    int getId() const { return tensor_axis_->getId(); };
     std::string getName() const { return tensor_axis_->getName(); };
     size_t getNLabels() const { return tensor_axis_->getNLabels(); };
     size_t getNDimensions() const { return tensor_axis_->getNDimensions(); };
