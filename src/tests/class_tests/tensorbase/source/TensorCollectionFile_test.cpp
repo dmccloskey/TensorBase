@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(storeAndLoadBinaryDefaultDevice)
   tensorTable3.setAxes();
   std::shared_ptr<TensorTableDefaultDevice<char, 3>> tensorTable3_ptr = std::make_shared<TensorTableDefaultDevice<char, 3>>(tensorTable3);
 
-  TensorCollectionDefaultDevice tensorCollection;
+  TensorCollectionDefaultDevice tensorCollection("1");
   tensorCollection.addTensorTable(tensorTable1_ptr);
   tensorCollection.addTensorTable(tensorTable2_ptr);
   tensorCollection.addTensorTable(tensorTable3_ptr);
@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE(storeAndLoadBinaryDefaultDevice)
   // Load the Tensor Collection
   TensorCollectionDefaultDevice tensorCollection_test;
   data.loadTensorCollectionBinary(filename, tensorCollection_test);
-  
+  BOOST_CHECK(tensorCollection == tensorCollection_test);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
