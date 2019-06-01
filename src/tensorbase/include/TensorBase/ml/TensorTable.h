@@ -14,10 +14,12 @@
 #include <TensorBase/ml/TensorAxisConcept.h>
 #include <TensorBase/ml/TensorClauses.h>
 #include <map>
+#include <array>
 
 #include <cereal/access.hpp>  // serialiation of private members
 #include <cereal/types/memory.hpp>
 #include <cereal/types/map.hpp>
+#include <cereal/types/array.hpp>
 #undef min // clashes with std::limit on windows in polymorphic.hpp
 #undef max // clashes with std::limit on windows in polymorphic.hpp
 #include <cereal/types/polymorphic.hpp>
@@ -33,7 +35,26 @@ namespace TensorBase
   public:
     TensorTable() = default;  ///< Default constructor
     TensorTable(const std::string& name) : name_(name) {};
-    virtual ~TensorTable() = default; ///< Default destructor
+    virtual ~TensorTable() = default; ///< Default destruct
+
+    template<typename TensorTOther, typename DeviceTOther, int TDimOther>
+    inline bool operator==(const TensorTable<TensorTOther, DeviceTOther, TDimOther>& other) const
+    {
+      bool meta_equal = std::tie(id_, name_, dimensions_, axes_to_dims_,
+      ) == std::tie(other.id_, other.name_, other.dimensions_, other.axes_to_dims_);
+      bool indices_equal = std::equal(indices_, other.indices_);
+      bool indices_view_equal = std::equal(indices_view_, other.indices_view_);
+      bool is_shardable_equal = std::equal(is_shardable_, other.is_shardable_);
+      bool in_memory_equal = std::equal(in_memory_, other.in_memory_);
+      bool is_modified_equal = std::equal(is_modified_, other.is_modified_);
+      return meta_equal && indices_equal && indices_view_equal && is_shardable_equal
+        && in_memory_equal && is_modified_equal;
+    }
+
+    inline bool operator!=(const TensorAxis& other) const
+    {
+      return !(*this == other);
+    }
 
     void setId(const int& id) { id_ = id; }; ///< id setter
     int getId() const { return id_; }; ///< id getter
@@ -786,7 +807,7 @@ namespace TensorBase
     if (within_continuator == logicalContinuators::logicalContinuator::OR) {
 
       // build the continuator reduction indices for the OR within continuator
-      Eigen::array<int, 0> reduction_dims;
+      Eigen::array<int, 1> reduction_dims;
       int index = 0;
       for (const auto& axis_to_name_red : this->axes_to_dims_) {
         if (axis_to_name_red.first != axis_name) {

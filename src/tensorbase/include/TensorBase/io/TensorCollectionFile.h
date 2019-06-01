@@ -5,13 +5,16 @@
 
 #undef min // clashes with std::limit on windows in polymorphic.hpp
 #undef max // clashes with std::limit on windows in polymorphic.hpp
+#include <cereal/types/memory.hpp>
+#include <cereal/types/map.hpp>
+#include <cereal/types/array.hpp>
+#include <cereal/archives/binary.hpp>
+
 #include <TensorBase/ml/TensorCollection.h>
 
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <iostream>
 #include <fstream>
-
-#include <cereal/archives/binary.hpp>
 
 namespace TensorBase
 {
@@ -43,9 +46,33 @@ public:
 
       @returns Status True on success, False if not
     */ 
-    bool storeDataBinary(const std::string& filename, const TensorCollection<DeviceT>& tensor_collection);
+    bool storeTensorCollectionBinary(const std::string& filename, const TensorCollection<DeviceT>& tensor_collection);
   };
 
-  class TensorCollectionFileDefaultDevice: public TensorCollectionFile<Eigen::DefaultDevice>{};
+  template<typename DeviceT>
+  inline bool TensorCollectionFile<DeviceT>::loadTensorCollectionBinary(const std::string & filename, TensorCollection<DeviceT>& tensor_collection)
+  {
+    std::ifstream ifs(filename, std::ios::binary);
+    if (ifs.is_open()) {
+      cereal::BinaryInputArchive iarchive(ifs);
+      iarchive(tensor_collection);
+      ifs.close();
+    }
+    return true;
+  }
+
+  template<typename DeviceT>
+  inline bool TensorCollectionFile<DeviceT>::storeTensorCollectionBinary(const std::string & filename, const TensorCollection<DeviceT>& tensor_collection)
+  {
+    std::ofstream ofs(filename, std::ios::binary);
+    //if (ofs.is_open() == false) {// Lines check to make sure the file is not already created
+    cereal::BinaryOutputArchive oarchive(ofs);
+    oarchive(tensor_collection);
+    ofs.close();
+    //}// Lines check to make sure the file is not already created
+    return true;
+  }
+
+  class TensorCollectionFileDefaultDevice : public TensorCollectionFile<Eigen::DefaultDevice> {};
 };
 #endif //SMARTPEAK_TENSORCOLLECTIONFILE_H

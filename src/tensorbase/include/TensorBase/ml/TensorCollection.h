@@ -27,6 +27,24 @@ namespace TensorBase
     TensorCollection(const std::string& name) : name_(name) {};
     ~TensorCollection() = default; ///< Default destructor
 
+    template<typename TensorTOther, typename DeviceTOther, int TDimOther>
+    inline bool operator==(const TensorTable<TensorTOther, DeviceTOther, TDimOther>& other) const
+    {
+      return std::tie(
+        id_,
+        name_,
+        tables_
+      ) == std::tie(
+        other.id_,
+        other.name_,
+        other.tables_);
+    }
+
+    inline bool operator!=(const TensorAxis& other) const
+    {
+      return !(*this == other);
+    }
+
     template<typename T>
     void addTensorTable(const std::shared_ptr<T>& tensor_table);  ///< Tensor table adder
     void addTensorTableConcept(const std::shared_ptr<TensorTableConcept<DeviceT>>& tensor_table);  ///< Tensor table concept adder

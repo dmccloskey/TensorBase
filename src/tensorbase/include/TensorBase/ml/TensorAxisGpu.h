@@ -35,7 +35,7 @@ namespace TensorBase
     friend class cereal::access;
     template<class Archive>
     void serialize(Archive& archive) {
-      archive(cereal::base_class<TensorAxis<TensorT, Eigen::ThreadPoolDevice>>(this));
+      archive(cereal::base_class<TensorAxis<TensorT, Eigen::GpuDevice>>(this));
     }
   };
   template<typename TensorT>

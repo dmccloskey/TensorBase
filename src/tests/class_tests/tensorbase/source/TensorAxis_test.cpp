@@ -47,6 +47,35 @@ BOOST_AUTO_TEST_CASE(constructor1DefaultDevice)
   BOOST_CHECK_EQUAL(tensoraxis.getLabels()(2, 4), 1);
 }
 
+BOOST_AUTO_TEST_CASE(comparatorDefaultDevice)
+{
+  Eigen::Tensor<std::string, 1> dimensions(3);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  dimensions(2) = "TensorDimension3";
+  Eigen::Tensor<int, 2> labels(3, 5);
+  labels.setConstant(1);
+  TensorAxisDefaultDevice<int> tensoraxis_test("1", dimensions, labels);
+  TensorAxisDefaultDevice<int> tensoraxis1("1", dimensions, labels);
+
+  // Test expected
+  BOOST_CHECK(tensoraxis_test == tensoraxis1);
+
+  // Test with different names but same data
+  tensoraxis1.setName("2");
+  BOOST_CHECK(tensoraxis_test != tensoraxis1);
+
+  Eigen::Tensor<std::string, 1> dimensions2(2);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  Eigen::Tensor<int, 2> labels2(2, 3);
+  labels2.setConstant(1);
+  TensorAxisDefaultDevice<int> tensoraxis2("1", dimensions2, labels2);
+
+  // Test with same names but different data
+  BOOST_CHECK(tensoraxis_test != tensoraxis2);
+}
+
 BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
 {
   TensorAxisDefaultDevice<int> tensoraxis;

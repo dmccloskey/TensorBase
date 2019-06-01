@@ -25,6 +25,31 @@ namespace TensorBase
     TensorAxis(const std::string& name, const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels);
     virtual ~TensorAxis() = default; ///< Default destructor
 
+    template<typename TensorTOther, typename DeviceTOther>
+    inline bool operator==(const TensorAxis<TensorTOther, DeviceTOther>& other) const
+    {
+      return std::tie(
+        id_,
+        name_, 
+        n_labels_,
+        n_dimensions_,
+        //tensor_dimension_names_, // cannot compare Eigen::Tensor
+        *tensor_dimension_labels_.get() // compares pointers instead of the underlying classes
+      ) == std::tie(
+        other.id_,
+        other.name_,
+        other.n_labels_,
+        other.n_dimensions_,
+        //other.tensor_dimension_names_,
+        *other.tensor_dimension_labels_.get()
+      );
+    }
+
+    inline bool operator!=(const TensorAxis& other) const
+    {
+      return !(*this == other);
+    }
+
     void setId(const int& id) { id_ = id; }; ///< id setter
     int getId() const { return id_; }; ///< id getter
 
@@ -98,7 +123,8 @@ namespace TensorBase
     friend class cereal::access;
     template<class Archive>
     void serialize(Archive& archive) {
-    	archive(id_, name_, n_dimensions_, n_labels_, tensor_dimension_names_);
+    	//archive(id_, name_, n_dimensions_, n_labels_, tensor_dimension_names_);
+      archive(id_, name_, n_dimensions_, n_labels_);
     }
   };
   template<typename TensorT, typename DeviceT>

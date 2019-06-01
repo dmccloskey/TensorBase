@@ -65,7 +65,7 @@ namespace TensorBase
   private:
     friend class cereal::access;
     template<class Archive>
-    void serialize(Archive& archive) {}
+    void serialize(Archive& archive) { }
   };
 
   /// The erasure wrapper around the Tensor Axis interface
