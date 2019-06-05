@@ -58,6 +58,7 @@ BOOST_AUTO_TEST_CASE(selectClauseDefaultDevice)
   TensorCollectionDefaultDevice collection_1;
   collection_1.addTensorTable(tensorTable1_ptr);
   collection_1.addTensorTable(tensorTable2_ptr);
+  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> collection_1_ptr = std::make_shared<TensorCollectionDefaultDevice>(collection_1_ptr);
 
   // Set up the SelectClause
   std::shared_ptr<TensorDataDefaultDevice<int, 1>> select_labels1 = std::make_shared<TensorDataDefaultDevice<int, 1>>(Eigen::array<Eigen::Index, 1>({ 1 }));
@@ -80,8 +81,8 @@ BOOST_AUTO_TEST_CASE(selectClauseDefaultDevice)
 
   TensorSelect tensorSelect;
   // Test the expected view indices after the select command
-  tensorSelect.selectClause(collection_1, select_clause1, device);
-  tensorSelect.selectClause(collection_1, select_clause2, device);
+  tensorSelect.selectClause(collection_1_ptr, select_clause1, device);
+  tensorSelect.selectClause(collection_1_ptr, select_clause2, device);
   BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("1")->getData()(0), 0);
   BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("1")->getData()(1), 2);
   BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(0), 1); // unchanged
@@ -158,6 +159,7 @@ BOOST_AUTO_TEST_CASE(whereClauseDefaultDevice)
   TensorCollectionDefaultDevice collection_1;
   collection_1.addTensorTable(tensorTable1_ptr);
   collection_1.addTensorTable(tensorTable2_ptr);
+  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> collection_1_ptr = std::make_shared<TensorCollectionDefaultDevice>(collection_1);
 
   // Set up the WhereClauses
   std::shared_ptr<TensorDataDefaultDevice<int, 1>> select_labels1 = std::make_shared<TensorDataDefaultDevice<int, 1>>(Eigen::array<Eigen::Index, 1>({ 1 }));
@@ -185,7 +187,7 @@ BOOST_AUTO_TEST_CASE(whereClauseDefaultDevice)
   // Test the indices views
   TensorSelect tensorSelect;
   // Test the expected view indices after the select command
-  tensorSelect.whereClause(collection_1, where_clause1, device);
+  tensorSelect.whereClause(collection_1_ptr, where_clause1, device);
   BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("1")->getData()(0), 1); // unchanged
   BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("1")->getData()(1), 2); // unchanged
   BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(0), 1);
@@ -197,7 +199,7 @@ BOOST_AUTO_TEST_CASE(whereClauseDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(3), 0);
   BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(4), 0);
 
-  tensorSelect.whereClause(collection_1, where_clause2, device);
+  tensorSelect.whereClause(collection_1_ptr, where_clause2, device);
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("1")->getData()(0), 1);
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("1")->getData()(1), 0);
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 1); // unchanged
@@ -205,7 +207,7 @@ BOOST_AUTO_TEST_CASE(whereClauseDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 3); // unchanged
 
   // Apply the select clause
-  tensorSelect.applySelect(collection_1, { "1", "2" }, device);
+  tensorSelect.applySelect(collection_1_ptr, { "1", "2" }, device);
 
   // Test for the expected table attributes
   Eigen::array<Eigen::Index, 3> dimensions1_test = { 2, 1, 2 };
@@ -288,6 +290,7 @@ BOOST_AUTO_TEST_CASE(sortClauseDefaultDevice)
   TensorCollectionDefaultDevice collection_1;
   collection_1.addTensorTable(tensorTable1_ptr);
   collection_1.addTensorTable(tensorTable2_ptr);
+  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> collection_1_ptr = std::make_shared<TensorCollectionDefaultDevice>(collection_1);
 
   // setup the sort clauses
   std::shared_ptr<TensorDataDefaultDevice<int, 1>> select_labels1 = std::make_shared<TensorDataDefaultDevice<int, 1>>(Eigen::array<Eigen::Index, 1>({ 1 }));
@@ -304,7 +307,7 @@ BOOST_AUTO_TEST_CASE(sortClauseDefaultDevice)
 
   // Test the expected view indices after the select command
   TensorSelect tensorSelect;
-  tensorSelect.sortClause(collection_1, sort_clause_1, device);
+  tensorSelect.sortClause(collection_1_ptr, sort_clause_1, device);
   BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("1")->getData()(0), 2);
   BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("1")->getData()(1), 1);
   BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(0), 1); // unchanged
@@ -316,7 +319,7 @@ BOOST_AUTO_TEST_CASE(sortClauseDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(3), 2);
   BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(4), 1);
 
-  tensorSelect.sortClause(collection_1, sort_clause_2, device);
+  tensorSelect.sortClause(collection_1_ptr, sort_clause_2, device);
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("1")->getData()(0), 1); // unchanged
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("1")->getData()(1), 2); // unchanged
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 3);
@@ -324,7 +327,7 @@ BOOST_AUTO_TEST_CASE(sortClauseDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 1);
 
   // Apply the select clause
-  tensorSelect.applySort(collection_1, { "1", "2" }, device);
+  tensorSelect.applySort(collection_1_ptr, { "1", "2" }, device);
 
   // Test for the expected table attributes
   Eigen::array<Eigen::Index, 3> dimensions1_test = { nlabels1, nlabels2, nlabels3 };

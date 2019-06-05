@@ -14,7 +14,7 @@ BOOST_AUTO_TEST_SUITE(TensorOperation1)
 /// The select Functor for table 1
 struct SelectTable1 {
   template<typename DeviceT>
-  void operator() (TensorCollection<DeviceT> & tensor_collection, DeviceT& device) {
+  void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) {
     // Set up the SelectClauses for table 1:  all values in dim 0 for labels = 0 in dims 1 and 2
     std::shared_ptr<TensorDataDefaultDevice<int, 1>> select_labels_t1a1 = std::make_shared<TensorDataDefaultDevice<int, 1>>(Eigen::array<Eigen::Index, 1>({ 2 }));
     Eigen::Tensor<int, 1> labels_values_t1a1(2);
@@ -47,7 +47,7 @@ struct SelectTable1 {
 /// The delete select Functor for table 1
 struct DeleteTable1 {
   template<typename DeviceT>
-  void operator() (TensorCollection<DeviceT> & tensor_collection, DeviceT& device) {
+  void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) {
     // Set up the SelectClauses for table 1 and axis 2 where labels=1
     std::shared_ptr<TensorDataDefaultDevice<int, 1>> select_labels_t1a2 = std::make_shared<TensorDataDefaultDevice<int, 1>>(Eigen::array<Eigen::Index, 1>({ 1 }));
     Eigen::Tensor<int, 1> labels_values_t1a2(1);
@@ -133,6 +133,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorAppendToAxis)
   TensorCollectionDefaultDevice collection_1;
   collection_1.addTensorTable(tensorTable1_ptr);
   collection_1.addTensorTable(tensorTable2_ptr);
+  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> collection_1_ptr = std::make_shared<TensorCollectionDefaultDevice>(collection_1);
 
   // Set up the new labels
   Eigen::Tensor<int, 2> labels_new_values(1, nlabels2);
@@ -156,7 +157,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorAppendToAxis)
 
   // Test redo to append the new values
   TensorAppendToAxis<int, float, Eigen::DefaultDevice, 3> appendToAxis("1", "2", labels_new_ptr, values_new_ptr);
-  appendToAxis.redo(collection_1, device);
+  appendToAxis.redo(collection_1_ptr, device);
 
   // Test for the expected table data
   for (int i = 0; i < nlabels1; ++i) {
@@ -198,7 +199,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorAppendToAxis)
   }
 
   // Test undo to remove the appended values
-  appendToAxis.undo(collection_1, device);
+  appendToAxis.undo(collection_1_ptr, device);
 
   // Test for the expected table data
   for (int i = 0; i < nlabels1; ++i) {
@@ -297,6 +298,7 @@ BOOST_AUTO_TEST_CASE(redoAndTensorDeleteFromAxis)
   TensorCollectionDefaultDevice collection_1;
   collection_1.addTensorTable(tensorTable1_ptr);
   collection_1.addTensorTable(tensorTable2_ptr);
+  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> collection_1_ptr = std::make_shared<TensorCollectionDefaultDevice>(collection_1);
 
   // Make the expected tensor data
   Eigen::Tensor<float, 3> expected_tensor_values(nlabels1, nlabels2 - 1, nlabels3);  
@@ -313,7 +315,7 @@ BOOST_AUTO_TEST_CASE(redoAndTensorDeleteFromAxis)
 
   // Test redo to delete the specified values
   TensorDeleteFromAxisDefaultDevice<int, float, 3> deleteFromAxis("1", "2", DeleteTable1());
-  deleteFromAxis.redo(collection_1, device);
+  deleteFromAxis.redo(collection_1_ptr, device);
 
   // Test for the expected table data
   for (int i = 0; i < nlabels1; ++i) {
@@ -350,7 +352,7 @@ BOOST_AUTO_TEST_CASE(redoAndTensorDeleteFromAxis)
   }
 
   // Test redo to restore the deleted values
-  deleteFromAxis.undo(collection_1, device);
+  deleteFromAxis.undo(collection_1_ptr, device);
 
   // Test for the expected table data
   for (int i = 0; i < nlabels1; ++i) {
@@ -446,6 +448,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdate)
   TensorCollectionDefaultDevice collection_1;
   collection_1.addTensorTable(tensorTable1_ptr);
   collection_1.addTensorTable(tensorTable2_ptr);
+  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> collection_1_ptr = std::make_shared<TensorCollectionDefaultDevice>(collection_1);
 
   // Set up the update values
   Eigen::Tensor<float, 3> values_new_values(nlabels1, 1, 1);
@@ -458,7 +461,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdate)
   TensorUpdate<float, Eigen::DefaultDevice, 3> tensorUpdate("1", SelectTable1(), std::make_shared<TensorDataDefaultDevice<float, 3>>(values_new));
 
   // Test redo
-  tensorUpdate.redo(collection_1, device);
+  tensorUpdate.redo(collection_1_ptr, device);
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < 1; ++j) {
       for (int k = 0; k < 1; ++k) {
@@ -469,7 +472,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdate)
   }
 
   // Test undo
-  tensorUpdate.undo(collection_1, device);
+  tensorUpdate.undo(collection_1_ptr, device);
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < 1; ++j) {
       for (int k = 0; k < 1; ++k) {
@@ -546,15 +549,16 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorAddTable)
   // Set up the collection
   TensorCollectionDefaultDevice collection_1;
   collection_1.addTensorTable(tensorTable1_ptr);
+  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> collection_1_ptr = std::make_shared<TensorCollectionDefaultDevice>(collection_1);
 
   // Test Redo
   TensorAddTable<TensorTable<int, Eigen::DefaultDevice, 2>, Eigen::DefaultDevice> tensorAddTable(tensorTable2_ptr);
-  tensorAddTable.redo(collection_1, device);
-  BOOST_CHECK(collection_1.getTableNames() == std::vector<std::string>({ "1", "2" }));
+  tensorAddTable.redo(collection_1_ptr, device);
+  BOOST_CHECK(collection_1_ptr->getTableNames() == std::vector<std::string>({ "1", "2" }));
 
   // Test Undo
-  tensorAddTable.undo(collection_1, device);
-  BOOST_CHECK(collection_1.getTableNames() == std::vector<std::string>({ "1" }));
+  tensorAddTable.undo(collection_1_ptr, device);
+  BOOST_CHECK(collection_1_ptr->getTableNames() == std::vector<std::string>({ "1" }));
 }
 
 /*TensorDropTable Tests*/
@@ -625,15 +629,16 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorDropTable)
   TensorCollectionDefaultDevice collection_1;
   collection_1.addTensorTable(tensorTable1_ptr);
   collection_1.addTensorTable(tensorTable2_ptr);
+  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> collection_1_ptr = std::make_shared<TensorCollectionDefaultDevice>(collection_1);
 
   // Test redo drop table
   TensorDropTable<Eigen::DefaultDevice> tensorDropTable("1");
-  tensorDropTable.redo(collection_1, device);
-  BOOST_CHECK(collection_1.getTableNames() == std::vector<std::string>({ "2" }));
+  tensorDropTable.redo(collection_1_ptr, device);
+  BOOST_CHECK(collection_1_ptr->getTableNames() == std::vector<std::string>({ "2" }));
 
   // Test undo drop table
-  tensorDropTable.undo(collection_1, device);
-  BOOST_CHECK(collection_1.getTableNames() == std::vector<std::string>({ "1", "2" }));
+  tensorDropTable.undo(collection_1_ptr, device);
+  BOOST_CHECK(collection_1_ptr->getTableNames() == std::vector<std::string>({ "1", "2" }));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -72,7 +72,7 @@ namespace TensorBase
   protected:
     std::shared_ptr<TensorCollection<DeviceT>> tensor_collection_; ///< the managed TensorCollection object
     int max_operations_ = 25; ///< the maximum size of `tensor_operations_`
-    int current_index_ = 0; ///< current position in the tensor_operations_ vector
+    int current_index_ = -1; ///< current position in the tensor_operations_ vector
     std::deque<std::shared_ptr<TensorOperation<DeviceT>>> tensor_operations_; ///< vector of tensor operations
   };
 
@@ -80,7 +80,7 @@ namespace TensorBase
   inline bool TransactionManager<DeviceT>::executeOperation(std::shared_ptr<TensorOperation<DeviceT>>& tensor_operation, DeviceT& device)
   {
     // Check if the operation history limit has been reached
-    if (tensor_operations_.size() >= max_operations - 1) {
+    if (tensor_operations_.size() >= max_operations_ - 1) {
       tensor_operations_.pop_front();
     }
 
@@ -102,7 +102,7 @@ namespace TensorBase
   inline bool TransactionManager<DeviceT>::undo(DeviceT & device)
   {
     // Check that the operations history is not empty
-    if (tensor_operations_.size() == 0) {
+    if (current_index_ == -1) {
       std::cout << "There are no operations to undo." << std::endl;
       return false;
     }
@@ -151,7 +151,7 @@ namespace TensorBase
   inline bool TransactionManager<DeviceT>::rollback(DeviceT & device)
   {
     // Check that the operations history is not empty
-    if (tensor_operations_.size() == 0) {
+    if (current_index_ == 0) {
       std::cout << "There are no operations to rollback." << std::endl;
       return false;
     }
@@ -161,6 +161,7 @@ namespace TensorBase
       for (; current_index_ >= 0; --current_index_) {
         tensor_operations_.at(current_index_)->undo(tensor_collection_, device);
       }
+      clear();
       return true;
     }
     catch (const std::exception& e) {
