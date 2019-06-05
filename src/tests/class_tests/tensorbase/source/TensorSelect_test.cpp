@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(selectClauseDefaultDevice)
   TensorCollectionDefaultDevice collection_1;
   collection_1.addTensorTable(tensorTable1_ptr);
   collection_1.addTensorTable(tensorTable2_ptr);
-  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> collection_1_ptr = std::make_shared<TensorCollectionDefaultDevice>(collection_1_ptr);
+  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> collection_1_ptr = std::make_shared<TensorCollectionDefaultDevice>(collection_1);
 
   // Set up the SelectClause
   std::shared_ptr<TensorDataDefaultDevice<int, 1>> select_labels1 = std::make_shared<TensorDataDefaultDevice<int, 1>>(Eigen::array<Eigen::Index, 1>({ 1 }));
