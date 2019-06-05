@@ -22,6 +22,7 @@ set(sources_list_h
 	TensorTableDefaultDevice.h
 	TensorTableGpu.h
 	TensorType.h
+	TransactionManager.h
 )
 
 ### add path to the filenames
