@@ -7,6 +7,13 @@
 #include <TensorBase/ml/TensorTableConcept.h>
 #include <map>
 
+#include <cereal/access.hpp>  // serialiation of private members
+#include <cereal/types/memory.hpp>
+#include <cereal/types/map.hpp>
+#undef min // clashes with std::limit on windows in polymorphic.hpp
+#undef max // clashes with std::limit on windows in polymorphic.hpp
+#include <cereal/types/polymorphic.hpp>
+
 namespace TensorBase
 {
   /**
@@ -17,7 +24,22 @@ namespace TensorBase
   {
   public:
     TensorCollection() = default;  ///< Default constructor
+    TensorCollection(const std::string& name) : name_(name) {};
     ~TensorCollection() = default; ///< Default destructor
+
+    template<typename DeviceTOther>
+    inline bool operator==(const TensorCollection<DeviceTOther>& other) const
+    {
+      bool meta_equal = std::tie(id_, name_) == std::tie(other.id_, other.name_);
+      auto compare_maps = [](auto lhs, auto rhs) {return *(lhs.second.get()) == *(rhs.second.get()); };
+      bool tables_equal = std::equal(tables_.begin(), tables_.end(), other.tables_.begin(), compare_maps);
+      return meta_equal && tables_equal;
+    }
+
+    inline bool operator!=(const TensorCollection& other) const
+    {
+      return !(*this == other);
+    }
 
     template<typename T>
     void addTensorTable(const std::shared_ptr<T>& tensor_table);  ///< Tensor table adder
@@ -25,6 +47,12 @@ namespace TensorBase
     void removeTensorTable(const std::string& table_name); ///< Tensor table remover
     std::shared_ptr<TensorTableConcept<DeviceT>> getTensorTableConcept(const std::string& table_name) const; ///< Tensor table concept getter
     void clear(); ///< clear the map of Tensor tables
+
+    void setId(const int& id) { id_ = id; }; ///< id setter
+    int getId() const { return id_; }; ///< id getter
+
+    void setName(const std::string& name) { name_ = name; }; ///< name setter
+    std::string getName() const { return name_; }; ///< name getter
 
     /*
     @brief get all of the table names in the collection
@@ -51,6 +79,17 @@ namespace TensorBase
     bool readShardsFromDisk();
 
     std::map<std::string, std::shared_ptr<TensorTableConcept<DeviceT>>> tables_; ///< map of Tensor tables
+
+  protected:
+    int id_ = -1;
+    std::string name_ = "";
+    
+  private:
+    friend class cereal::access;
+    template<class Archive>
+    void serialize(Archive& archive) {
+      archive(id_, name_, tables_);
+    }
   };
 
   template<typename DeviceT>
@@ -107,5 +146,29 @@ namespace TensorBase
     }
     return names;
   }
+
+  class TensorCollectionDefaultDevice : public TensorCollection<Eigen::DefaultDevice>
+  {
+  public:
+    using TensorCollection<Eigen::DefaultDevice>::TensorCollection;
+  private:
+    friend class cereal::access;
+    template<class Archive>
+    void serialize(Archive& archive) {
+      archive(cereal::base_class<TensorCollection<Eigen::DefaultDevice>>(this));
+    }
+  };
+
+  class TensorCollectionCpu : public TensorCollection<Eigen::ThreadPoolDevice>
+  {
+  public:
+    using TensorCollection<Eigen::ThreadPoolDevice>::TensorCollection;
+  private:
+    friend class cereal::access;
+    template<class Archive>
+    void serialize(Archive& archive) {
+      archive(cereal::base_class<TensorCollection<Eigen::ThreadPoolDevice>>(this));
+    }
+  };
 };
 #endif //TENSORBASE_TENSORCOLLECTION_H

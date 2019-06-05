@@ -7,6 +7,11 @@
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <string>
 
+#include <cereal/access.hpp>  // serialiation of private members
+#undef min // clashes with std::limit on windows in polymorphic.hpp
+#undef max // clashes with std::limit on windows in polymorphic.hpp
+#include <cereal/types/polymorphic.hpp>
+
 namespace TensorBase
 {
   /**
@@ -40,12 +45,12 @@ namespace TensorBase
     size_t n_labels_ = 0;
     std::shared_ptr<TensorData<TensorT, DeviceT, 1>> labels_; ///< The actual tensor data
 
-    //private:
-    //	friend class cereal::access;
-    //	template<class Archive>
-    //	void serialize(Archive& archive) {
-    //		archive(id_, name_, n_labels_, labels_);
-    //	}
+  private:
+    friend class cereal::access;
+    template<class Archive>
+    void serialize(Archive& archive) {
+    	archive(id_, name_, n_labels_);
+    }
   };
 
   template<typename TensorT>
@@ -62,6 +67,12 @@ namespace TensorBase
       this->labels_->setData(labels);
       this->setNLabels(labels.size());
     };
+  private:
+    friend class cereal::access;
+    template<class Archive>
+    void serialize(Archive& archive) {
+      archive(cereal::base_class<TensorDimension<TensorT, Eigen::DefaultDevice>>(this));
+    }
   };
 
   template<typename TensorT>
@@ -78,6 +89,24 @@ namespace TensorBase
       this->labels_->setData(labels);
       this->setNLabels(labels.size());
     };
+  private:
+    friend class cereal::access;
+    template<class Archive>
+    void serialize(Archive& archive) {
+      archive(cereal::base_class<TensorDimension<TensorT, Eigen::ThreadPoolDevice>>(this));
+    }
   };
 };
+
+// Cereal registration of TensorTs: float, int, char, double
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionDefaultDevice<int>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionDefaultDevice<float>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionDefaultDevice<double>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionDefaultDevice<char>);
+
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionCpu<int>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionCpu<float>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionCpu<double>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionCpu<char>);
+
 #endif //TENSORBASE_TENSORDIMENSION_H

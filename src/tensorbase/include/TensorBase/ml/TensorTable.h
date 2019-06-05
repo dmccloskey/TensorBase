@@ -14,6 +14,15 @@
 #include <TensorBase/ml/TensorAxisConcept.h>
 #include <TensorBase/ml/TensorClauses.h>
 #include <map>
+#include <array>
+
+#include <cereal/access.hpp>  // serialiation of private members
+#include <cereal/types/memory.hpp>
+#include <cereal/types/map.hpp>
+#include <cereal/types/array.hpp>
+#undef min // clashes with std::limit on windows in polymorphic.hpp
+#undef max // clashes with std::limit on windows in polymorphic.hpp
+#include <cereal/types/polymorphic.hpp>
 
 namespace TensorBase
 {
@@ -26,7 +35,27 @@ namespace TensorBase
   public:
     TensorTable() = default;  ///< Default constructor
     TensorTable(const std::string& name) : name_(name) {};
-    virtual ~TensorTable() = default; ///< Default destructor
+    virtual ~TensorTable() = default; ///< Default destruct
+
+    template<typename TensorTOther, typename DeviceTOther, int TDimOther>
+    inline bool operator==(const TensorTable<TensorTOther, DeviceTOther, TDimOther>& other) const
+    {
+      bool meta_equal = std::tie(id_, name_, dimensions_, axes_to_dims_) == std::tie(other.id_, other.name_, other.dimensions_, other.axes_to_dims_);
+      auto compare_maps = [](auto lhs, auto rhs) {return *(lhs.second.get()) == *(rhs.second.get()); };
+      bool axes_equal = std::equal(axes_.begin(), axes_.end(), other.axes_.begin(), compare_maps);
+      bool indices_equal = std::equal(indices_.begin(), indices_.end(), other.indices_.begin(), compare_maps);
+      bool indices_view_equal = std::equal(indices_view_.begin(), indices_view_.end(), other.indices_view_.begin(), compare_maps);
+      bool is_shardable_equal = std::equal(is_shardable_.begin(), is_shardable_.end(), other.is_shardable_.begin(), compare_maps);
+      bool in_memory_equal = std::equal(in_memory_.begin(), in_memory_.end(), other.in_memory_.begin(), compare_maps);
+      bool is_modified_equal = std::equal(is_modified_.begin(), is_modified_.end(), other.is_modified_.begin(), compare_maps);
+      return meta_equal && axes_equal && indices_equal && indices_view_equal && is_shardable_equal
+        && in_memory_equal && is_modified_equal;
+    }
+
+    inline bool operator!=(const TensorTable& other) const
+    {
+      return !(*this == other);
+    }
 
     void setId(const int& id) { id_ = id; }; ///< id setter
     int getId() const { return id_; }; ///< id getter
@@ -51,6 +80,7 @@ namespace TensorBase
     virtual void initData() = 0;
 
     std::map<std::string, std::shared_ptr<TensorAxisConcept<DeviceT>>>& getAxes() { return axes_; }; ///< axes getter
+    std::map<std::string, std::shared_ptr<TensorAxisConcept<DeviceT>>> getAxes() const { return axes_; }; ///< axes getter
 
     // TODO: combine into a single member called `indices` of Tensor dimensions 5 x indices_length
     //       in order to improve performance of all TensorInsert and TensorDelete methods
@@ -59,6 +89,11 @@ namespace TensorBase
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIsModified() { return is_modified_; }; ///< is_modified getter
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getInMemory() { return in_memory_; }; ///< in_memory getter
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIsShardable() { return is_shardable_; }; ///< is_shardable getter
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getIndices() const { return indices_; }; ///< indices getter
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getIndicesView() const { return indices_view_; }; ///< indices_view getter
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getIsModified() const { return is_modified_; }; ///< is_modified getter
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getInMemory() const { return in_memory_; }; ///< in_memory getter
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getIsShardable() const { return is_shardable_; }; ///< is_shardable getter
 
     Eigen::array<Eigen::Index, TDim>& getDimensions() { return dimensions_; }  ///< dimensions getter
     int getDimFromAxisName(const std::string& axis_name) { return axes_to_dims_.at(axis_name); }
@@ -197,6 +232,9 @@ namespace TensorBase
     @param[in] prepend_continuator
     @param[in] device
     */
+    void applyIndicesSelectToIndicesView(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices_select, const std::string & axis_name_select, const std::string& axis_name, const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device);
+    void applyIndicesSelectToIndicesView(const std::shared_ptr<TensorData<int, DeviceT, 2>>& indices_select, const std::string & axis_name_select, const std::string& axis_name, const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device);
+    template<int TDim_ = TDim, typename = std::enable_if_t<(TDim_ > 2)>>
     void applyIndicesSelectToIndicesView(const std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, const std::string & axis_name_select, const std::string& axis_name, const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device);
 
     /*
@@ -439,12 +477,13 @@ namespace TensorBase
     std::map<std::string, int> axes_to_dims_;
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> data_; ///< The actual tensor data
     
-    //private:
-    //	friend class cereal::access;
-    //	template<class Archive>
-    //	void serialize(Archive& archive) {
-    //		archive(id_, name_, n_dimensions_, n_labels_, tensor_dimension_names_, tensor_dimension_labels_);
-    //	}
+  private:
+  	friend class cereal::access;
+  	template<class Archive>
+  	void serialize(Archive& archive) {
+  		archive(id_, name_, dimensions_, axes_, indices_, indices_view_, is_modified_, in_memory_, is_shardable_,
+        axes_to_dims_, data_);
+  	}
   };
 
   template<typename TensorT, typename DeviceT, int TDim>
@@ -767,6 +806,101 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::applyIndicesSelectToIndicesView(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices_select, const std::string & axis_name_select, const std::string & axis_name, const logicalContinuators::logicalContinuator & within_continuator, const logicalContinuators::logicalContinuator & prepend_continuator, DeviceT & device)
+  {
+    // apply the continuator reduction, then...
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(this->indices_view_.at(axis_name)->getDataPointer().get(), this->indices_view_.at(axis_name)->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_select_values(indices_select->getDataPointer().get(), indices_select->getDimensions());
+    if (within_continuator == logicalContinuators::logicalContinuator::OR) {
+
+      // build the continuator reduction indices for the OR within continuator
+      Eigen::array<int, 1> reduction_dims;
+      int index = 0;
+      for (const auto& axis_to_name_red : this->axes_to_dims_) {
+        if (axis_to_name_red.first != axis_name) {
+          reduction_dims.at(index) = axis_to_name_red.second;
+          ++index;
+        }
+      }
+
+      // apply the OR continuator reduction
+      auto indices_view_update = indices_select_values.sum(reduction_dims).clip(0, 1);  //ensure a max value of 1
+
+      // update the indices view based on the prepend_continuator
+      if (prepend_continuator == logicalContinuators::logicalContinuator::OR) {
+        indices_view.device(device) = (indices_view_update > indices_view_update.constant(0) || indices_view > indices_view.constant(0)).select(indices_view, indices_view.constant(0));
+      }
+      else if (prepend_continuator == logicalContinuators::logicalContinuator::AND) {
+        indices_view.device(device) = indices_view * indices_view_update;
+      }
+    }
+    else if (within_continuator == logicalContinuators::logicalContinuator::AND) {
+      // apply the AND continuator reduction along the axis_name_selection dim
+      Eigen::array<Eigen::Index, 1> reduction_dims = { this->axes_to_dims_.at(axis_name_select) };
+      auto indices_view_update_prod = indices_select_values.prod(reduction_dims);
+
+      // apply a normalized sum (OR) continuator across all other dimensions
+      auto indices_view_update = indices_view_update_prod;
+
+      // update the indices view based on the prepend_continuator
+      if (prepend_continuator == logicalContinuators::logicalContinuator::OR) {
+        indices_view.device(device) = (indices_view_update > indices_view_update.constant(0) || indices_view > indices_view.constant(0)).select(indices_view, indices_view.constant(0));
+      }
+      else if (prepend_continuator == logicalContinuators::logicalContinuator::AND) {
+        indices_view.device(device) = indices_view * indices_view_update;
+      }
+    }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::applyIndicesSelectToIndicesView(const std::shared_ptr<TensorData<int, DeviceT, 2>>& indices_select, const std::string & axis_name_select, const std::string & axis_name, const logicalContinuators::logicalContinuator & within_continuator, const logicalContinuators::logicalContinuator & prepend_continuator, DeviceT & device)
+  {
+    // apply the continuator reduction, then...
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(this->indices_view_.at(axis_name)->getDataPointer().get(), this->indices_view_.at(axis_name)->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_select_values(indices_select->getDataPointer().get(), indices_select->getDimensions());
+    if (within_continuator == logicalContinuators::logicalContinuator::OR) {
+
+      // build the continuator reduction indices for the OR within continuator
+      Eigen::array<int, 1> reduction_dims;
+      int index = 0;
+      for (const auto& axis_to_name_red : this->axes_to_dims_) {
+        if (axis_to_name_red.first != axis_name) {
+          reduction_dims.at(index) = axis_to_name_red.second;
+          ++index;
+        }
+      }
+
+      // apply the OR continuator reduction
+      auto indices_view_update = indices_select_values.sum(reduction_dims).clip(0, 1);  //ensure a max value of 1
+
+      // update the indices view based on the prepend_continuator
+      if (prepend_continuator == logicalContinuators::logicalContinuator::OR) {
+        indices_view.device(device) = (indices_view_update > indices_view_update.constant(0) || indices_view > indices_view.constant(0)).select(indices_view, indices_view.constant(0));
+      }
+      else if (prepend_continuator == logicalContinuators::logicalContinuator::AND) {
+        indices_view.device(device) = indices_view * indices_view_update;
+      }
+    }
+    else if (within_continuator == logicalContinuators::logicalContinuator::AND) {
+      // apply the AND continuator reduction along the axis_name_selection dim
+      Eigen::array<Eigen::Index, 1> reduction_dims = { this->axes_to_dims_.at(axis_name_select) };
+      auto indices_view_update_prod = indices_select_values.prod(reduction_dims);
+
+      // apply a normalized sum (OR) continuator across all other dimensions
+      auto indices_view_update = indices_view_update_prod;
+
+      // update the indices view based on the prepend_continuator
+      if (prepend_continuator == logicalContinuators::logicalContinuator::OR) {
+        indices_view.device(device) = (indices_view_update > indices_view_update.constant(0) || indices_view > indices_view.constant(0)).select(indices_view, indices_view.constant(0));
+      }
+      else if (prepend_continuator == logicalContinuators::logicalContinuator::AND) {
+        indices_view.device(device) = indices_view * indices_view_update;
+      }
+    }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  template<int TDim_, typename>
   inline void TensorTable<TensorT, DeviceT, TDim>::applyIndicesSelectToIndicesView(const std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, const std::string & axis_name_select, const std::string & axis_name, const logicalContinuators::logicalContinuator & within_continuator, const logicalContinuators::logicalContinuator & prepend_continuator, DeviceT & device)
   {
     // apply the continuator reduction, then...
@@ -801,7 +935,7 @@ namespace TensorBase
       auto indices_view_update_prod = indices_select_values.prod(reduction_dims);
 
       // apply a normalized sum (OR) continuator across all other dimensions
-      if (TDim - 2 > 0) {
+      if (TDim > 2) {
         Eigen::array<int, TDim - 2> reduction_dims_sum;
         int index = 0;
         for (const auto& axis_to_name_red : this->axes_to_dims_) {
@@ -1238,17 +1372,17 @@ namespace TensorBase
 
     // TODO: Why is this needed on the GPU?
     // BUG: Indices and Data appear not to sync correctly
-#if COMPILE_WITH_CUDA
-    this->syncIndicesHAndDData(device);
-    this->syncHAndDData(device);
-    this->syncAxesHAndDData(device);
-    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
-    this->syncIndicesHAndDData(device);
-    this->syncHAndDData(device);
-    this->syncAxesHAndDData(device);
-#endif
+//#if COMPILE_WITH_CUDA
+//    this->syncIndicesHAndDData(device);
+//    this->syncHAndDData(device);
+//    this->syncAxesHAndDData(device);
+//    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+//    this->syncIndicesHAndDData(device);
+//    this->syncHAndDData(device);
+//    this->syncAxesHAndDData(device);
+//#endif
 
-     Sort the indices
+    // Sort the indices
     indices_.at(axis_name)->sort("ASC", device); // NOTE: this could fail if there are 0's in the index!
 
     // Sort the axis and tensor based on the indices view

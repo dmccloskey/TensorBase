@@ -11,12 +11,10 @@
 
 namespace TensorBase
 {
-
   /**
-    @brief DataFile
+    @brief Class for storing Tensor data in a binary format
 
-    based on the following:
-      https://stackoverflow.com/questions/25389480/how-to-write-read-an-eigen-matrix-from-binary-file
+    based on the following:  https://stackoverflow.com/questions/25389480/how-to-write-read-an-eigen-matrix-from-binary-file
   */
   class DataFile
   {
@@ -73,7 +71,7 @@ public:
       @returns Status True on success, False if not
     */ 
     template<typename T, int R>
-    bool storeDataBinary(const std::string& filename, const Eigen::Tensor<T, R>& data)
+    bool storeTensorCollectionBinary(const std::string& filename, const Eigen::Tensor<T, R>& data)
     {
       try
       {

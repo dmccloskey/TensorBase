@@ -13,6 +13,11 @@
 #include <TensorBase/ml/TensorDimension.h>
 #include <unsupported/Eigen/CXX11/Tensor>
 
+#include <cereal/access.hpp>  // serialiation of private members
+#undef min // clashes with std::limit on windows in polymorphic.hpp
+#undef max // clashes with std::limit on windows in polymorphic.hpp
+#include <cereal/types/polymorphic.hpp>
+
 namespace TensorBase
 {
   template<typename TensorT>
@@ -29,7 +34,19 @@ namespace TensorBase
       this->labels_->setData(labels);
       this->setNLabels(labels.size());
     };
+  private:
+    friend class cereal::access;
+    template<class Archive>
+    void serialize(Archive& archive) {
+      archive(cereal::base_class<TensorDimension<TensorT, Eigen::GpuDevice>>(this));
+    }
   };
 };
+
+// Cereal registration of TensorTs: float, int, char, double
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionGpu<int>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionGpu<float>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionGpu<double>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionGpu<char>);
 #endif
 #endif //TENSORBASE_TENSORDIMENSIONGPU_H

@@ -3,8 +3,21 @@
 #ifndef TENSORBASE_TENSORAXISCONCEPT_H
 #define TENSORBASE_TENSORAXISCONCEPT_H
 
+#if COMPILE_WITH_CUDA
+#define EIGEN_DEFAULT_DENSE_INDEX_TYPE int
+#define EIGEN_USE_GPU
+#include <cuda.h>
+#include <cuda_runtime.h>
+#endif
+
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/ml/TensorAxis.h>
+
+#include <cereal/access.hpp>  // serialiation of private members
+#include <cereal/types/memory.hpp>
+#undef min // clashes with std::limit on windows in polymorphic.hpp
+#undef max // clashes with std::limit on windows in polymorphic.hpp
+#include <cereal/types/polymorphic.hpp>
 
 namespace TensorBase
 {
@@ -12,6 +25,22 @@ namespace TensorBase
   template<typename DeviceT>
   class TensorAxisConcept {
   public:
+    TensorAxisConcept() = default;
+    virtual ~TensorAxisConcept() = default;
+
+    inline bool operator==(const TensorAxisConcept& other) const
+    {
+      bool meta_equal = (this->getId() == other.getId() && this->getName() == other.getName() &&
+        this->getNLabels() == other.getNLabels(), this->getNDimensions() == other.getNDimensions());
+      return meta_equal;
+    }
+
+    inline bool operator!=(const TensorAxisConcept& other) const
+    {
+      return !(*this == other);
+    }
+
+    virtual int getId() const = 0;
     virtual std::string getName() const = 0;
     virtual size_t getNLabels() const = 0;
     virtual size_t getNDimensions() const = 0;
@@ -45,6 +74,11 @@ namespace TensorBase
 
     // All DeviceT combos of `sortLabels`
     virtual void sortLabels(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) = 0;
+
+  private:
+    friend class cereal::access;
+    template<class Archive>
+    void serialize(Archive& archive) { }
   };
 
   /// The erasure wrapper around the Tensor Axis interface
@@ -53,6 +87,10 @@ namespace TensorBase
     std::shared_ptr<T> tensor_axis_;
   public:
     TensorAxisWrapper(const std::shared_ptr<T>& tensor_axis) : tensor_axis_(tensor_axis) {};
+    TensorAxisWrapper() = default;
+    ~TensorAxisWrapper() = default;
+
+    int getId() const { return tensor_axis_->getId(); };
     std::string getName() const { return tensor_axis_->getName(); };
     size_t getNLabels() const { return tensor_axis_->getNLabels(); };
     size_t getNDimensions() const { return tensor_axis_->getNDimensions(); };
@@ -108,6 +146,24 @@ namespace TensorBase
     void sortLabels(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) {
       tensor_axis_->sortLabels(indices, device);
     };
+
+  private:
+    friend class cereal::access;
+    template<class Archive>
+    void serialize(Archive& archive) {
+      archive(cereal::base_class<TensorAxisConcept<DeviceT>>(this), tensor_axis_);
+    }
   };
 };
+
+// Cereal registration of TensorTs: float, int, char, double and DeviceTs: Default, ThreadPool, Gpu
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisDefaultDevice<int>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisDefaultDevice<float>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisDefaultDevice<double>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisDefaultDevice<char>, Eigen::DefaultDevice>);
+
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisCpu<int>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisCpu<float>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisCpu<double>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisCpu<char>, Eigen::ThreadPoolDevice>);
 #endif //TENSORBASE_TENSORAXISCONCEPT_H

@@ -12,11 +12,10 @@
 
 #include <TensorBase/ml/TensorData.h>
 
-//#include <cereal/access.hpp>  // serialiation of private members
-//#include <cereal/types/memory.hpp>
-//#undef min // clashes with std::limit on windows in polymorphic.hpp
-//#undef max // clashes with std::limit on windows in polymorphic.hpp
-//#include <cereal/types/polymorphic.hpp>
+#include <cereal/access.hpp>  // serialiation of private members
+#undef min // clashes with std::limit on windows in polymorphic.hpp
+#undef max // clashes with std::limit on windows in polymorphic.hpp
+#include <cereal/types/polymorphic.hpp>
 
 namespace TensorBase
 {
@@ -37,12 +36,12 @@ namespace TensorBase
     void setData(const Eigen::Tensor<TensorT, TDim>& data); ///< data setter
     void setData();
     bool syncHAndDData(Eigen::GpuDevice& device);
-    //private:
-    //	friend class cereal::access;
-    //	template<class Archive>
-    //	void serialize(Archive& archive) {
-    //		archive(cereal::base_class<TensorData<TensorT, Eigen::GpuDevice>>(this));
-    //	}
+    private:
+    	friend class cereal::access;
+    	template<class Archive>
+    	void serialize(Archive& archive) {
+    		archive(cereal::base_class<TensorData<TensorT, Eigen::GpuDevice, TDim>>(this));
+    	}
   };
 
   template<typename TensorT, int TDim>
@@ -61,9 +60,7 @@ namespace TensorBase
   inline void TensorDataGpu<TensorT, TDim>::select(std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice & device)
   {
     // Temporary device storage for the size of the selection
-    //int *h_n_selected;  // TODO: comment after debugging
     int *d_n_selected;
-    //assert(cudaHostAlloc((void**)(&h_n_selected), sizeof(int), cudaHostAllocDefault) == cudaSuccess);  // TODO: comment after debugging
     assert(cudaMalloc((void**)(&d_n_selected), sizeof(int)) == cudaSuccess);
 
     // Determine temporary device storage requirements
@@ -79,11 +76,6 @@ namespace TensorBase
     cub::DeviceSelect::Flagged(d_temp_storage, temp_storage_bytes, this->getDataPointer().get(), indices->getDataPointer().get(), tensor_select->getDataPointer().get(), 
       d_n_selected, indices->getTensorSize(), device.stream());
 
-    //device.memcpyDeviceToHost(h_n_selected, d_n_selected, sizeof(int));  // TODO: comment after debugging
-    //assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);  // TODO: comment after debugging
-    //std::cout << h_n_selected[0] << std::endl;  // TODO: comment after debugging
-
-    //assert(cudaFreeHost(h_n_selected) == cudaSuccess);  // TODO: comment after debugging
     assert(cudaFree(d_n_selected) == cudaSuccess);
     assert(cudaFree(d_temp_storage) == cudaSuccess);
   }
@@ -247,7 +239,23 @@ namespace TensorBase
     }
   }
 }
-//CEREAL_REGISTER_TYPE(TensorData::TensorDataGpu<float>);
-//// TODO: add double, int, etc.
+
+// Cereal registration of TensorTs: float, int, char, double and TDims: 1, 2, 3, 4
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<int, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<float, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<double, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<char, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<int, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<float, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<double, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<char, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<int, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<float, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<double, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<char, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<int, 4>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<float, 4>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<double, 4>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<char, 4>);
 #endif
 #endif //TENSORBASE_TENSORDATAGPU_H

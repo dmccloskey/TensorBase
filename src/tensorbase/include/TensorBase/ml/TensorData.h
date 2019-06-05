@@ -7,12 +7,14 @@
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <Eigen/src/Core/util/Meta.h>
 #include <memory>
+#include <array>
 
-//#include <cereal/access.hpp>  // serialiation of private members
-//#include <cereal/types/memory.hpp>
-//#undef min // clashes with std::limit on windows in polymorphic.hpp
-//#undef max // clashes with std::limit on windows in polymorphic.hpp
-//#include <cereal/types/polymorphic.hpp>
+#include <cereal/access.hpp>  // serialiation of private members
+#include <cereal/types/memory.hpp>
+#include <cereal/types/array.hpp>
+#undef min // clashes with std::limit on windows in polymorphic.hpp
+#undef max // clashes with std::limit on windows in polymorphic.hpp
+#include <cereal/types/polymorphic.hpp>
 
 namespace TensorBase
 {
@@ -50,15 +52,13 @@ namespace TensorBase
       // TODO: CUDA comiler error: use the "typename" keyword to treat nontype "TensorBase::TensorData<TensorT, DeviceT, TDim>::tensorT [with TensorT=TensorTOther, DeviceT=DeviceTOther, TDim=TDimOther]" as a type in a dependent context
       //if (!std::is_same<tensorT, TensorData<TensorTOther, DeviceTOther, TDimOther>::tensorT>::value)
       //  return false;
-      return
-        std::tie(
+      return std::tie(
           dimensions_,
           device_name_          
         ) == std::tie(
           other.dimensions_,
           other.device_name_          
-        )
-        ;
+        );
     }
 
     inline bool operator!=(const TensorData& other) const
@@ -109,17 +109,8 @@ namespace TensorBase
     virtual void sort(const std::string& sort_order, DeviceT& device) = 0; ///< sort the TensorData in place
     virtual void sort(const std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices, DeviceT& device) = 0; ///< sort the TensorData in place
 
-    /**
-      @brief Set the tensor dimensions and calculate the tensor size
-    */
-    void setDimensions(const Eigen::array<Eigen::Index, TDim>& dimensions) { 
-      dimensions_ = dimensions; 
-      size_t tensor_size = 1;
-      for (int i=0; i<TDim; ++i)
-        tensor_size *= dimensions.at(i);
-      tensor_size_ = tensor_size;
-    }
-    Eigen::array<Eigen::Index, TDim> getDimensions() const { return dimensions_; }  ///< dimensions getter
+    void setDimensions(const Eigen::array<Eigen::Index, TDim>& dimensions); ///< Set the tensor dimensions and calculate the tensor size
+    Eigen::array<Eigen::Index, TDim> getDimensions() const; ///< Get the tensor dimensions
     size_t getTensorBytes() { return tensor_size_ * sizeof(TensorT); }; ///< Get the size of each tensor in bytes
     size_t getTensorSize() { return tensor_size_; }; ///< Get the size of the tensor
     int getDims() { return dimensions_.size(); };  ///< TDims getter
@@ -147,14 +138,36 @@ namespace TensorBase
     size_t tensor_size_ = 0;  ///< Tensor size
     std::string device_name_ = "";
 
-    //private:
-    //	friend class cereal::access;
-    //	template<class Archive>
-    //	void serialize(Archive& archive) {
-    //		archive(dimensions_, tensor_size_,
-    //		h_data_, d_data_, h_data_updated_, d_data_updated_);
-    //	}
+  private:
+    friend class cereal::access;
+    template<class Archive>
+    void serialize(Archive& archive) {
+    	archive(dimensions_, tensor_size_, device_name_, h_data_updated_, d_data_updated_);
+    }
   };
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorData<TensorT, DeviceT, TDim>::setDimensions(const Eigen::array<Eigen::Index, TDim>& dimensions) {
+    //dimensions_ = std::array<Eigen::Index, TDim>(); // works on gpu
+    dimensions_ = dimensions; // works on cpu but not gpu
+    size_t tensor_size = 1;
+    for (int i = 0; i < TDim; ++i) {
+      //dimensions_.at(i) = dimensions.at(i); // works on gpu
+      tensor_size *= dimensions.at(i);
+    }
+    tensor_size_ = tensor_size;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline Eigen::array<Eigen::Index, TDim> TensorData<TensorT, DeviceT, TDim>::getDimensions() const
+  { 
+    return dimensions_; // works on cpu but not gpu
+    //Eigen::array<Eigen::Index, TDim> dimensions;
+    //for (int i = 0; i < TDim; ++i) {
+    //  dimensions.at(i) = dimensions_.at(i);
+    //}
+    //return dimensions;
+  }
 
   /**
     @brief Tensor data class specialization for Eigen::DefaultDevice (single thread CPU)
@@ -173,12 +186,12 @@ namespace TensorBase
     void setData(const Eigen::Tensor<TensorT, TDim>& data); ///< data setter
     void setData();
     bool syncHAndDData(Eigen::DefaultDevice& device) { this->d_data_updated_ = true; this->h_data_updated_ = true; return true; }
-    //private:
-    //	friend class cereal::access;
-    //	template<class Archive>
-    //	void serialize(Archive& archive) {
-    //		archive(cereal::base_class<TensorData<TensorT, Eigen::DefaultDevice>>(this));
-    //	}
+  private:
+    friend class cereal::access;
+    template<class Archive>
+    void serialize(Archive& archive) {
+    	archive(cereal::base_class<TensorData<TensorT, Eigen::DefaultDevice, TDim>>(this));
+    }
   };
 
   template<typename TensorT, int TDim>
@@ -299,12 +312,12 @@ namespace TensorBase
     void setData(const Eigen::Tensor<TensorT, TDim>& data); ///< data setter
     void setData();
     bool syncHAndDData(Eigen::ThreadPoolDevice& device) { this->d_data_updated_ = true; this->h_data_updated_ = true; return true; }
-    //private:
-    //	friend class cereal::access;
-    //	template<class Archive>
-    //	void serialize(Archive& archive) {
-    //		archive(cereal::base_class<TensorData<TensorT, Eigen::DefaultDevice>>(this));
-    //	}
+  private:
+    friend class cereal::access;
+    template<class Archive>
+    void serialize(Archive& archive) {
+    	archive(cereal::base_class<TensorData<TensorT, Eigen::ThreadPoolDevice, TDim>>(this));
+    }
   };
 
   template<typename TensorT, int TDim>
@@ -408,7 +421,39 @@ namespace TensorBase
   };
 }
 
-//CEREAL_REGISTER_TYPE(TensorData::TensorDataDefaultDevice<float>);
-//// TODO: add double, int, etc.
+// Cereal registration of TensorTs: float, int, char, double and TDims: 1, 2, 3, 4
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<int, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<float, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<double, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<char, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<int, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<float, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<double, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<char, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<int, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<float, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<double, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<char, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<int, 4>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<float, 4>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<double, 4>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataDefaultDevice<char, 4>);
+
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<int, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<float, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<double, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<char, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<int, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<float, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<double, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<char, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<int, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<float, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<double, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<char, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<int, 4>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<float, 4>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<double, 4>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataCpu<char, 4>);
 
 #endif //TENSORBASE_TENSORDATA_H
