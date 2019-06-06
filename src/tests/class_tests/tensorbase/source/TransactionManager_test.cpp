@@ -329,16 +329,21 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
   // TODO: test for the changed value
 
   // Undo two of them
-
+  transactionManager.undo(device);
+  transactionManager.undo(device);
   BOOST_CHECK_EQUAL(transactionManager.getCurrentIndex(), 0);
+  // TODO: test that tensors 2 and 3 are unchanged
+  // TODO: test that tensor 1 still has the added data
 
   // Redo one of them
-
+  transactionManager.redo(device);
   BOOST_CHECK_EQUAL(transactionManager.getCurrentIndex(), 1);
+  // TODO: test that tensor 2 has the deletion
 
   // Rollback all of them
-
+  transactionManager.rollback(device);
   BOOST_CHECK_EQUAL(transactionManager.getCurrentIndex(), -1);
+  // TODO: test that tensors 1, 2, and 3 have their original data
 }
 
 BOOST_AUTO_TEST_CASE(CommitDefaultDevice)
@@ -346,9 +351,145 @@ BOOST_AUTO_TEST_CASE(CommitDefaultDevice)
   // Setup the device
   Eigen::DefaultDevice device;
 
-  // Execute an operation
+  // Setup the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels1 = 2, nlabels2 = 3, nlabels3 = 5;
+  Eigen::Tensor<int, 2> labels1(1, nlabels1), labels2(1, nlabels2), labels3(1, nlabels3);
+  labels1.setValues({ { 0, 1} });
+  labels2.setValues({ { 0, 1, 2 } });
+  labels3.setValues({ { 0, 1, 2, 3, 4 } });
 
-  // Commit
+  // Setup the tables
+  TensorTableDefaultDevice<float, 3> tensorTable1("1");
+  auto table_1_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1));
+  auto table_1_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2));
+  auto table_1_axis_3_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3));
+  tensorTable1.addTensorAxis(table_1_axis_1_ptr);
+  tensorTable1.addTensorAxis(table_1_axis_2_ptr);
+  tensorTable1.addTensorAxis(table_1_axis_3_ptr);
+  tensorTable1.setAxes();
+
+  Eigen::Tensor<float, 3> tensor_values1(Eigen::array<Eigen::Index, 3>({ nlabels1, nlabels2, nlabels3 }));
+  for (int i = 0; i < nlabels1; ++i) {
+    for (int j = 0; j < nlabels2; ++j) {
+      for (int k = 0; k < nlabels3; ++k) {
+        tensor_values1(i, j, k) = i + j * nlabels1 + k * nlabels1*nlabels2;
+      }
+    }
+  }
+  tensorTable1.getData()->setData(tensor_values1);
+  std::shared_ptr<TensorTableDefaultDevice<float, 3>> tensorTable1_ptr = std::make_shared<TensorTableDefaultDevice<float, 3>>(tensorTable1);
+
+  TensorTableDefaultDevice<int, 2> tensorTable2("2");
+  auto table_2_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1));
+  auto table_2_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2));
+  tensorTable2.addTensorAxis(table_2_axis_1_ptr);
+  tensorTable2.addTensorAxis(table_2_axis_2_ptr);
+  tensorTable2.setAxes();
+
+  Eigen::Tensor<int, 2> tensor_values2(Eigen::array<Eigen::Index, 2>({ nlabels1, nlabels2 }));
+  for (int i = 0; i < nlabels1; ++i) {
+    for (int j = 0; j < nlabels2; ++j) {
+      tensor_values2(i, j) = i + j * nlabels1;
+    }
+  }
+  tensorTable2.getData()->setData(tensor_values2);
+  std::shared_ptr<TensorTableDefaultDevice<int, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(tensorTable2);
+
+  TensorTableDefaultDevice<char, 1> tensorTable3("3");
+  tensorTable3.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
+  tensorTable3.setAxes();
+
+  Eigen::Tensor<char, 1> tensor_values3(Eigen::array<Eigen::Index, 1>({ nlabels1 }));
+  tensor_values3.setValues({ 'a', 'b' });
+  tensorTable3.getData()->setData(tensor_values3);
+  std::shared_ptr<TensorTableDefaultDevice<char, 1>> tensorTable3_ptr = std::make_shared<TensorTableDefaultDevice<char, 1>>(tensorTable3);
+
+  // Setup the tensor collection
+  TensorCollectionDefaultDevice tensorCollection;
+  tensorCollection.addTensorTable(tensorTable1_ptr);
+  tensorCollection.addTensorTable(tensorTable2_ptr);
+  tensorCollection.addTensorTable(tensorTable3_ptr);
+  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> tensorCollection_ptr = std::make_shared<TensorCollectionDefaultDevice>(tensorCollection);
+
+  // Setup the transaction manager
+  TransactionManager<Eigen::DefaultDevice> transactionManager;
+  transactionManager.setTensorCollection(tensorCollection_ptr);
+
+
+  // Operation #1: add
+  // Set up the new labels
+  Eigen::Tensor<int, 2> labels_new_values(1, nlabels2);
+  labels_new_values.setValues({ {3, 4, 5} });
+  TensorDataDefaultDevice<int, 2> labels_new(Eigen::array<Eigen::Index, 2>({ 1, 3 }));
+  labels_new.setData(labels_new_values);
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_new_ptr = std::make_shared<TensorDataDefaultDevice<int, 2>>(labels_new);
+
+  // Set up the new values
+  Eigen::Tensor<float, 3> tensor_values_new(Eigen::array<Eigen::Index, 3>({ nlabels1, nlabels2, nlabels3 }));
+  for (int i = 0; i < nlabels1; ++i) {
+    for (int j = 0; j < nlabels2; ++j) {
+      for (int k = 0; k < nlabels3; ++k) {
+        tensor_values_new(i, j, k) = i + j * nlabels1 + k * nlabels1*nlabels2 + nlabels1 + nlabels2 * nlabels1 + nlabels3 * nlabels1*nlabels2;
+      }
+    }
+  }
+  TensorDataDefaultDevice<float, 3> values_new(Eigen::array<Eigen::Index, 3>({ nlabels1, nlabels2, nlabels3 }));
+  values_new.setData(tensor_values_new);
+  std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 3>> values_new_ptr = std::make_shared<TensorDataDefaultDevice<float, 3>>(values_new);
+
+  // Test the AppendToAxis execution
+  TensorAppendToAxis<int, float, Eigen::DefaultDevice, 3> appendToAxis("1", "2", labels_new_ptr, values_new_ptr);
+  std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> appendToAxis_ptr = std::make_shared<TensorAppendToAxis<int, float, Eigen::DefaultDevice, 3>>(appendToAxis);
+  transactionManager.executeOperation(appendToAxis_ptr, device);
+
+  BOOST_CHECK_EQUAL(transactionManager.getCurrentIndex(), 0);
+
+  // Test for the expected table data
+  for (int i = 0; i < nlabels1; ++i) {
+    for (int j = 0; j < nlabels2; ++j) {
+      for (int k = 0; k < nlabels3; ++k) {
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getData()(i, j, k), tensor_values1(i, j, k));
+      }
+    }
+  }
+  for (int i = 0; i < nlabels1; ++i) {
+    for (int j = 0; j < nlabels2; ++j) {
+      for (int k = 0; k < nlabels3; ++k) {
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getData()(i, j + nlabels2, k), tensor_values_new(i, j, k));
+      }
+    }
+  }
+
+  // Test for the expected axis data
+  BOOST_CHECK_EQUAL(table_1_axis_2_ptr->getNLabels(), nlabels2 + nlabels2);
+  for (int i = 0; i < nlabels2 + nlabels2; ++i) {
+    BOOST_CHECK_EQUAL(table_1_axis_2_ptr->getLabels()(0, i), i);
+  }
+
+  // Test for the expected indices data
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getDimensions().at(tensorTable1_ptr->getDimFromAxisName("2")), nlabels2 + nlabels2);
+  for (int i = 0; i < nlabels2 + nlabels2; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
+    if (i < nlabels2) {
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getInMemory().at("2")->getData()(i), 0);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsShardable().at("2")->getData()(i), 0);
+    }
+    else {
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getInMemory().at("2")->getData()(i), 1);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsShardable().at("2")->getData()(i), 1); // TODO...
+    }
+  }
+
+  // Test Commit
+  transactionManager.commit();
+  BOOST_CHECK_EQUAL(transactionManager.getCurrentIndex(), -1);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
