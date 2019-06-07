@@ -33,12 +33,12 @@ struct DeleteTable2 {
 struct SelectTable3 {
   template<typename DeviceT>
   void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) {
-    // Set up the SelectClauses for table 3: 
-    std::shared_ptr<TensorDataDefaultDevice<char, 1>> select_labels = std::make_shared<TensorDataDefaultDevice<char, 1>>(Eigen::array<Eigen::Index, 1>({ 1 }));
-    Eigen::Tensor<char, 1> labels_values(1);
-    labels_values.setValues({ 'b' });
+    // Set up the SelectClauses for table 3:
+    std::shared_ptr<TensorDataDefaultDevice<int, 1>> select_labels = std::make_shared<TensorDataDefaultDevice<int, 1>>(Eigen::array<Eigen::Index, 1>({ 1 }));
+    Eigen::Tensor<int, 1> labels_values(1);
+    labels_values.setValues({ 1 });
     select_labels->setData(labels_values);
-    SelectClause<char, DeviceT> select_clause1("3", "1", "x", select_labels);
+    SelectClause<int, DeviceT> select_clause1("3", "1", "x", select_labels);
 
     TensorSelect tensorSelect;
 
@@ -218,9 +218,6 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
 
   BOOST_CHECK_EQUAL(transactionManager.getCurrentIndex(), 0);
 
-  std::cout << "TensorTable 1:\n" << tensorTable1_ptr->getData()->getData() << std::endl;
-  std::cout << "TensorTable 1 Axis 2:\n" << table_1_axis_2_ptr->getLabels() << std::endl;
-
   // Test for the expected table data
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2; ++j) {
@@ -266,8 +263,6 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
   transactionManager.executeOperation(deleteFromAxis_ptr, device);
 
   BOOST_CHECK_EQUAL(transactionManager.getCurrentIndex(), 1);
-  std::cout << "TensorTable 2:\n" << tensorTable2_ptr->getData()->getData() << std::endl;
-  std::cout << "TensorTable 2 Axis 2:\n" << table_2_axis_2_ptr->getLabels() << std::endl;
 
   // Make the expected tensor data
   Eigen::Tensor<int, 2> expected_tensor_values(nlabels1, nlabels2 - 1);
@@ -326,24 +321,119 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
   transactionManager.executeOperation(tensorUpdate_ptr, device);
 
   BOOST_CHECK_EQUAL(transactionManager.getCurrentIndex(), 2);
-  // TODO: test for the changed value
 
-  // Undo two of them
+  // Test for the changed value
+  Eigen::Tensor<char, 1> values_update_expected(Eigen::array<Eigen::Index, 1>({ nlabels1 }));
+  //values_update_expected.setValues({ 'a', 'c' });
+  //for (int i = 0; i < nlabels1; ++i) {
+  //  BOOST_CHECK_EQUAL(tensorTable3_ptr->getData()->getData()(i), values_update_expected(i));
+  //}
+  BOOST_CHECK_EQUAL(tensorTable3_ptr->getData()->getData()(0), 'c'); // TODO: Revert to the above when Update is fixed
+
+  // Undo #1
   transactionManager.undo(device);
+  BOOST_CHECK_EQUAL(transactionManager.getCurrentIndex(), 1);
+
+  // Test that table 3 update has been reverted
+  //for (int i = 0; i < nlabels1; ++i) {
+  //  BOOST_CHECK_EQUAL(tensorTable3_ptr->getData()->getData()(i), tensor_values3(i));
+  //}
+  BOOST_CHECK_EQUAL(tensorTable3_ptr->getData()->getData()(0), 'b'); // TODO: Revert to the above when Update is fixed
+
+  // Undo #2
   transactionManager.undo(device);
   BOOST_CHECK_EQUAL(transactionManager.getCurrentIndex(), 0);
-  // TODO: test that tensors 2 and 3 are unchanged
-  // TODO: test that tensor 1 still has the added data
+
+  // Test that table 2 deletion as been reverted
+  // Test for the expected table data
+  for (int i = 0; i < nlabels1; ++i) {
+    for (int j = 0; j < nlabels2 - 1; ++j) {
+      BOOST_CHECK_EQUAL(tensorTable2_ptr->getData()->getData()(i, j), tensor_values2(i, j));
+    }
+  }
+
+  // Test for the expected axis data
+  BOOST_CHECK_EQUAL(table_2_axis_2_ptr->getNLabels(), nlabels2);
+  for (int i = 0; i < nlabels2 - 1; ++i) {
+    BOOST_CHECK_EQUAL(table_2_axis_2_ptr->getLabels()(0, i), i);
+  }
+
+  // Test for the expected indices data
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getDimensions().at(tensorTable2_ptr->getDimFromAxisName("2")), nlabels2);
+  for (int i = 0; i < nlabels2; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndices().at("2")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(i), i + 1);
+    //BOOST_CHECK_EQUAL(tensorTable2_ptr->getIsModified().at("2")->getData()(i), 0); // TODO: update once the sharding model is in place
+    //BOOST_CHECK_EQUAL(tensorTable2_ptr->getInMemory().at("2")->getData()(i), 0);
+    //BOOST_CHECK_EQUAL(tensorTable2_ptr->getIsShardable().at("2")->getData()(i), 0);
+  }
 
   // Redo one of them
   transactionManager.redo(device);
   BOOST_CHECK_EQUAL(transactionManager.getCurrentIndex(), 1);
-  // TODO: test that tensor 2 has the deletion
+
+  // Test that tensor 2 has the deletion
+  // Test for the expected table data
+  for (int i = 0; i < nlabels1; ++i) {
+    for (int j = 0; j < nlabels2 - 1; ++j) {
+      BOOST_CHECK_EQUAL(tensorTable2_ptr->getData()->getData()(i, j), expected_tensor_values(i, j));
+    }
+  }
+
+  // Test for the expected axis data
+  BOOST_CHECK_EQUAL(table_2_axis_2_ptr->getNLabels(), nlabels2 - 1);
+  for (int i = 0; i < nlabels2 - 1; ++i) {
+    if (i < 1)
+      BOOST_CHECK_EQUAL(table_2_axis_2_ptr->getLabels()(0, i), i);
+    else
+      BOOST_CHECK_EQUAL(table_2_axis_2_ptr->getLabels()(0, i), i + 1);
+  }
+
+  // Test for the expected indices data
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getDimensions().at(tensorTable2_ptr->getDimFromAxisName("2")), nlabels2 - 1);
+  for (int i = 0; i < nlabels2 - 1; ++i) {
+    if (i < 1) {
+      BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndices().at("2")->getData()(i), i + 1);
+      BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(i), i + 1);
+    }
+    else {
+      BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndices().at("2")->getData()(i), i + 2);
+      BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(i), i + 2);
+    }
+    //BOOST_CHECK_EQUAL(tensorTable2_ptr->getIsModified().at("2")->getData()(i), 0);  // TODO: update once the sharding model is in place
+    //BOOST_CHECK_EQUAL(tensorTable2_ptr->getInMemory().at("2")->getData()(i), 0);
+    //BOOST_CHECK_EQUAL(tensorTable2_ptr->getIsShardable().at("2")->getData()(i), 0);
+  }
 
   // Rollback all of them
   transactionManager.rollback(device);
   BOOST_CHECK_EQUAL(transactionManager.getCurrentIndex(), -1);
-  // TODO: test that tensors 1, 2, and 3 have their original data
+
+  // Test that tensors 1, 2, and 3 have their original data
+  // Test for the expected table data
+  for (int i = 0; i < nlabels1; ++i) {
+    for (int j = 0; j < nlabels2; ++j) {
+      for (int k = 0; k < nlabels3; ++k) {
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getData()(i, j, k), tensor_values1(i, j, k));
+      }
+    }
+  }
+
+  // Test for the expected axis data
+  BOOST_CHECK_EQUAL(table_1_axis_2_ptr->getNLabels(), nlabels2);
+  for (int i = 0; i < nlabels2; ++i) {
+    BOOST_CHECK_EQUAL(table_1_axis_2_ptr->getLabels()(0, i), i);
+  }
+
+  // Test for the expected indices data
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getDimensions().at(tensorTable1_ptr->getDimFromAxisName("2")), nlabels2);
+  for (int i = 0; i < nlabels2; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getInMemory().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsShardable().at("2")->getData()(i), 0);
+  }
 }
 
 BOOST_AUTO_TEST_CASE(CommitDefaultDevice)

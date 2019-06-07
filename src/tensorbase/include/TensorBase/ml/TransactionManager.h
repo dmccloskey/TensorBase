@@ -80,7 +80,7 @@ namespace TensorBase
   inline bool TransactionManager<DeviceT>::executeOperation(std::shared_ptr<TensorOperation<DeviceT>>& tensor_operation, DeviceT& device)
   {
     // Check if the operation history limit has been reached
-    if (tensor_operations_.size() >= max_operations_ - 1) {
+    if (tensor_operations_.size() >= max_operations_) {
       tensor_operations_.pop_front();
     }
 
@@ -174,7 +174,7 @@ namespace TensorBase
   inline void TransactionManager<DeviceT>::clear()
   {
     tensor_operations_.clear();
-    current_index_ = 0;
+    current_index_ = -1;
   }
 };
 #endif //TENSORBASE_TRANSACTIONMANAGER_H
