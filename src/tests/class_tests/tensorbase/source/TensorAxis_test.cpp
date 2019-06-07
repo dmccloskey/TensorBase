@@ -133,6 +133,16 @@ BOOST_AUTO_TEST_CASE(getLabelsDataPointerDefaultDevice)
   std::shared_ptr<double> data_double = nullptr;
   tensoraxis.getLabelsDataPointer<double>(data_double);
   BOOST_CHECK_EQUAL(data_double, nullptr);
+
+  // Test char type
+  Eigen::Tensor<char, 2> labels_char(3, 5);
+  labels_char.setConstant('a');
+  TensorAxisDefaultDevice<char> tensoraxis_char("1", dimensions, labels_char);
+
+  // Test data copy
+  tensoraxis_char.getLabelsDataPointer<char>(data_char);
+  BOOST_CHECK_EQUAL(data_char.get()[0], 'a');
+  BOOST_CHECK_EQUAL(data_char.get()[14], 'a');
 }
 
 BOOST_AUTO_TEST_CASE(deleteFromAxisDefaultDevice)

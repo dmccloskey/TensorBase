@@ -25,6 +25,7 @@ set(ml_executables_list
   TensorTable_test
   TensorTableGpu_test
   TensorType_test
+  TransactionManager_test
 )
 
 ### collect test executables
