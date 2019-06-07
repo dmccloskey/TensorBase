@@ -9,7 +9,7 @@
 namespace TensorBase
 {
   /**
-    @brief Abstract base class for all Tensor Insert/Update/Delete operations
+    @brief Abstract base class for all Tensor operations involving insertions, deletions, and updates
   */
   template<typename DeviceT>
   class TensorOperation
@@ -21,6 +21,9 @@ namespace TensorBase
     virtual void undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) = 0;
   };
 
+  /**
+    @brief Class for appending data to a Tensor
+  */
   template<typename LabelsT, typename TensorT, typename DeviceT, int TDim>
   class TensorAppendToAxis: public TensorOperation<DeviceT> {
   public:
@@ -53,6 +56,9 @@ namespace TensorBase
     tensor_collection->tables_.at(table_name_)->deleteFromAxis(axis_name_, indices_, device);
   }
 
+  /**
+    @brief Class for deleting data from a Tensor
+  */
   template<typename LabelsT, typename TensorT, typename DeviceT, int TDim>
   class TensorDeleteFromAxis : public TensorOperation<DeviceT> {
   public:
@@ -97,6 +103,9 @@ namespace TensorBase
     tensor_collection->tables_.at(table_name_)->insertIntoAxis(axis_name_, labels_, values_->getDataPointer(), indices_, device);
   }
 
+  /**
+    @brief DefaultDevice specialization of `TensorDeleteFromAxis`
+  */
   template<typename LabelsT, typename TensorT, int TDim>
   class TensorDeleteFromAxisDefaultDevice : public TensorDeleteFromAxis<LabelsT, TensorT, Eigen::DefaultDevice, TDim> {
   public:
@@ -120,11 +129,18 @@ namespace TensorBase
     this->values_ = std::make_shared<TensorDataDefaultDevice<TensorT, TDim>>(values_tmp);
   }
 
+  /**
+    @brief Class for updating data of a Tensor based on an optional select function
+
+    Use cases:
+      1. The update replaces all of the data in the specified `tensor_table` if no select_function is specified
+      2. The update a selected contiguous region (i.e., continuous column or row, 2D sheet, 3D cube, etc.,) in the specified `tensor_table`
+  */
   template<typename TensorT, typename DeviceT, int TDim>
-  class TensorUpdate : public TensorOperation<DeviceT> {
+  class TensorUpdateValues : public TensorOperation<DeviceT> {
   public:
-    TensorUpdate() = default;
-    TensorUpdate(const std::string& table_name, const std::function<void(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)>& select_function, const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_new) :
+    TensorUpdateValues() = default;
+    TensorUpdateValues(const std::string& table_name, const std::function<void(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)>& select_function, const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_new) :
       table_name_(table_name), select_function_(select_function), values_new_(values_new) {};
     void redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
     void undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
@@ -132,11 +148,11 @@ namespace TensorBase
   protected:
     std::function<void(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)> select_function_; // Redo/Undo
     std::string table_name_; // Undo/Redo
-    std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> values_new_; // Redo
-    std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> values_old_; // Undo
+    std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> values_new_ = nullptr; // Redo
+    std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> values_old_ = nullptr; // Undo
   };
   template<typename TensorT, typename DeviceT, int TDim>
-  inline void TensorUpdate<TensorT, DeviceT, TDim>::redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
+  inline void TensorUpdateValues<TensorT, DeviceT, TDim>::redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
   {
     // TODO: check that the table_name exist
 
@@ -152,11 +168,58 @@ namespace TensorBase
     tensor_collection->tables_.at(table_name_)->updateTensorData(values_new_->getDataPointer(), values_old_->getDataPointer(), device);
   }
   template<typename TensorT, typename DeviceT, int TDim>
-  inline void TensorUpdate<TensorT, DeviceT, TDim>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
+  inline void TensorUpdateValues<TensorT, DeviceT, TDim>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
   {
     // Execute the select methods on the tensor_collection
     select_function_(tensor_collection, device);
 
+    // Update the values with the `values_old`
+    tensor_collection->tables_.at(table_name_)->updateTensorData(values_old_->getDataPointer(), device);
+  }
+
+  /**
+    @brief Class for setting Tensor data to a specified constant value based on an optional select function
+
+    Use cases: The update replaces all selected data with a particular value in the specified `tensor_table`
+  */
+  template<typename TensorT, typename DeviceT, int TDim>
+  class TensorUpdateConstant : public TensorOperation<DeviceT> {
+  public:
+    TensorUpdateConstant() = default;
+    TensorUpdateConstant(const std::string& table_name, const std::function<void(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)>& select_function, const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values_new) :
+      table_name_(table_name), select_function_(select_function), values_new_(values_new) {};
+    void redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
+    void undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
+    std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> getValuesOld() const { return values_old_; };
+  protected:
+    std::function<void(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)> select_function_; // Redo/Undo
+    std::string table_name_; // Undo/Redo
+    std::shared_ptr<TensorData<TensorT, DeviceT, 1>> values_new_ = nullptr; // Redo
+    std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> values_old_ = nullptr; // Undo
+  };
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorUpdateConstant<TensorT, DeviceT, TDim>::redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
+  {
+    // TODO: check that the table_name exist
+
+    // Copy out the original tensor table values
+    values_old_->syncHAndDData(device);
+    // TODO: make a copy of the tensor data
+
+    // Execute the select methods on the tensor_collection
+    select_function_(tensor_collection, device);
+
+    // TODO: check that the dimensions of the values are compatible with the selected Tensor Table Data
+
+    // Update the values with the `values_new` and copy the original values into the `values_old`
+    values_old_ = values_new_->copy(device);
+    values_new_->syncHAndDData(device);
+    values_old_->syncHAndDData(device);
+    tensor_collection->tables_.at(table_name_)->updateTensorData(values_new_->getDataPointer(), values_old_->getDataPointer(), device);
+  }
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorUpdateConstant<TensorT, DeviceT, TDim>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
+  {
     // Update the values with the `values_old`
     tensor_collection->tables_.at(table_name_)->updateTensorData(values_old_->getDataPointer(), device);
   }
@@ -166,7 +229,10 @@ namespace TensorBase
 
   class TensorAddAxis; // TODO: implement as a Tensor Broadcast
   class TensorDeleteAxis;  // TODO: implement as a Tensor Chip
-  
+
+  /**
+    @brief Class for adding a `TensorTable` to a `TensorCollection`
+  */
   template<typename T, typename DeviceT>
   class TensorAddTable : public TensorOperation<DeviceT> {
   public:
@@ -190,7 +256,10 @@ namespace TensorBase
   {
     tensor_collection->removeTensorTable(table_->getName());
   }
-
+  
+  /**
+    @brief Class for removing a `TensorTable` from a `TensorCollection`
+  */
   template<typename DeviceT>
   class TensorDropTable : public TensorOperation<DeviceT> {
   public:

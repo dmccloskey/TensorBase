@@ -1052,9 +1052,7 @@ namespace TensorBase
     values_old = data_->copy(device);
 
     // assign the new values
-    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> values_new_values(values_new->getDataPointer().get(), values_new->getDimensions());
-    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(data_->getDataPointer().get(), data_->getDimensions());
-    data_values.device(device) = values_new_values;
+    updateTensorData(values_new, device);
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
@@ -1077,8 +1075,7 @@ namespace TensorBase
     values_old_values.device(device) = data_values;
 
     // assign the new values
-    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> values_new_values(values_new.get(), data_->getDimensions());
-    data_values.device(device) = values_new_values;
+    updateTensorData(values_new, device);
   }
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorTable<TensorT, DeviceT, TDim>::updateTensorData(const std::shared_ptr<TensorT>& values_new, DeviceT & device)
