@@ -195,7 +195,7 @@ namespace TensorBase
     std::function<void(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)> select_function_; // Redo/Undo
     std::string table_name_; // Undo/Redo
     std::shared_ptr<TensorData<TensorT, DeviceT, 1>> values_new_ = nullptr; // Redo
-    std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> values_old_ = nullptr; // Undo
+    std::shared_ptr<TensorTable<TensorT, DeviceT, TDim>> values_old_ = nullptr; // Undo: Sparse table
   };
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorUpdateConstant<TensorT, DeviceT, TDim>::redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
