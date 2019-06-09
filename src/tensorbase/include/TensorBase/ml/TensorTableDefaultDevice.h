@@ -474,7 +474,7 @@ namespace TensorBase
 
     // Determine the total number of labels and create the selected `indices_view`
     std::vector<std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>> indices_selected_vec;
-    int labels_size = 0;
+    int labels_size = 1;
     for (const auto& axis_to_name : this->axes_to_dims_) {
       // calculate the sum
       Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_values(this->indices_view_.at(axis_to_name.first)->getDataPointer().get(), this->indices_view_.at(axis_to_name.first)->getDimensions());
@@ -507,24 +507,19 @@ namespace TensorBase
       for (int j = 0; j < i; ++j) {
         n_padding *= indices_selected_vec.at(j)->getTensorSize();
       }
-      int n_repeats = n_padding * labels_size / indices_selected_vec.at(i)->getTensorSize();
+      int slice_size = n_padding * indices_selected_vec.at(i)->getTensorSize();
+      int n_repeats = labels_size / slice_size;
 
       // create the repeating "slice"
-      int slice_size = n_padding * indices_selected_vec.at(i)->getTensorSize();
       Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_selected_values(indices_selected_vec.at(i)->getDataPointer().get(), 1, indices_selected_vec.at(i)->getTensorSize());
-      auto indices_bcast = indices_selected_values.broadcast(Eigen::array<Eigen::Index, 2>({ n_padding, 1 }));
-
-      std::cout << "indices_selected_vec:\n" << indices_selected_vec.at(i)->getData() << std::endl;
-      std::cout << "indices_selected_values:\n" << indices_selected_values << std::endl;
-      std::cout << "indices_bcast:\n" << indices_bcast << std::endl;
-      std::cout << "indices_reshaped:\n" << indices_bcast.reshape(Eigen::array<Eigen::Index, 1>({ slice_size })) << std::endl;
+      auto indices_bcast = indices_selected_values.broadcast(Eigen::array<Eigen::Index, 2>({ n_padding, 1 })).reshape(Eigen::array<Eigen::Index, 2>({ 1, slice_size }));
 
       // repeatedly assign the slice
-      Eigen::TensorMap<Eigen::Tensor<int, 1>> sparse_labels_values(sparse_labels.getDataPointer().get(), sparse_labels.getTensorSize());
+      Eigen::TensorMap<Eigen::Tensor<int, 2>> sparse_labels_values(sparse_labels.getDataPointer().get(), sparse_labels.getDimensions());
       for (int j = 0; j < n_repeats; ++j) {
         Eigen::array<int, 2> offsets = { i, j * slice_size };
-        Eigen::array<int, 2> extents = { i + 1, (j+1)*slice_size };
-        sparse_labels_values.slice(offsets, extents).device(device) = indices_bcast.reshape(Eigen::array<Eigen::Index, 1>({ slice_size }));
+        Eigen::array<int, 2> extents = { 1, slice_size };
+        sparse_labels_values.slice(offsets, extents).device(device) = indices_bcast;
       }
     }
 
