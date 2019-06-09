@@ -1135,6 +1135,7 @@ namespace TensorBase
 
     // create a linear representation of the selected indices view (Column-wise)
     std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> sparse_labels;
+    makeSparseAxisLabelsFromIndicesView(sparse_labels, device);
 
     // create the axis dimensions
     Eigen::Tensor<std::string, 1> sparse_dimensions(this->axes_to_dims_.size());
