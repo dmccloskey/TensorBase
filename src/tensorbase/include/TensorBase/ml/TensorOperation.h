@@ -182,7 +182,7 @@ namespace TensorBase
 
     Use cases: The update replaces all selected data with a particular value in the specified `tensor_table`
   */
-  template<typename TensorT, typename DeviceT, int TDim>
+  template<typename TensorT, typename DeviceT>
   class TensorUpdateConstant : public TensorOperation<DeviceT> {
   public:
     TensorUpdateConstant() = default;
@@ -190,38 +190,30 @@ namespace TensorBase
       table_name_(table_name), select_function_(select_function), values_new_(values_new) {};
     void redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
     void undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
-    std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> getValuesOld() const { return values_old_; };
+    std::shared_ptr<TensorData<TensorT, DeviceT, 2>> getValuesOld() const { return values_old_; };
   protected:
     std::function<void(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)> select_function_; // Redo/Undo
     std::string table_name_; // Undo/Redo
     std::shared_ptr<TensorData<TensorT, DeviceT, 1>> values_new_ = nullptr; // Redo
-    std::shared_ptr<TensorTable<TensorT, DeviceT, TDim>> values_old_ = nullptr; // Undo: Sparse table
+    std::shared_ptr<TensorTableConcept<DeviceT>> values_old_ = nullptr; // Undo: Sparse table
   };
-  template<typename TensorT, typename DeviceT, int TDim>
-  inline void TensorUpdateConstant<TensorT, DeviceT, TDim>::redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
+  template<typename TensorT, typename DeviceT>
+  inline void TensorUpdateConstant<TensorT, DeviceT>::redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
   {
     // TODO: check that the table_name exist
-
-    // Copy out the original tensor table values
-    values_old_->syncHAndDData(device);
-    // TODO: make a copy of the tensor data
 
     // Execute the select methods on the tensor_collection
     select_function_(tensor_collection, device);
 
-    // TODO: check that the dimensions of the values are compatible with the selected Tensor Table Data
-
-    // Update the values with the `values_new` and copy the original values into the `values_old`
-    values_old_ = values_new_->copy(device);
+    // Update the values with the `values_new`
     values_new_->syncHAndDData(device);
-    values_old_->syncHAndDData(device);
-    tensor_collection->tables_.at(table_name_)->updateTensorData(values_new_->getDataPointer(), values_old_->getDataPointer(), device);
+    //tensor_collection->tables_.at(table_name_)->updateTensorData(values_new_->getDataPointer(), values_old_->getDataPointer(), device);
   }
-  template<typename TensorT, typename DeviceT, int TDim>
-  inline void TensorUpdateConstant<TensorT, DeviceT, TDim>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
+  template<typename TensorT, typename DeviceT>
+  inline void TensorUpdateConstant<TensorT, DeviceT>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
   {
     // Update the values with the `values_old`
-    tensor_collection->tables_.at(table_name_)->updateTensorData(values_old_->getDataPointer(), device);
+    //tensor_collection->tables_.at(table_name_)->updateTensorDataFromSparseTensorTable(values_old_->getDataPointer(), device);
   }
 
   class TensorAppendToDimension;

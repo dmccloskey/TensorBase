@@ -330,14 +330,12 @@ namespace TensorBase
     /*
     @brief Copy the selected values into a "Sparse" Tensor Table representation
 
-    @param[out] sparse_table The "Sparse" Tensor table representation where
-      - The Tensor Dimensions are the names of the axes dimensions
-      - The axis for the tensor table are of nDimensions = TDim and nLabels = # of selected items where
-        Dimensions are integers from 0 to TDim and the labels are the indices of the selected data
-      - The Data for the Tensor Table is a 1D TensorData of length = # of selected items
+    @param[out] axes The axis for the tensor table of nDimensions = TDim and nLabels = # of selected items where
+      Dimensions are integers from 0 to TDim and the labels are the indices of the selected data
+    @param[out] data The 1D TensorData of length = # of selected items
     @param[in] device
     */
-    void getSelectTensorDataAsSparseTensorTable(std::shared_ptr<TensorTable<TensorT, DeviceT, 1>>& sparse_table, DeviceT& device);
+    void getSelectionAsSparseTensorTable(std::shared_ptr<TensorData<int, DeviceT, 2>>& axes, std::shared_ptr<TensorData<int, DeviceT, 1>>& data, DeviceT& device);
 
     /*
     @brief Update the TensorTable data according to the values in the "Sparse" Tensor Table representation
@@ -347,7 +345,7 @@ namespace TensorBase
     @param[in] data The 1D TensorData of length = # of selected items
     @param[in] device
     */
-    void updateTensorTableFromSparseTensorTable(const std::shared_ptr<TensorTable<TensorT, DeviceT, 1>>& sparse_table, DeviceT& device);
+    void updateTensorTableFromSparseTensorTable(const std::shared_ptr<TensorData<int, DeviceT, 2>>& axes, const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& data, DeviceT& device);
 
     /*
     @brief Append new labels to the specified axis and append new data to the Tensor Data at the specified axis
@@ -1106,20 +1104,6 @@ namespace TensorBase
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> values_new_values(values_new.get(), data_->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(data_->getDataPointer().get(), data_->getDimensions());
     data_values.device(device) = values_new_values;
-  }
-
-  template<typename TensorT, typename DeviceT, int TDim>
-  inline void TensorTable<TensorT, DeviceT, TDim>::getSelectTensorDataAsSparseTensorTable(std::shared_ptr<TensorTable<TensorT, DeviceT, 1>>& sparse_table, DeviceT & device)
-  {
-    // create a copy of the tensor table
-    std::shared_ptr<TensorTable<TensorT, DeviceT, TDim>> table_cpy; //=this->copy(device);
-    table_cpy->selectTensorData(device);
-
-    // create a linear representation of the axes
-
-    // create a lienar representation of the data
-
-    // create the "Sparse" TensorTable
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
