@@ -39,6 +39,8 @@ namespace TensorBase
     void makeSelectIndicesFromIndices(const std::string& axis_name, const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_select, Eigen::DefaultDevice& device) override;
     void getSelectTensorDataFromIndices(std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_select, const Eigen::array<Eigen::Index, TDim>& dimensions_select, Eigen::DefaultDevice& device) override;
     void makeIndicesFromIndicesView(const std::string & axis_name, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, Eigen::DefaultDevice& device) override;
+    // Update methods
+    void makeSparseAxisLabelsFromIndicesView(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& sparse_select, Eigen::DefaultDevice& device) override;
   private:
     friend class cereal::access;
     template<class Archive>
@@ -460,6 +462,74 @@ namespace TensorBase
 
     // Select out the non zero indices
     this->indices_view_.at(axis_name)->select(indices, indices_view_copy, device);
+  }
+  template<typename TensorT, int TDim>
+  inline void TensorTableDefaultDevice<TensorT, TDim>::makeSparseAxisLabelsFromIndicesView(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& sparse_select, Eigen::DefaultDevice & device)
+  {
+    // temporary memory for calculating the total sum of each axis
+    TensorDataDefaultDevice<int, 1> dim_size(Eigen::array<Eigen::Index, 1>({ 1 }));
+    dim_size.setData();
+    dim_size.getData()(0) = 0;
+    Eigen::TensorMap<Eigen::Tensor<int, 0>> dim_size_value(dim_size.getDataPointer().get());
+
+    // Determine the total number of labels and create the selected `indices_view`
+    std::vector<std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>> indices_selected_vec;
+    int labels_size = 0;
+    for (const auto& axis_to_name : this->axes_to_dims_) {
+      // calculate the sum
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_values(this->indices_view_.at(axis_to_name.first)->getDataPointer().get(), this->indices_view_.at(axis_to_name.first)->getDimensions());
+      dim_size_value.device(device) = indices_view_values.clip(0, 1).sum();
+
+      // update the dimensions
+      labels_size *= dim_size.getData()(0);
+
+      // create the selection for the indices view
+      std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> indices_select = this->indices_view_.at(axis_to_name.first)->copy(device);
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_select_values(indices_select->getDataPointer().get(), indices_select->getDimensions());
+      indices_select_values.device(device) = indices_view_values.clip(0, 1);
+
+      // select out the indices
+      TensorDataDefaultDevice<int, 1> indices_selected(Eigen::array<Eigen::Index, 1>({ dim_size.getData()(0) }));
+      indices_selected.setData();
+      std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> indices_selected_ptr = std::make_shared<TensorDataDefaultDevice<int, 1>>(indices_selected);
+      this->indices_view_.at(axis_to_name.first)->select(indices_selected_ptr, indices_select, device);
+      indices_selected_vec.push_back(indices_selected_ptr);
+    }
+
+    // allocate memory for the labels
+    TensorDataDefaultDevice<int, 2> sparse_labels(Eigen::array<Eigen::Index, 2>({ (int)this->axes_to_dims_.size(), labels_size }));
+    sparse_labels.setData();
+
+    // iterate through each of the axes and assign the labels
+    for (int i = 0; i < TDim; ++i) {
+      // determine the padding and repeats for each dimension
+      int n_padding = 1;
+      for (int j = 0; j < i; ++j) {
+        n_padding *= indices_selected_vec.at(j)->getTensorSize();
+      }
+      int n_repeats = n_padding * labels_size / indices_selected_vec.at(i)->getTensorSize();
+
+      // create the repeating "slice"
+      int slice_size = n_padding * indices_selected_vec.at(i)->getTensorSize();
+      Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_selected_values(indices_selected_vec.at(i)->getDataPointer().get(), 1, indices_selected_vec.at(i)->getTensorSize());
+      auto indices_bcast = indices_selected_values.broadcast(Eigen::array<Eigen::Index, 2>({ n_padding, 1 }));
+
+      std::cout << "indices_selected_vec:\n" << indices_selected_vec.at(i)->getData() << std::endl;
+      std::cout << "indices_selected_values:\n" << indices_selected_values << std::endl;
+      std::cout << "indices_bcast:\n" << indices_bcast << std::endl;
+      std::cout << "indices_reshaped:\n" << indices_bcast.reshape(Eigen::array<Eigen::Index, 1>({ slice_size })) << std::endl;
+
+      // repeatedly assign the slice
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> sparse_labels_values(sparse_labels.getDataPointer().get(), sparse_labels.getTensorSize());
+      for (int j = 0; j < n_repeats; ++j) {
+        Eigen::array<int, 2> offsets = { i, j * slice_size };
+        Eigen::array<int, 2> extents = { i + 1, (j+1)*slice_size };
+        sparse_labels_values.slice(offsets, extents).device(device) = indices_bcast.reshape(Eigen::array<Eigen::Index, 1>({ slice_size }));
+      }
+    }
+
+    // move over the output
+    sparse_select = std::make_shared<TensorDataDefaultDevice<int, 2>>(sparse_labels);
   }
 };
 

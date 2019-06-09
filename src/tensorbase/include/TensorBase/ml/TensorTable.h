@@ -340,6 +340,20 @@ namespace TensorBase
     void getSelectTensorDataAsSparseTensorTable(std::shared_ptr<TensorTable<TensorT, DeviceT, 1>>& sparse_table, DeviceT& device);
 
     /*
+    @brief Convert the 1D indices view into a "Sparse" 2D tensor axis labels representation
+
+    The conversion is done by the following algorithm:
+      1. determine the size of each indices
+      2. allocate memory for the linearized indices
+      3. select out the non-zero elements
+      4. iterate through each index in order and assign the values
+
+    @param[out] indices_select Pointer to the indices Tensor ([in] empty pointer)
+    @param[in] device
+    */
+    virtual void makeSparseAxisLabelsFromIndicesView(std::shared_ptr<TensorData<int, DeviceT, 2>>& sparse_select, DeviceT& device) = 0;
+
+    /*
     @brief Update the TensorTable data according to the values in the "Sparse" Tensor Table representation
 
     @param[in] axes The axis for the tensor table of nDimensions (Dim 0) = TDim and nLabels (Dim 1) = # of selected items where
@@ -1111,13 +1125,17 @@ namespace TensorBase
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorTable<TensorT, DeviceT, TDim>::getSelectTensorDataAsSparseTensorTable(std::shared_ptr<TensorTable<TensorT, DeviceT, 1>>& sparse_table, DeviceT & device)
   {
-    // create a copy of the tensor table
-    std::shared_ptr<TensorTable<TensorT, DeviceT, TDim>> table_cpy; //=this->copy(device);
-    table_cpy->selectTensorData(device);
+    // make the selection indices from the indices view
+    std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_select;
+    makeSelectIndicesFromIndicesView(indices_select, device);
 
-    // create a linear representation of the axes
+    // select the tensor data based on the selection indices
+    std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> tensor_select;
+    getSelectTensorDataFromIndicesView(tensor_select, indices_select, device);
 
-    // create a lienar representation of the data
+    // create a linear representation of the selected indices view (Column-wise)
+
+    // create a lienar representation of the selected data
 
     // create the "Sparse" TensorTable
   }
