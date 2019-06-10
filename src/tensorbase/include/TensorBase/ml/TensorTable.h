@@ -334,14 +334,15 @@ namespace TensorBase
     /*
     @brief Copy the selected values into a "Sparse" Tensor Table representation
 
-    @param[out] sparse_table The "Sparse" Tensor table representation where
+    @param[out] sparse_table The "Sparse" Tensor table representation ([in] empty pointer)
+      where
       - The Tensor Dimensions are the names of the axes dimensions
       - The axis for the tensor table are of nDimensions = TDim and nLabels = # of selected items where
         Dimensions are integers from 0 to TDim and the labels are the indices of the selected data
       - The Data for the Tensor Table is a 1D TensorData of length = # of selected items
     @param[in] device
     */
-    void getSelectTensorDataAsSparseTensorTable(std::shared_ptr<TensorTable<TensorT, DeviceT, 1>>& sparse_table, DeviceT& device);
+    void getSelectTensorDataAsSparseTensorTable(std::shared_ptr<TensorTable<TensorT, DeviceT, 2>>& sparse_table, DeviceT& device);
 
     /*
     @brief Convert the 1D indices view into a "Sparse" 2D tensor axis labels representation
@@ -352,7 +353,7 @@ namespace TensorBase
       3. select out the non-zero elements
       4. iterate through each index in order and assign the values
 
-    @param[out] indices_select Pointer to the indices Tensor ([in] empty pointer)
+    @param[out] sparse_select Pointer to the selected tensor data ([in] empty pointer)
     @param[in] device
     */
     virtual void makeSparseAxisLabelsFromIndicesView(std::shared_ptr<TensorData<int, DeviceT, 2>>& sparse_select, DeviceT& device) = 0;
@@ -360,7 +361,10 @@ namespace TensorBase
     /*
     @brief Create a Sparse 2D table representation
 
-    @param[out] indices_select Pointer to the indices Tensor ([in] empty pointer)
+    @param[in] sparse_dimensions The dimension names of the axis
+    @param[in] sparse_labels The 2D label names of the axis
+    @param[in] sparse_data The data to initialize the sparse table with
+    @param[out] sparse_table The Sparse 2D Tensor Table ([in] empty pointer)
     @param[in] device
     */
     virtual void makeSparseTensorTable(const Eigen::Tensor<std::string, 1>& sparse_dimensions, const std::shared_ptr<TensorData<int, DeviceT, 2>>& sparse_labels, const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& sparse_data, std::shared_ptr<TensorTable<TensorT, DeviceT, 2>>& sparse_table, DeviceT& device) = 0;
@@ -1137,23 +1141,24 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
-  inline void TensorTable<TensorT, DeviceT, TDim>::getSelectTensorDataAsSparseTensorTable(std::shared_ptr<TensorTable<TensorT, DeviceT, 1>>& sparse_table, DeviceT & device)
+  inline void TensorTable<TensorT, DeviceT, TDim>::getSelectTensorDataAsSparseTensorTable(std::shared_ptr<TensorTable<TensorT, DeviceT, 2>>& sparse_table, DeviceT & device)
   {
     // make the selection indices from the indices view
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_select;
     makeSelectIndicesFromIndicesView(indices_select, device);
 
     // select the tensor data based on the selection indices
-    std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> tensor_select;
-    getSelectTensorDataFromIndicesView(tensor_select, indices_select, device);
+    std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> sparse_data;
+    getSelectTensorDataFromIndicesView(sparse_data, indices_select, device);
 
     // reshape to a 1D representation (Column-wise)
-    Eigen::array<Eigen::Index, TDim> sparse_dimensions;
+    // [Is this even needed???]
+    Eigen::array<Eigen::Index, TDim> new_dimensions;
     for (int i = 0; i < TDim; ++i) {
-      sparse_dimensions.at(i) = 1;
-      sparse_dimensions.at(0) *= tensor_select->getDimensions().at(i);
+      new_dimensions.at(i) = 1;
+      new_dimensions.at(0) *= sparse_data->getDimensions().at(i);
     }
-    tensor_select->setDimensions(sparse_dimensions);
+    sparse_data->setDimensions(new_dimensions);
 
     // create a linear representation of the selected indices view (Column-wise)
     std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> sparse_labels;
@@ -1166,7 +1171,7 @@ namespace TensorBase
     }
 
     // create the "Sparse" TensorAxes
-
+    makeSparseTensorTable(sparse_dimensions, sparse_labels, sparse_data, sparse_table, device);
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
