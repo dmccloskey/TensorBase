@@ -280,6 +280,10 @@ namespace TensorBase
     /*
     @brief Select the Tensor data and return the selected/reduced data
 
+    Overloads are provided for TDim or 1D reduced tensor data output
+
+    TODO: add unit test coverage
+
     @param[out] tensor_select The selected/reduced tensor data ([in] empty pointer)
     @param[in] indices_select The broadcasted indices view to perform the selection on
     @param[in] device
@@ -352,6 +356,14 @@ namespace TensorBase
     @param[in] device
     */
     virtual void makeSparseAxisLabelsFromIndicesView(std::shared_ptr<TensorData<int, DeviceT, 2>>& sparse_select, DeviceT& device) = 0;
+
+    /*
+    @brief Create a Sparse 2D table representation
+
+    @param[out] indices_select Pointer to the indices Tensor ([in] empty pointer)
+    @param[in] device
+    */
+    virtual void makeSparseTensorTable(const Eigen::Tensor<std::string, 1>& sparse_dimensions, const std::shared_ptr<TensorData<int, DeviceT, 2>>& sparse_labels, const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& sparse_data, std::shared_ptr<TensorTable<TensorT, DeviceT, 2>>& sparse_table, DeviceT& device) = 0;
 
     /*
     @brief Update the TensorTable data according to the values in the "Sparse" Tensor Table representation
@@ -430,6 +442,8 @@ namespace TensorBase
 
     /*
     @brief Select the Tensor data and return the selected/reduced data
+
+    Overloads are provided for TDim or 1D reduced tensor data output
 
     @param[out] tensor_select The selected/reduced tensor data ([in] empty pointer)
     @param[in] indices_select The broadcasted indices view to perform the selection on
@@ -1133,6 +1147,14 @@ namespace TensorBase
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> tensor_select;
     getSelectTensorDataFromIndicesView(tensor_select, indices_select, device);
 
+    // reshape to a 1D representation (Column-wise)
+    Eigen::array<Eigen::Index, TDim> sparse_dimensions;
+    for (int i = 0; i < TDim; ++i) {
+      sparse_dimensions.at(i) = 1;
+      sparse_dimensions.at(0) *= tensor_select->getDimensions().at(i);
+    }
+    tensor_select->setDimensions(sparse_dimensions);
+
     // create a linear representation of the selected indices view (Column-wise)
     std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> sparse_labels;
     makeSparseAxisLabelsFromIndicesView(sparse_labels, device);
@@ -1143,9 +1165,8 @@ namespace TensorBase
       sparse_dimensions(axis_to_name.second) = axis_to_name.first;
     }
 
-    // create a linear representation of the selected data
+    // create the "Sparse" TensorAxes
 
-    // create the "Sparse" TensorTable
   }
 
   template<typename TensorT, typename DeviceT, int TDim>

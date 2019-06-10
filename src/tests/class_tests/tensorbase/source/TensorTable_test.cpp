@@ -901,7 +901,7 @@ BOOST_AUTO_TEST_CASE(makeSelectIndicesFromIndicesViewDefaultDevice)
   }
 }
 
-BOOST_AUTO_TEST_CASE(getSelectTensorDataDefaultDevice)
+BOOST_AUTO_TEST_CASE(getSelectTensorDataFromIndicesViewDefaultDevice)
 {
   // setup the table
   TensorTableDefaultDevice<float, 3> tensorTable;
@@ -1879,6 +1879,104 @@ BOOST_AUTO_TEST_CASE(makeSparseAxisLabelsFromIndicesViewDefaultDevice)
     for (int j = 0; j < nlabels*nlabels*nlabels; ++j) {
       BOOST_CHECK_EQUAL(labels_ptr->getData()(i,j), expected_values(i,j));
     }
+  }
+}
+
+BOOST_AUTO_TEST_CASE(makeSparseTensorTableDefaultDevice)
+{
+  // setup the device
+  Eigen::DefaultDevice device;
+
+  // setup the expected axes
+  Eigen::Tensor<std::string, 1> dimensions1(3), dimensions2(1);
+  dimensions1.setValues({"0", "1", "2"});
+  dimensions2(0) = "Values";
+
+  // setup the expected labels
+  int nlabels1 = 27;
+  Eigen::Tensor<int, 2> labels1(3, nlabels1), labels2(1, 1);
+  labels1.setValues({
+    {1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3 },
+    {1,1,1,2,2,2,3,3,3,1,1,1,2,2,2,3,3,3,1,1,1,2,2,2,3,3,3 },
+    {1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3 } });
+  TensorDataDefaultDevice<int, 2> sparse_labels(Eigen::array<Eigen::Index, 2>({ 3, nlabels1 }));
+  sparse_labels.setData(labels1);
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> sparse_labels_ptr = std::make_shared<TensorDataDefaultDevice<int, 2>>(sparse_labels);
+
+  labels2.setConstant(0);
+
+  // setup the expected data
+  int nlabels = 3;
+  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  for (int k = 0; k < nlabels; ++k) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int i = 0; i < nlabels; ++i) {
+        tensor_values(i, j, k) = i + j * nlabels + k * nlabels*nlabels;
+      }
+    }
+  }
+  TensorDataDefaultDevice<float, 3> sparse_data(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  sparse_data.setData(tensor_values);
+  std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 3>> sparse_data_ptr = std::make_shared<TensorDataDefaultDevice<float, 3>>(sparse_data);
+
+  // Test
+  std::shared_ptr<TensorTable<float, Eigen::DefaultDevice, 2>> sparse_table_ptr;
+  TensorTableDefaultDevice<float, 3> tensorTable;
+  tensorTable.makeSparseTensorTable(dimensions1, sparse_labels_ptr, sparse_data_ptr, sparse_table_ptr, device);
+
+  // Check for the correct dimensions
+  BOOST_CHECK_EQUAL(sparse_table_ptr->getDimensions().at(0), nlabels1);
+  BOOST_CHECK_EQUAL(sparse_table_ptr->getDimensions().at(1), 1);
+
+  // Check the data
+  for (int k = 0; k < nlabels; ++k) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int i = 0; i < nlabels; ++i) {
+        BOOST_CHECK_EQUAL(sparse_table_ptr->getData()->getData()(i + j * nlabels + k * nlabels*nlabels), tensor_values(i, j, k));
+      }
+    }
+  }
+
+  // Check the Indices axes
+  BOOST_CHECK_EQUAL(sparse_table_ptr->getAxes().at("Indices")->getName(), "Indices");
+  BOOST_CHECK_EQUAL(sparse_table_ptr->getAxes().at("Indices")->getNLabels(), nlabels1);
+  BOOST_CHECK_EQUAL(sparse_table_ptr->getAxes().at("Indices")->getNDimensions(), 3);
+  std::shared_ptr<int> labels1_ptr;
+  sparse_table_ptr->getAxes().at("Indices")->getLabelsDataPointer(labels1_ptr);
+  Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_values(labels1_ptr.get(), 3, nlabels1);
+  for (int i = 0; i < 3; ++i) {
+    BOOST_CHECK_EQUAL(sparse_table_ptr->getAxes().at("Indices")->getDimensions()(i), std::to_string(i));
+    for (int j = 0; j < nlabels1; ++j) {
+      BOOST_CHECK_EQUAL(labels_values(i,j), labels1(i,j));
+    }
+  }
+
+  // Check the Values axes
+  BOOST_CHECK_EQUAL(sparse_table_ptr->getAxes().at("Values")->getName(), "Values");
+  BOOST_CHECK_EQUAL(sparse_table_ptr->getAxes().at("Values")->getNLabels(), 1);
+  BOOST_CHECK_EQUAL(sparse_table_ptr->getAxes().at("Values")->getNDimensions(), 1);
+  std::shared_ptr<int> labels2_ptr;
+  sparse_table_ptr->getAxes().at("Values")->getLabelsDataPointer(labels2_ptr);
+  Eigen::TensorMap<Eigen::Tensor<int, 2>> labels2_values(labels2_ptr.get(), 1, 1);
+  BOOST_CHECK_EQUAL(sparse_table_ptr->getAxes().at("Values")->getDimensions()(0), "Values");
+  BOOST_CHECK_EQUAL(labels2_values(0,0), 0);
+
+  // Check the indices axis indices
+  for (int i = 0; i < nlabels1; ++i) {
+    BOOST_CHECK_EQUAL(sparse_table_ptr->getIndices().at("Indices")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(sparse_table_ptr->getIndicesView().at("Indices")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(sparse_table_ptr->getIsShardable().at("Indices")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(sparse_table_ptr->getIsModified().at("Indices")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(sparse_table_ptr->getInMemory().at("Indices")->getData()(i), 0);
+  }
+
+  // Check the values axis indices
+  for (int i = 0; i < 1; ++i) {
+    BOOST_CHECK_EQUAL(sparse_table_ptr->getIndices().at("Values")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(sparse_table_ptr->getIndicesView().at("Values")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(sparse_table_ptr->getIsShardable().at("Values")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(sparse_table_ptr->getIsModified().at("Values")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(sparse_table_ptr->getInMemory().at("Values")->getData()(i), 0);
   }
 }
 
