@@ -165,7 +165,7 @@ namespace TensorBase
     values_old_ = values_new_->copy(device);
     values_new_->syncHAndDData(device);
     values_old_->syncHAndDData(device);
-    tensor_collection->tables_.at(table_name_)->updateTensorData(values_new_->getDataPointer(), values_old_->getDataPointer(), device);
+    tensor_collection->tables_.at(table_name_)->updateTensorDataValues(values_new_->getDataPointer(), values_old_->getDataPointer(), device);
   }
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorUpdateValues<TensorT, DeviceT, TDim>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
@@ -174,7 +174,7 @@ namespace TensorBase
     select_function_(tensor_collection, device);
 
     // Update the values with the `values_old`
-    tensor_collection->tables_.at(table_name_)->updateTensorData(values_old_->getDataPointer(), device);
+    tensor_collection->tables_.at(table_name_)->updateTensorDataValues(values_old_->getDataPointer(), device);
   }
 
   /**
@@ -195,7 +195,7 @@ namespace TensorBase
     std::function<void(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)> select_function_; // Redo/Undo
     std::string table_name_; // Undo/Redo
     std::shared_ptr<TensorData<TensorT, DeviceT, 1>> values_new_ = nullptr; // Redo
-    std::shared_ptr<TensorTableConcept<DeviceT>> values_old_ = nullptr; // Undo: Sparse table
+    std::shared_ptr<TensorTable<TensorT, DeviceT, 2>> values_old_ = nullptr; // Undo: Sparse table
   };
   template<typename TensorT, typename DeviceT>
   inline void TensorUpdateConstant<TensorT, DeviceT>::redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)

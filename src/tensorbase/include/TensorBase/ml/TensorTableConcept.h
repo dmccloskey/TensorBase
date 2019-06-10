@@ -142,14 +142,14 @@ namespace TensorBase
     /*
     All TensorT and DeviceT combos of `updateTensorData`
     */
-    virtual void updateTensorData(const std::shared_ptr<int>& values_new, std::shared_ptr<int>& values_old, DeviceT& device) = 0;
-    virtual void updateTensorData(const std::shared_ptr<float>& values_new, std::shared_ptr<float>& values_old, DeviceT& device) = 0;
-    virtual void updateTensorData(const std::shared_ptr<double>& values_new, std::shared_ptr<double>& values_old, DeviceT& device) = 0;
-    virtual void updateTensorData(const std::shared_ptr<char>& values_new, std::shared_ptr<char>& values_old, DeviceT& device) = 0;
-    virtual void updateTensorData(const std::shared_ptr<int>& values_new, DeviceT& device) = 0;
-    virtual void updateTensorData(const std::shared_ptr<float>& values_new, DeviceT& device) = 0;
-    virtual void updateTensorData(const std::shared_ptr<double>& values_new, DeviceT& device) = 0;
-    virtual void updateTensorData(const std::shared_ptr<char>& values_new, DeviceT& device) = 0;
+    virtual void updateTensorDataValues(const std::shared_ptr<int>& values_new, std::shared_ptr<int>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorDataValues(const std::shared_ptr<float>& values_new, std::shared_ptr<float>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorDataValues(const std::shared_ptr<double>& values_new, std::shared_ptr<double>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorDataValues(const std::shared_ptr<char>& values_new, std::shared_ptr<char>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorDataValues(const std::shared_ptr<int>& values_new, DeviceT& device) = 0;
+    virtual void updateTensorDataValues(const std::shared_ptr<float>& values_new, DeviceT& device) = 0;
+    virtual void updateTensorDataValues(const std::shared_ptr<double>& values_new, DeviceT& device) = 0;
+    virtual void updateTensorDataValues(const std::shared_ptr<char>& values_new, DeviceT& device) = 0;
 
     /*
     All LabelsT, TensorT, and DeviceT combos of `appendToAxis`
@@ -319,28 +319,28 @@ namespace TensorBase
       tensor_table_->sortTensorData(device);
     };
 
-    void updateTensorData(const std::shared_ptr<int>& values_new, std::shared_ptr<int>& values_old, DeviceT& device) {
+    void updateTensorDataValues(const std::shared_ptr<int>& values_new, std::shared_ptr<int>& values_old, DeviceT& device) {
       tensor_table_->updateTensorDataConcept(values_new, values_old, device);
     };
-    void updateTensorData(const std::shared_ptr<float>& values_new, std::shared_ptr<float>& values_old, DeviceT& device) {
+    void updateTensorDataValues(const std::shared_ptr<float>& values_new, std::shared_ptr<float>& values_old, DeviceT& device) {
       tensor_table_->updateTensorDataConcept(values_new, values_old, device);
     };
-    void updateTensorData(const std::shared_ptr<double>& values_new, std::shared_ptr<double>& values_old, DeviceT& device) {
+    void updateTensorDataValues(const std::shared_ptr<double>& values_new, std::shared_ptr<double>& values_old, DeviceT& device) {
       tensor_table_->updateTensorDataConcept(values_new, values_old, device);
     };
-    void updateTensorData(const std::shared_ptr<char>& values_new, std::shared_ptr<char>& values_old, DeviceT& device) {
+    void updateTensorDataValues(const std::shared_ptr<char>& values_new, std::shared_ptr<char>& values_old, DeviceT& device) {
       tensor_table_->updateTensorDataConcept(values_new, values_old, device);
     };
-    void updateTensorData(const std::shared_ptr<int>& values_new, DeviceT& device) {
+    void updateTensorDataValues(const std::shared_ptr<int>& values_new, DeviceT& device) {
       tensor_table_->updateTensorDataConcept(values_new, device);
     };
-    void updateTensorData(const std::shared_ptr<float>& values_new, DeviceT& device) {
+    void updateTensorDataValues(const std::shared_ptr<float>& values_new, DeviceT& device) {
       tensor_table_->updateTensorDataConcept(values_new, device);
     };
-    void updateTensorData(const std::shared_ptr<double>& values_new, DeviceT& device) {
+    void updateTensorDataValues(const std::shared_ptr<double>& values_new, DeviceT& device) {
       tensor_table_->updateTensorDataConcept(values_new, device);
     };
-    void updateTensorData(const std::shared_ptr<char>& values_new, DeviceT& device) {
+    void updateTensorDataValues(const std::shared_ptr<char>& values_new, DeviceT& device) {
       tensor_table_->updateTensorDataConcept(values_new, device);
     };
 
