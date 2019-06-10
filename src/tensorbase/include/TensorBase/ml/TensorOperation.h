@@ -190,7 +190,7 @@ namespace TensorBase
       table_name_(table_name), select_function_(select_function), values_new_(values_new) {};
     void redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
     void undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
-    std::shared_ptr<TensorData<TensorT, DeviceT, 2>> getValuesOld() const { return values_old_; };
+    std::shared_ptr<TensorTable<TensorT, DeviceT, 2>> getValuesOld() const { return values_old_; };
   protected:
     std::function<void(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)> select_function_; // Redo/Undo
     std::string table_name_; // Undo/Redo
@@ -207,13 +207,13 @@ namespace TensorBase
 
     // Update the values with the `values_new`
     values_new_->syncHAndDData(device);
-    //tensor_collection->tables_.at(table_name_)->updateTensorData(values_new_->getDataPointer(), values_old_->getDataPointer(), device);
+    tensor_collection->tables_.at(table_name_)->updateTensorDataConstant(values_new_, values_old_, device);
   }
   template<typename TensorT, typename DeviceT>
   inline void TensorUpdateConstant<TensorT, DeviceT>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
   {
     // Update the values with the `values_old`
-    //tensor_collection->tables_.at(table_name_)->updateTensorDataFromSparseTensorTable(values_old_->getDataPointer(), device);
+    tensor_collection->tables_.at(table_name_)->updateTensorDataFromSparseTensorTable(values_old_, device);
   }
 
   class TensorAppendToDimension;

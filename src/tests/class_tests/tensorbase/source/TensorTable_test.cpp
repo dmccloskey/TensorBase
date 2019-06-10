@@ -2137,6 +2137,8 @@ BOOST_AUTO_TEST_CASE(updateTensorDataConstantDefaultDevice)
       }
     }
   }
+
+  // TODO: Test after a selection (see test for TensorOperation TensorUpdateConstant)
 }
 
 BOOST_AUTO_TEST_SUITE_END()
