@@ -208,12 +208,21 @@ namespace TensorBase
     // Update the values with the `values_new`
     values_new_->syncHAndDData(device);
     tensor_collection->tables_.at(table_name_)->updateTensorDataConstant(values_new_, values_old_, device);
+
+    // Reset the table indices
+    tensor_collection->tables_.at(table_name_)->resetIndicesView(device);
   }
   template<typename TensorT, typename DeviceT>
   inline void TensorUpdateConstant<TensorT, DeviceT>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
   {
+    // Execute the select methods on the tensor_collection
+    select_function_(tensor_collection, device);
+
     // Update the values with the `values_old`
     tensor_collection->tables_.at(table_name_)->updateTensorDataFromSparseTensorTable(values_old_, device);
+
+    // Reset the table indices
+    tensor_collection->tables_.at(table_name_)->resetIndicesView(device);
   }
 
   class TensorAppendToDimension;

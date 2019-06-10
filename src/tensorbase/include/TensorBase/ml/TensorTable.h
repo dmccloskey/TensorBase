@@ -1212,7 +1212,28 @@ namespace TensorBase
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorTable<TensorT, DeviceT, TDim>::updateTensorDataFromSparseTensorTable(const std::shared_ptr<TensorTable<TensorT, DeviceT, 2>>& values_old, DeviceT & device)
   {
-    // TODO
+    //// copy the tensor view
+    //std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> indices_view_copy;
+    //for (const auto& indices_view_map : indices_view_) {
+    //  indices_view_copy.emplace(indices_view_map.first, indices_view_map.second->copy(device));
+    //}
+
+    // make the sort index tensor from the indices view
+    std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_sort;
+    makeSortIndicesViewFromIndicesView(indices_sort, device);
+
+    // apply the sort indices to the tensor data
+    // NOTE: the indices will be sorted in ASC so 0's (i.e., not selected) will be at the top
+    data_->sort(indices_sort, device);
+
+    // update the sorted tensor data "slice" with the old values
+    Eigen::array<Eigen::Index, 1> offsets = {data_->getTensorSize() - values_old->getData()->getTensorSize()};
+    Eigen::array<Eigen::Index, 1> extents = { values_old->getData()->getTensorSize() };
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> values_old_values(values_old->getData()->getDataPointer().get(), values_old->getData()->getTensorSize());
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> data_values(data_->getDataPointer().get(), data_->getTensorSize());
+    data_values.slice(offsets, extents).device(device) = values_old_values;
+
+    // re-sort the tensor data back to the original
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
