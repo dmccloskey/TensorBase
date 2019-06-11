@@ -32,6 +32,7 @@ namespace TensorBase
     void sortIndices(std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, const std::string& sort_order, Eigen::GpuDevice& device);
     void sort(const std::string& sort_order, Eigen::GpuDevice& device);
     void sort(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice& device);
+    void partition(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice& device);
     std::shared_ptr<TensorT> getDataPointer();
     void setData(const Eigen::Tensor<TensorT, TDim>& data); ///< data setter
     void setData();
@@ -178,6 +179,32 @@ namespace TensorBase
       indices->getTensorSize(), 0, sizeof(int) * 8, device.stream());
 
     assert(cudaFree(d_temp_storage) == cudaSuccess);
+  }
+  template<typename TensorT, int TDim>
+  inline void TensorDataGpu<TensorT, TDim>::partition(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice & device)
+  {
+    // Temporary copies for the algorithm 
+    std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>> values_copy = this->copy(device);
+    values_copy->syncHAndDData(device);
+
+    int  *d_num_selected_out;
+    assert(cudaMalloc((void**)(&d_num_selected_out), sizeof(int)) == cudaSuccess);
+
+    // Determine temporary device storage requirements
+    void     *d_temp_storage = NULL;
+    size_t   temp_storage_bytes = 0;
+    cub::DevicePartition::Flagged(d_temp_storage, temp_storage_bytes, values_copy->getDataPointer().get(), indices->getDataPointer().get(), 
+      this->getDataPointer().get(), d_num_selected_out, this->getTensorSize(), device.stream());
+
+    // Allocate temporary storage
+    assert(cudaMalloc((void**)(&d_temp_storage), temp_storage_bytes) == cudaSuccess);
+
+    // Run selection
+    cub::DevicePartition::Flagged(d_temp_storage, temp_storage_bytes, values_copy->getDataPointer().get(), indices->getDataPointer().get(),
+      this->getDataPointer().get(), d_num_selected_out, this->getTensorSize(), device.stream());
+
+    assert(cudaFree(d_temp_storage) == cudaSuccess);
+    assert(cudaFree(d_num_selected_out) == cudaSuccess);
   }
   template<typename TensorT, int TDim>
   std::shared_ptr<TensorT> TensorDataGpu<TensorT, TDim>::getDataPointer() {
