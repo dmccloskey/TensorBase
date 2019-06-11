@@ -345,6 +345,8 @@ namespace TensorBase
     /*
     @brief Update the tensor data from a Sparse 2D TensorTable
 
+    NOTE: The Indices view will be reset during the method
+
     @param[in] values_old The old tensor data in the form of a Sparse 2D TensorTable
     @param[in] device
     */
@@ -1212,12 +1214,6 @@ namespace TensorBase
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorTable<TensorT, DeviceT, TDim>::updateTensorDataFromSparseTensorTable(const std::shared_ptr<TensorTable<TensorT, DeviceT, 2>>& values_old, DeviceT & device)
   {
-    //// copy the tensor view
-    //std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> indices_view_copy;
-    //for (const auto& indices_view_map : indices_view_) {
-    //  indices_view_copy.emplace(indices_view_map.first, indices_view_map.second->copy(device));
-    //}
-
     // make the partition index tensor from the indices view
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_partition;
     makeSelectIndicesFromIndicesView(indices_partition, device);
@@ -1233,7 +1229,8 @@ namespace TensorBase
     data_values.slice(offsets, extents).device(device) = values_old_values;
 
     // make the sort index tensor
-    resetIndicesView();
+    for (const auto& axis_to_index: axes_to_dims_)
+      resetIndicesView(axis_to_index.first, device);
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_sort;
     makeSortIndicesViewFromIndicesView(indices_sort, device);
 

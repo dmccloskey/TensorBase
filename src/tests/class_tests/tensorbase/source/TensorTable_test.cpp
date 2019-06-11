@@ -2138,6 +2138,16 @@ BOOST_AUTO_TEST_CASE(updateTensorDataConstantDefaultDevice)
     }
   }
 
+  // Revert the operation and test
+  tensorTable.updateTensorDataFromSparseTensorTable(values_old_ptr, device);
+  for (int k = 0; k < nlabels; ++k) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int i = 0; i < nlabels; ++i) {
+        BOOST_CHECK_EQUAL(tensorTable.getData()->getData()(i, j, k), tensor_values(i, j, k));
+      }
+    }
+  }
+
   // TODO: Test after a selection (see test for TensorOperation TensorUpdateConstant)
 }
 
