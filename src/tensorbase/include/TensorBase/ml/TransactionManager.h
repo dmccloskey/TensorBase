@@ -28,6 +28,27 @@ namespace TensorBase
     int getCurrentIndex() const { return current_index_; };  ///< current_index getter
 
     /*
+    @brief Adds the operation to the queue
+
+    TODO: add tests
+
+    @returns True if successfull
+    */
+    bool addOperation(std::shared_ptr<TensorOperation<DeviceT>>& tensor_operation);
+
+    /*
+    @brief Execute the operations in the queue in order (if devices.size() == 1)
+      or in parallel (if devices.size() > 1)
+
+    TODO: implement
+    - launch a new thread for each device
+    - launch all operations that affect a different table in parallel
+
+    @returns True if successfull
+    */
+    //bool executeOperations(std::vector<DeviceT>& devices);
+
+    /*
     @brief Adds the operation to the history, and then executes the operation
       on the managed TensorCollection
 
@@ -75,6 +96,19 @@ namespace TensorBase
     int current_index_ = -1; ///< current position in the tensor_operations_ vector
     std::deque<std::shared_ptr<TensorOperation<DeviceT>>> tensor_operations_; ///< vector of tensor operations
   };
+
+  template<typename DeviceT>
+  inline bool TransactionManager<DeviceT>::addOperation(std::shared_ptr<TensorOperation<DeviceT>>& tensor_operation)
+  {
+    // Check if the operation history limit has been reached
+    if (tensor_operations_.size() >= max_operations_) {
+      tensor_operations_.pop_front();
+      --current_index_;
+    }
+
+    // Add the operation to the history
+    tensor_operations_.push_back(tensor_operation);
+  }
 
   template<typename DeviceT>
   inline bool TransactionManager<DeviceT>::executeOperation(std::shared_ptr<TensorOperation<DeviceT>>& tensor_operation, DeviceT& device)

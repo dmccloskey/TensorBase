@@ -992,7 +992,7 @@ void test_makeSelectIndicesFromIndicesViewGpu()
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
 
-void test_getSelectTensorDataGpu()
+void test_getSelectTensorDataFromIndicesViewGpu()
 {
   // setup the table
   TensorTableGpu<float, 3> tensorTable;
@@ -1344,7 +1344,7 @@ void test_sortTensorDataGpu()
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
 
-void test_updateTensorData1Gpu()
+void test_updateTensorDataValues1Gpu()
 {
   // setup the table
   TensorTableGpu<float, 3> tensorTable;
@@ -1400,7 +1400,7 @@ void test_updateTensorData1Gpu()
 
   // Test update
   std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> values_old_ptr;
-  tensorTable.updateTensorData(values_new_ptr, values_old_ptr, device);
+  tensorTable.updateTensorDataValues(values_new_ptr, values_old_ptr, device);
   values_old_ptr->syncHAndDData(device);
   tensorTable.syncHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
@@ -1417,7 +1417,7 @@ void test_updateTensorData1Gpu()
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
 
-void test_updateTensorData2Gpu()
+void test_updateTensorDataValues2Gpu()
 {
   // setup the table
   TensorTableGpu<float, 3> tensorTable;
@@ -1476,7 +1476,7 @@ void test_updateTensorData2Gpu()
   values_old.setData();
   std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> values_old_ptr = std::make_shared<TensorDataGpu<float, 3>>(values_old);
   values_old_ptr->syncHAndDData(device);
-  tensorTable.updateTensorData(values_new_ptr->getDataPointer(), values_old_ptr->getDataPointer(), device);
+  tensorTable.updateTensorDataValues(values_new_ptr->getDataPointer(), values_old_ptr->getDataPointer(), device);
   values_old_ptr->syncHAndDData(device);
   tensorTable.syncHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
@@ -2213,13 +2213,13 @@ int main(int argc, char** argv)
   test_sliceTensorForSortGpu();
   test_sortIndicesViewDataGpu();
   test_makeSelectIndicesFromIndicesViewGpu();
-  test_getSelectTensorDataGpu();
+  test_getSelectTensorDataFromIndicesViewGpu();
   test_selectTensorDataGpu();
   test_makeSortIndicesViewFromIndicesViewGpu();
   test_sortTensorDataGpu();
   // TODO
-  test_updateTensorData1Gpu();
-  test_updateTensorData2Gpu();
+  test_updateTensorDataValues1Gpu();
+  test_updateTensorDataValues2Gpu();
   test_makeAppendIndicesGpu();
   test_appendToIndicesGpu();
   test_appendToAxisGpu();

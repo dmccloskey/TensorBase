@@ -236,6 +236,42 @@ BOOST_AUTO_TEST_CASE(sortIndicesDefaultDevice)
   }
 }
 
+BOOST_AUTO_TEST_CASE(partitionDefaultDevice)
+{
+  // Make the tensor data and partition indices
+  int dim_sizes = 3;
+  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+  Eigen::Tensor<int, 3> indices_values(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+  for (int i = 0; i < tensor_values.size(); ++i) {
+    if (i%2==0)
+      indices_values.data()[i] = i + 1;
+    else
+      indices_values.data()[i] = 0;
+    tensor_values.data()[i] = i;
+  }
+  TensorDataDefaultDevice<float, 3> tensordata(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+  tensordata.setData(tensor_values);
+  TensorDataDefaultDevice<int, 3> indices(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+  indices.setData(indices_values);
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>> indices_ptr = std::make_shared<TensorDataDefaultDevice<int, 3>>(indices);
+
+  // Make the expected partitioned data tensor
+  Eigen::Tensor<float, 1> expected_values_flat(Eigen::array<Eigen::Index, 1>({ dim_sizes * dim_sizes * dim_sizes }));
+  expected_values_flat.setValues({0,2,4,6,8,10,12,14,16,18,20,22,24,26,25,23,21,19,17,15,13,11,9,7,5,3,1});
+  Eigen::Tensor<float, 3> expected_values = expected_values_flat.reshape(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+
+  Eigen::DefaultDevice device;
+  // Test partition
+  tensordata.partition(indices_ptr, device);
+  for (int i = 0; i < dim_sizes; ++i) {
+    for (int j = 0; j < dim_sizes; ++j) {
+      for (int k = 0; k < dim_sizes; ++k) {
+        BOOST_CHECK_EQUAL(tensordata.getData()(i, j, k), expected_values(i, j, k));
+      }
+    }
+  }
+}
+
 BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
 {
   TensorDataDefaultDevice<float, 3> tensordata;
@@ -575,6 +611,43 @@ BOOST_AUTO_TEST_CASE(sortIndicesCpu)
       for (int k = 0; k < dim_sizes; ++k) {
         BOOST_CHECK_EQUAL(sorted_indices_values2(i, j, k), indices_values_test(i, j, k));
         BOOST_CHECK_EQUAL(tensor_sorted_values2(i, j, k), tensor_values_test(i, j, k));
+      }
+    }
+  }
+}
+
+BOOST_AUTO_TEST_CASE(partitionCpu)
+{
+  // Make the tensor data and partition indices
+  int dim_sizes = 3;
+  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+  Eigen::Tensor<int, 3> indices_values(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+  for (int i = 0; i < tensor_values.size(); ++i) {
+    if (i % 2 == 0)
+      indices_values.data()[i] = i + 1;
+    else
+      indices_values.data()[i] = 0;
+    tensor_values.data()[i] = i;
+  }
+  TensorDataCpu<float, 3> tensordata(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+  tensordata.setData(tensor_values);
+  TensorDataCpu<int, 3> indices(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+  indices.setData(indices_values);
+  std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 3>> indices_ptr = std::make_shared<TensorDataCpu<int, 3>>(indices);
+
+  // Make the expected partitioned data tensor
+  Eigen::Tensor<float, 1> expected_values_flat(Eigen::array<Eigen::Index, 1>({ dim_sizes * dim_sizes * dim_sizes }));
+  expected_values_flat.setValues({ 0,2,4,6,8,10,12,14,16,18,20,22,24,26,25,23,21,19,17,15,13,11,9,7,5,3,1 });
+  Eigen::Tensor<float, 3> expected_values = expected_values_flat.reshape(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+
+  Eigen::ThreadPool pool(1);
+  Eigen::ThreadPoolDevice device(&pool, 1);
+  // Test partition
+  tensordata.partition(indices_ptr, device);
+  for (int i = 0; i < dim_sizes; ++i) {
+    for (int j = 0; j < dim_sizes; ++j) {
+      for (int k = 0; k < dim_sizes; ++k) {
+        BOOST_CHECK_EQUAL(tensordata.getData()(i, j, k), expected_values(i, j, k));
       }
     }
   }

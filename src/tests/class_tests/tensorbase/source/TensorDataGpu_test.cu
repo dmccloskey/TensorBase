@@ -252,6 +252,53 @@ void test_sortIndicesGpu()
       }
     }
   }
+  assert(cudaStreamDestroy(stream) == cudaSuccess);
+}
+
+void test_partitionGpu()
+{
+  // Make the tensor data and partition indices
+  int dim_sizes = 3;
+  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+  Eigen::Tensor<int, 3> indices_values(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+  for (int i = 0; i < tensor_values.size(); ++i) {
+    if (i % 2 == 0)
+      indices_values.data()[i] = 1;
+    else
+      indices_values.data()[i] = 0;
+    tensor_values.data()[i] = i;
+  }
+  TensorDataGpu<float, 3> tensordata(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+  tensordata.setData(tensor_values);
+  TensorDataGpu<int, 3> indices(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+  indices.setData(indices_values);
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 3>> indices_ptr = std::make_shared<TensorDataGpu<int, 3>>(indices);
+
+  // Make the expected partitioned data tensor
+  Eigen::Tensor<float, 1> expected_values_flat(Eigen::array<Eigen::Index, 1>({ dim_sizes * dim_sizes * dim_sizes }));
+  expected_values_flat.setValues({ 0,2,4,6,8,10,12,14,16,18,20,22,24,26,25,23,21,19,17,15,13,11,9,7,5,3,1 });
+  Eigen::Tensor<float, 3> expected_values = expected_values_flat.reshape(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+
+  // Initialize the device
+  cudaStream_t stream;
+  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  Eigen::GpuStreamDevice stream_device(&stream, 0);
+  Eigen::GpuDevice device(&stream_device);
+
+  // Test partition
+  indices_ptr->syncHAndDData(device);
+  tensordata.syncHAndDData(device);
+  tensordata.partition(indices_ptr, device);
+  tensordata.syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  for (int i = 0; i < dim_sizes; ++i) {
+    for (int j = 0; j < dim_sizes; ++j) {
+      for (int k = 0; k < dim_sizes; ++k) {
+        assert(tensordata.getData()(i, j, k) == expected_values(i, j, k));
+      }
+    }
+  }
+  assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
 
 void test_gettersAndSettersGpu()
@@ -325,6 +372,7 @@ int main(int argc, char** argv)
   test_copyGpu();
   test_selectGpu();
   test_sortIndicesGpu();
+  test_partitionGpu();
   return 0;
 }
 #endif

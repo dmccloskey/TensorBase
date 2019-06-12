@@ -109,6 +109,13 @@ namespace TensorBase
     virtual void sort(const std::string& sort_order, DeviceT& device) = 0; ///< sort the TensorData in place
     virtual void sort(const std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices, DeviceT& device) = 0; ///< sort the TensorData in place
 
+    /*
+    @brief Partition the data based on a flag.
+      The flagged indices are moved to the front (in order)
+      and the non-flagged indices are moved to the back (in reverse order)
+    */
+    virtual void partition(const std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices, DeviceT& device) = 0;
+
     void setDimensions(const Eigen::array<Eigen::Index, TDim>& dimensions); ///< Set the tensor dimensions and calculate the tensor size
     Eigen::array<Eigen::Index, TDim> getDimensions() const; ///< Get the tensor dimensions
     size_t getTensorBytes() { return tensor_size_ * sizeof(TensorT); }; ///< Get the size of each tensor in bytes
@@ -182,6 +189,7 @@ namespace TensorBase
     void sortIndices(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices, const std::string& sort_order, Eigen::DefaultDevice& device);
     void sort(const std::string& sort_order, Eigen::DefaultDevice& device);
     void sort(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices, Eigen::DefaultDevice& device);
+    void partition(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices, Eigen::DefaultDevice& device);
     std::shared_ptr<TensorT> getDataPointer() { return h_data_; }
     void setData(const Eigen::Tensor<TensorT, TDim>& data); ///< data setter
     void setData();
@@ -276,6 +284,33 @@ namespace TensorBase
     });
   }
   template<typename TensorT, int TDim>
+  inline void TensorDataDefaultDevice<TensorT, TDim>::partition(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices, Eigen::DefaultDevice & device)
+  {
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> tensor_values(this->getDataPointer().get(), (int)this->getTensorSize());
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_values(indices->getDataPointer().get(), (int)indices->getTensorSize());
+
+    // Create a copy
+    auto data_copy = this->copy(device);
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> copy_values(data_copy->getDataPointer().get(), (int)data_copy->getTensorSize());
+
+    // Partition the data in place
+    int iter = 0;
+    int partition_iter = 0;
+    int back_iter = data_copy->getTensorSize() - 1;
+    std::for_each(indices_values.data(), indices_values.data() + indices_values.size(),
+      [&tensor_values, &copy_values, &iter, &partition_iter, &back_iter, &device](const int& index) {
+      if (index != 0) {
+        tensor_values(partition_iter) = copy_values(iter);
+        ++partition_iter;
+      }
+      else {
+        tensor_values(back_iter) = copy_values(iter);
+        --back_iter;
+      }
+      ++iter;
+    });
+  }
+  template<typename TensorT, int TDim>
   void TensorDataDefaultDevice<TensorT, TDim>::setData(const Eigen::Tensor<TensorT, TDim>& data) {
     TensorT* h_data = new TensorT[this->tensor_size_];
     // copy the tensor
@@ -308,6 +343,7 @@ namespace TensorBase
     void sortIndices(std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices, const std::string& sort_order, Eigen::ThreadPoolDevice & device);
     void sort(const std::string& sort_order, Eigen::ThreadPoolDevice& device);
     void sort(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices, Eigen::ThreadPoolDevice& device);
+    void partition(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices, Eigen::ThreadPoolDevice& device);
     std::shared_ptr<TensorT> getDataPointer() { return h_data_; }
     void setData(const Eigen::Tensor<TensorT, TDim>& data); ///< data setter
     void setData();
@@ -399,6 +435,33 @@ namespace TensorBase
     std::for_each(indices_values.data(), indices_values.data() + indices_values.size(),
       [&tensor_values, &copy_values, &iter, &device](const int& index) {
       tensor_values(iter) = copy_values(index - 1);
+      ++iter;
+    });
+  }
+  template<typename TensorT, int TDim>
+  inline void TensorDataCpu<TensorT, TDim>::partition(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices, Eigen::ThreadPoolDevice & device)
+  {
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> tensor_values(this->getDataPointer().get(), (int)this->getTensorSize());
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_values(indices->getDataPointer().get(), (int)indices->getTensorSize());
+
+    // Create a copy
+    auto data_copy = this->copy(device);
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> copy_values(data_copy->getDataPointer().get(), (int)data_copy->getTensorSize());
+
+    // Partition the data in place
+    int iter = 0;
+    int partition_iter = 0;
+    int back_iter = data_copy->getTensorSize() - 1;
+    std::for_each(indices_values.data(), indices_values.data() + indices_values.size(),
+      [&tensor_values, &copy_values, &iter, &partition_iter, &back_iter, &device](const int& index) {
+      if (index != 0) {
+        tensor_values(partition_iter) = copy_values(iter);
+        ++partition_iter;
+      }
+      else {
+        tensor_values(back_iter) = copy_values(iter);
+        --back_iter;
+      }
       ++iter;
     });
   }
