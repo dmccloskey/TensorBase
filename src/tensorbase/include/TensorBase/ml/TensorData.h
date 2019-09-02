@@ -23,7 +23,9 @@ namespace TensorBase
     @brief Tensor data base class to handle the underlying memory and resource
       allocation of tensor data
 
-    LIMITATIONS: currently, the memory management assumes a single GPU environment.
+    LIMITATIONS:
+    - the memory management assumes a single GPU environment and does not allow for specifying which GPU to use
+    - the GPU memory always uses pinned memory, and does not provide an option to use a different type of GPU memory
   */
   template<typename TensorT, typename DeviceT, int TDim>
   class TensorData
