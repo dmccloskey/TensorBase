@@ -7,6 +7,68 @@
 
 namespace TensorBase
 {  
+  /* Operators for DefaultDevice and Cpu classes
+  */
+  namespace TensorArrayOperators {
+    template<typename TensorT>
+    int compare(const TensorT * s1, const TensorT * s2, const int& size)
+    {
+      int i = 0;
+      for (i = 0; i < size; ++i) {
+        if (s1[i] != s2[i]) break;
+        if (i == size - 1) return 0;
+      }
+      return s1[i] - s2[i];
+    }
+
+    template<typename TensorT>
+    bool isEqualTo(const TensorT * s1, const TensorT * s2, const int& size) {
+      if (compare(s1, s2, size) == 0) return true;
+      else return false;
+    }
+
+    template<typename TensorT>
+    bool isNotEqualTo(const TensorT * s1, const TensorT * s2, const int& size) {
+      if (compare(s1, s2, size) != 0) return true;
+      else return false;
+    }
+
+    template<typename TensorT>
+    bool isLessThan(const TensorT * s1, const TensorT * s2, const int& size) {
+      if (compare(s1, s2, size) < 0) return true;
+      else return false;
+    }
+
+    template<typename TensorT>
+    bool isGreaterThan(const TensorT * s1, const TensorT * s2, const int& size) {
+      if (compare(s1, s2, size) > 0) return true;
+      else return false;
+    }
+
+    template<typename TensorT>
+    bool isLessThanOrEqualTo(const TensorT * s1, const TensorT * s2, const int& size) {
+      if (compare(s1, s2, size) <= 0) return true;
+      else return false;
+    }
+
+    template<typename TensorT>
+    bool isGreaterThanOrEqualTo(const TensorT * s1, const TensorT * s2, const int& size) {
+      if (compare(s1, s2, size) >= 0) return true;
+      else return false;
+    }
+
+    template<>
+    int compare<char>(const char * s1, const char * s2, const int& size)
+    {
+      int i = 0;
+      for (i = 0; i < size; ++i) {
+        if (s1[i] != s2[i]) break;
+        if (i == size - 1) return 0;
+      }
+      return (const unsigned char)s1[i] - (const unsigned char)s2[i];
+    }
+  };
+
   /**
     @brief Base class for all fixed vector types
   */
@@ -15,12 +77,38 @@ namespace TensorBase
   {
   public:
     TensorArray() = default;
-    TensorArray(TensorT* tensor_array, const size_t& array_size);
+    TensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array);
     virtual ~TensorArray() = default;
+
+    inline bool operator==(const TensorArray& other) {
+      assert(this->array_size_ == other.array_size_);
+      return TensorArrayOperators::isEqualTo(this->tensor_array_->getDataPointer().get(), other.tensor_array_->getDataPointer().get(), this->array_size_);
+    }
+
+    inline bool operator!=(const TensorArray& other) {
+      assert(this->array_size_ == other.array_size_);
+      return TensorArrayOperators::isNotEqualTo(this->tensor_array_->getDataPointer().get(), other.tensor_array_->getDataPointer().get(), this->array_size_);
+    }
+
+    inline bool operator<(const TensorArray& other) {
+      assert(this->array_size_ == other.array_size_);
+    }
+
+    inline bool operator<=(const TensorArray& other) {
+      assert(this->array_size_ == other.array_size_);
+    }
+
+    inline bool operator>(const TensorArray& other) {
+      assert(this->array_size_ == other.array_size_);
+    }
+
+    inline bool operator>=(const TensorArray& other) {
+      assert(this->array_size_ == other.array_size_);
+    }
 
     size_t getArraySize() { return array_size_; } ///< array_size getter
 
-    virtual void setTensorArray(TensorT* tensor_array, const size_t& array_size) = 0; ///< tensor_array setter
+    virtual void setTensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array) = 0; ///< tensor_array setter
     Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> getTensorArray() { return tensor_array_->getData(); };  ///< tensor_array getter
 
     bool syncHAndDData(DeviceT& device) { return tensor_array_->syncHAndDData(device); };  ///< Sync the host and device tensor_array data
@@ -43,7 +131,7 @@ namespace TensorBase
   };
 
   template<typename TensorT, typename DeviceT>
-  inline TensorArray<TensorT, DeviceT>::TensorArray(TensorT* tensor_array, const size_t& array_size): array_size_(array_size) {
+  inline TensorArray<TensorT, DeviceT>::TensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array) {
     setTensorArray(tensor_array, array_size);
   };
 
@@ -59,9 +147,9 @@ namespace TensorBase
   {
   public:
     TensorArrayDefaultDevice() = default;  ///< Default constructor
-    TensorArrayDefaultDevice(TensorT* tensor_array, const size_t& array_size) : TensorArray(tensor_array, array_size) {};
+    TensorArrayDefaultDevice(const Eigen::Tensor<TensorT, 1>& tensor_array) : TensorArray(tensor_array) {};
     ~TensorArrayDefaultDevice() = default; ///< Default destructor
-    void setTensorArray(TensorT* tensor_array, const size_t& array_size) override;
+    void setTensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array) override;
   private:
     friend class cereal::access;
     template<class Archive>
@@ -71,11 +159,11 @@ namespace TensorBase
   };
 
   template<typename TensorT>
-  inline void TensorArrayDefaultDevice<TensorT>::setTensorArray(TensorT* tensor_array, const size_t & array_size)
+  inline void TensorArrayDefaultDevice<TensorT>::setTensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array)
   {
-    const Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> tensor_array_map(tensor_array, (int)array_size);
-    this->tensor_array_.reset(new TensorDataDefaultDevice<TensorT, 1>(Eigen::array<Eigen::Index, 1>({(int)array_size})));
-    this->tensor_array_->setData(tensor_array_map);
+    this->array_size_ = tensor_array.dimension(0);
+    this->tensor_array_.reset(new TensorDataDefaultDevice<TensorT, 1>(tensor_array.dimensions()));
+    this->tensor_array_->setData(tensor_array);
   }
 
   template<typename TensorT>
@@ -83,9 +171,9 @@ namespace TensorBase
   {
   public:
     TensorArrayCpu() = default;  ///< Default constructor
-    TensorArrayCpu(TensorT* tensor_array, const size_t& array_size) : TensorArray(tensor_array, array_size) {};
+    TensorArrayCpu(const Eigen::Tensor<TensorT, 1>& tensor_array) : TensorArray(tensor_array) {};
     ~TensorArrayCpu() = default; ///< Default destructor
-    void setTensorArray(TensorT* tensor_array, const size_t& array_size) override;
+    void setTensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array) override;
   private:
     friend class cereal::access;
     template<class Archive>
@@ -95,12 +183,11 @@ namespace TensorBase
   };
 
   template<typename TensorT>
-  inline void TensorArrayCpu<TensorT>::setTensorArray(TensorT * tensor_array, const size_t & array_size)
+  inline void TensorArrayCpu<TensorT>::setTensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array)
   {
-    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> tensor_array_map(tensor_array, (int)array_size);
-    this->tensor_array_.reset(new TensorDataCpu<TensorT, 1>(Eigen::array<Eigen::Index, 1>({ (int)array_size })));
-    this->tensor_array_->setData(tensor_array_map);
+    this->array_size_ = tensor_array.dimension(0);
+    this->tensor_array_.reset(new TensorDataCpu<TensorT, 1>(tensor_array.dimensions()));
+    this->tensor_array_->setData(tensor_array);
   }
-
 };
 #endif //TENSORBASE_TENSORARRAY_H
