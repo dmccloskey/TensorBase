@@ -77,39 +77,21 @@ namespace TensorBase
   {
   public:
     TensorArray() = default;
-    TensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array);
     virtual ~TensorArray() = default;
 
-    inline bool operator==(const TensorArray& other) {
-      assert(this->array_size_ == other.array_size_);
-      return TensorArrayOperators::isEqualTo(this->tensor_array_->getDataPointer().get(), other.tensor_array_->getDataPointer().get(), this->array_size_);
-    }
+    /// operators are defined on a DeviceT-basis and executed on the specific DeviceT
+    virtual bool operator==(const TensorArray& other) = 0;
+    virtual bool operator!=(const TensorArray& other) = 0;
+    virtual bool operator<(const TensorArray& other) = 0;
+    virtual bool operator<=(const TensorArray& other) = 0;
+    virtual bool operator>(const TensorArray& other) = 0;
+    virtual bool operator>=(const TensorArray& other) = 0;
 
-    inline bool operator!=(const TensorArray& other) {
-      assert(this->array_size_ == other.array_size_);
-      return TensorArrayOperators::isNotEqualTo(this->tensor_array_->getDataPointer().get(), other.tensor_array_->getDataPointer().get(), this->array_size_);
-    }
-
-    inline bool operator<(const TensorArray& other) {
-      assert(this->array_size_ == other.array_size_);
-    }
-
-    inline bool operator<=(const TensorArray& other) {
-      assert(this->array_size_ == other.array_size_);
-    }
-
-    inline bool operator>(const TensorArray& other) {
-      assert(this->array_size_ == other.array_size_);
-    }
-
-    inline bool operator>=(const TensorArray& other) {
-      assert(this->array_size_ == other.array_size_);
-    }
-
-    size_t getArraySize() { return array_size_; } ///< array_size getter
+    size_t getArraySize() const { return array_size_; } ///< array_size getter
 
     virtual void setTensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array) = 0; ///< tensor_array setter
     Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> getTensorArray() { return tensor_array_->getData(); };  ///< tensor_array getter
+    std::shared_ptr<TensorData<TensorT, DeviceT, 1>> getTensorArraySharedPtr() const { return tensor_array_; };  ///< tensor_array getter
 
     bool syncHAndDData(DeviceT& device) { return tensor_array_->syncHAndDData(device); };  ///< Sync the host and device tensor_array data
     void setDataStatus(const bool& h_data_updated, const bool& d_data_updated) { tensor_array_->setDataStatus(h_data_updated, d_data_updated); } ///< Set the status of the host and device data
@@ -131,11 +113,6 @@ namespace TensorBase
   };
 
   template<typename TensorT, typename DeviceT>
-  inline TensorArray<TensorT, DeviceT>::TensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array) {
-    setTensorArray(tensor_array, array_size);
-  };
-
-  template<typename TensorT, typename DeviceT>
   template<typename T>
   inline void TensorArray<TensorT, DeviceT>::getTensorArrayDataPointer(std::shared_ptr<T>& data_copy) {
     if (std::is_same<T, TensorT>::value)
@@ -147,9 +124,15 @@ namespace TensorBase
   {
   public:
     TensorArrayDefaultDevice() = default;  ///< Default constructor
-    TensorArrayDefaultDevice(const Eigen::Tensor<TensorT, 1>& tensor_array) : TensorArray(tensor_array) {};
+    TensorArrayDefaultDevice(const Eigen::Tensor<TensorT, 1>& tensor_array);
     ~TensorArrayDefaultDevice() = default; ///< Default destructor
     void setTensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array) override;
+    bool operator==(const TensorArray<TensorT, Eigen::DefaultDevice>& other) override;
+    bool operator!=(const TensorArray<TensorT, Eigen::DefaultDevice>& other) override;
+    bool operator<(const TensorArray<TensorT, Eigen::DefaultDevice>& other) override;
+    bool operator<=(const TensorArray<TensorT, Eigen::DefaultDevice>& other) override;
+    bool operator>(const TensorArray<TensorT, Eigen::DefaultDevice>& other) override;
+    bool operator>=(const TensorArray<TensorT, Eigen::DefaultDevice>& other) override;
   private:
     friend class cereal::access;
     template<class Archive>
@@ -157,6 +140,12 @@ namespace TensorBase
       archive(cereal::base_class<TensorArray<TensorT, Eigen::DefaultDevice>>(this));
     }
   };
+
+  template<typename TensorT>
+  inline TensorArrayDefaultDevice<TensorT>::TensorArrayDefaultDevice(const Eigen::Tensor<TensorT, 1>& tensor_array)
+  {
+    this->setTensorArray(tensor_array);
+  }
 
   template<typename TensorT>
   inline void TensorArrayDefaultDevice<TensorT>::setTensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array)
@@ -167,13 +156,61 @@ namespace TensorBase
   }
 
   template<typename TensorT>
+  inline bool TensorArrayDefaultDevice<TensorT>::operator==(const TensorArray<TensorT, Eigen::DefaultDevice> & other)
+  {
+    assert(this->array_size_ == other.getArraySize());
+    return TensorArrayOperators::isEqualTo(this->tensor_array_->getDataPointer().get(), other.getTensorArraySharedPtr()->getDataPointer().get(), this->array_size_);
+  }
+
+  template<typename TensorT>
+  inline bool TensorArrayDefaultDevice<TensorT>::operator!=(const TensorArray<TensorT, Eigen::DefaultDevice> & other)
+  {
+    assert(this->array_size_ == other.getArraySize());
+    return TensorArrayOperators::isNotEqualTo(this->tensor_array_->getDataPointer().get(), other.getTensorArraySharedPtr()->getDataPointer().get(), this->array_size_);
+  }
+
+  template<typename TensorT>
+  inline bool TensorArrayDefaultDevice<TensorT>::operator<(const TensorArray<TensorT, Eigen::DefaultDevice> & other)
+  {
+    assert(this->array_size_ == other.getArraySize());
+    return TensorArrayOperators::isLessThan(this->tensor_array_->getDataPointer().get(), other.getTensorArraySharedPtr()->getDataPointer().get(), this->array_size_);
+  }
+
+  template<typename TensorT>
+  inline bool TensorArrayDefaultDevice<TensorT>::operator<=(const TensorArray<TensorT, Eigen::DefaultDevice> & other)
+  {
+    assert(this->array_size_ == other.getArraySize());
+    return TensorArrayOperators::isLessThanOrEqualTo(this->tensor_array_->getDataPointer().get(), other.getTensorArraySharedPtr()->getDataPointer().get(), this->array_size_);
+  }
+
+  template<typename TensorT>
+  inline bool TensorArrayDefaultDevice<TensorT>::operator>(const TensorArray<TensorT, Eigen::DefaultDevice> & other)
+  {
+    assert(this->array_size_ == other.getArraySize());
+    return TensorArrayOperators::isGreaterThan(this->tensor_array_->getDataPointer().get(), other.getTensorArraySharedPtr()->getDataPointer().get(), this->array_size_);
+  }
+
+  template<typename TensorT>
+  inline bool TensorArrayDefaultDevice<TensorT>::operator>=(const TensorArray<TensorT, Eigen::DefaultDevice>& other)
+  {
+    assert(this->array_size_ == other.getArraySize());
+    return TensorArrayOperators::isGreaterThanOrEqualTo(this->tensor_array_->getDataPointer().get(), other.getTensorArraySharedPtr()->getDataPointer().get(), this->array_size_);
+  }
+
+  template<typename TensorT>
   class TensorArrayCpu : public TensorArray<TensorT, Eigen::ThreadPoolDevice>
   {
   public:
     TensorArrayCpu() = default;  ///< Default constructor
-    TensorArrayCpu(const Eigen::Tensor<TensorT, 1>& tensor_array) : TensorArray(tensor_array) {};
+    TensorArrayCpu(const Eigen::Tensor<TensorT, 1>& tensor_array);
     ~TensorArrayCpu() = default; ///< Default destructor
     void setTensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array) override;
+    bool operator==(const TensorArray<TensorT, Eigen::ThreadPoolDevice>& other) override;
+    bool operator!=(const TensorArray<TensorT, Eigen::ThreadPoolDevice>& other) override;
+    bool operator<(const TensorArray<TensorT, Eigen::ThreadPoolDevice>& other) override;
+    bool operator<=(const TensorArray<TensorT, Eigen::ThreadPoolDevice>& other) override;
+    bool operator>(const TensorArray<TensorT, Eigen::ThreadPoolDevice>& other) override;
+    bool operator>=(const TensorArray<TensorT, Eigen::ThreadPoolDevice>& other) override;
   private:
     friend class cereal::access;
     template<class Archive>
@@ -183,11 +220,59 @@ namespace TensorBase
   };
 
   template<typename TensorT>
+  inline TensorArrayCpu<TensorT>::TensorArrayCpu(const Eigen::Tensor<TensorT, 1>& tensor_array)
+  {
+    this->setTensorArray(tensor_array);
+  }
+
+  template<typename TensorT>
   inline void TensorArrayCpu<TensorT>::setTensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array)
   {
     this->array_size_ = tensor_array.dimension(0);
     this->tensor_array_.reset(new TensorDataCpu<TensorT, 1>(tensor_array.dimensions()));
     this->tensor_array_->setData(tensor_array);
+  }
+
+  template<typename TensorT>
+  inline bool TensorArrayCpu<TensorT>::operator==(const TensorArray<TensorT, Eigen::ThreadPoolDevice> & other)
+  {
+    assert(this->array_size_ == other.getArraySize());
+    return TensorArrayOperators::isEqualTo(this->tensor_array_->getDataPointer().get(), other.getTensorArraySharedPtr()->getDataPointer().get(), this->array_size_);
+  }
+
+  template<typename TensorT>
+  inline bool TensorArrayCpu<TensorT>::operator!=(const TensorArray<TensorT, Eigen::ThreadPoolDevice> & other)
+  {
+    assert(this->array_size_ == other.getArraySize());
+    return TensorArrayOperators::isNotEqualTo(this->tensor_array_->getDataPointer().get(), other.getTensorArraySharedPtr()->getDataPointer().get(), this->array_size_);
+  }
+
+  template<typename TensorT>
+  inline bool TensorArrayCpu<TensorT>::operator<(const TensorArray<TensorT, Eigen::ThreadPoolDevice> & other)
+  {
+    assert(this->array_size_ == other.getArraySize());
+    return TensorArrayOperators::isLessThan(this->tensor_array_->getDataPointer().get(), other.getTensorArraySharedPtr()->getDataPointer().get(), this->array_size_);
+  }
+
+  template<typename TensorT>
+  inline bool TensorArrayCpu<TensorT>::operator<=(const TensorArray<TensorT, Eigen::ThreadPoolDevice> & other)
+  {
+    assert(this->array_size_ == other.getArraySize());
+    return TensorArrayOperators::isLessThanOrEqualTo(this->tensor_array_->getDataPointer().get(), other.getTensorArraySharedPtr()->getDataPointer().get(), this->array_size_);
+  }
+
+  template<typename TensorT>
+  inline bool TensorArrayCpu<TensorT>::operator>(const TensorArray<TensorT, Eigen::ThreadPoolDevice> & other)
+  {
+    assert(this->array_size_ == other.getArraySize());
+    return TensorArrayOperators::isGreaterThan(this->tensor_array_->getDataPointer().get(), other.getTensorArraySharedPtr()->getDataPointer().get(), this->array_size_);
+  }
+
+  template<typename TensorT>
+  inline bool TensorArrayCpu<TensorT>::operator>=(const TensorArray<TensorT, Eigen::ThreadPoolDevice> & other)
+  {
+    assert(this->array_size_ == other.getArraySize());
+    return TensorArrayOperators::isGreaterThanOrEqualTo(this->tensor_array_->getDataPointer().get(), other.getTensorArraySharedPtr()->getDataPointer().get(), this->array_size_);
   }
 };
 #endif //TENSORBASE_TENSORARRAY_H

@@ -103,15 +103,55 @@ BOOST_AUTO_TEST_CASE(destructorDefaultDevice)
 
 BOOST_AUTO_TEST_CASE(comparisonDefaultDevice)
 {
- // // Check null
-	//TensorArrayDefaultDevice<float> tensordata, tensordata_test;
-	//BOOST_CHECK(tensordata == tensordata_test);
+  // Check same and equal length float
+  Eigen::Tensor<float, 1> same_equal_float_1(5);
+  same_equal_float_1.setValues({ 1,2,3,4,5 });
+  TensorArrayDefaultDevice<float> tensorArrayFloat1(same_equal_float_1);
+  Eigen::Tensor<float, 1> same_equal_float_2(5);
+  same_equal_float_2.setValues({ 1,2,3,4,5 });
+	TensorArrayDefaultDevice<float> tensorArrayFloat2(same_equal_float_2);
+	BOOST_CHECK(tensorArrayFloat1 == tensorArrayFloat2);
+  BOOST_CHECK(!(tensorArrayFloat1 != tensorArrayFloat2));
+  BOOST_CHECK(!(tensorArrayFloat1 < tensorArrayFloat2));
+  BOOST_CHECK(!(tensorArrayFloat1 > tensorArrayFloat2));
+  BOOST_CHECK(tensorArrayFloat1 <= tensorArrayFloat2);
+  BOOST_CHECK(tensorArrayFloat1 >= tensorArrayFloat2);
 
- // // Check same size
- // BOOST_CHECK(tensordata == tensordata_test);
+  // Check different and equal length float
+  Eigen::Tensor<float, 1> same_equal_float_3(5);
+  same_equal_float_3.setValues({ 1,2,0,4,5 });
+  TensorArrayDefaultDevice<float> tensorArrayFloat3(same_equal_float_3);
+  BOOST_CHECK(!(tensorArrayFloat1 == tensorArrayFloat3));
+  BOOST_CHECK(tensorArrayFloat1 != tensorArrayFloat3);
+  BOOST_CHECK(!(tensorArrayFloat1 < tensorArrayFloat3));
+  BOOST_CHECK(tensorArrayFloat1 > tensorArrayFloat3);
+  BOOST_CHECK(!(tensorArrayFloat1 <= tensorArrayFloat3));
+  BOOST_CHECK(tensorArrayFloat1 >= tensorArrayFloat3);
 
- // // Check different sizes
- // BOOST_CHECK(tensordata != tensordata_test);
+  // Check same and equal length char
+  Eigen::Tensor<char, 1> same_equal_char_1(5);
+  same_equal_char_1.setValues({ 'a', 'b', 'c', 'd', 'e' });
+  TensorArrayDefaultDevice<char> tensorArrayChar1(same_equal_char_1);
+  Eigen::Tensor<char, 1> same_equal_char_2(5);
+  same_equal_char_2.setValues({ 'a', 'b', 'c', 'd', 'e' });
+  TensorArrayDefaultDevice<char> tensorArrayChar2(same_equal_char_2);
+  BOOST_CHECK(tensorArrayChar1 == tensorArrayChar2);
+  BOOST_CHECK(!(tensorArrayChar1 != tensorArrayChar2));
+  BOOST_CHECK(!(tensorArrayChar1 < tensorArrayChar2));
+  BOOST_CHECK(!(tensorArrayChar1 > tensorArrayChar2));
+  BOOST_CHECK(tensorArrayChar1 <= tensorArrayChar2);
+  BOOST_CHECK(tensorArrayChar1 >= tensorArrayChar2);
+
+  // Check different and equal length char
+  Eigen::Tensor<char, 1> same_equal_char_3(5);
+  same_equal_char_3.setValues({ 'a', 'b', 'a', 'd', 'e' });
+  TensorArrayDefaultDevice<char> tensorArrayChar3(same_equal_char_3);
+  BOOST_CHECK(!(tensorArrayChar1 == tensorArrayChar3));
+  BOOST_CHECK(tensorArrayChar1 != tensorArrayChar3);
+  BOOST_CHECK(!(tensorArrayChar1 < tensorArrayChar3));
+  BOOST_CHECK(tensorArrayChar1 > tensorArrayChar3);
+  BOOST_CHECK(!(tensorArrayChar1 <= tensorArrayChar3));
+  BOOST_CHECK(tensorArrayChar1 >= tensorArrayChar3);
 }
 
 BOOST_AUTO_TEST_CASE(assignmentDefaultDevice)
