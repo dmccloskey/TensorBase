@@ -143,7 +143,7 @@ BOOST_AUTO_TEST_CASE(comparisonDefaultDevice)
   BOOST_CHECK(tensorArrayChar1 >= tensorArrayChar2);
 
   // Check different and unqeual length char
-  Eigen::Tensor<char, 1> same_equal_char_3(4);
+  Eigen::Tensor<char, 1> same_equal_char_3(5);
   same_equal_char_3.setValues({ 'a', 'b', 'a', 'd', 'e' });
   TensorArrayDefaultDevice<char> tensorArrayChar3(same_equal_char_3);
   BOOST_CHECK(!(tensorArrayChar1 == tensorArrayChar3));

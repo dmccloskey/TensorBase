@@ -113,52 +113,72 @@ namespace TensorBase
   template<typename TensorT>
   inline void TensorArrayGpu<TensorT>::setTensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array)
   {
+    // set the array size
     this->array_size_ = tensor_array.dimension(0);
-    this->tensor_array_.reset(new TensorDataGpu<TensorT, 1>(tensor_array.dimensions()));
-    this->tensor_array_->setData(tensor_array);
+    // copy the data
+
+    this->tensor_array_ = new TensorT[this->array_size_];
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> data_copy(this->tensor_array_, this->array_size_);
+    data_copy = tensor_array;
+
+    //this->tensor_array_.reset(new TensorDataGpu<TensorT, 1>(tensor_array.dimensions()));
+    //this->tensor_array_->setData(tensor_array);
   }
 
   template<typename TensorT>
   inline bool TensorArrayGpu<TensorT>::operator==(const TensorArray<TensorT, Eigen::GpuDevice> & other)
   {
     assert(this->array_size_ == other.getArraySize());
-    return TensorArrayOperatorsGpu::isEqualTo(this->tensor_array_->getDataPointer().get(), other.getTensorArraySharedPtr()->getDataPointer().get(), this->array_size_);
+    return TensorArrayOperatorsGpu::isEqualTo(this->tensor_array_, other.tensor_array_, this->array_size_);
   }
 
   template<typename TensorT>
   inline bool TensorArrayGpu<TensorT>::operator!=(const TensorArray<TensorT, Eigen::GpuDevice> & other)
   {
     assert(this->array_size_ == other.getArraySize());
-    return TensorArrayOperatorsGpu::isNotEqualTo(this->tensor_array_->getDataPointer().get(), other.getTensorArraySharedPtr()->getDataPointer().get(), this->array_size_);
+    return TensorArrayOperatorsGpu::isNotEqualTo(this->tensor_array_, other.tensor_array_, this->array_size_);
   }
 
   template<typename TensorT>
   inline bool TensorArrayGpu<TensorT>::operator<(const TensorArray<TensorT, Eigen::GpuDevice> & other)
   {
     assert(this->array_size_ == other.getArraySize());
-    return TensorArrayOperatorsGpu::isLessThan(this->tensor_array_->getDataPointer().get(), other.getTensorArraySharedPtr()->getDataPointer().get(), this->array_size_);
+    return TensorArrayOperatorsGpu::isLessThan(this->tensor_array_, other.tensor_array_, this->array_size_);
   }
 
   template<typename TensorT>
   inline bool TensorArrayGpu<TensorT>::operator<=(const TensorArray<TensorT, Eigen::GpuDevice> & other)
   {
     assert(this->array_size_ == other.getArraySize());
-    return TensorArrayOperatorsGpu::isLessThanOrEqualTo(this->tensor_array_->getDataPointer().get(), other.getTensorArraySharedPtr()->getDataPointer().get(), this->array_size_);
+    return TensorArrayOperatorsGpu::isLessThanOrEqualTo(this->tensor_array_, other.tensor_array_, this->array_size_);
   }
 
   template<typename TensorT>
   inline bool TensorArrayGpu<TensorT>::operator>(const TensorArray<TensorT, Eigen::GpuDevice> & other)
   {
     assert(this->array_size_ == other.getArraySize());
-    return TensorArrayOperatorsGpu::isGreaterThan(this->tensor_array_->getDataPointer().get(), other.getTensorArraySharedPtr()->getDataPointer().get(), this->array_size_);
+    return TensorArrayOperatorsGpu::isGreaterThan(this->tensor_array_, other.tensor_array_, this->array_size_);
   }
 
   template<typename TensorT>
   inline bool TensorArrayGpu<TensorT>::operator>=(const TensorArray<TensorT, Eigen::GpuDevice> & other)
   {
     assert(this->array_size_ == other.getArraySize());
-    return TensorArrayOperatorsGpu::isGreaterThanOrEqualTo(this->tensor_array_->getDataPointer().get(), other.getTensorArraySharedPtr()->getDataPointer().get(), this->array_size_);
+    return TensorArrayOperatorsGpu::isGreaterThanOrEqualTo(this->tensor_array_, other.tensor_array_, this->array_size_);
   }
+
+  // Sort functors for Thrust
+  struct SortThrust {
+    SortThrust(const int& size) : size_(size) {};
+    int size_ = 0;
+  };
+  struct SortLessThanThrust: SortThrust {
+    using SortThrust::SortThrust;
+    template<typename TensorT>
+    __host__ __device__ bool operator()(const TensorArrayGpu<TensorT>& s1, const TensorArrayGpu<TensorT>& s2) {
+      return TensorArrayOperatorsGpu::isLessThan(s1.tensor_array_, s2.tensor_array_, size_);
+    }
+  };
 };
 #endif
 #endif //TENSORBASE_TENSORARRAYGPU_H
