@@ -116,6 +116,7 @@ namespace TensorBase
     bool operator<=(const TensorArray& other) override;
     bool operator>(const TensorArray& other) override;
     bool operator>=(const TensorArray& other) override;
+    TensorT at(const int& i) const override;
   private:
     friend class cereal::access;
     template<class Archive>
@@ -123,6 +124,21 @@ namespace TensorBase
       archive(cereal::base_class<TensorArray<TensorT>>(this));
     }
   };
+
+
+  template<typename TensorT>
+  inline __host__ __device__ TensorT TensorArray8Gpu<TensorT>::at(const int & i) const
+  {
+    if (i == 0) return item_0_;
+    else if (i == 1) return item_1_;
+    else if (i == 2) return item_2_;
+    else if (i == 3) return item_3_;
+    else if (i == 4) return item_4_;
+    else if (i == 5) return item_5_;
+    else if (i == 6) return item_6_;
+    else if (i == 7) return item_7_;
+    else return TensorT(0);
+  }
 
   template<typename TensorT>
   inline bool TensorArray8Gpu<TensorT>::operator==(const TensorArray<TensorT> & other)
@@ -171,6 +187,15 @@ namespace TensorBase
     isGreaterThanOrEqualToGpu comp(this->array_size_);
     return comp(*this, other);
   }
+
+
+  struct compOp {
+    template<typename T>
+    __host__ __device__ bool operator()(const T& lhs, const T& rhs) {
+      if (lhs.x < rhs.x) return true;
+      else return false;
+    }
+  };
 };
 #endif
 #endif //TENSORBASE_TENSORARRAYGPU_H
