@@ -154,7 +154,7 @@ void test_tensorComparisonGpu()
   device.memcpyHostToDevice(d_index_1, h_index_1, 3 * sizeof(int));
   Eigen::TensorMap<Eigen::Tensor<int, 1>> gpu_index1(d_index_1, 3);
 
-  //gpu_index1.device(device) = (gpu_in1 == gpu_in1).select(gpu_index1.constant(1), gpu_index1.constant(0));
+  gpu_index1.device(device) = (gpu_in1 == gpu_in1).select(gpu_index1.constant(1), gpu_index1.constant(0));
 
   // Thrust sort
   thrust::cuda::par.on(device.stream());
