@@ -23,12 +23,12 @@ namespace TensorBase
     virtual ~TensorArray() = default;
 
     /// operators are defined on a DeviceT-basis and executed on the specific DeviceT
-    virtual bool operator==(const TensorArray& other) = 0;
-    virtual bool operator!=(const TensorArray& other) = 0;
-    virtual bool operator<(const TensorArray& other) = 0;
-    virtual bool operator<=(const TensorArray& other) = 0;
-    virtual bool operator>(const TensorArray& other) = 0;
-    virtual bool operator>=(const TensorArray& other) = 0;
+    virtual bool operator==(const TensorArray& other) const = 0;
+    virtual bool operator!=(const TensorArray& other) const = 0;
+    virtual bool operator<(const TensorArray& other) const = 0;
+    virtual bool operator<=(const TensorArray& other) const = 0;
+    virtual bool operator>(const TensorArray& other) const = 0;
+    virtual bool operator>=(const TensorArray& other) const = 0;
 
     size_t getArraySize() const { return array_size_; } ///< array_size getter
 
@@ -142,12 +142,12 @@ namespace TensorBase
     TensorArray8() = default;
     ~TensorArray8() = default;
     TensorArray8(const Eigen::Tensor<TensorT, 1>& tensor_array) { this->setTensorArray(tensor_array); }
-    bool operator==(const TensorArray& other) override;
-    bool operator!=(const TensorArray& other) override;
-    bool operator<(const TensorArray& other) override;
-    bool operator<=(const TensorArray& other) override;
-    bool operator>(const TensorArray& other) override;
-    bool operator>=(const TensorArray& other) override;
+    bool operator==(const TensorArray& other) const override;
+    bool operator!=(const TensorArray& other) const override;
+    bool operator<(const TensorArray& other) const override;
+    bool operator<=(const TensorArray& other) const override;
+    bool operator>(const TensorArray& other) const override;
+    bool operator>=(const TensorArray& other) const override;
     void setTensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array) override;
     Eigen::Tensor<TensorT, 1> getTensorArray() override;
     TensorT at(const int& i) const override;
@@ -220,7 +220,7 @@ namespace TensorBase
   }
 
   template<typename TensorT>
-  inline bool TensorArray8<TensorT>::operator==(const TensorArray<TensorT> & other)
+  inline bool TensorArray8<TensorT>::operator==(const TensorArray<TensorT> & other) const
   {
     assert(this->array_size_ == other.getArraySize());
     isEqualTo comp(this->array_size_);
@@ -228,7 +228,7 @@ namespace TensorBase
   }
 
   template<typename TensorT>
-  inline bool TensorArray8<TensorT>::operator!=(const TensorArray<TensorT> & other)
+  inline bool TensorArray8<TensorT>::operator!=(const TensorArray<TensorT> & other) const
   {
     assert(this->array_size_ == other.getArraySize());
     isNotEqualTo comp(this->array_size_);
@@ -236,7 +236,7 @@ namespace TensorBase
   }
 
   template<typename TensorT>
-  inline bool TensorArray8<TensorT>::operator<(const TensorArray<TensorT> & other)
+  inline bool TensorArray8<TensorT>::operator<(const TensorArray<TensorT> & other) const
   {
     assert(this->array_size_ == other.getArraySize());
     isLessThan comp(this->array_size_);
@@ -244,7 +244,7 @@ namespace TensorBase
   }
 
   template<typename TensorT>
-  inline bool TensorArray8<TensorT>::operator<=(const TensorArray<TensorT> & other)
+  inline bool TensorArray8<TensorT>::operator<=(const TensorArray<TensorT> & other) const
   {
     assert(this->array_size_ == other.getArraySize());
     isLessThanOrEqualTo comp(this->array_size_);
@@ -252,7 +252,7 @@ namespace TensorBase
   }
 
   template<typename TensorT>
-  inline bool TensorArray8<TensorT>::operator>(const TensorArray<TensorT> & other)
+  inline bool TensorArray8<TensorT>::operator>(const TensorArray<TensorT> & other) const
   {
     assert(this->array_size_ == other.getArraySize());
     isGreaterThan comp(this->array_size_);
@@ -260,7 +260,7 @@ namespace TensorBase
   }
 
   template<typename TensorT>
-  inline bool TensorArray8<TensorT>::operator>=(const TensorArray<TensorT>& other)
+  inline bool TensorArray8<TensorT>::operator>=(const TensorArray<TensorT>& other) const
   {
     assert(this->array_size_ == other.getArraySize());
     isGreaterThanOrEqualTo comp(this->array_size_);

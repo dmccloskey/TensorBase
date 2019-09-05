@@ -101,6 +101,17 @@ BOOST_AUTO_TEST_CASE(assignmentDefaultDevice)
 
 BOOST_AUTO_TEST_CASE(copyDefaultDevice)
 {
+  Eigen::Tensor<char, 1> same_equal_char_1(8);
+  same_equal_char_1.setValues({ 'a', 'b', 'c', 'd', 'e', 'f', 'g', '\0' });
+  TensorArray8<char> tensorArrayChar1(same_equal_char_1);
+  Eigen::Tensor<char, 1> same_equal_char_2(8);
+  same_equal_char_2.setValues({ 'a', 'b', 'c', 'd', 'e', 'f', 'g', '\0' });
+  TensorArray8<char> tensorArrayChar2(same_equal_char_2);
+
+  Eigen::Tensor<TensorArray8<char>, 1> in1(2);
+  in1.setValues({ tensorArrayChar1 , tensorArrayChar2 });
+
+  Eigen::Tensor<TensorArray8<char>, 1> selected = (in1 == in1).select(in1, in1);
   //TensorArray8<float> tensordata_test(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
   //Eigen::Tensor<float> data(2, 3, 4);
   //data.setConstant(1);
