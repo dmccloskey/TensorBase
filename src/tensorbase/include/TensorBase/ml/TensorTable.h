@@ -556,12 +556,23 @@ namespace TensorBase
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> in_memory_;
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> is_shardable_;
 
+    /* @brief Combined Tensor to store the indices, indices_view, is_modified, in_memory, shard_id, and shard_index
+      where dim = 0 is the same size as the axis and dim = 1 is size of 6 corresponding to the indices, indices_view, etc.
+
+    The combined indices are the following:
+      0) indices_: always start at 1
+      1) indices_view_: sorted and/or selected indices
+      2) is_modified_: 0 if not changed or 1 if changed from the state on the disk
+      3) in_memory_: 0 if not in memory and 1 otherwise
+      4) shard_id_: the id of the shard
+      5) shart_index_: the index of the particular shard
+    */
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 2>>> combined_indices_; ///< starting at 1
+
     std::map<std::string, int> axes_to_dims_;
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> data_; ///< The actual tensor data
 
-    int shard_length_ = 256; ///< the shard length
-    std::map<int, std::vector<std::pair<int, int>>> shard_id_to_dim_and_index_;  ///< map from shard id to tensor dimensions and index
-    std::map<std::pair<int, int>, int> dim_and_index_to_shard_id_; ///< map from tensor dimensions and index to shard id
+    int shard_span_ = 256; ///< the shard span in each dimension
     
   private:
   	friend class cereal::access;

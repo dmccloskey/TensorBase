@@ -53,6 +53,9 @@ public:
       @returns A string with the filename for the TensorTableShard
     */
     std::string makeTensorTableShardFilename(const std::string& dir, const std::string& tensor_table_name, const int& shard_id);
+
+    template<typename DeviceT>
+    std::vector<int> getModifiedShardIDs(const std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& is_modified, )
   };
 
   template<typename TensorT, typename DeviceT, int TDim>
