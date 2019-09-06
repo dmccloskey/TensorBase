@@ -66,7 +66,7 @@ namespace TensorBase
     {
       int i = 0;
       for (i = 0; i < size; ++i) {
-        if (s1.at(i) != s2.at(i)) break;
+        if (s1.at(i) != s2.at(i) || s1.at(i) == '\0' || s2.at(i) == '\0') break;
         if (i == size - 1) return 0;
       }
       return (const unsigned char)s1.at(i) - (const unsigned char)s2.at(i);
@@ -165,7 +165,8 @@ namespace TensorBase
     friend class cereal::access;
     template<class Archive>
     void serialize(Archive& archive) {
-      archive(cereal::base_class<TensorArray<TensorT>>(this));
+      archive(cereal::base_class<TensorArray<TensorT>>(this),
+        item_0_, item_1_, item_2_, item_3_, item_4_, item_5_, item_6_, item_7_);
     }
   };
 

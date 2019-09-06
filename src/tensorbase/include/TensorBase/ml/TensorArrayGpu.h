@@ -250,7 +250,7 @@ namespace TensorBase
     {
       int i = 0;
       for (i = 0; i < size; ++i) {
-        if (s1.at(i) != s2.at(i)) break;
+        if (s1.at(i) != s2.at(i) || s1.at(i) == '\0' || s2.at(i) == '\0') break;
         if (i == size - 1) return 0;
       }
       return (const unsigned char)s1.at(i) - (const unsigned char)s2.at(i);
