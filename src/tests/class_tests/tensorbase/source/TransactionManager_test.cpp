@@ -11,7 +11,7 @@ using namespace std;
 
 BOOST_AUTO_TEST_SUITE(TransactionManager1)
 
-/// The delete select Functor for table 1
+/// The delete select Functor for table 2
 struct DeleteTable2 {
   template<typename DeviceT>
   void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) {

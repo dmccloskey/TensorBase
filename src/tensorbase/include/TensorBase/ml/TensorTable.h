@@ -553,13 +553,17 @@ namespace TensorBase
 
     std::map<std::string, int> axes_to_dims_;
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> data_; ///< The actual tensor data
+
+    int shard_length_ = 256; ///< the shard length
+    std::map<int, std::vector<std::pair<int, int>>> shard_id_to_dim_and_index_;  ///< map from shard id to tensor dimensions and index
+    std::map<std::pair<int, int>, int> dim_and_index_to_shard_id_; ///< map from tensor dimensions and index to shard id
     
   private:
   	friend class cereal::access;
   	template<class Archive>
   	void serialize(Archive& archive) {
   		archive(id_, name_, dimensions_, axes_, indices_, indices_view_, is_modified_, in_memory_, is_shardable_,
-        axes_to_dims_, data_);
+        axes_to_dims_, data_, shard_length_, shard_id_to_dim_and_index_, dim_and_index_to_shard_id_);
   	}
   };
 
