@@ -128,6 +128,11 @@ namespace TensorBase
     void setDataStatus(const bool& h_data_updated, const bool& d_data_updated) { data_->setDataStatus(h_data_updated, d_data_updated); } ///< Set the status of the host and device tensor data
     std::pair<bool, bool> getDataStatus() { return data_->getDataStatus(); };   ///< Get the status of the host and device tensor data
 
+    void setShardLength(const int& shard_length); ///< shard length setter
+    int getShardLength() const; ///< shard length getter
+    void makeForwardAndReverseShardIDMaps();  ///< (re-)make the shard ID forward and reverse maps
+    void updateForwardAndReverseShardIDMaps(); ///< remove deleted entries and add in new entries to the forward/reverse shard ID maps after add/delete calls to the TensorTable data
+
     /*
     @brief Select Tensor Axis that will be included in the view
 
