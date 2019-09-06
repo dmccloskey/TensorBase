@@ -22,8 +22,20 @@ namespace TensorBase
 {
 
   /**
-    @brief Base class for fixed length vector types on the Gpu
-  */
+    NOTEs to future developers:
+
+    1. Fixed length vector class has to be implemented without the use of base classes
+      and a common set of comparison functors
+    2. This means that each fixed length vector class needs to re-implement the following each time:
+      - constructor/destructors
+      - getters/setters
+      - at operator
+      - comparison operators
+    3. In addition, an associated set of comparison functors must be created for each fixed length vector class
+
+    For example: the following does not work:
+
+  ```
   template<typename TensorT>
   class TensorArrayGpu
   {
@@ -32,14 +44,14 @@ namespace TensorBase
     virtual ~TensorArrayGpu() = default;
 
     /// operators are defined on a DeviceT-basis and executed on the specific DeviceT
-    virtual bool operator==(const TensorArrayGpu& other) const = 0;
-    virtual bool operator!=(const TensorArrayGpu& other) const = 0;
-    virtual bool operator<(const TensorArrayGpu& other) const = 0;
-    virtual bool operator<=(const TensorArrayGpu& other) const = 0;
-    virtual bool operator>(const TensorArrayGpu& other) const = 0;
-    virtual bool operator>=(const TensorArrayGpu& other) const = 0;
+    virtual __host__ __device__ bool operator==(const TensorArrayGpu& other) const = 0;
+    virtual __host__ __device__ bool operator!=(const TensorArrayGpu& other) const = 0;
+    virtual __host__ __device__ bool operator<(const TensorArrayGpu& other) const = 0;
+    virtual __host__ __device__ bool operator<=(const TensorArrayGpu& other) const = 0;
+    virtual __host__ __device__ bool operator>(const TensorArrayGpu& other) const = 0;
+    virtual __host__ __device__ bool operator>=(const TensorArrayGpu& other) const = 0;
 
-    size_t getArraySize() const { return array_size_; } ///< array_size getter
+    __host__ __device__ size_t getArraySize() const { return array_size_; } ///< array_size getter
 
     virtual void setTensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array) = 0; ///< tensor_array setter
     virtual Eigen::Tensor<TensorT, 1> getTensorArray() = 0; ///< tensor_array getter
@@ -56,8 +68,6 @@ namespace TensorBase
     }
   };
 
-  /* Operators for Gpu classes
-  */
   namespace TensorArrayComparisonGpu {
     template<typename TensorT>
     __host__ __device__ int compare(const TensorArrayGpu<TensorT>& s1, const TensorArrayGpu<TensorT>& s2, const int& size)
@@ -82,9 +92,12 @@ namespace TensorBase
     }
   };
 
-  // Operators for Gpu classes
-  struct isEqualToGpu : TensorArrayFunctors {
-    using TensorArrayFunctors::TensorArrayFunctors;
+  struct TensorArrayFunctorsGpu {
+    __host__ __device__ TensorArrayFunctorsGpu(const int& size) : size_(size) {};
+    int size_ = 0;
+  };
+  struct isEqualToGpu : TensorArrayFunctorsGpu {
+    using TensorArrayFunctorsGpu::TensorArrayFunctorsGpu;
     template<typename TensorT>
     __host__ __device__ bool operator()(const TensorArrayGpu<TensorT>& s1, const TensorArrayGpu<TensorT>& s2) {
       if (TensorArrayComparisonGpu::compare(s1, s2, this->size_) == 0) return true;
@@ -137,26 +150,25 @@ namespace TensorBase
     }
   };
 
-  /**
-    @brief Fixed length 8 vector class
-  */
   template<typename TensorT>
-  class TensorArrayGpu8 : public TensorArrayGpu<TensorT>
+  class TensorArrayGpu8: TensorArrayGpu<TensorT>
   {
   public:
     TensorArrayGpu8() = default;
     ~TensorArrayGpu8() = default;
     TensorArrayGpu8(const Eigen::Tensor<TensorT, 1>& tensor_array) { this->setTensorArray(tensor_array); }
-    bool operator==(const TensorArrayGpu& other) const override;
-    bool operator!=(const TensorArrayGpu& other) const override;
-    bool operator<(const TensorArrayGpu& other) const override;
-    bool operator<=(const TensorArrayGpu& other) const override;
-    bool operator>(const TensorArrayGpu& other) const override;
-    bool operator>=(const TensorArrayGpu& other) const override;
+    __host__ __device__ bool operator==(const TensorArrayGpu8& other) const override;
+    __host__ __device__ bool operator!=(const TensorArrayGpu8& other) const override;
+    __host__ __device__ bool operator<(const TensorArrayGpu8& other) const override;
+    __host__ __device__ bool operator<=(const TensorArrayGpu8& other) const override;
+    __host__ __device__ bool operator>(const TensorArrayGpu8& other) const override;
+    __host__ __device__ bool operator>=(const TensorArrayGpu8& other) const override;
+    __host__ __device__ size_t getArraySize() const { return array_size_; } ///< array_size getter
     void setTensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array) override;
     Eigen::Tensor<TensorT, 1> getTensorArray() override;
-    __host__ __device__ TensorT at(const int& i) const;
+    __host__ __device__ TensorT at(const int& i) const override;
   protected:
+    size_t array_size_;
     TensorT item_0_ = TensorT(0);
     TensorT item_1_ = TensorT(0);
     TensorT item_2_ = TensorT(0);
@@ -170,6 +182,136 @@ namespace TensorBase
     template<class Archive>
     void serialize(Archive& archive) {
       archive(cereal::base_class<TensorArray<TensorT>>(this));
+    }
+  };
+  ```
+
+  Instead, each class needs to be implemented in the following manner:
+    1. Fixed length class declaration
+    2. Comparison functors specialized for the class
+    3. Member functions for the fixed length class (that use the comparison functors)
+  */
+
+  /**
+    @brief Fixed length 8 vector class
+  */
+  template<typename TensorT>
+  class TensorArrayGpu8
+  {
+  public:
+    TensorArrayGpu8() = default;
+    ~TensorArrayGpu8() = default;
+    TensorArrayGpu8(const Eigen::Tensor<TensorT, 1>& tensor_array) { this->setTensorArray(tensor_array); }
+    __host__ __device__ bool operator==(const TensorArrayGpu8& other) const;
+    __host__ __device__ bool operator!=(const TensorArrayGpu8& other) const;
+    __host__ __device__ bool operator<(const TensorArrayGpu8& other) const;
+    __host__ __device__ bool operator<=(const TensorArrayGpu8& other) const;
+    __host__ __device__ bool operator>(const TensorArrayGpu8& other) const;
+    __host__ __device__ bool operator>=(const TensorArrayGpu8& other) const;
+    __host__ __device__ size_t getArraySize() const { return array_size_; } ///< array_size getter
+    void setTensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array);
+    Eigen::Tensor<TensorT, 1> getTensorArray();
+    __host__ __device__ TensorT at(const int& i) const;
+  protected:
+    size_t array_size_;
+    TensorT item_0_ = TensorT(0);
+    TensorT item_1_ = TensorT(0);
+    TensorT item_2_ = TensorT(0);
+    TensorT item_3_ = TensorT(0);
+    TensorT item_4_ = TensorT(0);
+    TensorT item_5_ = TensorT(0);
+    TensorT item_6_ = TensorT(0);
+    TensorT item_7_ = TensorT(0);
+  private:
+    friend class cereal::access;
+    template<class Archive>
+    void serialize(Archive& archive) {
+      archive(array_size_, 
+        item_0_, item_1_, item_2_, item_3_, item_4_, item_5_, item_6_, item_7_);
+    }
+  };
+
+  /* Operators for Gpu classes
+  */
+  namespace TensorArrayComparisonGpu {
+    template<typename TensorT>
+    __host__ __device__ int compare(const TensorArrayGpu8<TensorT>& s1, const TensorArrayGpu8<TensorT>& s2, const int& size)
+    {
+      int i = 0;
+      for (i = 0; i < size; ++i) {
+        if (s1.at(i) != s2.at(i)) break;
+        if (i == size - 1) return 0;
+      }
+      return s1.at(i) - s2.at(i);
+    }
+
+    template<>
+    __host__ __device__ int compare<char>(const TensorArrayGpu8<char>& s1, const TensorArrayGpu8<char>& s2, const int& size)
+    {
+      int i = 0;
+      for (i = 0; i < size; ++i) {
+        if (s1.at(i) != s2.at(i)) break;
+        if (i == size - 1) return 0;
+      }
+      return (const unsigned char)s1.at(i) - (const unsigned char)s2.at(i);
+    }
+  };
+
+  struct TensorArrayFunctorsGpu {
+    __host__ __device__ TensorArrayFunctorsGpu(const int& size) : size_(size) {};
+    int size_ = 0;
+  };
+  struct isEqualToGpu : TensorArrayFunctorsGpu {
+    using TensorArrayFunctorsGpu::TensorArrayFunctorsGpu;
+    template<typename TensorT>
+    __host__ __device__ bool operator()(const TensorArrayGpu8<TensorT>& s1, const TensorArrayGpu8<TensorT>& s2) {
+      if (TensorArrayComparisonGpu::compare(s1, s2, this->size_) == 0) return true;
+      else return false;
+    }
+  };
+
+  struct isNotEqualToGpu : TensorArrayFunctors {
+    using TensorArrayFunctors::TensorArrayFunctors;
+    template<typename TensorT>
+    __host__ __device__ bool operator()(const TensorArrayGpu8<TensorT>& s1, const TensorArrayGpu8<TensorT>& s2) {
+      if (TensorArrayComparisonGpu::compare(s1, s2, this->size_) != 0) return true;
+      else return false;
+    }
+  };
+
+  struct isLessThanGpu : TensorArrayFunctors {
+    using TensorArrayFunctors::TensorArrayFunctors;
+    template<typename TensorT>
+    __host__ __device__ bool operator()(const TensorArrayGpu8<TensorT>& s1, const TensorArrayGpu8<TensorT>& s2) {
+      if (TensorArrayComparisonGpu::compare(s1, s2, this->size_) < 0) return true;
+      else return false;
+    }
+  };
+
+  struct isGreaterThanGpu : TensorArrayFunctors {
+    using TensorArrayFunctors::TensorArrayFunctors;
+    template<typename TensorT>
+    __host__ __device__ bool operator()(const TensorArrayGpu8<TensorT>& s1, const TensorArrayGpu8<TensorT>& s2) {
+      if (TensorArrayComparisonGpu::compare(s1, s2, this->size_) > 0) return true;
+      else return false;
+    }
+  };
+
+  struct isLessThanOrEqualToGpu : TensorArrayFunctors {
+    using TensorArrayFunctors::TensorArrayFunctors;
+    template<typename TensorT>
+    __host__ __device__ bool operator()(const TensorArrayGpu8<TensorT>& s1, const TensorArrayGpu8<TensorT>& s2) {
+      if (TensorArrayComparisonGpu::compare(s1, s2, this->size_) <= 0) return true;
+      else return false;
+    }
+  };
+
+  struct isGreaterThanOrEqualToGpu : TensorArrayFunctors {
+    using TensorArrayFunctors::TensorArrayFunctors;
+    template<typename TensorT>
+    __host__ __device__  bool operator()(const TensorArrayGpu8<TensorT>& s1, const TensorArrayGpu8<TensorT>& s2) {
+      if (TensorArrayComparisonGpu::compare(s1, s2, this->size_) >= 0) return true;
+      else return false;
     }
   };
 
@@ -221,7 +363,7 @@ namespace TensorBase
   }
 
   template<typename TensorT>
-  inline bool TensorArrayGpu8<TensorT>::operator==(const TensorArrayGpu<TensorT> & other) const
+  inline __host__ __device__ bool TensorArrayGpu8<TensorT>::operator==(const TensorArrayGpu8<TensorT> & other) const
   {
     assert(this->array_size_ == other.getArraySize());
     isEqualToGpu comp(this->array_size_);
@@ -229,7 +371,7 @@ namespace TensorBase
   }
 
   template<typename TensorT>
-  inline bool TensorArrayGpu8<TensorT>::operator!=(const TensorArrayGpu<TensorT> & other) const
+  inline __host__ __device__ bool TensorArrayGpu8<TensorT>::operator!=(const TensorArrayGpu8<TensorT> & other) const
   {
     assert(this->array_size_ == other.getArraySize());
     isNotEqualToGpu comp(this->array_size_);
@@ -237,7 +379,7 @@ namespace TensorBase
   }
 
   template<typename TensorT>
-  inline bool TensorArrayGpu8<TensorT>::operator<(const TensorArrayGpu<TensorT> & other) const
+  inline __host__ __device__ bool TensorArrayGpu8<TensorT>::operator<(const TensorArrayGpu8<TensorT> & other) const
   {
     assert(this->array_size_ == other.getArraySize());
     isLessThanGpu comp(this->array_size_);
@@ -245,7 +387,7 @@ namespace TensorBase
   }
 
   template<typename TensorT>
-  inline bool TensorArrayGpu8<TensorT>::operator<=(const TensorArrayGpu<TensorT> & other) const
+  inline __host__ __device__ bool TensorArrayGpu8<TensorT>::operator<=(const TensorArrayGpu8<TensorT> & other) const
   {
     assert(this->array_size_ == other.getArraySize());
     isLessThanOrEqualToGpu comp(this->array_size_);
@@ -253,7 +395,7 @@ namespace TensorBase
   }
 
   template<typename TensorT>
-  inline bool TensorArrayGpu8<TensorT>::operator>(const TensorArrayGpu<TensorT> & other) const
+  inline __host__ __device__ bool TensorArrayGpu8<TensorT>::operator>(const TensorArrayGpu8<TensorT> & other) const
   {
     assert(this->array_size_ == other.getArraySize());
     isGreaterThanGpu comp(this->array_size_);
@@ -261,32 +403,12 @@ namespace TensorBase
   }
 
   template<typename TensorT>
-  inline bool TensorArrayGpu8<TensorT>::operator>=(const TensorArrayGpu<TensorT>& other) const
+  inline __host__ __device__ bool TensorArrayGpu8<TensorT>::operator>=(const TensorArrayGpu8<TensorT>& other) const
   {
     assert(this->array_size_ == other.getArraySize());
     isGreaterThanOrEqualToGpu comp(this->array_size_);
     return comp(*this, other);
   }
-
-  class Point {
-  public:
-    Point() = default;
-    Point(float x, float y) : x(x), y(y) {};
-    float x;
-    float y;
-    __host__ __device__ bool operator==(const Point& other) const {
-      if (this->x == other.x && this->y == other.y) return true;
-      else return false;
-    }
-  };
-
-  struct compOp {
-    template<typename T>
-    __host__ __device__ bool operator()(const T& lhs, const T& rhs) {
-      if (lhs.x < rhs.x) return true;
-      else return false;
-    }
-  };
 };
 #endif
 #endif //TENSORBASE_TENSORARRAYGPU_H

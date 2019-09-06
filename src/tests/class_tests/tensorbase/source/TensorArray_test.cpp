@@ -29,6 +29,31 @@ BOOST_AUTO_TEST_CASE(destructorDefaultDevice)
   delete ptr;
 }
 
+BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
+{
+  // Check same and equal length float
+  Eigen::Tensor<float, 1> same_equal_float_1(8);
+  same_equal_float_1.setValues({ 1,2,3,4,5,6,7,8 });
+  TensorArray8<float> tensorArrayFloat1(same_equal_float_1);
+  BOOST_CHECK_EQUAL(tensorArrayFloat1.getArraySize(), 8);
+  BOOST_CHECK_EQUAL(tensorArrayFloat1.getTensorArray()(0), 1);
+  BOOST_CHECK_EQUAL(tensorArrayFloat1.getTensorArray()(1), 2);
+  BOOST_CHECK_EQUAL(tensorArrayFloat1.getTensorArray()(2), 3);
+  BOOST_CHECK_EQUAL(tensorArrayFloat1.getTensorArray()(3), 4);
+  BOOST_CHECK_EQUAL(tensorArrayFloat1.getTensorArray()(4), 5);
+  BOOST_CHECK_EQUAL(tensorArrayFloat1.getTensorArray()(5), 6);
+  BOOST_CHECK_EQUAL(tensorArrayFloat1.getTensorArray()(6), 7);
+  BOOST_CHECK_EQUAL(tensorArrayFloat1.getTensorArray()(7), 8);
+  BOOST_CHECK_EQUAL(tensorArrayFloat1.at(0), 1);
+  BOOST_CHECK_EQUAL(tensorArrayFloat1.at(1), 2);
+  BOOST_CHECK_EQUAL(tensorArrayFloat1.at(2), 3);
+  BOOST_CHECK_EQUAL(tensorArrayFloat1.at(3), 4);
+  BOOST_CHECK_EQUAL(tensorArrayFloat1.at(4), 5);
+  BOOST_CHECK_EQUAL(tensorArrayFloat1.at(5), 6);
+  BOOST_CHECK_EQUAL(tensorArrayFloat1.at(6), 7);
+  BOOST_CHECK_EQUAL(tensorArrayFloat1.at(7), 8);
+}
+
 BOOST_AUTO_TEST_CASE(comparisonDefaultDevice)
 {
   // Check same and equal length float
