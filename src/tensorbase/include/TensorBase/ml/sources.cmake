@@ -3,6 +3,8 @@ set(directory include/TensorBase/ml)
 
 ### list all header files of the directory here
 set(sources_list_h
+	TensorArray.h
+	TensorArrayGpu.h
 	TensorAxis.h
 	TensorAxisConcept.h
 	TensorAxisConceptGpu.h

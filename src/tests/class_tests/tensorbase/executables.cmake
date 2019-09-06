@@ -12,6 +12,8 @@ set(io_executables_list
 )
 
 set(ml_executables_list
+  TensorArray_test
+  TensorArrayGpu_test
   TensorAxis_test
   TensorAxisGpu_test
   TensorClauses_test
