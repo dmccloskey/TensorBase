@@ -85,9 +85,13 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   // Check getters/setters
   tensorTable.setId(1);
   tensorTable.setName("1");
+  std::map<std::string, int> shard_span = {
+    {"1", 2}, {"2", 2}, {"3", 3} };
+  tensorTable.setShardSpans(shard_span);
 
   BOOST_CHECK_EQUAL(tensorTable.getId(), 1);
   BOOST_CHECK_EQUAL(tensorTable.getName(), "1");
+  BOOST_CHECK(tensorTable.getShardSpans() == shard_span);
 
   // SetAxes associated getters/setters
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
@@ -156,6 +160,11 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable.getDimFromAxisName("2"), 1);
   BOOST_CHECK_EQUAL(tensorTable.getDimFromAxisName("3"), 2);
 
+  // Test expected tensor shard spans
+  BOOST_CHECK_EQUAL(tensorTable.getShardSpans().at("1"), 2);
+  BOOST_CHECK_EQUAL(tensorTable.getShardSpans().at("2"), 3);
+  BOOST_CHECK_EQUAL(tensorTable.getShardSpans().at("3"), 5);
+
   // Test expected tensor dimensions
   BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(0), 2);
   BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(1), 3);
@@ -180,6 +189,7 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(1), 0);
   BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(2), 0);
   BOOST_CHECK_EQUAL(tensorTable.getData(), nullptr);
+  BOOST_CHECK_EQUAL(tensorTable.getShardSpans().size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(tensorDataWrappersDefaultDevice) // TODO: add test to TensorTableGpu_test.cu

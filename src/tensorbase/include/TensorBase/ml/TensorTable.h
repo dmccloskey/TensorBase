@@ -84,6 +84,8 @@ namespace TensorBase
 
     // TODO: combine into a single member called `indices` of Tensor dimensions 5 x indices_length
     //       in order to improve performance of all TensorInsert and TensorDelete methods
+    // UPDATE: attempted to do so, but lost performance in having to extract out indices_view and other 
+    //       as seperate TensorData objects for sort/select
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIndices() { return indices_; }; ///< indices getter
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIndicesView() { return indices_view_; }; ///< indices_view getter
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIsModified() { return is_modified_; }; ///< is_modified getter
@@ -128,10 +130,8 @@ namespace TensorBase
     void setDataStatus(const bool& h_data_updated, const bool& d_data_updated) { data_->setDataStatus(h_data_updated, d_data_updated); } ///< Set the status of the host and device tensor data
     std::pair<bool, bool> getDataStatus() { return data_->getDataStatus(); };   ///< Get the status of the host and device tensor data
 
-    void setShardLength(const int& shard_length); ///< shard length setter
-    int getShardLength() const; ///< shard length getter
-    void makeForwardAndReverseShardIDMaps();  ///< (re-)make the shard ID forward and reverse maps
-    void updateForwardAndReverseShardIDMaps(); ///< remove deleted entries and add in new entries to the forward/reverse shard ID maps after add/delete calls to the TensorTable data
+    void setShardSpans(const std::map<std::string, int>& shard_spans) { shard_spans_ = shard_spans; }; ///< shard_span setter
+    std::map<std::string, int> getShardSpans() const { return shard_spans_; }; ///< shard_span getter
 
     /*
     @brief Select Tensor Axis that will be included in the view
@@ -548,38 +548,23 @@ namespace TensorBase
     Eigen::array<Eigen::Index, TDim> dimensions_ = Eigen::array<Eigen::Index, TDim>();
     std::map<std::string, std::shared_ptr<TensorAxisConcept<DeviceT>>> axes_; ///< primary axis is dim=0
 
-    // TODO: combine into a single member called `indices` of Tensor dimensions 5 x indices_length
-    //       in order to improve performance of all TensorInsert and TensorDelete methods
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> indices_; ///< starting at 1
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> indices_view_; ///< sorted and/or selected indices
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> is_modified_;
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> in_memory_;
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> is_shardable_;
 
-    /* @brief Combined Tensor to store the indices, indices_view, is_modified, in_memory, shard_id, and shard_index
-      where dim = 0 is the same size as the axis and dim = 1 is size of 6 corresponding to the indices, indices_view, etc.
-
-    The combined indices are the following:
-      0) indices_: always start at 1
-      1) indices_view_: sorted and/or selected indices
-      2) is_modified_: 0 if not changed or 1 if changed from the state on the disk
-      3) in_memory_: 0 if not in memory and 1 otherwise
-      4) shard_id_: the id of the shard
-      5) shart_index_: the index of the particular shard
-    */
-    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 2>>> combined_indices_; ///< starting at 1
-
     std::map<std::string, int> axes_to_dims_;
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> data_; ///< The actual tensor data
 
-    int shard_span_ = 256; ///< the shard span in each dimension
+    std::map<std::string, int> shard_spans_; ///< the shard span in each dimension
     
   private:
   	friend class cereal::access;
   	template<class Archive>
   	void serialize(Archive& archive) {
   		archive(id_, name_, dimensions_, axes_, indices_, indices_view_, is_modified_, in_memory_, is_shardable_,
-        axes_to_dims_, data_, shard_length_, shard_id_to_dim_and_index_, dim_and_index_to_shard_id_);
+        axes_to_dims_, data_, shard_spans_);
   	}
   };
 
@@ -600,6 +585,7 @@ namespace TensorBase
     in_memory_.clear();
     is_shardable_.clear();
     data_.reset();
+    shard_spans_.clear();
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
