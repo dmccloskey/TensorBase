@@ -248,12 +248,12 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
     if (i < nlabels2) {
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getInMemory().at("2")->getData()(i), 0);
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsShardable().at("2")->getData()(i), 0);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 0);
     }
     else {
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getInMemory().at("2")->getData()(i), 1);
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsShardable().at("2")->getData()(i), 1); // TODO...
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1); // TODO...
     }
   }
 
@@ -305,7 +305,7 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
     }
     BOOST_CHECK_EQUAL(tensorTable2_ptr->getIsModified().at("2")->getData()(i), 0);
     BOOST_CHECK_EQUAL(tensorTable2_ptr->getInMemory().at("2")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(tensorTable2_ptr->getIsShardable().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable2_ptr->getShardId().at("2")->getData()(i), 0);
   }
 
   // operation #3: update
@@ -365,7 +365,7 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
     BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(i), i + 1);
     //BOOST_CHECK_EQUAL(tensorTable2_ptr->getIsModified().at("2")->getData()(i), 0); // TODO: update once the sharding model is in place
     //BOOST_CHECK_EQUAL(tensorTable2_ptr->getInMemory().at("2")->getData()(i), 0);
-    //BOOST_CHECK_EQUAL(tensorTable2_ptr->getIsShardable().at("2")->getData()(i), 0);
+    //BOOST_CHECK_EQUAL(tensorTable2_ptr->getShardId().at("2")->getData()(i), 0);
   }
 
   // Redo one of them
@@ -402,7 +402,7 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
     }
     //BOOST_CHECK_EQUAL(tensorTable2_ptr->getIsModified().at("2")->getData()(i), 0);  // TODO: update once the sharding model is in place
     //BOOST_CHECK_EQUAL(tensorTable2_ptr->getInMemory().at("2")->getData()(i), 0);
-    //BOOST_CHECK_EQUAL(tensorTable2_ptr->getIsShardable().at("2")->getData()(i), 0);
+    //BOOST_CHECK_EQUAL(tensorTable2_ptr->getShardId().at("2")->getData()(i), 0);
   }
 
   // Rollback all of them
@@ -432,7 +432,7 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getInMemory().at("2")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsShardable().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 0);
   }
 }
 
@@ -568,12 +568,12 @@ BOOST_AUTO_TEST_CASE(CommitDefaultDevice)
     if (i < nlabels2) {
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getInMemory().at("2")->getData()(i), 0);
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsShardable().at("2")->getData()(i), 0);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 0);
     }
     else {
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getInMemory().at("2")->getData()(i), 1);
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsShardable().at("2")->getData()(i), 1); // TODO...
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1); // TODO...
     }
   }
 

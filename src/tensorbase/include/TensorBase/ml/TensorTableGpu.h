@@ -64,7 +64,7 @@ namespace TensorBase
     indices_view_.clear();
     is_modified_.clear();
     in_memory_.clear();
-    is_shardable_.clear();
+    shard_id_.clear();
 
     // Determine the overall dimensions of the tensor
     int axis_cnt = 0;
@@ -111,7 +111,7 @@ namespace TensorBase
         is_shardable_values.setZero();
       TensorDataGpu<int, 1> is_shardable(axis_dimensions);
       is_shardable.setData(is_shardable_values);
-      this->is_shardable_.emplace(axis.second->getName(), std::make_shared<TensorDataGpu<int, 1>>(is_shardable));
+      this->shard_id_.emplace(axis.second->getName(), std::make_shared<TensorDataGpu<int, 1>>(is_shardable));
 
       // Next iteration
       ++axis_cnt;

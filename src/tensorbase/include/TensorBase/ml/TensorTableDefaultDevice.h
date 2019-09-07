@@ -54,12 +54,13 @@ namespace TensorBase
   void TensorTableDefaultDevice<TensorT, TDim>::setAxes() {
     assert(TDim == this->axes_.size()); // "The number of tensor_axes and the template TDim do not match.";
     // Clear existing data
-    dimensions_ = Eigen::array<Eigen::Index, TDim>();
-    indices_.clear();
-    indices_view_.clear();
-    is_modified_.clear();
-    in_memory_.clear();
-    is_shardable_.clear();
+    this->dimensions_ = Eigen::array<Eigen::Index, TDim>();
+    this->indices_.clear();
+    this->indices_view_.clear();
+    this->is_modified_.clear();
+    this->in_memory_.clear();
+    this->shard_id_.clear();
+    this->shard_spans_.clear();
 
     // Determine the overall dimensions of the tensor
     int axis_cnt = 0;
@@ -70,10 +71,15 @@ namespace TensorBase
       // Set the axes name to dim map
       this->axes_to_dims_.emplace(axis.second->getName(), axis_cnt);
 
+      // Set the initial shard size
+      this->shard_spans_.emplace(axis.second->getName(), axis.second->getNLabels());
+
       // Set the indices
       Eigen::Tensor<int, 1> indices_values(axis.second->getNLabels());
+      Eigen::Tensor<int, 1> shard_indices_values(axis.second->getNLabels());
       for (int i = 0; i < axis.second->getNLabels(); ++i) {
         indices_values(i) = i + 1;
+        shard_indices_values(i) = i;
       }
       TensorDataDefaultDevice<int, 1> indices(axis_dimensions);
       indices.setData(indices_values);
@@ -92,21 +98,19 @@ namespace TensorBase
       this->is_modified_.emplace(axis.second->getName(), std::make_shared<TensorDataDefaultDevice<int, 1>>(is_modified));
 
       // Set the in_memory defaults
-      Eigen::Tensor<int, 1> in_memory_values(axis.second->getNLabels());
-      in_memory_values.setZero();
       TensorDataDefaultDevice<int, 1> in_memory(axis_dimensions);
-      in_memory.setData(in_memory_values);
+      in_memory.setData(is_modified_values);
       this->in_memory_.emplace(axis.second->getName(), std::make_shared<TensorDataDefaultDevice<int, 1>>(in_memory));
 
-      // Set the in_memory defaults
-      Eigen::Tensor<int, 1> is_shardable_values(axis.second->getNLabels());
-      if (axis_cnt == 0)
-        is_shardable_values.setConstant(1);
-      else
-        is_shardable_values.setZero();
-      TensorDataDefaultDevice<int, 1> is_shardable(axis_dimensions);
-      is_shardable.setData(is_shardable_values);
-      this->is_shardable_.emplace(axis.second->getName(), std::make_shared<TensorDataDefaultDevice<int, 1>>(is_shardable));
+      // Set the shard_id defaults
+      TensorDataDefaultDevice<int, 1> shard_id(axis_dimensions);
+      shard_id.setData(is_modified_values);
+      this->shard_id_.emplace(axis.second->getName(), std::make_shared<TensorDataDefaultDevice<int, 1>>(shard_id));
+
+      // Set the shard_indices defaults
+      TensorDataDefaultDevice<int, 1> shard_indices(axis_dimensions);
+      shard_indices.setData(shard_indices_values);
+      this->shard_indices_.emplace(axis.second->getName(), std::make_shared<TensorDataDefaultDevice<int, 1>>(shard_indices));
 
       // Next iteration
       ++axis_cnt;

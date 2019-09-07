@@ -77,7 +77,7 @@ void test_gettersAndSettersGpu()
   assert(tensorTable.getIndicesView().at("1")->getData()(nlabels1 - 1) == nlabels1);
   assert(tensorTable.getIsModified().at("1")->getData()(0) == 0);
   assert(tensorTable.getInMemory().at("1")->getData()(0) == 0);
-  assert(tensorTable.getIsShardable().at("1")->getData()(0) == 1);
+  assert(tensorTable.getShardId().at("1")->getData()(0) == 1);
 
   assert(tensorTable.getAxes().at("2")->getName() == "2");
   //assert(tensorTable.getAxes().at("2")->getLabels()(0, 0) == 2);
@@ -91,7 +91,7 @@ void test_gettersAndSettersGpu()
   assert(tensorTable.getIndicesView().at("2")->getData()(nlabels2 - 1) == nlabels2);
   assert(tensorTable.getIsModified().at("2")->getData()(0) == 0);
   assert(tensorTable.getInMemory().at("2")->getData()(0) == 0);
-  assert(tensorTable.getIsShardable().at("2")->getData()(0) == 0);
+  assert(tensorTable.getShardId().at("2")->getData()(0) == 0);
 
   assert(tensorTable.getAxes().at("3")->getName() == "3");
   //assert(tensorTable.getAxes().at("3")->getLabels()(0, 0) == 3);
@@ -105,7 +105,7 @@ void test_gettersAndSettersGpu()
   assert(tensorTable.getIndicesView().at("3")->getData()(nlabels3 - 1) == nlabels3);
   assert(tensorTable.getIsModified().at("3")->getData()(0) == 0);
   assert(tensorTable.getInMemory().at("3")->getData()(0) == 0);
-  assert(tensorTable.getIsShardable().at("3")->getData()(0) == 0);
+  assert(tensorTable.getShardId().at("3")->getData()(0) == 0);
 
   // Test expected axis to dims mapping
   assert(tensorTable.getDimFromAxisName("1") == 0);
@@ -131,7 +131,7 @@ void test_gettersAndSettersGpu()
   assert(tensorTable.getIndicesView().size() == 0);
   assert(tensorTable.getIsModified().size() == 0);
   assert(tensorTable.getInMemory().size() == 0);
-  assert(tensorTable.getIsShardable().size() == 0);
+  assert(tensorTable.getShardId().size() == 0);
   assert(tensorTable.getDimensions().at(0) == 0);
   assert(tensorTable.getDimensions().at(1) == 0);
   assert(tensorTable.getDimensions().at(2) == 0);
@@ -1156,7 +1156,7 @@ void test_selectTensorDataGpu()
   assert(tensorTable.getIndicesView().at("1")->getData()(0) == 1);
   assert(tensorTable.getIsModified().at("1")->getData()(0) == 0);
   assert(tensorTable.getInMemory().at("1")->getData()(0) == 0);
-  assert(tensorTable.getIsShardable().at("1")->getData()(0) == 1);
+  assert(tensorTable.getShardId().at("1")->getData()(0) == 1);
 
   assert(tensorTable.getAxes().at("2")->getName() == "2");
   assert(tensorTable.getAxes().at("2")->getNLabels() == nlabels);
@@ -1167,7 +1167,7 @@ void test_selectTensorDataGpu()
     assert(tensorTable.getIndicesView().at("2")->getData()(i) == i + 1);
     assert(tensorTable.getIsModified().at("2")->getData()(i) == 0);
     assert(tensorTable.getInMemory().at("2")->getData()(i) == 0);
-    assert(tensorTable.getIsShardable().at("2")->getData()(i) == 0);
+    assert(tensorTable.getShardId().at("2")->getData()(i) == 0);
   }
 
   assert(tensorTable.getAxes().at("3")->getName() == "3");
@@ -1179,7 +1179,7 @@ void test_selectTensorDataGpu()
     assert(tensorTable.getIndicesView().at("3")->getData()(i) == i + 1);
     assert(tensorTable.getIsModified().at("3")->getData()(i) == 0);
     assert(tensorTable.getInMemory().at("3")->getData()(i) == 0);
-    assert(tensorTable.getIsShardable().at("3")->getData()(i) == 0);
+    assert(tensorTable.getShardId().at("3")->getData()(i) == 0);
   }
 
   // Test expected axis to dims mapping
@@ -1581,7 +1581,7 @@ void test_appendToIndicesGpu()
   tensorTable.syncIndicesViewHAndDData(device);
   tensorTable.syncIsModifiedHAndDData(device);
   tensorTable.syncInMemoryHAndDData(device);
-  tensorTable.syncIsShardableHAndDData(device);
+  tensorTable.syncShardIdHAndDData(device);
   tensorTable.syncAxesHAndDData(device);
   indices_new_ptr->syncHAndDData(device);
 
@@ -1591,13 +1591,13 @@ void test_appendToIndicesGpu()
   tensorTable.syncIndicesViewHAndDData(device);
   tensorTable.syncIsModifiedHAndDData(device);
   tensorTable.syncInMemoryHAndDData(device);
-  tensorTable.syncIsShardableHAndDData(device);
+  tensorTable.syncShardIdHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(tensorTable.getDimensions().at(tensorTable.getDimFromAxisName("1")) == nlabels + nlabels - 1);
   for (int i = 0; i < nlabels + nlabels - 1; ++i) {
     assert(tensorTable.getIndices().at("1")->getData()(i) == i + 1);
     assert(tensorTable.getIndicesView().at("1")->getData()(i) == i + 1);
-    assert(tensorTable.getIsShardable().at("1")->getData()(i) == 1);
+    assert(tensorTable.getShardId().at("1")->getData()(i) == 1);
     if (i < nlabels) {
       assert(tensorTable.getIsModified().at("1")->getData()(i) == 0);
       assert(tensorTable.getInMemory().at("1")->getData()(i) == 0);
@@ -1816,7 +1816,7 @@ void test_deleteFromIndicesGpu()
   tensorTable.syncAxesHAndDData(device);
   tensorTable.syncIsModifiedHAndDData(device);
   tensorTable.syncInMemoryHAndDData(device);
-  tensorTable.syncIsShardableHAndDData(device);
+  tensorTable.syncShardIdHAndDData(device);
   indices_to_select_ptr->syncHAndDData(device);
 
   // test deleteFromIndices
@@ -1826,7 +1826,7 @@ void test_deleteFromIndicesGpu()
   tensorTable.syncAxesHAndDData(device);
   tensorTable.syncIsModifiedHAndDData(device);
   tensorTable.syncInMemoryHAndDData(device);
-  tensorTable.syncIsShardableHAndDData(device);
+  tensorTable.syncShardIdHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(tensorTable.getDimensions().at(tensorTable.getDimFromAxisName("1")) == nlabels - 1);
   for (int i = 0; i < nlabels - 1; ++i) {
@@ -1838,7 +1838,7 @@ void test_deleteFromIndicesGpu()
       assert(tensorTable.getIndices().at("1")->getData()(i) == i + 2);
       assert(tensorTable.getIndicesView().at("1")->getData()(i) == i + 2);
     }
-    assert(tensorTable.getIsShardable().at("1")->getData()(i) == 1);
+    assert(tensorTable.getShardId().at("1")->getData()(i) == 1);
     assert(tensorTable.getIsModified().at("1")->getData()(i) == 0);
     assert(tensorTable.getInMemory().at("1")->getData()(i) == 0);
   }
@@ -1968,7 +1968,7 @@ void test_deleteFromAxisGpu()
   tensorTable.syncHAndDData(device);
   tensorTable.syncIsModifiedHAndDData(device);
   tensorTable.syncInMemoryHAndDData(device);
-  tensorTable.syncIsShardableHAndDData(device);
+  tensorTable.syncShardIdHAndDData(device);
   indices_to_select_ptr->syncHAndDData(device);
 
   // test deleteFromAxis
@@ -1986,7 +1986,7 @@ void test_deleteFromAxisGpu()
   tensorTable.syncHAndDData(device);
   tensorTable.syncIsModifiedHAndDData(device);
   tensorTable.syncInMemoryHAndDData(device);
-  tensorTable.syncIsShardableHAndDData(device);
+  tensorTable.syncShardIdHAndDData(device);
   values_ptr->syncHAndDData(device);
   labels_ptr->syncHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
@@ -2000,7 +2000,7 @@ void test_deleteFromAxisGpu()
       assert(tensorTable.getIndices().at("1")->getData()(i) == i + 2);
       assert(tensorTable.getIndicesView().at("1")->getData()(i) == i + 2);
     }
-    assert(tensorTable.getIsShardable().at("1")->getData()(i) == 1);
+    assert(tensorTable.getShardId().at("1")->getData()(i) == 1);
     assert(tensorTable.getIsModified().at("1")->getData()(i) == 0);
     assert(tensorTable.getInMemory().at("1")->getData()(i) == 0);
   }
@@ -2156,7 +2156,7 @@ void test_insertIntoAxisGpu()
   tensorTable.syncIndicesViewHAndDData(device);
   tensorTable.syncInMemoryHAndDData(device);
   tensorTable.syncIsModifiedHAndDData(device);
-  tensorTable.syncIsShardableHAndDData(device);
+  tensorTable.syncShardIdHAndDData(device);
   tensorTable.syncAxesHAndDData(device);
   tensorTable.syncHAndDData(device);
   values_new_ptr->syncHAndDData(device);

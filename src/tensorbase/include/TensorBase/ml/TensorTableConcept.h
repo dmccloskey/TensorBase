@@ -44,9 +44,9 @@ namespace TensorBase
       auto indices_view = this->getIndicesView();
       if (indices_view.size() != other.getIndicesView().size()) return false;
       bool indices_view_equal = std::equal(indices_view.begin(), indices_view.end(), other.getIndicesView().begin(), compare_maps);
-      auto is_shardable = this->getIsShardable();
+      auto is_shardable = this->getShardId();
       if (indices_view.size() != other.getIndicesView().size()) return false;
-      bool is_shardable_equal = std::equal(is_shardable.begin(), is_shardable.end(), other.getIsShardable().begin(), compare_maps);
+      bool is_shardable_equal = std::equal(is_shardable.begin(), is_shardable.end(), other.getShardId().begin(), compare_maps);
       auto in_memory = this->getInMemory();
       if (in_memory.size() != other.getInMemory().size()) return false;
       bool in_memory_equal = std::equal(in_memory.begin(), in_memory.end(), other.getInMemory().begin(), compare_maps);
@@ -69,13 +69,13 @@ namespace TensorBase
     virtual std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIndicesView() = 0;
     virtual std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIsModified() = 0;
     virtual std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getInMemory() = 0;
-    virtual std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIsShardable() = 0;
+    virtual std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getShardId() = 0;
     virtual std::map<std::string, std::shared_ptr<TensorAxisConcept<DeviceT>>> getAxes() const = 0;
     virtual std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getIndices() const = 0;
     virtual std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getIndicesView() const = 0;
     virtual std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getIsModified() const = 0;
     virtual std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getInMemory() const = 0;
-    virtual std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getIsShardable() const = 0;
+    virtual std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getShardId() const = 0;
     virtual void resetIndicesView(const std::string& axis_name, DeviceT& device) = 0;
     virtual void makeIndicesFromIndicesView(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) = 0;
     virtual int getDimFromAxisName(const std::string& axis_name) = 0;
@@ -245,13 +245,13 @@ namespace TensorBase
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIndicesView() { return tensor_table_->getIndicesView(); };
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIsModified() { return tensor_table_->getIsModified(); };
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getInMemory() { return tensor_table_->getInMemory(); };
-    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIsShardable() { return tensor_table_->getIsShardable(); };
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getShardId() { return tensor_table_->getShardId(); };
     std::map<std::string, std::shared_ptr<TensorAxisConcept<DeviceT>>> getAxes() const { return tensor_table_->getAxes(); };
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getIndices() const { return tensor_table_->getIndices(); };
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getIndicesView() const { return tensor_table_->getIndicesView(); };
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getIsModified() const { return tensor_table_->getIsModified(); };
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getInMemory() const { return tensor_table_->getInMemory(); };
-    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getIsShardable() const { return tensor_table_->getIsShardable(); };
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getShardId() const { return tensor_table_->getShardId(); };
     void resetIndicesView(const std::string& axis_name, DeviceT& device) { tensor_table_->resetIndicesView(axis_name, device); };
     void makeIndicesFromIndicesView(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) { 
       tensor_table_->makeIndicesFromIndicesView(axis_name, indices, device);
