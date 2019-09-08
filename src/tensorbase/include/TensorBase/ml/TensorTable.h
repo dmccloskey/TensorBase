@@ -101,8 +101,15 @@ namespace TensorBase
 
     Eigen::array<Eigen::Index, TDim>& getDimensions() { return dimensions_; }  ///< dimensions getter
     int getDimFromAxisName(const std::string& axis_name) { return axes_to_dims_.at(axis_name); }
-    std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& getData() { return data_; }; ///< data getter
     void clear();  ///< clears the axes and all associated data
+
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> getData() { return data_->getData(); } ///< data_->getData() wrapper
+    Eigen::array<Eigen::Index, TDim> getDataDimensions() const { return data_->getDimensions(); } ///< data_->getDimensions() wrapper
+    size_t getDataTensorBytes() { return data_->getTensorBytes(); } ///< data_->getTensorBytes() wrapper
+    size_t getDataTensorSize() { return data_->getTensorSize(); } ///< data_->getTensorSize() wrapper
+    std::shared_ptr<TensorT> getDataPointer() { return data_->getDataPointer(); } ///< data_->getDataPointer() wrapper
+
+    void setData(const Eigen::Tensor<TensorT, TDim>& data); ///< data setter
 
     bool syncIndicesHAndDData(DeviceT& device); ///< Sync the host and device indices data
     void setIndicesDataStatus(const bool& h_data_updated, const bool& d_data_updated);///< Set the status of the host and device indices data
@@ -404,16 +411,6 @@ namespace TensorBase
     virtual void makeSparseTensorTable(const Eigen::Tensor<std::string, 1>& sparse_dimensions, const std::shared_ptr<TensorData<int, DeviceT, 2>>& sparse_labels, const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& sparse_data, std::shared_ptr<TensorTable<TensorT, DeviceT, 2>>& sparse_table, DeviceT& device) = 0;
 
     /*
-    @brief Update the TensorTable data according to the values in the "Sparse" Tensor Table representation
-
-    @param[in] axes The axis for the tensor table of nDimensions (Dim 0) = TDim and nLabels (Dim 1) = # of selected items where
-      Dimensions are integers from 0 to TDim and the labels are the indices of the selected data
-    @param[in] data The 1D TensorData of length = # of selected items
-    @param[in] device
-    */
-    void updateTensorTableFromSparseTensorTable(const std::shared_ptr<TensorTable<TensorT, DeviceT, 1>>& sparse_table, DeviceT& device);
-
-    /*
     @brief Append new labels to the specified axis and append new data to the Tensor Data at the specified axis
 
     NOTE: that the existing indexes of each axis are not changed to allow for undo operations
@@ -594,6 +591,18 @@ namespace TensorBase
     shard_indices_.clear();
     data_.reset();
     shard_spans_.clear();
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::setData(const Eigen::Tensor<TensorT, TDim>& data)
+  {
+    data_->setData(data);
+    for (auto& in_memory_map : in_memory_) {
+      in_memory_map.second->getData() = in_memory_map.second->getData().constant(1); // host
+    }
+    for (auto& is_modified_map : is_modified_) {
+      is_modified_map.second->getData() = is_modified_map.second->getData().constant(1); // host
+    }
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
@@ -1185,6 +1194,17 @@ namespace TensorBase
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> values_new_values(values_new->getDataPointer().get(), values_new->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(data_->getDataPointer().get(), data_->getDimensions());
     data_values.device(device) = values_new_values;
+
+    // update the in_memory and is_modified attributes
+    for (auto& in_memory_map : in_memory_) {
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> in_memory(in_memory_map.second->getDataPointer().get(), (int)in_memory_map.second->getTensorSize());
+      in_memory.device(device) = in_memory.constant(1); // device
+    }
+    for (auto& is_modified_map : is_modified_) {
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> is_modified(is_modified_map.second->getDataPointer().get(), (int)is_modified_map.second->getTensorSize());
+      is_modified.device(device) = is_modified.constant(1); // device
+    }
+
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
@@ -1205,6 +1225,16 @@ namespace TensorBase
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> values_new_values(values_new.get(), data_->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(data_->getDataPointer().get(), data_->getDimensions());
     data_values.device(device) = values_new_values;
+
+    // update the in_memory and is_modified attributes
+    for (auto& in_memory_map : in_memory_) {
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> in_memory(in_memory_map.second->getDataPointer().get(), (int)in_memory_map.second->getTensorSize());
+      in_memory.device(device) = in_memory.constant(1); // device
+    }
+    for (auto& is_modified_map : is_modified_) {
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> is_modified(is_modified_map.second->getDataPointer().get(), (int)is_modified_map.second->getTensorSize());
+      is_modified.device(device) = is_modified.constant(1); // device
+    }
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
@@ -1243,6 +1273,17 @@ namespace TensorBase
       
     // assign the new values
     data_values.device(device) = selection;
+
+    // update the in_memory and is_modified attributes
+    for (const auto& axis_to_dim : axes_to_dims_) {
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_to_dim.first)->getDataPointer().get(), (int)indices_view_.at(axis_to_dim.first)->getTensorSize());
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> in_memory(in_memory_.at(axis_to_dim.first)->getDataPointer().get(), (int)in_memory_.at(axis_to_dim.first)->getTensorSize());
+      auto in_memory_selection = (indices_view > indices_view.constant(0)).select(in_memory.constant(1), in_memory);
+      in_memory.device(device) = in_memory_selection;
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> is_modified(is_modified_.at(axis_to_dim.first)->getDataPointer().get(), (int)is_modified_.at(axis_to_dim.first)->getTensorSize());
+      auto is_modified_selection = (indices_view > indices_view.constant(0)).select(is_modified.constant(1), is_modified);
+      is_modified.device(device) = is_modified_selection;
+    }
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
@@ -1267,10 +1308,21 @@ namespace TensorBase
 
     // update the sorted tensor data "slice" with the old values
     Eigen::array<Eigen::Index, 1> offsets = {0};
-    Eigen::array<Eigen::Index, 1> extents = { (int)values_old->getData()->getTensorSize() };
-    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> values_old_values(values_old->getData()->getDataPointer().get(), (int)values_old->getData()->getTensorSize());
+    Eigen::array<Eigen::Index, 1> extents = { (int)values_old->getDataTensorSize() };
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> values_old_values(values_old->getDataPointer().get(), (int)values_old->getDataTensorSize());
     Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> data_values(data_->getDataPointer().get(), (int)data_->getTensorSize());
     data_values.slice(offsets, extents).device(device) = values_old_values;
+
+    // update the in_memory and is_modified attributes
+    for (const auto& axis_to_dim : axes_to_dims_) {
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_to_dim.first)->getDataPointer().get(), (int)indices_view_.at(axis_to_dim.first)->getTensorSize());
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> in_memory(in_memory_.at(axis_to_dim.first)->getDataPointer().get(), (int)in_memory_.at(axis_to_dim.first)->getTensorSize());
+      auto in_memory_selection = (indices_view > indices_view.constant(0)).select(in_memory.constant(1), in_memory);
+      in_memory.device(device) = in_memory_selection;
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> is_modified(is_modified_.at(axis_to_dim.first)->getDataPointer().get(), (int)is_modified_.at(axis_to_dim.first)->getTensorSize());
+      auto is_modified_selection = (indices_view > indices_view.constant(0)).select(is_modified.constant(1), is_modified);
+      is_modified.device(device) = is_modified_selection;
+    }
 
     // make the sort index tensor
     for (const auto& axis_to_index: axes_to_dims_)

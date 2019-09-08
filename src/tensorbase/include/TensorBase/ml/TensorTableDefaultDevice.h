@@ -122,7 +122,7 @@ namespace TensorBase
 
   template<typename TensorT, int TDim>
   void TensorTableDefaultDevice<TensorT, TDim>::initData() {
-    this->getData().reset(new TensorDataDefaultDevice<TensorT, TDim>(this->getDimensions()));
+    this->data_.reset(new TensorDataDefaultDevice<TensorT, TDim>(this->getDimensions()));
   }
 
   template<typename TensorT, int TDim>
@@ -553,7 +553,7 @@ namespace TensorBase
 
     // set the data
     Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> sparse_data_values(sparse_data->getDataPointer().get(), sparse_data->getTensorSize(), 1);
-    tensorTable.getData()->setData(sparse_data_values);
+    tensorTable.setData(sparse_data_values);
 
     // move over the table
     sparse_table = std::make_shared<TensorTableDefaultDevice<TensorT, 2>>(tensorTable);

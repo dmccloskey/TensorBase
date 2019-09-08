@@ -130,7 +130,7 @@ namespace TensorBase
 
   template<typename TensorT, int TDim>
   void TensorTableGpu<TensorT, TDim>::initData() {
-    this->getData().reset(new TensorDataGpu<TensorT, TDim>(this->getDimensions()));
+    this->data_.reset(new TensorDataGpu<TensorT, TDim>(this->getDimensions()));
   }
 
   template<typename TensorT, int TDim>

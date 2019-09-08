@@ -2599,6 +2599,11 @@ void test_updateTensorDataConstantGpu()
   }
   tensorTable.getData()->setData(tensor_values);
 
+  // reset is_modified attribute
+  for (auto& is_modified_map : tensorTable.getIsModified()) {
+    is_modified_map.second->getData() = is_modified_map.second->getData().constant(1);
+  }
+
   // setup the update values
   TensorDataGpu<float, 1> values_new(Eigen::array<Eigen::Index, 1>({ 1 }));
   values_new.setData();
@@ -2639,6 +2644,21 @@ void test_updateTensorDataConstantGpu()
         assert(tensorTable.getData()->getData()(i, j, k) == 100);
       }
     }
+  }
+
+  // Test for the in_memory and is_modified attributes
+  for (int i = 0; i < nlabels; ++i) {
+    assert(tensorTable.getInMemory().at("1")->getData()(i) == 1);
+    assert(tensorTable.getInMemory().at("2")->getData()(i) == 1);
+    assert(tensorTable.getInMemory().at("3")->getData()(i) == 1);
+    assert(tensorTable.getIsModified().at("1")->getData()(i) == 1);
+    assert(tensorTable.getIsModified().at("2")->getData()(i) == 1);
+    assert(tensorTable.getIsModified().at("3")->getData()(i) == 1);
+  }
+
+  // reset is_modified attribute
+  for (auto& is_modified_map : tensorTable.getIsModified()) {
+    is_modified_map.second->getData() = is_modified_map.second->getData().constant(1);
   }
 
   // Revert the operation and test
