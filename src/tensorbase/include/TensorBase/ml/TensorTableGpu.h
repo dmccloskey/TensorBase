@@ -47,6 +47,9 @@ namespace TensorBase
     void makeSelectIndicesFromIndices(const std::string& axis_name, const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices_select, Eigen::GpuDevice& device) override;
     void getSelectTensorDataFromIndices(std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices_select, const Eigen::array<Eigen::Index, TDim>& dimensions_select, Eigen::GpuDevice& device) override;
     void makeIndicesFromIndicesView(const std::string & axis_name, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, Eigen::GpuDevice& device) override;
+    // Update methods
+    void makeSparseAxisLabelsFromIndicesView(std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>>& sparse_select, Eigen::GpuDevice& device) override;
+    void makeSparseTensorTable(const Eigen::Tensor<std::string, 1>& sparse_dimensions, const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>>& sparse_labels, const std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>>& sparse_data, std::shared_ptr<TensorTable<TensorT, Eigen::GpuDevice, 2>>& sparse_table, Eigen::GpuDevice& device) override;
   private:
     friend class cereal::access;
     template<class Archive>
@@ -59,12 +62,13 @@ namespace TensorBase
   void TensorTableGpu<TensorT, TDim>::setAxes() {
     assert(TDim == this->axes_.size()); // "The number of tensor_axes and the template TDim do not match.";
     // Clear existing data
-    dimensions_ = Eigen::array<Eigen::Index, TDim>();
-    indices_.clear();
-    indices_view_.clear();
-    is_modified_.clear();
-    in_memory_.clear();
-    shard_id_.clear();
+    this->dimensions_ = Eigen::array<Eigen::Index, TDim>();
+    this->indices_.clear();
+    this->indices_view_.clear();
+    this->is_modified_.clear();
+    this->in_memory_.clear();
+    this->shard_id_.clear();
+    this->shard_spans_.clear();
 
     // Determine the overall dimensions of the tensor
     int axis_cnt = 0;
@@ -75,10 +79,15 @@ namespace TensorBase
       // Set the axes name to dim map
       this->axes_to_dims_.emplace(axis.second->getName(), axis_cnt);
 
+      // Set the initial shard size
+      this->shard_spans_.emplace(axis.second->getName(), axis.second->getNLabels());
+
       // Set the indices
       Eigen::Tensor<int, 1> indices_values(axis.second->getNLabels());
+      Eigen::Tensor<int, 1> shard_indices_values(axis.second->getNLabels());
       for (int i = 0; i < axis.second->getNLabels(); ++i) {
         indices_values(i) = i + 1;
+        shard_indices_values(i) = i;
       }
       TensorDataGpu<int, 1> indices(axis_dimensions);
       indices.setData(indices_values);
@@ -97,21 +106,19 @@ namespace TensorBase
       this->is_modified_.emplace(axis.second->getName(), std::make_shared<TensorDataGpu<int, 1>>(is_modified));
 
       // Set the in_memory defaults
-      Eigen::Tensor<int, 1> in_memory_values(axis.second->getNLabels());
-      in_memory_values.setZero();
       TensorDataGpu<int, 1> in_memory(axis_dimensions);
-      in_memory.setData(in_memory_values);
+      in_memory.setData(is_modified_values);
       this->in_memory_.emplace(axis.second->getName(), std::make_shared<TensorDataGpu<int, 1>>(in_memory));
 
-      // Set the in_memory defaults
-      Eigen::Tensor<int, 1> is_shardable_values(axis.second->getNLabels());
-      if (axis_cnt == 0)
-        is_shardable_values.setConstant(1);
-      else
-        is_shardable_values.setZero();
-      TensorDataGpu<int, 1> is_shardable(axis_dimensions);
-      is_shardable.setData(is_shardable_values);
-      this->shard_id_.emplace(axis.second->getName(), std::make_shared<TensorDataGpu<int, 1>>(is_shardable));
+      // Set the shard_id defaults
+      TensorDataGpu<int, 1> shard_id(axis_dimensions);
+      shard_id.setData(is_modified_values);
+      this->shard_id_.emplace(axis.second->getName(), std::make_shared<TensorDataGpu<int, 1>>(shard_id));
+
+      // Set the shard_indices defaults
+      TensorDataGpu<int, 1> shard_indices(axis_dimensions);
+      shard_indices.setData(shard_indices_values);
+      this->shard_indices_.emplace(axis.second->getName(), std::make_shared<TensorDataGpu<int, 1>>(shard_indices));
 
       // Next iteration
       ++axis_cnt;
@@ -494,6 +501,96 @@ namespace TensorBase
 
     // Select out the non zero indices
     this->indices_view_.at(axis_name)->select(indices, indices_view_copy, device);
+  }
+  template<typename TensorT, int TDim>
+  inline void TensorTableGpu<TensorT, TDim>::makeSparseAxisLabelsFromIndicesView(std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>>& sparse_select, Eigen::GpuDevice & device)
+  {
+    // temporary memory for calculating the total sum of each axis
+    TensorDataGpu<int, 1> dim_size(Eigen::array<Eigen::Index, 1>({ 1 }));
+    dim_size.setData();
+    dim_size.getData()(0) = 0;
+    Eigen::TensorMap<Eigen::Tensor<int, 0>> dim_size_value(dim_size.getDataPointer().get());
+
+    // Determine the total number of labels and create the selected `indices_view`
+    std::vector<std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>> indices_selected_vec;
+    int labels_size = 1;
+    for (const auto& axis_to_name : this->axes_to_dims_) {
+      // calculate the sum
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_values(this->indices_view_.at(axis_to_name.first)->getDataPointer().get(), this->indices_view_.at(axis_to_name.first)->getDimensions());
+      dim_size_value.device(device) = indices_view_values.clip(0, 1).sum();
+
+      // update the dimensions
+      labels_size *= dim_size.getData()(0);
+
+      // create the selection for the indices view
+      std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_select = this->indices_view_.at(axis_to_name.first)->copy(device);
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_select_values(indices_select->getDataPointer().get(), indices_select->getDimensions());
+      indices_select_values.device(device) = indices_view_values.clip(0, 1);
+
+      // select out the indices
+      TensorDataGpu<int, 1> indices_selected(Eigen::array<Eigen::Index, 1>({ dim_size.getData()(0) }));
+      indices_selected.setData();
+      std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_selected_ptr = std::make_shared<TensorDataGpu<int, 1>>(indices_selected);
+      this->indices_view_.at(axis_to_name.first)->select(indices_selected_ptr, indices_select, device);
+      indices_selected_vec.push_back(indices_selected_ptr);
+    }
+
+    // allocate memory for the labels
+    TensorDataGpu<int, 2> sparse_labels(Eigen::array<Eigen::Index, 2>({ (int)this->axes_to_dims_.size(), labels_size }));
+    sparse_labels.setData();
+
+    // iterate through each of the axes and assign the labels
+    for (int i = 0; i < TDim; ++i) {
+      // determine the padding and repeats for each dimension
+      int n_padding = 1;
+      for (int j = 0; j < i; ++j) {
+        n_padding *= indices_selected_vec.at(j)->getTensorSize();
+      }
+      int slice_size = n_padding * indices_selected_vec.at(i)->getTensorSize();
+      int n_repeats = labels_size / slice_size;
+
+      // create the repeating "slice"
+      Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_selected_values(indices_selected_vec.at(i)->getDataPointer().get(), 1, indices_selected_vec.at(i)->getTensorSize());
+      auto indices_bcast = indices_selected_values.broadcast(Eigen::array<Eigen::Index, 2>({ n_padding, 1 })).reshape(Eigen::array<Eigen::Index, 2>({ 1, slice_size }));
+
+      // repeatedly assign the slice
+      Eigen::TensorMap<Eigen::Tensor<int, 2>> sparse_labels_values(sparse_labels.getDataPointer().get(), sparse_labels.getDimensions());
+      for (int j = 0; j < n_repeats; ++j) {
+        Eigen::array<int, 2> offsets = { i, j * slice_size };
+        Eigen::array<int, 2> extents = { 1, slice_size };
+        sparse_labels_values.slice(offsets, extents).device(device) = indices_bcast;
+      }
+    }
+
+    // move over the output
+    sparse_select = std::make_shared<TensorDataGpu<int, 2>>(sparse_labels);
+  }
+  template<typename TensorT, int TDim>
+  inline void TensorTableGpu<TensorT, TDim>::makeSparseTensorTable(const Eigen::Tensor<std::string, 1>& sparse_dimensions, const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>>& sparse_labels, const std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>>& sparse_data, std::shared_ptr<TensorTable<TensorT, Eigen::GpuDevice, 2>>& sparse_table, Eigen::GpuDevice & device)
+  {
+    // make the sparse axis
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> sparse_labels_values(sparse_labels->getDataPointer().get(), sparse_labels->getDimensions());
+    std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>> axis_1_ptr = std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("Indices", sparse_dimensions, sparse_labels_values));
+
+    // make the values axis
+    Eigen::Tensor<std::string, 1> values_dimension(1);
+    values_dimension.setValues({ "Values" });
+    Eigen::Tensor<int, 2> values_labels(1, 1);
+    values_labels.setZero();
+    std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>> axis_2_ptr = std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("Values", values_dimension, values_labels));
+
+    // add the axes to the tensorTable
+    TensorTableGpu<TensorT, 2> tensorTable;
+    tensorTable.addTensorAxis(axis_1_ptr);
+    tensorTable.addTensorAxis(axis_2_ptr);
+    tensorTable.setAxes();
+
+    // set the data
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> sparse_data_values(sparse_data->getDataPointer().get(), sparse_data->getTensorSize(), 1);
+    tensorTable.getData()->setData(sparse_data_values);
+
+    // move over the table
+    sparse_table = std::make_shared<TensorTableGpu<TensorT, 2>>(tensorTable);
   }
 };
 

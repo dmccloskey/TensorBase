@@ -1267,9 +1267,9 @@ namespace TensorBase
 
     // update the sorted tensor data "slice" with the old values
     Eigen::array<Eigen::Index, 1> offsets = {0};
-    Eigen::array<Eigen::Index, 1> extents = { values_old->getData()->getTensorSize() };
-    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> values_old_values(values_old->getData()->getDataPointer().get(), values_old->getData()->getTensorSize());
-    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> data_values(data_->getDataPointer().get(), data_->getTensorSize());
+    Eigen::array<Eigen::Index, 1> extents = { (int)values_old->getData()->getTensorSize() };
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> values_old_values(values_old->getData()->getDataPointer().get(), (int)values_old->getData()->getTensorSize());
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> data_values(data_->getDataPointer().get(), (int)data_->getTensorSize());
     data_values.slice(offsets, extents).device(device) = values_old_values;
 
     // make the sort index tensor
