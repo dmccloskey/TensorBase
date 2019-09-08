@@ -522,6 +522,7 @@ namespace TensorBase
 
       // update the dimensions
       dim_size.syncHAndDData(device); // d to h
+      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
       labels_size *= dim_size.getData()(0);
 
       // create the selection for the indices view
@@ -573,9 +574,12 @@ namespace TensorBase
   template<typename TensorT, int TDim>
   inline void TensorTableGpu<TensorT, TDim>::makeSparseTensorTable(const Eigen::Tensor<std::string, 1>& sparse_dimensions, const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>>& sparse_labels, const std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>>& sparse_data, std::shared_ptr<TensorTable<TensorT, Eigen::GpuDevice, 2>>& sparse_table, Eigen::GpuDevice & device)
   {
+    sparse_labels->syncHAndDData(device); // d to h
+    sparse_data->syncHAndDData(device); // d to h
+    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+
     // make the sparse axis
-    Eigen::TensorMap<Eigen::Tensor<int, 2>> sparse_labels_values(sparse_labels->getDataPointer().get(), sparse_labels->getDimensions());
-    std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>> axis_1_ptr = std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("Indices", sparse_dimensions, sparse_labels_values));
+    std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>> axis_1_ptr = std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("Indices", sparse_dimensions, sparse_labels->getData()));
 
     // make the values axis
     Eigen::Tensor<std::string, 1> values_dimension(1);
@@ -591,8 +595,18 @@ namespace TensorBase
     tensorTable.setAxes();
 
     // set the data
-    Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> sparse_data_values(sparse_data->getDataPointer().get(), sparse_data->getTensorSize(), 1);
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> sparse_data_values(sparse_data->getData().data(), sparse_data->getTensorSize(), 1);
     tensorTable.setData(sparse_data_values);
+
+    // sync the data
+    tensorTable.syncIndicesHAndDData(device);
+    tensorTable.syncIndicesViewHAndDData(device);
+    tensorTable.syncInMemoryHAndDData(device);
+    tensorTable.syncIsModifiedHAndDData(device);
+    tensorTable.syncShardIdHAndDData(device);
+    tensorTable.syncShardIndicesHAndDData(device);
+    tensorTable.syncAxesHAndDData(device);
+    tensorTable.syncHAndDData(device);
 
     // move over the table
     sparse_table = std::make_shared<TensorTableGpu<TensorT, 2>>(tensorTable);
