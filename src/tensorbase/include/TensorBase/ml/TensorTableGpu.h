@@ -509,21 +509,24 @@ namespace TensorBase
     TensorDataGpu<int, 1> dim_size(Eigen::array<Eigen::Index, 1>({ 1 }));
     dim_size.setData();
     dim_size.getData()(0) = 0;
-    Eigen::TensorMap<Eigen::Tensor<int, 0>> dim_size_value(dim_size.getDataPointer().get());
 
     // Determine the total number of labels and create the selected `indices_view`
     std::vector<std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>> indices_selected_vec;
     int labels_size = 1;
     for (const auto& axis_to_name : this->axes_to_dims_) {
       // calculate the sum
+      dim_size.syncHAndDData(device); // h to d
+      Eigen::TensorMap<Eigen::Tensor<int, 0>> dim_size_value(dim_size.getDataPointer().get());
       Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_values(this->indices_view_.at(axis_to_name.first)->getDataPointer().get(), this->indices_view_.at(axis_to_name.first)->getDimensions());
       dim_size_value.device(device) = indices_view_values.clip(0, 1).sum();
 
       // update the dimensions
+      dim_size.syncHAndDData(device); // d to h
       labels_size *= dim_size.getData()(0);
 
       // create the selection for the indices view
       std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_select = this->indices_view_.at(axis_to_name.first)->copy(device);
+      indices_select->syncHAndDData(device);
       Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_select_values(indices_select->getDataPointer().get(), indices_select->getDimensions());
       indices_select_values.device(device) = indices_view_values.clip(0, 1);
 
@@ -531,6 +534,7 @@ namespace TensorBase
       TensorDataGpu<int, 1> indices_selected(Eigen::array<Eigen::Index, 1>({ dim_size.getData()(0) }));
       indices_selected.setData();
       std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_selected_ptr = std::make_shared<TensorDataGpu<int, 1>>(indices_selected);
+      indices_selected_ptr->syncHAndDData(device);
       this->indices_view_.at(axis_to_name.first)->select(indices_selected_ptr, indices_select, device);
       indices_selected_vec.push_back(indices_selected_ptr);
     }
@@ -538,6 +542,7 @@ namespace TensorBase
     // allocate memory for the labels
     TensorDataGpu<int, 2> sparse_labels(Eigen::array<Eigen::Index, 2>({ (int)this->axes_to_dims_.size(), labels_size }));
     sparse_labels.setData();
+    sparse_labels.syncHAndDData(device);
 
     // iterate through each of the axes and assign the labels
     for (int i = 0; i < TDim; ++i) {
@@ -587,7 +592,7 @@ namespace TensorBase
 
     // set the data
     Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> sparse_data_values(sparse_data->getDataPointer().get(), sparse_data->getTensorSize(), 1);
-    tensorTable.getData()->setData(sparse_data_values);
+    tensorTable.setData(sparse_data_values);
 
     // move over the table
     sparse_table = std::make_shared<TensorTableGpu<TensorT, 2>>(tensorTable);

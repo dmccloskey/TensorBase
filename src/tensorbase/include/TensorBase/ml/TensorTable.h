@@ -69,8 +69,8 @@ namespace TensorBase
     /**
       @brief Tensor Axes setter
 
-      The method sets the tensor axes and initializes the indices, indices_view, is_modified, in_memory, and
-      shard_id attributes after all axes have been added
+      The method sets the tensor axes and initializes the indices, indices_view, is_modified, in_memory,
+      shard_id, and shard_indices attributes after all axes have been added
     */
     virtual void setAxes() = 0;
 
@@ -85,7 +85,7 @@ namespace TensorBase
     // TODO: combine into a single member called `indices` of Tensor dimensions 5 x indices_length
     //       in order to improve performance of all TensorInsert and TensorDelete methods
     // UPDATE: attempted to do so, but lost performance in having to extract out indices_view and other 
-    //       as seperate TensorData objects for sort/select
+    //       as seperate TensorData objects for sort/select operations (see feat/TensorTableFile branch head)
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIndices() { return indices_; }; ///< indices getter
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIndicesView() { return indices_view_; }; ///< indices_view getter
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIsModified() { return is_modified_; }; ///< is_modified getter
@@ -901,6 +901,9 @@ namespace TensorBase
     // Reduce the Tensor to `n_labels` using the `labels` indices as the selection criteria
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_view_bcast;
     broadcastSelectIndicesView(indices_view_bcast, axis_name, device);
+    // TODO [in_memory]: check to ensure the tensor data is loaded into memory
+    //       if not, load in only the needed data the covers all indices in `indices_view_bcast` from file
+    //       instead of calling `reduceTensorDataToSelectIndices`
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> tensor_select;
     reduceTensorDataToSelectIndices(indices_view_bcast, tensor_select, axis_name, select_labels->getData().size(), device);
 
@@ -1144,6 +1147,7 @@ namespace TensorBase
     makeSortIndicesViewFromIndicesView(indices_sort, device);
 
     // apply the sort indices to the tensor data
+    // TODO [in_memory]: check to make sure that the data is in memory
     data_->sort(indices_sort, device);
 
     //sort each of the axis labels then reset the indices view
