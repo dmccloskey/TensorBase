@@ -7,6 +7,7 @@ set(sources_list_h
 	CSVWriter.h
 	DataFile.h
 	TensorCollectionFile.h
+	TensorTableFile.h
 )
 
 ### add path to the filenames
