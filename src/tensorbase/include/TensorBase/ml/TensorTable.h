@@ -578,6 +578,26 @@ namespace TensorBase
     */
     virtual void makeShardIndicesFromShardIDs(std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_shard, DeviceT& device) = 0;
 
+    /*
+    @brief Apply run length encode algorithm to a TensorData object
+
+    @param[in] data Pointer to the data to apply the algorithm to
+    @param[out] unique pointer to the unique data ([in] empty pointer)
+    @param[out] count pointer to the count data ([in] empty pointer)
+    @param[out] n_runs pointer to the number of runs data ([in] empty pointer)
+    @param[in] device
+    */
+    virtual void runLengthEncodeIndex(const std::shared_ptr<TensorData<int, DeviceT, TDim>>& data, std::shared_ptr<TensorData<int, DeviceT, 1>>& unique, std::shared_ptr<TensorData<int, DeviceT, 1>>& count, std::shared_ptr<TensorData<int, DeviceT, 1>>& n_runs, DeviceT & device) = 0;
+
+    /**
+    @brief Determine the slice indices to extract out the TensorData shards
+
+    @param[in] modified_shard_id An ordered 1D tensor with unique TensorData shard ids
+    @param[out] slice_indices A vector of slice indices
+    @param[in] device
+    */
+    virtual void makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, std::vector<std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>>& slice_indices, DeviceT& device) = 0;
+
   protected:
     int id_ = -1;
     std::string name_ = "";
@@ -1765,8 +1785,11 @@ namespace TensorBase
     // Sort and then RunLengthEncode
     shard_indices->sort("ASC", device);
     std::shared_ptr<TensorData<int, DeviceT, 1>> unique, count, num_runs;
-    shard_indices->runLengthEncode(unique, count, num_runs, device);
+    runLengthEncodeIndex(shard_indices, unique, count, num_runs, device);
 
+    // Resize the unique results
+    num_runs->syncHAndDData(device); // d to h
+    unique->setDimensions(Eigen::array<Eigen::Index, 1>({num_runs->getData()(0)}));
   }
 };
 #endif //TENSORBASE_TENSORTABLE_H

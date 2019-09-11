@@ -88,7 +88,7 @@ public:
   inline bool TensorTableFile<TensorT, DeviceT, TDim>::storeTensorTableBinary(const std::string& dir, const TensorTable<TensorT, DeviceT, TDim>& tensor_table, DeviceT& device) {
     // determine the shards to write to disk
     std::shared_ptr<TensorData<int, DeviceT, 1>> modified_shard_ids;
-    tensor_table.getModifiedShardIDs(modified_shard_ids, device);
+    tensor_table.makeModifiedShardIDTensor(modified_shard_ids, device);
     std::map<int, std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>> slice_indices;
     tensor_table.makeSliceIndicesFromShardIndices(modified_shard_ids, slice_indices);
 
