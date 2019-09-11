@@ -118,6 +118,15 @@ namespace TensorBase
     */
     virtual void partition(const std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices, DeviceT& device) = 0;
 
+    /*
+    @brief Run Length Encode the data
+
+    @param[out] unique The unique value in the run (same size as the data)
+    @param[out] count The counts of the value in the run (same size as the data)
+    @param[out] n_runs The number of runs in the data (size of 1);
+    */
+    virtual void runLengthEncode(std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& unique, std::shared_ptr<TensorData<int, DeviceT, 1>>& count, std::shared_ptr<TensorData<int, DeviceT, 1>>& n_runs, DeviceT& device) = 0;
+
     void setDimensions(const Eigen::array<Eigen::Index, TDim>& dimensions); ///< Set the tensor dimensions and calculate the tensor size
     Eigen::array<Eigen::Index, TDim> getDimensions() const; ///< Get the tensor dimensions
     size_t getTensorBytes() { return tensor_size_ * sizeof(TensorT); }; ///< Get the size of each tensor in bytes
@@ -186,16 +195,17 @@ namespace TensorBase
   public:
     using TensorData<TensorT, Eigen::DefaultDevice, TDim>::TensorData;
     ~TensorDataDefaultDevice() = default;
-    std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>> copy(Eigen::DefaultDevice& device);
-    void select(std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices, Eigen::DefaultDevice& device);
-    void sortIndices(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices, const std::string& sort_order, Eigen::DefaultDevice& device);
-    void sort(const std::string& sort_order, Eigen::DefaultDevice& device);
-    void sort(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices, Eigen::DefaultDevice& device);
-    void partition(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices, Eigen::DefaultDevice& device);
-    std::shared_ptr<TensorT> getDataPointer() { return h_data_; }
-    void setData(const Eigen::Tensor<TensorT, TDim>& data); ///< data setter
-    void setData();
-    bool syncHAndDData(Eigen::DefaultDevice& device) { this->d_data_updated_ = true; this->h_data_updated_ = true; return true; }
+    std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>> copy(Eigen::DefaultDevice& device) override;
+    void select(std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices, Eigen::DefaultDevice& device) override;
+    void sortIndices(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices, const std::string& sort_order, Eigen::DefaultDevice& device) override;
+    void sort(const std::string& sort_order, Eigen::DefaultDevice& device) override;
+    void sort(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices, Eigen::DefaultDevice& device) override;
+    void partition(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices, Eigen::DefaultDevice& device) override;
+    void runLengthEncode(std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& n_runs, Eigen::DefaultDevice& device) override;
+    std::shared_ptr<TensorT> getDataPointer() override { return h_data_; }
+    void setData(const Eigen::Tensor<TensorT, TDim>& data) override; ///< data setter
+    void setData() override;
+    bool syncHAndDData(Eigen::DefaultDevice& device) override { this->d_data_updated_ = true; this->h_data_updated_ = true; return true; }
   private:
     friend class cereal::access;
     template<class Archive>
@@ -313,6 +323,42 @@ namespace TensorBase
     });
   }
   template<typename TensorT, int TDim>
+  inline void TensorDataDefaultDevice<TensorT, TDim>::runLengthEncode(std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& n_runs, Eigen::DefaultDevice & device)
+  {
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> tensor_values(this->getDataPointer().get(), (int)this->getTensorSize());
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> unique_values(unique->getDataPointer().get(), (int)unique->getTensorSize());
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> count_values(count->getDataPointer().get(), (int)count->getTensorSize());
+    Eigen::TensorMap<Eigen::Tensor<int, 0>> n_runs_values(n_runs->getDataPointer().get());
+
+    // generate the run length encoding
+    int iter = 0;
+    int run_index = 0;
+    n_runs_values(0) = 1; // initialize the value of the number of runs
+    count_values.setZero();
+    std::for_each(tensor_values.data(), tensor_values.data() + tensor_values.size() - 1,
+      [&tensor_values, &unique_values, &count_values, &n_runs_values, &iter, &run_index, &device](const TensorT& value) {
+      if (value == tensor_values(iter + 1) && iter + 1 == tensor_values.size() - 1) { // run, last value
+        count_values(run_index) += 2;
+        unique_values(run_index) = value;
+      }
+      else if (value == tensor_values(iter + 1)) { // run
+        count_values(run_index) += 1;
+      }
+      else if (value != tensor_values(iter + 1) && iter + 1 == tensor_values.size() - 1) { // not a run, last value
+        count_values(run_index + 1) += 1;
+        unique_values(run_index + 1) = value;
+        n_runs_values(0) += 1;
+      }
+      else { // not a run
+        count_values(run_index) += 1;
+        unique_values(run_index) = value;
+        run_index += 1;
+        n_runs_values(0) += 1;
+      }
+      ++iter;
+    });
+  }
+  template<typename TensorT, int TDim>
   void TensorDataDefaultDevice<TensorT, TDim>::setData(const Eigen::Tensor<TensorT, TDim>& data) {
     TensorT* h_data = new TensorT[this->tensor_size_];
     // copy the tensor
@@ -340,16 +386,17 @@ namespace TensorBase
   public:
     using TensorData<TensorT, Eigen::ThreadPoolDevice, TDim>::TensorData;
     ~TensorDataCpu() = default;
-    std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, TDim>> copy(Eigen::ThreadPoolDevice& device);
-    void select(std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices, Eigen::ThreadPoolDevice & device);
-    void sortIndices(std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices, const std::string& sort_order, Eigen::ThreadPoolDevice & device);
-    void sort(const std::string& sort_order, Eigen::ThreadPoolDevice& device);
-    void sort(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices, Eigen::ThreadPoolDevice& device);
-    void partition(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices, Eigen::ThreadPoolDevice& device);
-    std::shared_ptr<TensorT> getDataPointer() { return h_data_; }
-    void setData(const Eigen::Tensor<TensorT, TDim>& data); ///< data setter
-    void setData();
-    bool syncHAndDData(Eigen::ThreadPoolDevice& device) { this->d_data_updated_ = true; this->h_data_updated_ = true; return true; }
+    std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, TDim>> copy(Eigen::ThreadPoolDevice& device) override;
+    void select(std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices, Eigen::ThreadPoolDevice & device) override;
+    void sortIndices(std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices, const std::string& sort_order, Eigen::ThreadPoolDevice & device) override;
+    void sort(const std::string& sort_order, Eigen::ThreadPoolDevice& device) override;
+    void sort(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices, Eigen::ThreadPoolDevice& device) override;
+    void partition(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices, Eigen::ThreadPoolDevice& device) override;
+    void runLengthEncode(std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& n_runs, Eigen::ThreadPoolDevice& device) override;
+    std::shared_ptr<TensorT> getDataPointer() override  { return h_data_; }
+    void setData(const Eigen::Tensor<TensorT, TDim>& data) override; ///< data setter
+    void setData() override;
+    bool syncHAndDData(Eigen::ThreadPoolDevice& device) override { this->d_data_updated_ = true; this->h_data_updated_ = true; return true; }
   private:
     friend class cereal::access;
     template<class Archive>
@@ -463,6 +510,42 @@ namespace TensorBase
       else {
         tensor_values(back_iter) = copy_values(iter);
         --back_iter;
+      }
+      ++iter;
+    });
+  }
+  template<typename TensorT, int TDim>
+  inline void TensorDataCpu<TensorT, TDim>::runLengthEncode(std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& n_runs, Eigen::ThreadPoolDevice & device)
+  {
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> tensor_values(this->getDataPointer().get(), (int)this->getTensorSize());
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> unique_values(unique->getDataPointer().get(), (int)unique->getTensorSize());
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> count_values(count->getDataPointer().get(), (int)count->getTensorSize());
+    Eigen::TensorMap<Eigen::Tensor<int, 0>> n_runs_values(n_runs->getDataPointer().get());
+
+    // generate the run length encoding
+    int iter = 0;
+    int run_index = 0;
+    n_runs_values(0) = 1; // initialize the value of the number of runs
+    count_values.setZero();
+    std::for_each(tensor_values.data(), tensor_values.data() + tensor_values.size() - 1,
+      [&tensor_values, &unique_values, &count_values, &n_runs_values, &iter, &run_index, &device](const TensorT& value) {
+      if (value == tensor_values(iter + 1) && iter + 1 == tensor_values.size() - 1) { // run, last value
+        count_values(run_index) += 2;
+        unique_values(run_index) = value;
+      }
+      else if (value == tensor_values(iter + 1)) { // run
+        count_values(run_index) += 1;
+      }
+      else if (value != tensor_values(iter + 1) && iter + 1 == tensor_values.size() - 1) { // not a run, last value
+        count_values(run_index + 1) += 1;
+        unique_values(run_index + 1) = value;
+        n_runs_values(0) += 1;
+      }
+      else { // not a run
+        count_values(run_index) += 1;
+        unique_values(run_index) = value;
+        run_index += 1;
+        n_runs_values(0) += 1;
       }
       ++iter;
     });

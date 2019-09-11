@@ -1754,15 +1754,18 @@ namespace TensorBase
     makeSelectIndicesFromTensorIndicesComponent(is_modified_, select_indices, device);
 
     // Make the sort indices from the `shard_id` values
-    std::shared_ptr<TensorData<int, DeviceT, TDim>> sort_indices;
-    makeShardIndicesFromShardIDs(sort_indices, device);
+    std::shared_ptr<TensorData<int, DeviceT, TDim>> shard_indices;
+    makeShardIndicesFromShardIDs(shard_indices, device);
 
     // Select the `shard_id` values to use for writing
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> select_indices_values(select_indices->getDataPointer().get(), modified_shards->getDimensions());
-    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> sort_indices_values(sort_indices->getDataPointer().get(), modified_shards->getDimensions());
-    sort_indices_values.device(device) = (select_indices_values > select_indices_values.constant(0)).select(sort_indices_values, sort_indices_values.constant(0));
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> shard_indices_values(shard_indices->getDataPointer().get(), shard_indices->getDimensions());
+    shard_indices_values.device(device) = (select_indices_values > select_indices_values.constant(0)).select(shard_indices_values, shard_indices_values.constant(0));
 
-    // Sort then RunLengthEncode
+    // Sort and then RunLengthEncode
+    shard_indices->sort("ASC", device);
+    std::shared_ptr<TensorData<int, DeviceT, 1>> unique, count, num_runs;
+    shard_indices->runLengthEncode(unique, count, num_runs, device);
 
   }
 };

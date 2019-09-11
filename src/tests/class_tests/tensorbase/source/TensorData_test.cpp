@@ -272,6 +272,43 @@ BOOST_AUTO_TEST_CASE(partitionDefaultDevice)
   }
 }
 
+BOOST_AUTO_TEST_CASE(runLengthEncodeDefaultDevice)
+{
+  // Make the tensor data and expected data values
+  int dim_sizes = 3;
+  Eigen::Tensor<float, 2> tensor_values(Eigen::array<Eigen::Index, 2>({ dim_sizes, dim_sizes }));
+  tensor_values.setValues({ { 0, 1, 2}, { 0, 1, 2}, { 0, 1, 2} });
+  Eigen::Tensor<float, 1> unique_values(Eigen::array<Eigen::Index, 1>({ dim_sizes * dim_sizes }));
+  unique_values.setValues({ 0, 1, 2, -1, -1, -1, -1, -1, -1 });
+  Eigen::Tensor<int, 1> count_values(Eigen::array<Eigen::Index, 1>({ dim_sizes * dim_sizes }));
+  count_values.setValues({ 3, 3, 3, -1, -1, -1, -1, -1, -1 });
+  Eigen::Tensor<int, 1> num_runs_values(Eigen::array<Eigen::Index, 1>({ 1 }));
+  num_runs_values.setValues({ 3 });
+
+  // Make the tensor data and test data pointers
+  TensorDataDefaultDevice<float, 2> tensordata(Eigen::array<Eigen::Index, 2>({ dim_sizes, dim_sizes }));
+  tensordata.setData(tensor_values);
+  TensorDataDefaultDevice<float, 1> unique(Eigen::array<Eigen::Index, 1>({ dim_sizes * dim_sizes }));
+  unique.setData();
+  std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 1>> uniquev_ptr = std::make_shared<TensorDataDefaultDevice<float, 1>>(unique);
+  TensorDataDefaultDevice<int, 1> count(Eigen::array<Eigen::Index, 1>({ dim_sizes * dim_sizes }));
+  count.setData();
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> count_ptr = std::make_shared<TensorDataDefaultDevice<int, 1>>(count);
+  TensorDataDefaultDevice<int, 1> num_runs(Eigen::array<Eigen::Index, 1>({ 1 }));
+  num_runs.setData();
+  num_runs.getData()(0) = 0;
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> num_runs_ptr = std::make_shared<TensorDataDefaultDevice<int, 1>>(num_runs);
+
+  Eigen::DefaultDevice device;
+  // Test partition
+  tensordata.runLengthEncode(uniquev_ptr, count_ptr, num_runs_ptr, device);
+  BOOST_CHECK_EQUAL(num_runs_ptr->getData()(0), 3);
+  for (int i = 0; i < num_runs_ptr->getData()(0); ++i) {
+    BOOST_CHECK_EQUAL(uniquev_ptr->getData()(i), unique_values(i));
+    BOOST_CHECK_EQUAL(count_ptr->getData()(i), count_values(i));
+  }
+}
+
 BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
 {
   TensorDataDefaultDevice<float, 3> tensordata;
@@ -650,6 +687,44 @@ BOOST_AUTO_TEST_CASE(partitionCpu)
         BOOST_CHECK_EQUAL(tensordata.getData()(i, j, k), expected_values(i, j, k));
       }
     }
+  }
+}
+
+BOOST_AUTO_TEST_CASE(runLengthEncodeCpu)
+{
+  // Make the tensor data and expected data values
+  int dim_sizes = 3;
+  Eigen::Tensor<float, 2> tensor_values(Eigen::array<Eigen::Index, 2>({ dim_sizes, dim_sizes }));
+  tensor_values.setValues({ { 0, 1, 2}, { 0, 1, 2}, { 0, 1, 2} });
+  Eigen::Tensor<float, 1> unique_values(Eigen::array<Eigen::Index, 1>({ dim_sizes * dim_sizes }));
+  unique_values.setValues({ 0, 1, 2, -1, -1, -1, -1, -1, -1 });
+  Eigen::Tensor<int, 1> count_values(Eigen::array<Eigen::Index, 1>({ dim_sizes * dim_sizes }));
+  count_values.setValues({ 3, 3, 3, -1, -1, -1, -1, -1, -1 });
+  Eigen::Tensor<int, 1> num_runs_values(Eigen::array<Eigen::Index, 1>({ 1 }));
+  num_runs_values.setValues({ 3 });
+
+  // Make the tensor data and test data pointers
+  TensorDataCpu<float, 2> tensordata(Eigen::array<Eigen::Index, 2>({ dim_sizes, dim_sizes }));
+  tensordata.setData(tensor_values);
+  TensorDataCpu<float, 1> unique(Eigen::array<Eigen::Index, 1>({ dim_sizes * dim_sizes }));
+  unique.setData();
+  std::shared_ptr<TensorData<float, Eigen::ThreadPoolDevice, 1>> uniquev_ptr = std::make_shared<TensorDataCpu<float, 1>>(unique);
+  TensorDataCpu<int, 1> count(Eigen::array<Eigen::Index, 1>({ dim_sizes * dim_sizes }));
+  count.setData();
+  std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>> count_ptr = std::make_shared<TensorDataCpu<int, 1>>(count);
+  TensorDataCpu<int, 1> num_runs(Eigen::array<Eigen::Index, 1>({ 1 }));
+  num_runs.setData();
+  num_runs.getData()(0) = 0;
+  std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>> num_runs_ptr = std::make_shared<TensorDataCpu<int, 1>>(num_runs);
+
+  Eigen::ThreadPool pool(1);
+  Eigen::ThreadPoolDevice device(&pool, 1);
+  // Test partition
+  tensordata.runLengthEncode(uniquev_ptr, count_ptr, num_runs_ptr, device);
+  BOOST_CHECK_EQUAL(num_runs_ptr->getData()(0), 3);
+  for (int i = 0; i < num_runs_ptr->getData()(0); ++i) {
+    BOOST_CHECK_EQUAL(uniquev_ptr->getData()(i), unique_values(i));
+    BOOST_CHECK_EQUAL(count_ptr->getData()(i), count_values(i));
   }
 }
 
