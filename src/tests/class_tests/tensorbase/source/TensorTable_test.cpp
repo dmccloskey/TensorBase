@@ -2330,29 +2330,48 @@ BOOST_AUTO_TEST_CASE(makeShardIndicesFromShardIDsDefaultDevice)
   dimensions1(0) = "x";
   dimensions2(0) = "y";
   dimensions3(0) = "z";
-  int nlabels = 4;
+  int nlabels = 6;
   Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels), labels3(1, nlabels);
-  labels1.setValues({ {0, 1, 2, 3} });
-  labels2.setValues({ {0, 1, 2, 3} });
-  labels3.setValues({ {0, 1, 2, 3} });
+  labels1.setValues({ {0, 1, 2, 3, 4, 5} });
+  labels2.setValues({ {0, 1, 2, 3, 4, 5} });
+  labels3.setValues({ {0, 1, 2, 3, 4, 5} });
   tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3)));
   tensorTable.setAxes();
 
-  // make the expected tensor indices
-  Eigen::Tensor<int, 3> indices_test(nlabels, nlabels, nlabels);
+  // Reshard indices
+  int shard_span = 2;
+  std::map<std::string, int> shard_span_new = { {"1", shard_span}, {"2", shard_span}, {"3", shard_span} };
+  tensorTable.setShardSpans(shard_span_new);
+
+  // Test for the shard indices
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>> indices_shard_ptr;
+  tensorTable.makeShardIndicesFromShardIDs(indices_shard_ptr, device);
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
-        indices_test(i, j, k) = i + j * nlabels + k * nlabels*nlabels + 1;
+        BOOST_CHECK_EQUAL(indices_shard_ptr->getData()(i, j, k), 1);
       }
     }
   }
 
-  // Test for the sort indices
-  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>> indices_shard_ptr;
-  tensorTable.makeShardIndicesFromShardIDs(indices_shard_ptr, device);
+  // make the expected tensor indices
+  int shard_n_indices = 3;
+  std::vector<int> shard_id_indices = { 0, 0, 1, 1, 2, 2 };
+  Eigen::Tensor<int, 3> indices_test(nlabels, nlabels, nlabels);
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        indices_test(i, j, k) = shard_id_indices.at(i) + shard_id_indices.at(j) * shard_n_indices + shard_id_indices.at(k) * shard_n_indices*shard_n_indices + 1;
+      }
+    }
+  }
+
+  // Test for the shard indices
+  tensorTable.reShardIndices(device);
+  indices_shard_ptr.reset();
+  tensorTable.makeShardIndicesFromShardIDs(indices_shard_ptr, device); 
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
