@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("3")->getData()(0), 0);
   BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("3")->getData()(0), 0);
   BOOST_CHECK_EQUAL(tensorTable.getShardId().at("3")->getData()(0), 1);
-  BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("3")->getData()(0), 0);
+  BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("3")->getData()(0), 1);
   BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("3")->getData()(nlabels3 - 1), nlabels3);
 
   // Test expected axis to dims mapping
@@ -219,6 +219,60 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(1), 0);
   BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(2), 0);
   BOOST_CHECK_EQUAL(tensorTable.getShardSpans().size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(reShardIndicesDefaultDevice)
+{
+  // setup the table
+  TensorTableDefaultDevice<float, 3> tensorTable;
+  Eigen::DefaultDevice device;
+
+  // setup the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels = 4;
+  Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels), labels3(1, nlabels);
+  labels1.setValues({ {0, 1, 2, 3} });
+  labels2.setValues({ {0, 1, 2, 3} });
+  labels3.setValues({ {0, 1, 2, 3} });
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3)));
+  tensorTable.setAxes();
+
+  // Test the default shard span
+  BOOST_CHECK_EQUAL(tensorTable.getShardSpans().at("1"), 4);
+  BOOST_CHECK_EQUAL(tensorTable.getShardSpans().at("2"), 4);
+  BOOST_CHECK_EQUAL(tensorTable.getShardSpans().at("3"), 4);
+
+  // Reset the shard span
+  int shard_span = 3;
+  std::map<std::string, int> shard_span_new = { {"1", shard_span}, {"2", shard_span}, {"3", shard_span} };
+  tensorTable.setShardSpans(shard_span_new);
+  BOOST_CHECK_EQUAL(tensorTable.getShardSpans().at("1"), 3);
+  BOOST_CHECK_EQUAL(tensorTable.getShardSpans().at("2"), 3);
+  BOOST_CHECK_EQUAL(tensorTable.getShardSpans().at("3"), 3);
+  tensorTable.reShardIndices(device);
+  for (int i = 0; i < nlabels; ++i) {
+    if (i < shard_span) {
+      BOOST_CHECK_EQUAL(tensorTable.getShardId().at("1")->getData()(i), 1);
+      BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("1")->getData()(i), i + 1);
+      BOOST_CHECK_EQUAL(tensorTable.getShardId().at("2")->getData()(i), 1);
+      BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("2")->getData()(i), i + 1);
+      BOOST_CHECK_EQUAL(tensorTable.getShardId().at("3")->getData()(i), 1);
+      BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("3")->getData()(i), i + 1);
+    }
+    else {
+      BOOST_CHECK_EQUAL(tensorTable.getShardId().at("1")->getData()(i), 2);
+      BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("1")->getData()(i), i - shard_span + 1);
+      BOOST_CHECK_EQUAL(tensorTable.getShardId().at("2")->getData()(i), 2);
+      BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("2")->getData()(i), i - shard_span + 1);
+      BOOST_CHECK_EQUAL(tensorTable.getShardId().at("3")->getData()(i), 2);
+      BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("3")->getData()(i), i - shard_span + 1);
+    }
+  }
 }
 
 BOOST_AUTO_TEST_CASE(tensorDataWrappersDefaultDevice) // TODO: add test to TensorTableGpu_test.cu
@@ -1073,7 +1127,7 @@ BOOST_AUTO_TEST_CASE(selectTensorDataDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("1")->getData()(0), 0);
   BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("1")->getData()(0), 0);
   BOOST_CHECK_EQUAL(tensorTable.getShardId().at("1")->getData()(0), 1);
-  BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("1")->getData()(0), 0);
+  BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("1")->getData()(0), 1);
 
   BOOST_CHECK_EQUAL(tensorTable.getAxes().at("2")->getName(), "2");
   BOOST_CHECK_EQUAL(tensorTable.getAxes().at("2")->getNLabels(), nlabels);
@@ -1152,7 +1206,7 @@ BOOST_AUTO_TEST_CASE(makeSortIndicesViewFromIndicesViewDefaultDevice)
 
   // Test for the sort indices
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>> indices_sort_ptr;
-  tensorTable.makeSortIndicesViewFromIndicesView(indices_sort_ptr, device);
+  tensorTable.makeSortIndicesFromIndicesView(indices_sort_ptr, device);
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
@@ -2263,6 +2317,49 @@ BOOST_AUTO_TEST_CASE(updateTensorDataConstantDefaultDevice)
   }
 
   // TODO: Test after a selection (see test for TensorOperation TensorUpdateConstant)
+}
+
+BOOST_AUTO_TEST_CASE(makeShardIndicesFromShardIDsDefaultDevice)
+{
+  // setup the table
+  TensorTableDefaultDevice<float, 3> tensorTable;
+  Eigen::DefaultDevice device;
+
+  // setup the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels = 4;
+  Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels), labels3(1, nlabels);
+  labels1.setValues({ {0, 1, 2, 3} });
+  labels2.setValues({ {0, 1, 2, 3} });
+  labels3.setValues({ {0, 1, 2, 3} });
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3)));
+  tensorTable.setAxes();
+
+  // make the expected tensor indices
+  Eigen::Tensor<int, 3> indices_test(nlabels, nlabels, nlabels);
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        indices_test(i, j, k) = i + j * nlabels + k * nlabels*nlabels + 1;
+      }
+    }
+  }
+
+  // Test for the sort indices
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>> indices_shard_ptr;
+  tensorTable.makeShardIndicesFromShardIDs(indices_shard_ptr, device);
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        BOOST_CHECK_EQUAL(indices_shard_ptr->getData()(i, j, k), indices_test(i, j, k));
+      }
+    }
+  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()

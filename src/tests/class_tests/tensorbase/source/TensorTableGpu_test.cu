@@ -1263,7 +1263,7 @@ void test_makeSortIndicesViewFromIndicesViewGpu()
 
   // Test for the sort indices
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 3>> indices_sort_ptr;
-  tensorTable.makeSortIndicesViewFromIndicesView(indices_sort_ptr, device);
+  tensorTable.makeSortIndicesFromIndicesView(indices_sort_ptr, device);
   indices_sort_ptr->syncHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < nlabels; ++i) {

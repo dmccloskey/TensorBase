@@ -147,6 +147,13 @@ namespace TensorBase
     std::map<std::string, int> getShardSpans() const { return shard_spans_; }; ///< shard_span getter
 
     /*
+    @brief Reset the shard indices based on the current `shard_span`
+
+    @param[in] device
+    */
+    void reShardIndices(DeviceT& device);
+
+    /*
     @brief Select Tensor Axis that will be included in the view
 
     The selection is done according to the following algorithm:
@@ -331,7 +338,7 @@ namespace TensorBase
     @param[out] indices_sort pointer to the indices sort Tensor ([in] empty pointer)
     @param[in] device
     */
-    virtual void makeSortIndicesViewFromIndicesView(std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_sort, DeviceT& device) = 0;
+    virtual void makeSortIndicesFromIndicesView(std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_sort, DeviceT& device) = 0;
 
     /*
     @brief Update the tensor data with the given values and optionally return the original values
@@ -543,15 +550,32 @@ namespace TensorBase
     void insertIntoAxisConcept(const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<T>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device);
     template<typename LabelsT>
     void insertIntoAxis(const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<TensorT>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device);
-    
+
     /**
     @brief Determine the Tensor data shards that have been modified from the
-      `is_modified` and `shard_id` members
+      `is_modified` and `shard_id` members, and make an ordered 1D Tensor with
+      unique TensorData shard ids
 
     @param[out] modified_shard_id
     @param[in] device
     */
-    virtual void getModifiedShardIDs(std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, DeviceT& device) = 0;
+    void makeModifiedShardIDTensor(std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, DeviceT& device);
+
+    /*
+    @brief Convert the 1D shard ID into a TDim indices tensor that describes the shart IDs of each Tensor element
+
+    The conversion is done by the following algorithm:
+      1. set Dim = 0 as the reference axis
+      2. compute Tensor shard IDs i, j, k, ... as (index i - 1) + (index j - 1)*SUM(axis i - 1) + (index k - 1)*SUM(axis i - 1)*SUM(axis j - 1) ...
+        where the - 1 is due to the indices starting at 1
+        a. compute an adjusted axis index as (Index - 1) if Dim = 0 or as (Index - 1)*Prod[(Dim - 1).size() to Dim = 1]
+        b. broadcast to the size of the tensor
+        c. add all adjusted axis tensors together
+
+    @param[out] indices_sort pointer to the indices sort Tensor ([in] empty pointer)
+    @param[in] device
+    */
+    virtual void makeShardIndicesFromShardIDs(std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_shard, DeviceT& device) = 0;
 
   protected:
     int id_ = -1;
@@ -816,6 +840,32 @@ namespace TensorBase
       statuses.emplace(axis_map.first, axis_map.second->getDataStatus());
     }
     return statuses;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::reShardIndices(DeviceT& device)
+  {
+    for (const auto& shard_span_map : shard_spans_) {
+      // Determine the max shard id value
+      int shard_id = 0;
+      int max_shard_id = ceil(float(axes_.at(shard_span_map.first)->getNLabels()) / float(shard_span_map.second));
+      for (; shard_id < max_shard_id; ++shard_id) {
+        // Determine the offsets and span for slicing
+        Eigen::array<int, 1> offset, span;
+        offset.at(0) = shard_id * shard_span_map.second;
+        int remaining_length = axes_.at(shard_span_map.first)->getNLabels() - shard_id * shard_span_map.second;
+        span.at(0) = (shard_span_map.second <= remaining_length) ? shard_span_map.second: remaining_length;
+
+        // Update the shard id
+        Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_id_values(shard_id_.at(shard_span_map.first)->getDataPointer().get(), shard_id_.at(shard_span_map.first)->getDimensions());
+        shard_id_values.slice(offset, span).device(device) = shard_id_values.slice(offset, span).constant(shard_id + 1);
+
+        // Update the shard indices using the indices as a template
+        Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_indices_values(shard_indices_.at(shard_span_map.first)->getDataPointer().get(), shard_indices_.at(shard_span_map.first)->getDimensions());
+        Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_values(indices_.at(shard_span_map.first)->getDataPointer().get(), indices_.at(shard_span_map.first)->getDimensions());
+        shard_indices_values.slice(offset, span).device(device) = indices_values.slice(Eigen::array<int, 1>({0}), span);
+      }
+    }
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
@@ -1153,7 +1203,7 @@ namespace TensorBase
   {
     // make the sort index tensor from the indices view
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_sort;
-    makeSortIndicesViewFromIndicesView(indices_sort, device);
+    makeSortIndicesFromIndicesView(indices_sort, device);
 
     // apply the sort indices to the tensor data
     // TODO [in_memory]: check to make sure that the data is in memory
@@ -1341,7 +1391,7 @@ namespace TensorBase
     for (const auto& axis_to_index: axes_to_dims_)
       resetIndicesView(axis_to_index.first, device);
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_sort;
-    makeSortIndicesViewFromIndicesView(indices_sort, device);
+    makeSortIndicesFromIndicesView(indices_sort, device);
 
     // partition the indices
     indices_sort->partition(indices_partition, device);
@@ -1693,6 +1743,26 @@ namespace TensorBase
 
     // Sort the axis and tensor based on the indices view
     sortTensorData(device);
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::makeModifiedShardIDTensor(std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, DeviceT & device)
+  {
+    // Make the selection indices from the modified tensor indices
+    std::shared_ptr<TensorData<int, DeviceT, TDim>> select_indices;
+    //makeSelectIndicesFromTensorIndicesComponent(is_modified_, select_indices, device);
+
+    // Make the sort indices from the `shard_id` values
+    std::shared_ptr<TensorData<int, DeviceT, TDim>> sort_indices;
+    makeShardIndicesFromShardIDs(sort_indices, device);
+
+    // Select the `shard_id` values to use for writing
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> select_indices_values(select_indices->getDataPointer().get(), modified_shards->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> sort_indices_values(sort_indices->getDataPointer().get(), modified_shards->getDimensions());
+    sort_indices_values.device(device) = (select_indices_values > select_indices_values.constant(0)).select(sort_indices_values, sort_indices_values.constant(0));
+
+    // Sort then RunLengthEncode
+
   }
 };
 #endif //TENSORBASE_TENSORTABLE_H

@@ -39,7 +39,7 @@ namespace TensorBase
     void getSelectTensorDataFromIndicesView(std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices_select, Eigen::GpuDevice& device) override;
     // Sort methods
     void sliceTensorDataForSort(std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 1>>& tensor_sort, const std::string& axis_name_sort, const int& label_index_sort, const std::string& axis_name_apply, Eigen::GpuDevice& device) override;
-    void makeSortIndicesViewFromIndicesView(std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices_sort, Eigen::GpuDevice& device) override;
+    void makeSortIndicesFromIndicesView(std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices_sort, Eigen::GpuDevice& device) override;
     int getFirstIndexFromIndicesView(const std::string& axis_name, Eigen::GpuDevice& device) override;
     // Append to Axis methods
     void makeAppendIndices(const std::string& axis_name, const int& n_labels, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, Eigen::GpuDevice& device) override;
@@ -357,7 +357,7 @@ namespace TensorBase
     tensor_sort = std::make_shared<TensorDataGpu<TensorT, 1>>(tensor_sort_tmp);
   }
   template<typename TensorT, int TDim>
-  inline void TensorTableGpu<TensorT, TDim>::makeSortIndicesViewFromIndicesView(std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices_sort, Eigen::GpuDevice & device)
+  inline void TensorTableGpu<TensorT, TDim>::makeSortIndicesFromIndicesView(std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices_sort, Eigen::GpuDevice & device)
   {
     // allocate memory for the indices
     TensorDataGpu<int, TDim> indices_sort_tmp(this->getDimensions());
