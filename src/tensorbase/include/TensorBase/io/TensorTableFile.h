@@ -54,20 +54,6 @@ public:
       @returns A string with the filename for the TensorTableShard
     */
     static std::string makeTensorTableShardFilename(const std::string& dir, const std::string& tensor_table_name, const int& shard_id);
-    
-    /**
-      @brief Determine the Tensor data shards that have been modified
-
-      @param[in] is_modified
-      @param[in] shard_id
-      @param[in] shard_indices
-      @param[out] modified_shard_id
-      @param[out] modified_shard_indices
-      @param[in] device
-    */
-    static void getModifiedShardIDs(
-      const TensorTable<TensorT, DeviceT, TDim>& tensor_table,
-      std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, DeviceT& device);
 
     static void makeSliceIndicesFromShardIndices(
       const std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids,
@@ -102,9 +88,9 @@ public:
   inline bool TensorTableFile<TensorT, DeviceT, TDim>::storeTensorTableBinary(const std::string& dir, const TensorTable<TensorT, DeviceT, TDim>& tensor_table, DeviceT& device) {
     // determine the shards to write to disk
     std::shared_ptr<TensorData<int, DeviceT, 1>> modified_shard_ids;
-    getModifiedShardIDs(tensor_table.getIsModified(), tensor_table.getShardId(), tensor_table.getShardIndices(), modified_shard_ids, device);
+    tensor_table.getModifiedShardIDs(modified_shard_ids, device);
     std::map<int, std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>> slice_indices;
-    makeSliceIndicesFromShardIndices(modified_shard_ids, slice_indices);
+    tensor_table.makeSliceIndicesFromShardIndices(modified_shard_ids, slice_indices);
 
     // write the TensorTable shards to disk asyncronously
     for (const auto slice_index : slice_indices) {
@@ -120,33 +106,6 @@ public:
   template<typename TensorT, typename DeviceT, int TDim>
   inline std::string TensorTableFile<TensorT, DeviceT, TDim>::makeTensorTableShardFilename(const std::string& dir, const std::string& tensor_table_name, const int& shard_id) {
     return dir + tensor_table_name + "_" + std::to_string(shard_id) + ".tts";
-  }
-
-  template<typename TensorT, typename DeviceT, int TDim>
-  inline void TensorTableFile<TensorT, DeviceT, TDim>::getModifiedShardIDs(
-    const TensorTable<TensorT, DeviceT, TDim>& tensor_table,
-    std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, DeviceT& device) {
-    // Determine the slice indices and tensor length to track the shard ids
-    std::vector<std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>> slice_indices;
-    int dim_size = 0;
-    for (int i = 0; i < TDim; ++i) {
-      dim_size += tensor_table.getDimensions().at(i);
-      Eigen::array<int, 1> offset, span;
-      if (i == 0) { offset.at(0) = 0; }
-      else { offset.at(0) = tensor_table.getDimensions().at(i-1); }
-      span.at(0) = tensor_table.getDimensions().at(i);
-      slice_indices.push_back(std::make_pair(offset, span));
-    }
-
-    // Make the tensor used to track the shard ids
-    TensorDataDefaultDevice<int, 1> modified_shards(dim_size);
-    modified_shards.setData();
-    modified_shards.syncHAndDData(device);
-
-    // Extract out the modified shard_ids
-    for (const auto& axis_to_dim: tensor_table.axes_to_dims_) {
-
-    }
   }
 };
 #endif //SMARTPEAK_TENSORTABLEFILE_H

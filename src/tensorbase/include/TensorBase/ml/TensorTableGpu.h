@@ -84,10 +84,8 @@ namespace TensorBase
 
       // Set the indices
       Eigen::Tensor<int, 1> indices_values(axis.second->getNLabels());
-      Eigen::Tensor<int, 1> shard_indices_values(axis.second->getNLabels());
       for (int i = 0; i < axis.second->getNLabels(); ++i) {
         indices_values(i) = i + 1;
-        shard_indices_values(i) = i;
       }
       TensorDataGpu<int, 1> indices(axis_dimensions);
       indices.setData(indices_values);
@@ -107,7 +105,7 @@ namespace TensorBase
 
       // Set the in_memory defaults
       TensorDataGpu<int, 1> in_memory(axis_dimensions);
-      in_memory.setData(is_modified_values);
+      in_memory.setData(is_modified_values.constant(1));
       this->in_memory_.emplace(axis.second->getName(), std::make_shared<TensorDataGpu<int, 1>>(in_memory));
 
       // Set the shard_id defaults
@@ -117,7 +115,7 @@ namespace TensorBase
 
       // Set the shard_indices defaults
       TensorDataGpu<int, 1> shard_indices(axis_dimensions);
-      shard_indices.setData(shard_indices_values);
+      shard_indices.setData(indices_values);
       this->shard_indices_.emplace(axis.second->getName(), std::make_shared<TensorDataGpu<int, 1>>(shard_indices));
 
       // Next iteration

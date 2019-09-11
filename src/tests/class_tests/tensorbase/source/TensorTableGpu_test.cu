@@ -82,9 +82,9 @@ void test_gettersAndSettersGpu()
   assert(tensorTable.getIndicesView().at("1")->getData()(nlabels1 - 1) == nlabels1);
   assert(tensorTable.getIsModified().at("1")->getData()(0) == 0);
   assert(tensorTable.getInMemory().at("1")->getData()(0) == 0);
-  assert(tensorTable.getShardId().at("1")->getData()(0) == 0);
-  assert(tensorTable.getShardIndices().at("1")->getData()(0) == 0);
-  assert(tensorTable.getShardIndices().at("1")->getData()(nlabels1 - 1) == nlabels1 - 1);
+  assert(tensorTable.getShardId().at("1")->getData()(0) == 1);
+  assert(tensorTable.getShardIndices().at("1")->getData()(0) == 1);
+  assert(tensorTable.getShardIndices().at("1")->getData()(nlabels1 - 1) == nlabels1);
 
   assert(tensorTable.getAxes().at("2")->getName() == "2");
   //assert(tensorTable.getAxes().at("2")->getLabels()(0, 0) == 2);
@@ -98,9 +98,9 @@ void test_gettersAndSettersGpu()
   assert(tensorTable.getIndicesView().at("2")->getData()(nlabels2 - 1) == nlabels2);
   assert(tensorTable.getIsModified().at("2")->getData()(0) == 0);
   assert(tensorTable.getInMemory().at("2")->getData()(0) == 0);
-  assert(tensorTable.getShardId().at("2")->getData()(0) == 0);
-  assert(tensorTable.getShardIndices().at("2")->getData()(0) == 0);
-  assert(tensorTable.getShardIndices().at("2")->getData()(nlabels2 - 1) == nlabels2 - 1);
+  assert(tensorTable.getShardId().at("2")->getData()(0) == 1);
+  assert(tensorTable.getShardIndices().at("2")->getData()(0) == 1);
+  assert(tensorTable.getShardIndices().at("2")->getData()(nlabels2 - 1) == nlabels);
 
   assert(tensorTable.getAxes().at("3")->getName() == "3");
   //assert(tensorTable.getAxes().at("3")->getLabels()(0, 0) == 3);
@@ -114,9 +114,9 @@ void test_gettersAndSettersGpu()
   assert(tensorTable.getIndicesView().at("3")->getData()(nlabels3 - 1) == nlabels3);
   assert(tensorTable.getIsModified().at("3")->getData()(0) == 0);
   assert(tensorTable.getInMemory().at("3")->getData()(0) == 0);
-  assert(tensorTable.getShardId().at("3")->getData()(0) == 0);
-  assert(tensorTable.getShardIndices().at("3")->getData()(0) == 0);
-  assert(tensorTable.getShardIndices().at("3")->getData()(nlabels3 - 1) == nlabels3 - 1);
+  assert(tensorTable.getShardId().at("3")->getData()(0) == 1);
+  assert(tensorTable.getShardIndices().at("3")->getData()(0) == 1);
+  assert(tensorTable.getShardIndices().at("3")->getData()(nlabels3 - 1) == nlabels3);
 
   // Test expected axis to dims mapping
   assert(tensorTable.getDimFromAxisName("1") == 0);
@@ -1173,8 +1173,8 @@ void test_selectTensorDataGpu()
   assert(tensorTable.getIndicesView().at("1")->getData()(0) == 1);
   assert(tensorTable.getIsModified().at("1")->getData()(0) == 0);
   assert(tensorTable.getInMemory().at("1")->getData()(0) == 0);
-  assert(tensorTable.getShardId().at("1")->getData()(0) == 0);
-  assert(tensorTable.getShardIndices().at("1")->getData()(0) == 0);
+  assert(tensorTable.getShardId().at("1")->getData()(0) == 1);
+  assert(tensorTable.getShardIndices().at("1")->getData()(0) == 1);
 
   assert(tensorTable.getAxes().at("2")->getName() == "2");
   assert(tensorTable.getAxes().at("2")->getNLabels() == nlabels);
@@ -1185,8 +1185,8 @@ void test_selectTensorDataGpu()
     assert(tensorTable.getIndicesView().at("2")->getData()(i) == i + 1);
     assert(tensorTable.getIsModified().at("2")->getData()(i) == 0);
     assert(tensorTable.getInMemory().at("2")->getData()(i) == 0);
-    assert(tensorTable.getShardId().at("2")->getData()(i) == 0);
-    assert(tensorTable.getShardIndices().at("2")->getData()(i) == i);
+    assert(tensorTable.getShardId().at("2")->getData()(i) == 1);
+    assert(tensorTable.getShardIndices().at("2")->getData()(i) == i + 1);
   }
 
   assert(tensorTable.getAxes().at("3")->getName() == "3");
@@ -1198,8 +1198,8 @@ void test_selectTensorDataGpu()
     assert(tensorTable.getIndicesView().at("3")->getData()(i) == i + 1);
     assert(tensorTable.getIsModified().at("3")->getData()(i) == 0);
     assert(tensorTable.getInMemory().at("3")->getData()(i) == 0);
-    assert(tensorTable.getShardId().at("3")->getData()(i) == 0);
-    assert(tensorTable.getShardIndices().at("3")->getData()(i) == i);
+    assert(tensorTable.getShardId().at("3")->getData()(i) == 1);
+    assert(tensorTable.getShardIndices().at("3")->getData()(i) == i + 1);
   }
 
   // Test expected axis to dims mapping
@@ -1671,11 +1671,11 @@ void test_appendToIndicesGpu()
   for (int i = 0; i < nlabels + nlabels - 1; ++i) {
     assert(tensorTable.getIndices().at("1")->getData()(i) == i + 1);
     assert(tensorTable.getIndicesView().at("1")->getData()(i) == i + 1);
-    assert(tensorTable.getShardId().at("1")->getData()(i) == 0);
+    assert(tensorTable.getShardId().at("1")->getData()(i) == 1);
     if (i < nlabels) {
       assert(tensorTable.getIsModified().at("1")->getData()(i) == 0);
       assert(tensorTable.getInMemory().at("1")->getData()(i) == 0);
-      assert(tensorTable.getShardIndices().at("1")->getData()(i) == i);
+      assert(tensorTable.getShardIndices().at("1")->getData()(i) == i + 1);
     }
     else {
       assert(tensorTable.getIsModified().at("1")->getData()(i) == 1);
@@ -1911,16 +1911,16 @@ void test_deleteFromIndicesGpu()
     if (i == 0) {
       assert(tensorTable.getIndices().at("1")->getData()(i) == i + 1);
       assert(tensorTable.getIndicesView().at("1")->getData()(i) == i + 1);
-      assert(tensorTable.getShardIndices().at("1")->getData()(i) == i);
+      assert(tensorTable.getShardIndices().at("1")->getData()(i) == i + 1);
     }
     else {
       assert(tensorTable.getIndices().at("1")->getData()(i) == i + 2);
       assert(tensorTable.getIndicesView().at("1")->getData()(i) == i + 2);
-      assert(tensorTable.getShardIndices().at("1")->getData()(i) == i + 1);
+      assert(tensorTable.getShardIndices().at("1")->getData()(i) == i + 2);
     }
     assert(tensorTable.getIsModified().at("1")->getData()(i) == 0);
     assert(tensorTable.getInMemory().at("1")->getData()(i) == 0);
-    assert(tensorTable.getShardId().at("1")->getData()(i) == 0);
+    assert(tensorTable.getShardId().at("1")->getData()(i) == 1);
   }
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
@@ -2077,16 +2077,16 @@ void test_deleteFromAxisGpu()
     if (i == 0) {
       assert(tensorTable.getIndices().at("1")->getData()(i) == i + 1);
       assert(tensorTable.getIndicesView().at("1")->getData()(i) == i + 1);
-      assert(tensorTable.getShardIndices().at("1")->getData()(i) == i);
+      assert(tensorTable.getShardIndices().at("1")->getData()(i) == i + 1);
     }
     else {
       assert(tensorTable.getIndices().at("1")->getData()(i) == i + 2);
       assert(tensorTable.getIndicesView().at("1")->getData()(i) == i + 2);
-      assert(tensorTable.getShardIndices().at("1")->getData()(i) == i + 1);
+      assert(tensorTable.getShardIndices().at("1")->getData()(i) == i + 2);
     }
     assert(tensorTable.getIsModified().at("1")->getData()(i) == 1);
     assert(tensorTable.getInMemory().at("1")->getData()(i) == 1);
-    assert(tensorTable.getShardId().at("1")->getData()(i) == 0);
+    assert(tensorTable.getShardId().at("1")->getData()(i) == 1);
   }
 
   // Test the expected data values
@@ -2450,8 +2450,8 @@ void test_makeSparseTensorTableGpu()
     assert(sparse_table_ptr->getIndicesView().at("Indices")->getData()(i) == i + 1);
     assert(sparse_table_ptr->getIsModified().at("Indices")->getData()(i) == 1);
     assert(sparse_table_ptr->getInMemory().at("Indices")->getData()(i) == 1);
-    assert(sparse_table_ptr->getShardId().at("Indices")->getData()(i) == 0);
-    assert(sparse_table_ptr->getShardIndices().at("Indices")->getData()(i) == i);
+    assert(sparse_table_ptr->getShardId().at("Indices")->getData()(i) == 1);
+    assert(sparse_table_ptr->getShardIndices().at("Indices")->getData()(i) == i + 1);
   }
 
   // Check the values axis indices
@@ -2460,8 +2460,8 @@ void test_makeSparseTensorTableGpu()
     assert(sparse_table_ptr->getIndicesView().at("Values")->getData()(i) == i + 1);
     assert(sparse_table_ptr->getIsModified().at("Values")->getData()(i) == 1);
     assert(sparse_table_ptr->getInMemory().at("Values")->getData()(i) == 1);
-    assert(sparse_table_ptr->getShardId().at("Values")->getData()(i) == 0);
-    assert(sparse_table_ptr->getShardIndices().at("Values")->getData()(i) == i);
+    assert(sparse_table_ptr->getShardId().at("Values")->getData()(i) == 1);
+    assert(sparse_table_ptr->getShardIndices().at("Values")->getData()(i) == i + 1);
   }
 
   assert(cudaStreamDestroy(stream) == cudaSuccess);
@@ -2583,8 +2583,8 @@ void test_getSelectTensorDataAsSparseTensorTableGpu()
     assert(sparse_table_ptr->getIndicesView().at("Indices")->getData()(i) == i + 1);
     assert(sparse_table_ptr->getIsModified().at("Indices")->getData()(i) == 1);
     assert(sparse_table_ptr->getInMemory().at("Indices")->getData()(i) == 1);
-    assert(sparse_table_ptr->getShardId().at("Indices")->getData()(i) == 0);
-    assert(sparse_table_ptr->getShardIndices().at("Indices")->getData()(i) == i);
+    assert(sparse_table_ptr->getShardId().at("Indices")->getData()(i) == 1);
+    assert(sparse_table_ptr->getShardIndices().at("Indices")->getData()(i) == i + 1);
   }
 
   // Check the values axis indices
@@ -2593,8 +2593,8 @@ void test_getSelectTensorDataAsSparseTensorTableGpu()
     assert(sparse_table_ptr->getIndicesView().at("Values")->getData()(i) == i + 1);
     assert(sparse_table_ptr->getIsModified().at("Values")->getData()(i) == 1);
     assert(sparse_table_ptr->getInMemory().at("Values")->getData()(i) == 1);
-    assert(sparse_table_ptr->getShardId().at("Values")->getData()(i) == 0);
-    assert(sparse_table_ptr->getShardIndices().at("Values")->getData()(i) == i);
+    assert(sparse_table_ptr->getShardId().at("Values")->getData()(i) == 1);
+    assert(sparse_table_ptr->getShardIndices().at("Values")->getData()(i) == i + 1);
   }
 
   assert(cudaStreamDestroy(stream) == cudaSuccess);

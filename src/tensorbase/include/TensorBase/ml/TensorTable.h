@@ -544,6 +544,15 @@ namespace TensorBase
     template<typename LabelsT>
     void insertIntoAxis(const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<TensorT>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device);
     
+    /**
+    @brief Determine the Tensor data shards that have been modified from the
+      `is_modified` and `shard_id` members
+
+    @param[out] modified_shard_id
+    @param[in] device
+    */
+    virtual void getModifiedShardIDs(std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, DeviceT& device) = 0;
+
   protected:
     int id_ = -1;
     std::string name_ = "";
@@ -1486,7 +1495,7 @@ namespace TensorBase
     is_modified_values.device(device) = is_modified_copy_values.pad(padding_1) + indices_new_values.constant(1).pad(padding_2);
     in_memory_values.device(device) = in_memory_copy_values.pad(padding_1) + indices_new_values.constant(1).pad(padding_2);
     // TODO: need to add in logic to check if the shard size has been exceeded, and if so, start a new shard
-    shard_id_values.device(device) = shard_id_copy_values.pad(padding_1) + indices_new_values.constant(0).pad(padding_2);
+    shard_id_values.device(device) = shard_id_copy_values.pad(padding_1) + indices_new_values.constant(1).pad(padding_2);
     shard_indices_values.device(device) = shard_indices_copy_values.pad(padding_1) + indices_new_values.constant(0).pad(padding_2); // TODO: correct
 
     // update the dimensions
