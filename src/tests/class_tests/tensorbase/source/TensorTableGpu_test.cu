@@ -961,7 +961,7 @@ void test_makeSelectIndicesFromIndicesViewGpu()
 
   // Test null
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 3>> indices_select;
-  tensorTable.makeSelectIndicesFromIndicesView(indices_select, device);
+  tensorTable.makeSelectIndicesFromTensorIndicesComponent(tensorTable.getIndicesView(), indices_select, device);
   indices_select->syncHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < nlabels; ++i) {
@@ -996,7 +996,7 @@ void test_makeSelectIndicesFromIndicesViewGpu()
 
   // Test selected
   indices_select.reset();
-  tensorTable.makeSelectIndicesFromIndicesView(indices_select, device);
+  tensorTable.makeSelectIndicesFromTensorIndicesComponent(tensorTable.getIndicesView(), indices_select, device);
   indices_select->syncHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < nlabels; ++i) {

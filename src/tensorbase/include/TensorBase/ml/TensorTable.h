@@ -297,10 +297,11 @@ namespace TensorBase
       2. broadcasting all indices to the size of the Tensor
       3. multiplying all indices together
 
+    @param[in] indices_component A TensorTable component e.g., indices_, indices_view_, shard_id_, or shard_index_
     @param[out] indices_select Pointer to the indices Tensor ([in] empty pointer)
     @param[in] device
     */
-    virtual void makeSelectIndicesFromIndicesView(std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, DeviceT& device) = 0;
+    virtual void makeSelectIndicesFromTensorIndicesComponent(const std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& indices_component, std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, DeviceT& device) = 0;
 
     /*
     @brief Select the Tensor data and return the selected/reduced data
@@ -1182,7 +1183,7 @@ namespace TensorBase
   {
     // make the selection indices from the indices view
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_select;
-    makeSelectIndicesFromIndicesView(indices_select, device);
+    makeSelectIndicesFromTensorIndicesComponent(this->indices_view_, indices_select, device);
 
     // select the tensor data based on the selection indices and update
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> tensor_select;
@@ -1326,7 +1327,7 @@ namespace TensorBase
 
     // make the selection indices from the indices view
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_select;
-    makeSelectIndicesFromIndicesView(indices_select, device);
+    makeSelectIndicesFromTensorIndicesComponent(this->indices_view_, indices_select, device);
 
     // create the selection
     Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_select_values(indices_select->getDataPointer().get(), indices_select->getDimensions());
@@ -1364,7 +1365,7 @@ namespace TensorBase
   {
     // make the partition index tensor from the indices view
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_partition;
-    makeSelectIndicesFromIndicesView(indices_partition, device);
+    makeSelectIndicesFromTensorIndicesComponent(this->indices_view_, indices_partition, device);
 
     // partition the data in place
     data_->partition(indices_partition, device);
@@ -1405,7 +1406,7 @@ namespace TensorBase
   {
     // make the selection indices from the indices view
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_select;
-    makeSelectIndicesFromIndicesView(indices_select, device);
+    makeSelectIndicesFromTensorIndicesComponent(this->indices_view_, indices_select, device);
 
     // select the tensor data based on the selection indices
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> sparse_data;
@@ -1750,7 +1751,7 @@ namespace TensorBase
   {
     // Make the selection indices from the modified tensor indices
     std::shared_ptr<TensorData<int, DeviceT, TDim>> select_indices;
-    //makeSelectIndicesFromTensorIndicesComponent(is_modified_, select_indices, device);
+    makeSelectIndicesFromTensorIndicesComponent(is_modified_, select_indices, device);
 
     // Make the sort indices from the `shard_id` values
     std::shared_ptr<TensorData<int, DeviceT, TDim>> sort_indices;
