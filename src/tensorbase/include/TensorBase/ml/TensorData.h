@@ -333,13 +333,14 @@ namespace TensorBase
     // generate the run length encoding
     int iter = 0;
     int run_index = 0;
-    n_runs_values(0) = 1; // initialize the value of the number of runs
+    n_runs_values(0) = 0; // initialize the value of the number of runs
     count_values.setZero();
     std::for_each(tensor_values.data(), tensor_values.data() + tensor_values.size() - 1,
       [&tensor_values, &unique_values, &count_values, &n_runs_values, &iter, &run_index, &device](const TensorT& value) {
       if (value == tensor_values(iter + 1) && iter + 1 == tensor_values.size() - 1) { // run, last value
         count_values(run_index) += 2;
         unique_values(run_index) = value;
+        n_runs_values(0) += 1;
       }
       else if (value == tensor_values(iter + 1)) { // run
         count_values(run_index) += 1;
@@ -349,7 +350,7 @@ namespace TensorBase
         unique_values(run_index) = value;
         count_values(run_index + 1) += 1;
         unique_values(run_index + 1) = tensor_values(iter + 1);
-        n_runs_values(0) += 1;
+        n_runs_values(0) += 2;
       }
       else { // not a run
         count_values(run_index) += 1;
@@ -527,13 +528,14 @@ namespace TensorBase
     // generate the run length encoding
     int iter = 0;
     int run_index = 0;
-    n_runs_values(0) = 1; // initialize the value of the number of runs
+    n_runs_values(0) = 0; // initialize the value of the number of runs
     count_values.setZero();
     std::for_each(tensor_values.data(), tensor_values.data() + tensor_values.size() - 1,
       [&tensor_values, &unique_values, &count_values, &n_runs_values, &iter, &run_index, &device](const TensorT& value) {
       if (value == tensor_values(iter + 1) && iter + 1 == tensor_values.size() - 1) { // run, last value
         count_values(run_index) += 2;
         unique_values(run_index) = value;
+        n_runs_values(0) += 1;
       }
       else if (value == tensor_values(iter + 1)) { // run
         count_values(run_index) += 1;
@@ -543,7 +545,7 @@ namespace TensorBase
         unique_values(run_index) = value;
         count_values(run_index + 1) += 1;
         unique_values(run_index + 1) = tensor_values(iter + 1);
-        n_runs_values(0) += 1;
+        n_runs_values(0) += 2;
       }
       else { // not a run
         count_values(run_index) += 1;

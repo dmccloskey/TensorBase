@@ -2414,11 +2414,7 @@ BOOST_AUTO_TEST_CASE(makeModifiedShardIDTensorDefaultDevice)
   // Test the unmodified case
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> shard_id_indices_ptr;
   tensorTable.makeModifiedShardIDTensor(shard_id_indices_ptr, device);
-  std::cout << "shard_id_indices_ptr\n" << shard_id_indices_ptr->getData() << std::endl;
-  BOOST_CHECK_EQUAL(shard_id_indices_ptr->getTensorSize(), 1);
-  for (int i = 0; i < shard_id_indices_ptr->getTensorSize(); ++i) {
-    BOOST_CHECK_EQUAL(shard_id_indices_ptr->getData()(i), 0);
-  }
+  BOOST_CHECK_EQUAL(shard_id_indices_ptr->getTensorSize(), 0);
 
   // Test the fully modified case
   for (auto& is_modified_map : tensorTable.getIsModified()) {
@@ -2426,7 +2422,6 @@ BOOST_AUTO_TEST_CASE(makeModifiedShardIDTensorDefaultDevice)
   }
   shard_id_indices_ptr.reset();
   tensorTable.makeModifiedShardIDTensor(shard_id_indices_ptr, device);
-  std::cout << "shard_id_indices_ptr\n" << shard_id_indices_ptr->getData() << std::endl;
   BOOST_CHECK_EQUAL(shard_id_indices_ptr->getTensorSize(), 8);
   for (int i = 0; i < shard_id_indices_ptr->getTensorSize(); ++i) {
     BOOST_CHECK_EQUAL(shard_id_indices_ptr->getData()(i), i + 1);
@@ -2443,8 +2438,7 @@ BOOST_AUTO_TEST_CASE(makeModifiedShardIDTensorDefaultDevice)
   }
   shard_id_indices_ptr.reset();
   tensorTable.makeModifiedShardIDTensor(shard_id_indices_ptr, device);
-  std::cout << "shard_id_indices_ptr\n" << shard_id_indices_ptr->getData() << std::endl;
-  BOOST_CHECK_EQUAL(shard_id_indices_ptr->getTensorSize(), 2);
+  BOOST_CHECK_EQUAL(shard_id_indices_ptr->getTensorSize(), 1);
   for (int i = 0; i < shard_id_indices_ptr->getTensorSize(); ++i) {
     BOOST_CHECK_EQUAL(shard_id_indices_ptr->getData()(i), i + 1);
   }

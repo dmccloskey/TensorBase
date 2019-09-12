@@ -1788,9 +1788,20 @@ namespace TensorBase
     std::shared_ptr<TensorData<int, DeviceT, 1>> unique, count, num_runs;
     runLengthEncodeIndex(shard_indices, unique, count, num_runs, device);
 
-    // Resize the unique results
-    num_runs->syncHAndDData(device); // d to h
-    unique->setDimensions(Eigen::array<Eigen::Index, 1>({num_runs->getData()(0)}));
+    // Resize the unique results and remove 0's from the unique
+    unique->syncHAndDData(device); // d to h
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> unqiue_values(unique->getDataPointer().get(), unique->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<int, 0>> num_runs_values(num_runs->getDataPointer().get());
+    if (num_runs->getData()(0) == 1 && unqiue_values(0) == 0) { // might not work on the GPU...
+      unique->setDimensions(Eigen::array<Eigen::Index, 1>({ 0 }));
+    }
+    else if (unqiue_values(0) == 0) { // might not work on the GPU...
+      unqiue_values.slice(Eigen::array<Eigen::Index, 1>({ 0 }), Eigen::array<Eigen::Index, 1>({ num_runs->getData()(0) - 1 })).device(device) = unqiue_values.slice(Eigen::array<Eigen::Index, 1>({ 1 }), Eigen::array<Eigen::Index, 1>({ num_runs->getData()(0) - 1 }));
+      unique->setDimensions(Eigen::array<Eigen::Index, 1>({ num_runs->getData()(0) - 1 }));
+    }
+    else {
+      unique->setDimensions(Eigen::array<Eigen::Index, 1>({ num_runs->getData()(0) }));
+    }
     modified_shard_ids = unique;
   }
 };
