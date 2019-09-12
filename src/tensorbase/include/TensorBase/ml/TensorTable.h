@@ -1779,8 +1779,8 @@ namespace TensorBase
     makeShardIndicesFromShardIDs(shard_indices, device);
 
     // Select the `shard_id` values to use for writing
-    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> select_indices_values(select_indices->getDataPointer().get(), modified_shards->getDimensions());
-    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> shard_indices_values(shard_indices->getDataPointer().get(), shard_indices->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<int, TDim>> select_indices_values(select_indices->getDataPointer().get(), select_indices->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<int, TDim>> shard_indices_values(shard_indices->getDataPointer().get(), shard_indices->getDimensions());
     shard_indices_values.device(device) = (select_indices_values > select_indices_values.constant(0)).select(shard_indices_values, shard_indices_values.constant(0));
 
     // Sort and then RunLengthEncode
@@ -1791,6 +1791,7 @@ namespace TensorBase
     // Resize the unique results
     num_runs->syncHAndDData(device); // d to h
     unique->setDimensions(Eigen::array<Eigen::Index, 1>({num_runs->getData()(0)}));
+    modified_shard_ids = unique;
   }
 };
 #endif //TENSORBASE_TENSORTABLE_H

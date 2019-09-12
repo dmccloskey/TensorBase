@@ -335,17 +335,40 @@ void test_runLengthEncodeGpu()
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
-  // Test partition
+  // Test runLengthEncode for the case where the last value is the same as the previous
   tensordata.syncHAndDData(device);
   uniquev_ptr->syncHAndDData(device);
   count_ptr->syncHAndDData(device);
   num_runs_ptr->syncHAndDData(device);
   tensordata.runLengthEncode(uniquev_ptr, count_ptr, num_runs_ptr, device);
+  tensordata.syncHAndDData(device);
   uniquev_ptr->syncHAndDData(device);
   count_ptr->syncHAndDData(device);
   num_runs_ptr->syncHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(num_runs_ptr->getData()(0) == 3);
+  for (int i = 0; i < num_runs_ptr->getData()(0); ++i) {
+    assert(uniquev_ptr->getData()(i) == unique_values(i));
+    assert(count_ptr->getData()(i) == count_values(i));
+  }
+
+  // Test runLengthEncode for the case where the last value is not the same as the previous
+  tensor_values.setValues({ { 1, 2, 3}, { 1, 2, 3}, { 1, 2, 4} });
+  tensordata.setData(tensor_values);
+  unique_values.setValues({ 1, 2, 3, 4, -1, -1, -1, -1, -1 });
+  count_values.setValues({ 3, 3, 2, 1, -1, -1, -1, -1, -1 });
+  num_runs_values.setValues({ 4 });  
+  uniquev_ptr->syncHAndDData(device);
+  count_ptr->syncHAndDData(device);
+  num_runs_ptr->syncHAndDData(device);
+  tensordata.syncHAndDData(device);
+  tensordata.runLengthEncode(uniquev_ptr, count_ptr, num_runs_ptr, device);
+  uniquev_ptr->syncHAndDData(device);
+  count_ptr->syncHAndDData(device);
+  num_runs_ptr->syncHAndDData(device);
+  tensordata.syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  assert(num_runs_ptr->getData()(0) == 4);
   for (int i = 0; i < num_runs_ptr->getData()(0); ++i) {
     assert(uniquev_ptr->getData()(i) == unique_values(i));
     assert(count_ptr->getData()(i) == count_values(i));

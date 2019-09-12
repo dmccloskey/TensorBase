@@ -345,8 +345,10 @@ namespace TensorBase
         count_values(run_index) += 1;
       }
       else if (value != tensor_values(iter + 1) && iter + 1 == tensor_values.size() - 1) { // not a run, last value
+        count_values(run_index) += 1;
+        unique_values(run_index) = value;
         count_values(run_index + 1) += 1;
-        unique_values(run_index + 1) = value;
+        unique_values(run_index + 1) = tensor_values(iter + 1);
         n_runs_values(0) += 1;
       }
       else { // not a run
@@ -537,8 +539,10 @@ namespace TensorBase
         count_values(run_index) += 1;
       }
       else if (value != tensor_values(iter + 1) && iter + 1 == tensor_values.size() - 1) { // not a run, last value
+        count_values(run_index) += 1;
+        unique_values(run_index) = value;
         count_values(run_index + 1) += 1;
-        unique_values(run_index + 1) = value;
+        unique_values(run_index + 1) = tensor_values(iter + 1);
         n_runs_values(0) += 1;
       }
       else { // not a run
