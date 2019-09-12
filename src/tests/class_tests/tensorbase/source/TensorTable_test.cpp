@@ -2416,6 +2416,10 @@ BOOST_AUTO_TEST_CASE(makeModifiedShardIDTensorDefaultDevice)
   tensorTable.makeModifiedShardIDTensor(shard_id_indices_ptr, device);
   BOOST_CHECK_EQUAL(shard_id_indices_ptr->getTensorSize(), 0);
 
+  std::map<int, std::pair<Eigen::array<int, 3>, Eigen::array<int, 3>>> slice_indices;
+  tensorTable.makeSliceIndicesFromShardIndices(shard_id_indices_ptr, slice_indices, device);
+  BOOST_CHECK_EQUAL(slice_indices.size(), 0);
+
   // Test the fully modified case
   for (auto& is_modified_map : tensorTable.getIsModified()) {
     is_modified_map.second->getData() = is_modified_map.second->getData().constant(1);
@@ -2425,6 +2429,25 @@ BOOST_AUTO_TEST_CASE(makeModifiedShardIDTensorDefaultDevice)
   BOOST_CHECK_EQUAL(shard_id_indices_ptr->getTensorSize(), 8);
   for (int i = 0; i < shard_id_indices_ptr->getTensorSize(); ++i) {
     BOOST_CHECK_EQUAL(shard_id_indices_ptr->getData()(i), i + 1);
+  }
+
+  slice_indices.clear();
+  tensorTable.makeSliceIndicesFromShardIndices(shard_id_indices_ptr, slice_indices, device);
+  std::map<int, std::pair<Eigen::array<int, 3>, Eigen::array<int, 3>>> slice_indices_test;
+  slice_indices_test.emplace(1, std::make_pair(Eigen::array<int, 3>({ 0,0,0 }), Eigen::array<int, 3>({ 2,2,2 })));
+  slice_indices_test.emplace(2, std::make_pair(Eigen::array<int, 3>({ 2,0,0 }), Eigen::array<int, 3>({ 1,2,2 })));
+  slice_indices_test.emplace(3, std::make_pair(Eigen::array<int, 3>({ 0,2,0 }), Eigen::array<int, 3>({ 2,1,2 })));
+  slice_indices_test.emplace(4, std::make_pair(Eigen::array<int, 3>({ 2,2,0 }), Eigen::array<int, 3>({ 1,1,2 })));
+  slice_indices_test.emplace(5, std::make_pair(Eigen::array<int, 3>({ 0,0,2 }), Eigen::array<int, 3>({ 2,2,1 })));
+  slice_indices_test.emplace(6, std::make_pair(Eigen::array<int, 3>({ 2,0,2 }), Eigen::array<int, 3>({ 1,2,1 })));
+  slice_indices_test.emplace(7, std::make_pair(Eigen::array<int, 3>({ 0,2,2 }), Eigen::array<int, 3>({ 2,1,1 })));
+  slice_indices_test.emplace(8, std::make_pair(Eigen::array<int, 3>({ 2,2,2 }), Eigen::array<int, 3>({ 1,1,1 })));
+  int iter = 1;
+  for (const auto& slice_indices_map : slice_indices) {
+    BOOST_CHECK_EQUAL(slice_indices_map.first, iter);
+    BOOST_CHECK(slice_indices_map.second.first == slice_indices_test.at(slice_indices_map.first).first);
+    BOOST_CHECK(slice_indices_map.second.second == slice_indices_test.at(slice_indices_map.first).second);
+    ++iter;
   }
 
   // Test the partially modified case
@@ -2441,6 +2464,18 @@ BOOST_AUTO_TEST_CASE(makeModifiedShardIDTensorDefaultDevice)
   BOOST_CHECK_EQUAL(shard_id_indices_ptr->getTensorSize(), 1);
   for (int i = 0; i < shard_id_indices_ptr->getTensorSize(); ++i) {
     BOOST_CHECK_EQUAL(shard_id_indices_ptr->getData()(i), i + 1);
+  }
+
+  slice_indices.clear();
+  tensorTable.makeSliceIndicesFromShardIndices(shard_id_indices_ptr, slice_indices, device);
+  slice_indices_test.clear();
+  slice_indices_test.emplace(1, std::make_pair(Eigen::array<int, 3>({ 0,0,0 }), Eigen::array<int, 3>({ 2,2,2 })));
+  iter = 1;
+  for (const auto& slice_indices_map : slice_indices) {
+    BOOST_CHECK_EQUAL(slice_indices_map.first, iter);
+    BOOST_CHECK(slice_indices_map.second.first == slice_indices_test.at(slice_indices_map.first).first);
+    BOOST_CHECK(slice_indices_map.second.second == slice_indices_test.at(slice_indices_map.first).second);
+    ++iter;
   }
 }
 
