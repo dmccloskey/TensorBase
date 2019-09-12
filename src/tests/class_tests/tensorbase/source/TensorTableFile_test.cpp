@@ -76,6 +76,43 @@ BOOST_AUTO_TEST_CASE(storeAndLoadBinary)
   // Store the data
   TensorTableFile<float, Eigen::DefaultDevice, 3> data;
   data.storeTensorTableBinary("", tensorTable, device);
+
+  // Test for the in_memory and is_modified attributes
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("1")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("3")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("1")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("3")->getData()(i), 0);
+  }
+
+  // Reset the in_memory values
+  for (auto& in_memory_map : tensorTable.getInMemory()) {
+    in_memory_map.second->getData() = in_memory_map.second->getData().constant(0);
+  }
+
+  // Load the data
+  data.loadTensorTableBinary("", tensorTable, device);
+
+  // Test for the in_memory and is_modified attributes
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("1")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("3")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("1")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("3")->getData()(i), 0);
+  }
+
+  // Test for the original data
+  for (int k = 0; k < nlabels; ++k) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int i = 0; i < nlabels; ++i) {
+        BOOST_CHECK_EQUAL(tensorTable.getData()(i,j,k), tensor_values(i, j, k));
+      }
+    }
+  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()

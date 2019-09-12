@@ -2464,4 +2464,105 @@ BOOST_AUTO_TEST_CASE(makeModifiedShardIDTensorDefaultDevice)
   }
 }
 
+BOOST_AUTO_TEST_CASE(makeNotInMemoryShardIDTensorDefaultDevice)
+{
+  // setup the table
+  TensorTableDefaultDevice<float, 3> tensorTable;
+  Eigen::DefaultDevice device;
+
+  // setup the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels = 3;
+  Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels), labels3(1, nlabels);
+  labels1.setValues({ {0, 1, 2} });
+  labels2.setValues({ {0, 1, 2} });
+  labels3.setValues({ {0, 1, 2} });
+  auto axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1));
+  auto axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2));
+  auto axis_3_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3));
+  tensorTable.addTensorAxis(axis_1_ptr);
+  tensorTable.addTensorAxis(axis_2_ptr);
+  tensorTable.addTensorAxis(axis_3_ptr);
+  tensorTable.setAxes();
+
+  // Reshard indices
+  int shard_span = 2;
+  std::map<std::string, int> shard_span_new = { {"1", shard_span}, {"2", shard_span}, {"3", shard_span} };
+  tensorTable.setShardSpans(shard_span_new);
+  tensorTable.reShardIndices(device);
+
+  // Test all in memory case
+  for (auto& in_memory_map : tensorTable.getInMemory()) {
+    in_memory_map.second->getData() = in_memory_map.second->getData().constant(0);
+  }
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> shard_id_indices_ptr;
+  tensorTable.makeNotInMemoryShardIDTensor(shard_id_indices_ptr, device);
+  BOOST_CHECK_EQUAL(shard_id_indices_ptr->getTensorSize(), 0);
+
+  std::map<int, std::pair<Eigen::array<int, 3>, Eigen::array<int, 3>>> slice_indices;
+  tensorTable.makeSliceIndicesFromShardIndices(shard_id_indices_ptr, slice_indices, device);
+  BOOST_CHECK_EQUAL(slice_indices.size(), 0);
+
+  // Test all not in memory case
+  for (auto& in_memory_map : tensorTable.getInMemory()) {
+    in_memory_map.second->getData() = in_memory_map.second->getData().constant(1);
+  }
+  shard_id_indices_ptr.reset();
+  tensorTable.makeNotInMemoryShardIDTensor(shard_id_indices_ptr, device);
+  BOOST_CHECK_EQUAL(shard_id_indices_ptr->getTensorSize(), 8);
+  for (int i = 0; i < shard_id_indices_ptr->getTensorSize(); ++i) {
+    BOOST_CHECK_EQUAL(shard_id_indices_ptr->getData()(i), i + 1);
+  }
+
+  slice_indices.clear();
+  tensorTable.makeSliceIndicesFromShardIndices(shard_id_indices_ptr, slice_indices, device);
+  std::map<int, std::pair<Eigen::array<int, 3>, Eigen::array<int, 3>>> slice_indices_test;
+  slice_indices_test.emplace(1, std::make_pair(Eigen::array<int, 3>({ 0,0,0 }), Eigen::array<int, 3>({ 2,2,2 })));
+  slice_indices_test.emplace(2, std::make_pair(Eigen::array<int, 3>({ 2,0,0 }), Eigen::array<int, 3>({ 1,2,2 })));
+  slice_indices_test.emplace(3, std::make_pair(Eigen::array<int, 3>({ 0,2,0 }), Eigen::array<int, 3>({ 2,1,2 })));
+  slice_indices_test.emplace(4, std::make_pair(Eigen::array<int, 3>({ 2,2,0 }), Eigen::array<int, 3>({ 1,1,2 })));
+  slice_indices_test.emplace(5, std::make_pair(Eigen::array<int, 3>({ 0,0,2 }), Eigen::array<int, 3>({ 2,2,1 })));
+  slice_indices_test.emplace(6, std::make_pair(Eigen::array<int, 3>({ 2,0,2 }), Eigen::array<int, 3>({ 1,2,1 })));
+  slice_indices_test.emplace(7, std::make_pair(Eigen::array<int, 3>({ 0,2,2 }), Eigen::array<int, 3>({ 2,1,1 })));
+  slice_indices_test.emplace(8, std::make_pair(Eigen::array<int, 3>({ 2,2,2 }), Eigen::array<int, 3>({ 1,1,1 })));
+  int iter = 1;
+  for (const auto& slice_indices_map : slice_indices) {
+    BOOST_CHECK_EQUAL(slice_indices_map.first, iter);
+    BOOST_CHECK(slice_indices_map.second.first == slice_indices_test.at(slice_indices_map.first).first);
+    BOOST_CHECK(slice_indices_map.second.second == slice_indices_test.at(slice_indices_map.first).second);
+    ++iter;
+  }
+
+  // Test the partially in memory case
+  for (auto& in_memory_map : tensorTable.getInMemory()) {
+    for (int i = 0; i < nlabels; ++i) {
+      if (i < shard_span)
+        in_memory_map.second->getData()(i) = 1;
+      else
+        in_memory_map.second->getData()(i) = 0;
+    }
+  }
+  shard_id_indices_ptr.reset();
+  tensorTable.makeNotInMemoryShardIDTensor(shard_id_indices_ptr, device);
+  BOOST_CHECK_EQUAL(shard_id_indices_ptr->getTensorSize(), 1);
+  for (int i = 0; i < shard_id_indices_ptr->getTensorSize(); ++i) {
+    BOOST_CHECK_EQUAL(shard_id_indices_ptr->getData()(i), i + 1);
+  }
+
+  slice_indices.clear();
+  tensorTable.makeSliceIndicesFromShardIndices(shard_id_indices_ptr, slice_indices, device);
+  slice_indices_test.clear();
+  slice_indices_test.emplace(1, std::make_pair(Eigen::array<int, 3>({ 0,0,0 }), Eigen::array<int, 3>({ 2,2,2 })));
+  iter = 1;
+  for (const auto& slice_indices_map : slice_indices) {
+    BOOST_CHECK_EQUAL(slice_indices_map.first, iter);
+    BOOST_CHECK(slice_indices_map.second.first == slice_indices_test.at(slice_indices_map.first).first);
+    BOOST_CHECK(slice_indices_map.second.second == slice_indices_test.at(slice_indices_map.first).second);
+    ++iter;
+  }
+}
+
 BOOST_AUTO_TEST_SUITE_END()

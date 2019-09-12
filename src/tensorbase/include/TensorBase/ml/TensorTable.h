@@ -563,6 +563,8 @@ namespace TensorBase
     */
     void makeModifiedShardIDTensor(std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, DeviceT& device) const;
 
+    void makeShardIDTensor(std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, std::shared_ptr<TensorData<int, DeviceT, 1>>& unique, std::shared_ptr<TensorData<int, DeviceT, 1>>& num_runs, DeviceT & device) const;
+
     /*
     @brief Convert the 1D shard ID into a TDim indices tensor that describes the shart IDs of each Tensor element
 
@@ -598,6 +600,16 @@ namespace TensorBase
     @param[in] device
     */
     virtual void makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>>& slice_indices, DeviceT& device) const = 0;
+
+    /**
+    @brief Determine the Tensor data shards that are not in memory from the
+      `in_memory` and `shard_id` members, and make an ordered 1D Tensor with
+      unique TensorData shard ids
+
+    @param[out] modified_shard_id
+    @param[in] device
+    */
+    void makeNotInMemoryShardIDTensor(std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, DeviceT& device) const;
 
   protected:
     int id_ = -1;
@@ -879,12 +891,12 @@ namespace TensorBase
         span.at(0) = (shard_span_map.second <= remaining_length) ? shard_span_map.second: remaining_length;
 
         // Update the shard id
-        Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_id_values(shard_id_.at(shard_span_map.first)->getDataPointer().get(), shard_id_.at(shard_span_map.first)->getDimensions());
+        Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_id_values(shard_id_.at(shard_span_map.first)->getDataPointer().get(), (int)shard_id_.at(shard_span_map.first)->getTensorSize());
         shard_id_values.slice(offset, span).device(device) = shard_id_values.slice(offset, span).constant(shard_id + 1);
 
         // Update the shard indices using the indices as a template
-        Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_indices_values(shard_indices_.at(shard_span_map.first)->getDataPointer().get(), shard_indices_.at(shard_span_map.first)->getDimensions());
-        Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_values(indices_.at(shard_span_map.first)->getDataPointer().get(), indices_.at(shard_span_map.first)->getDimensions());
+        Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_indices_values(shard_indices_.at(shard_span_map.first)->getDataPointer().get(), (int)shard_indices_.at(shard_span_map.first)->getTensorSize());
+        Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_values(indices_.at(shard_span_map.first)->getDataPointer().get(), (int)indices_.at(shard_span_map.first)->getTensorSize());
         shard_indices_values.slice(offset, span).device(device) = indices_values.slice(Eigen::array<int, 1>({0}), span);
       }
     }
@@ -1789,6 +1801,13 @@ namespace TensorBase
     runLengthEncodeIndex(shard_indices, unique, count, num_runs, device);
 
     // Resize the unique results and remove 0's from the unique
+    makeShardIDTensor(modified_shard_ids, unique, num_runs, device);
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::makeShardIDTensor(std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, std::shared_ptr<TensorData<int, DeviceT, 1>>& unique, std::shared_ptr<TensorData<int, DeviceT, 1>>& num_runs, DeviceT & device) const
+  {
+    // Resize the unique results and remove 0's from the unique
     unique->syncHAndDData(device); // d to h
     Eigen::TensorMap<Eigen::Tensor<int, 1>> unqiue_values(unique->getDataPointer().get(), unique->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<int, 0>> num_runs_values(num_runs->getDataPointer().get());
@@ -1803,6 +1822,31 @@ namespace TensorBase
       unique->setDimensions(Eigen::array<Eigen::Index, 1>({ num_runs->getData()(0) }));
     }
     modified_shard_ids = unique;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::makeNotInMemoryShardIDTensor(std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, DeviceT & device) const
+  {
+    // Make the selection indices from the in memory tensor indices
+    std::shared_ptr<TensorData<int, DeviceT, TDim>> select_indices;
+    makeSelectIndicesFromTensorIndicesComponent(in_memory_, select_indices, device);
+
+    // Make the sort indices from the `shard_id` values
+    std::shared_ptr<TensorData<int, DeviceT, TDim>> shard_indices;
+    makeShardIndicesFromShardIDs(shard_indices, device);
+
+    // Select the `shard_id` values to use for writing
+    Eigen::TensorMap<Eigen::Tensor<int, TDim>> select_indices_values(select_indices->getDataPointer().get(), select_indices->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<int, TDim>> shard_indices_values(shard_indices->getDataPointer().get(), shard_indices->getDimensions());
+    shard_indices_values.device(device) = (select_indices_values == select_indices_values.constant(0)).select(shard_indices_values, shard_indices_values.constant(0));
+
+    // Sort and then RunLengthEncode
+    shard_indices->sort("ASC", device);
+    std::shared_ptr<TensorData<int, DeviceT, 1>> unique, count, num_runs;
+    runLengthEncodeIndex(shard_indices, unique, count, num_runs, device);
+
+    // Resize the unique results and remove 0's from the unique
+    makeShardIDTensor(modified_shard_ids, unique, num_runs, device);
   }
 };
 #endif //TENSORBASE_TENSORTABLE_H

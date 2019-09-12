@@ -37,13 +37,15 @@ public:
     /**
       @brief Write data to file
 
+      The TensorData is transfered to the host, and the `is_modified` attribute is reset to all 0's
+
       @param[in] filename The name of the data file
-      @param[in] tensor_table The tensor table to write to file where the data resides on the host
+      @param[in] tensor_table The tensor table to write to file
       @param[in] device
 
       @returns Status True on success, False if not
     */ 
-    static bool storeTensorTableBinary(const std::string& dir, const TensorTable<TensorT, DeviceT, TDim>& tensor_table, DeviceT& device);
+    static bool storeTensorTableBinary(const std::string& dir, TensorTable<TensorT, DeviceT, TDim>& tensor_table, DeviceT& device);
 
     /**
       @brief Create a unique name for each TensorTableShard
@@ -73,8 +75,21 @@ public:
   template<typename TensorT, typename DeviceT, int TDim>
   inline bool TensorTableFile<TensorT, DeviceT, TDim>::loadTensorTableBinary(const std::string& dir, TensorTable<TensorT, DeviceT, TDim>& tensor_table, DeviceT& device) {
     // determine the shards to read from disk
+    std::shared_ptr<TensorData<int, DeviceT, 1>> not_in_memory_shard_ids;
+    tensor_table.makeModifiedShardIDTensor(not_in_memory_shard_ids, device);
+    if (not_in_memory_shard_ids->getTensorSize() == 0) {
+      std::cout << "No shards have been modified." << std::endl;
+      return false;
+    }
+    std::map<int, std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>> slice_indices;
+    tensor_table.makeSliceIndicesFromShardIndices(not_in_memory_shard_ids, slice_indices, device);
 
     // read in the shards and update the TensorTable data asyncronously
+    tensor_table.syncHAndDData(device);
+    for (const auto slice_index : slice_indices) {
+      const std::string filename = makeTensorTableShardFilename(dir, tensor_table.getName(), slice_index.first);
+      loadTensorTableShard(filename, tensor_table.getData(), slice_index.second);
+    }
 
     // update the `in_memory` tensor table attribute
 
@@ -82,7 +97,7 @@ public:
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
-  inline bool TensorTableFile<TensorT, DeviceT, TDim>::storeTensorTableBinary(const std::string& dir, const TensorTable<TensorT, DeviceT, TDim>& tensor_table, DeviceT& device) {
+  inline bool TensorTableFile<TensorT, DeviceT, TDim>::storeTensorTableBinary(const std::string& dir, TensorTable<TensorT, DeviceT, TDim>& tensor_table, DeviceT& device) {
     // determine the shards to write to disk
     std::shared_ptr<TensorData<int, DeviceT, 1>> modified_shard_ids;
     tensor_table.makeModifiedShardIDTensor(modified_shard_ids, device);
@@ -94,12 +109,18 @@ public:
     tensor_table.makeSliceIndicesFromShardIndices(modified_shard_ids, slice_indices, device);
 
     // write the TensorTable shards to disk asyncronously
+    tensor_table.syncHAndDData(device);
     for (const auto slice_index : slice_indices) {
       const std::string filename = makeTensorTableShardFilename(dir, tensor_table.getName(), slice_index.first);
       storeTensorTableShard(filename, tensor_table.getData(), slice_index.second);
     }
+    tensor_table.setDataStatus(false, true);
 
     // update the `is_modified` tensor table attribute
+    for (auto& is_modified_map : tensor_table.getIsModified()) {
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> is_modified_values(is_modified_map.second->getDataPointer().get(), (int)is_modified_map.second->getTensorSize());
+      is_modified_values.device(device) = is_modified_values.constant(1);
+    }
 
     return true;
   }
@@ -112,9 +133,8 @@ public:
   template<typename TensorT, typename DeviceT, int TDim>
   inline bool TensorTableFile<TensorT, DeviceT, TDim>::storeTensorTableShard(const std::string & filename, const Eigen::Tensor<TensorT, TDim>& tensor_data, const std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>& slice_indices)
   {
-    DataFile data;
     Eigen::Tensor<TensorT, TDim> shard_data = tensor_data.slice(slice_indices.first, slice_indices.second);
-    data.storeDataBinary<TensorT, TDim>(filename, shard_data);
+    DataFile::storeDataBinary<TensorT, TDim>(filename, shard_data);
     return true;
   }
 
