@@ -1410,11 +1410,6 @@ void test_updateTensorDataValues1Gpu()
   TensorDataGpu<float, 3> values_new(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   values_new.setData(update_values);
   std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> values_new_ptr = std::make_shared<TensorDataGpu<float, 3>>(values_new);
-
-  // reset is_modified attribute
-  for (auto& is_modified_map : tensorTable.getIsModified()) {
-    is_modified_map.second->getData() = is_modified_map.second->getData().constant(1);
-  }
   
   // sync the tensorTable
   tensorTable.syncIndicesHAndDData(device);
@@ -1509,11 +1504,6 @@ void test_updateTensorDataValues2Gpu()
   TensorDataGpu<float, 3> values_new(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   values_new.setData(update_values);
   std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> values_new_ptr = std::make_shared<TensorDataGpu<float, 3>>(values_new);
-
-  // reset is_modified attribute
-  for (auto& is_modified_map : tensorTable.getIsModified()) {
-    is_modified_map.second->getData() = is_modified_map.second->getData().constant(1);
-  }
 
   // sync the tensorTable
   tensorTable.syncIndicesHAndDData(device);
@@ -2639,11 +2629,6 @@ void test_updateTensorDataConstantGpu()
     }
   }
   tensorTable.setData(tensor_values);
-
-  // reset is_modified attribute
-  for (auto& is_modified_map : tensorTable.getIsModified()) {
-    is_modified_map.second->getData() = is_modified_map.second->getData().constant(1);
-  }
 
   // setup the update values
   TensorDataGpu<float, 1> values_new(Eigen::array<Eigen::Index, 1>({ 1 }));

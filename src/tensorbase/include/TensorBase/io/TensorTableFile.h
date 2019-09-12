@@ -5,6 +5,7 @@
 
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/ml/TensorTableDefaultDevice.h>
+#include <TensorBase/io/DataFile.h>
 
 #include <iostream>
 #include <fstream>
@@ -37,7 +38,7 @@ public:
       @brief Write data to file
 
       @param[in] filename The name of the data file
-      @param[in] tensor_table The tensor table to write to file
+      @param[in] tensor_table The tensor table to write to file where the data resides on the host
       @param[in] device
 
       @returns Status True on success, False if not
@@ -55,22 +56,18 @@ public:
     */
     static std::string makeTensorTableShardFilename(const std::string& dir, const std::string& tensor_table_name, const int& shard_id);
 
-    static void makeSliceIndicesFromShardIndices(
-      const std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids,
-      std::map<int, std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>>& slice_indices);
-
     static bool storeTensorTableShard(const std::string& filename,
       const Eigen::Tensor<TensorT, TDim>& tensor_data,
       const std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>& slice_indices);
 
-    static void getNotInMemoryShardIDs(
-      const TensorTable<TensorT, DeviceT, TDim>& tensor_table,
-      std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& modified_shard_id,
-      std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& modified_shard_indices, DeviceT& device);
-
     static bool loadTensorTableShard(const std::string& filename,
       Eigen::Tensor<TensorT, TDim>& tensor_data,
       const std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>& slice_indices);
+
+    //static void getNotInMemoryShardIDs(
+    //  const TensorTable<TensorT, DeviceT, TDim>& tensor_table,
+    //  std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& modified_shard_id,
+    //  std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& modified_shard_indices, DeviceT& device);
   };
 
   template<typename TensorT, typename DeviceT, int TDim>
@@ -94,12 +91,12 @@ public:
       return false;
     }
     std::map<int, std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>> slice_indices;
-    tensor_table.makeSliceIndicesFromShardIndices(modified_shard_ids, slice_indices);
+    tensor_table.makeSliceIndicesFromShardIndices(modified_shard_ids, slice_indices, device);
 
     // write the TensorTable shards to disk asyncronously
     for (const auto slice_index : slice_indices) {
       const std::string filename = makeTensorTableShardFilename(dir, tensor_table.getName(), slice_index.first);
-      storeTensorTableShard(filename, tensor_table.getData(), slice_index.second)
+      storeTensorTableShard(filename, tensor_table.getData(), slice_index.second);
     }
 
     // update the `is_modified` tensor table attribute
@@ -110,6 +107,21 @@ public:
   template<typename TensorT, typename DeviceT, int TDim>
   inline std::string TensorTableFile<TensorT, DeviceT, TDim>::makeTensorTableShardFilename(const std::string& dir, const std::string& tensor_table_name, const int& shard_id) {
     return dir + tensor_table_name + "_" + std::to_string(shard_id) + ".tts";
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline bool TensorTableFile<TensorT, DeviceT, TDim>::storeTensorTableShard(const std::string & filename, const Eigen::Tensor<TensorT, TDim>& tensor_data, const std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>& slice_indices)
+  {
+    DataFile data;
+    Eigen::Tensor<TensorT, TDim> shard_data = tensor_data.slice(slice_indices.first, slice_indices.second);
+    data.storeDataBinary<TensorT, TDim>(filename, shard_data);
+    return true;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline bool TensorTableFile<TensorT, DeviceT, TDim>::loadTensorTableShard(const std::string & filename, Eigen::Tensor<TensorT, TDim>& tensor_data, const std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>& slice_indices)
+  {
+    return false;
   }
 };
 #endif //SMARTPEAK_TENSORTABLEFILE_H

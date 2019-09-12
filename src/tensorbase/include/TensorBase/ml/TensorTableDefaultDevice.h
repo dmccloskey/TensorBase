@@ -27,11 +27,11 @@ namespace TensorBase
     void broadcastSelectIndicesView(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_view_bcast, const std::string& axis_name, Eigen::DefaultDevice& device) override;
     void reduceTensorDataToSelectIndices(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_view_bcast, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, Eigen::DefaultDevice& device) override;
     void selectTensorIndicesOnReducedTensorData(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_select, const std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 1>>& values_select, const std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier, Eigen::DefaultDevice& device) override;
-    void makeSelectIndicesFromTensorIndicesComponent(const std::map<std::string, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>>& indices_component, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_select, Eigen::DefaultDevice& device) override;
+    void makeSelectIndicesFromTensorIndicesComponent(const std::map<std::string, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>>& indices_component, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_select, Eigen::DefaultDevice& device) const override;
     void getSelectTensorDataFromIndicesView(std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_select, Eigen::DefaultDevice& device) override;
     // Sort methods
     void sliceTensorDataForSort(std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 1>>& tensor_sort, const std::string& axis_name_sort, const int& label_index_sort, const std::string& axis_name_apply, Eigen::DefaultDevice& device) override;
-    void makeSortIndicesFromTensorIndicesComponent(const std::map<std::string, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>>& indices_component, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_sort, Eigen::DefaultDevice& device) override;
+    void makeSortIndicesFromTensorIndicesComponent(const std::map<std::string, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>>& indices_component, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_sort, Eigen::DefaultDevice& device) const override;
     int getFirstIndexFromIndicesView(const std::string& axis_name, Eigen::DefaultDevice& device) override;
     // Append to Axis methods
     void makeAppendIndices(const std::string& axis_name, const int& n_labels, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, Eigen::DefaultDevice& device) override;
@@ -43,9 +43,9 @@ namespace TensorBase
     void makeSparseAxisLabelsFromIndicesView(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& sparse_select, Eigen::DefaultDevice& device) override;
     void makeSparseTensorTable(const Eigen::Tensor<std::string, 1>& sparse_dimensions, const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& sparse_labels, const std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>>& sparse_data, std::shared_ptr<TensorTable<TensorT, Eigen::DefaultDevice, 2>>& sparse_table, Eigen::DefaultDevice& device) override;
     // IO methods
-    void makeShardIndicesFromShardIDs(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_shard, Eigen::DefaultDevice& device) override;
-    void runLengthEncodeIndex(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& data, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& n_runs, Eigen::DefaultDevice& device) override;
-    void makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>>& slice_indices, Eigen::DefaultDevice& device) override;
+    void makeShardIndicesFromShardIDs(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_shard, Eigen::DefaultDevice& device) const override;
+    void runLengthEncodeIndex(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& data, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& n_runs, Eigen::DefaultDevice& device) const override;
+    void makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>>& slice_indices, Eigen::DefaultDevice& device) const override;
   private:
     friend class cereal::access;
     template<class Archive>
@@ -241,7 +241,7 @@ namespace TensorBase
   }
 
   template<typename TensorT, int TDim>
-  inline void TensorTableDefaultDevice<TensorT, TDim>::makeSelectIndicesFromTensorIndicesComponent(const std::map<std::string, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>>& indices_component, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_select, Eigen::DefaultDevice & device)
+  inline void TensorTableDefaultDevice<TensorT, TDim>::makeSelectIndicesFromTensorIndicesComponent(const std::map<std::string, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>>& indices_component, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_select, Eigen::DefaultDevice & device) const
   {
     // allocate memory for the indices
     TensorDataDefaultDevice<int, TDim> indices_select_tmp(this->getDimensions());
@@ -336,7 +336,7 @@ namespace TensorBase
     tensor_sort = std::make_shared<TensorDataDefaultDevice<TensorT, 1>>(tensor_sort_tmp);
   }
   template<typename TensorT, int TDim>
-  inline void TensorTableDefaultDevice<TensorT, TDim>::makeSortIndicesFromTensorIndicesComponent(const std::map<std::string, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>>& indices_component, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_sort, Eigen::DefaultDevice & device)
+  inline void TensorTableDefaultDevice<TensorT, TDim>::makeSortIndicesFromTensorIndicesComponent(const std::map<std::string, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>>& indices_component, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_sort, Eigen::DefaultDevice & device) const
   {
     // allocate memory for the indices
     TensorDataDefaultDevice<int, TDim> indices_sort_tmp(this->getDimensions());
@@ -561,7 +561,7 @@ namespace TensorBase
     sparse_table = std::make_shared<TensorTableDefaultDevice<TensorT, 2>>(tensorTable);
   }
   template<typename TensorT, int TDim>
-  inline void TensorTableDefaultDevice<TensorT, TDim>::makeShardIndicesFromShardIDs(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_shard, Eigen::DefaultDevice & device)
+  inline void TensorTableDefaultDevice<TensorT, TDim>::makeShardIndicesFromShardIDs(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_shard, Eigen::DefaultDevice & device) const
   {
     // allocate memory for the indices
     TensorDataDefaultDevice<int, TDim> indices_shard_tmp(this->getDimensions());
@@ -606,7 +606,7 @@ namespace TensorBase
     indices_shard = std::make_shared<TensorDataDefaultDevice<int, TDim>>(indices_shard_tmp);
   }
   template<typename TensorT, int TDim>
-  inline void TensorTableDefaultDevice<TensorT, TDim>::runLengthEncodeIndex(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& data, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& n_runs, Eigen::DefaultDevice &device)
+  inline void TensorTableDefaultDevice<TensorT, TDim>::runLengthEncodeIndex(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& data, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& n_runs, Eigen::DefaultDevice &device) const
   {
     // Allocate memory
     TensorDataDefaultDevice<int, 1> unique_tmp(Eigen::array<Eigen::Index, 1>({ (int)data->getTensorSize() }));
@@ -628,7 +628,7 @@ namespace TensorBase
     data->runLengthEncode(unique, count, n_runs, device);
   }
   template<typename TensorT, int TDim>
-  inline void TensorTableDefaultDevice<TensorT, TDim>::makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>>& slice_indices, Eigen::DefaultDevice & device)
+  inline void TensorTableDefaultDevice<TensorT, TDim>::makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>>& slice_indices, Eigen::DefaultDevice & device) const
   {
     if (modified_shard_ids->getTensorSize() == 0) return;
 

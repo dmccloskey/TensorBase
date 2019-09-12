@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(storeAndLoadBinary)
 
   Eigen::Tensor<float, 3> random_dat(2, 2, 2);
   random_dat.setRandom();
-  data.storeTensorCollectionBinary<float, 3>(filename, random_dat);
+  data.storeDataBinary<float, 3>(filename, random_dat);
 
   Eigen::Tensor<float, 3> test_dat(2, 2, 2);
   data.loadDataBinary<float, 3>(filename, test_dat);

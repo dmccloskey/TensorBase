@@ -1328,11 +1328,6 @@ BOOST_AUTO_TEST_CASE(updateTensorDataValues1DefaultDevice)
   values_new.setData(update_values);
   std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 3>> values_new_ptr = std::make_shared<TensorDataDefaultDevice<float, 3>>(values_new);
 
-  // reset is_modified attribute
-  for (auto& is_modified_map : tensorTable.getIsModified()) {
-    is_modified_map.second->getData() = is_modified_map.second->getData().constant(1);
-  }
-
   // Test update
   std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 3>> values_old_ptr;
   tensorTable.updateTensorDataValues(values_new_ptr, values_old_ptr, device);
@@ -1399,11 +1394,6 @@ BOOST_AUTO_TEST_CASE(updateTensorDataValues2DefaultDevice)
   TensorDataDefaultDevice<float, 3> values_new(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   values_new.setData(update_values);
   std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 3>> values_new_ptr = std::make_shared<TensorDataDefaultDevice<float, 3>>(values_new);
-
-  // reset is_modified attribute
-  for (auto& is_modified_map : tensorTable.getIsModified()) {
-    is_modified_map.second->getData() = is_modified_map.second->getData().constant(1);
-  }
 
   // Test update
   TensorDataDefaultDevice<float, 3> values_old(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
@@ -2255,11 +2245,6 @@ BOOST_AUTO_TEST_CASE(updateTensorDataConstantDefaultDevice)
     }
   }
   tensorTable.setData(tensor_values);
-
-  // reset is_modified attribute
-  for (auto& is_modified_map : tensorTable.getIsModified()) {
-    is_modified_map.second->getData() = is_modified_map.second->getData().constant(1);
-  }
 
   // setup the update values
   TensorDataDefaultDevice<float, 1> values_new(Eigen::array<Eigen::Index, 1>({1}));

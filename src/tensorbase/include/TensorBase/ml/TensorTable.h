@@ -99,14 +99,14 @@ namespace TensorBase
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getShardId() const { return shard_id_; }; ///< shard_id getter
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getShardIndices() const { return shard_indices_; }; ///< shard_indicies getter
 
-    Eigen::array<Eigen::Index, TDim>& getDimensions() { return dimensions_; }  ///< dimensions getter
-    int getDimFromAxisName(const std::string& axis_name) { return axes_to_dims_.at(axis_name); }
+    Eigen::array<Eigen::Index, TDim> getDimensions() const { return dimensions_; }  ///< dimensions getter
+    int getDimFromAxisName(const std::string& axis_name) const { return axes_to_dims_.at(axis_name); }
     void clear();  ///< clears the axes and all associated data
 
-    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> getData() { return data_->getData(); } ///< data_->getData() wrapper
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> getData() const { return data_->getData(); } ///< data_->getData() wrapper
     Eigen::array<Eigen::Index, TDim> getDataDimensions() const { return data_->getDimensions(); } ///< data_->getDimensions() wrapper
-    size_t getDataTensorBytes() { return data_->getTensorBytes(); } ///< data_->getTensorBytes() wrapper
-    size_t getDataTensorSize() { return data_->getTensorSize(); } ///< data_->getTensorSize() wrapper
+    size_t getDataTensorBytes() const { return data_->getTensorBytes(); } ///< data_->getTensorBytes() wrapper
+    size_t getDataTensorSize() const { return data_->getTensorSize(); } ///< data_->getTensorSize() wrapper
     std::shared_ptr<TensorT> getDataPointer() { return data_->getDataPointer(); } ///< data_->getDataPointer() wrapper
 
     void setData(const Eigen::Tensor<TensorT, TDim>& data); ///< data setter
@@ -301,7 +301,7 @@ namespace TensorBase
     @param[out] indices_select Pointer to the indices Tensor ([in] empty pointer)
     @param[in] device
     */
-    virtual void makeSelectIndicesFromTensorIndicesComponent(const std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& indices_component, std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, DeviceT& device) = 0;
+    virtual void makeSelectIndicesFromTensorIndicesComponent(const std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& indices_component, std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, DeviceT& device) const = 0;
 
     /*
     @brief Select the Tensor data and return the selected/reduced data
@@ -340,7 +340,7 @@ namespace TensorBase
     @param[out] indices_sort pointer to the indices sort Tensor ([in] empty pointer)
     @param[in] device
     */
-    virtual void makeSortIndicesFromTensorIndicesComponent(const std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& indices_component, std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_sort, DeviceT& device) = 0;
+    virtual void makeSortIndicesFromTensorIndicesComponent(const std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& indices_component, std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_sort, DeviceT& device) const = 0;
 
     /*
     @brief Update the tensor data with the given values and optionally return the original values
@@ -561,7 +561,7 @@ namespace TensorBase
     @param[out] modified_shard_id
     @param[in] device
     */
-    void makeModifiedShardIDTensor(std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, DeviceT& device);
+    void makeModifiedShardIDTensor(std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, DeviceT& device) const;
 
     /*
     @brief Convert the 1D shard ID into a TDim indices tensor that describes the shart IDs of each Tensor element
@@ -577,7 +577,7 @@ namespace TensorBase
     @param[out] indices_sort pointer to the indices sort Tensor ([in] empty pointer)
     @param[in] device
     */
-    virtual void makeShardIndicesFromShardIDs(std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_shard, DeviceT& device) = 0;
+    virtual void makeShardIndicesFromShardIDs(std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_shard, DeviceT& device) const = 0;
 
     /*
     @brief Apply run length encode algorithm to a TensorData object
@@ -588,7 +588,7 @@ namespace TensorBase
     @param[out] n_runs pointer to the number of runs data ([in] empty pointer)
     @param[in] device
     */
-    virtual void runLengthEncodeIndex(const std::shared_ptr<TensorData<int, DeviceT, TDim>>& data, std::shared_ptr<TensorData<int, DeviceT, 1>>& unique, std::shared_ptr<TensorData<int, DeviceT, 1>>& count, std::shared_ptr<TensorData<int, DeviceT, 1>>& n_runs, DeviceT & device) = 0;
+    virtual void runLengthEncodeIndex(const std::shared_ptr<TensorData<int, DeviceT, TDim>>& data, std::shared_ptr<TensorData<int, DeviceT, 1>>& unique, std::shared_ptr<TensorData<int, DeviceT, 1>>& count, std::shared_ptr<TensorData<int, DeviceT, 1>>& n_runs, DeviceT & device) const = 0;
 
     /**
     @brief Determine the slice indices to extract out the TensorData shards
@@ -597,7 +597,7 @@ namespace TensorBase
     @param[out] slice_indices A map of shard_id to slice indices
     @param[in] device
     */
-    virtual void makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>>& slice_indices, DeviceT& device) = 0;
+    virtual void makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>>& slice_indices, DeviceT& device) const = 0;
 
   protected:
     int id_ = -1;
@@ -1768,7 +1768,7 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
-  inline void TensorTable<TensorT, DeviceT, TDim>::makeModifiedShardIDTensor(std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, DeviceT & device)
+  inline void TensorTable<TensorT, DeviceT, TDim>::makeModifiedShardIDTensor(std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, DeviceT & device) const
   {
     // Make the selection indices from the modified tensor indices
     std::shared_ptr<TensorData<int, DeviceT, TDim>> select_indices;
