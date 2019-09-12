@@ -1206,7 +1206,7 @@ BOOST_AUTO_TEST_CASE(makeSortIndicesViewFromIndicesViewDefaultDevice)
 
   // Test for the sort indices
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>> indices_sort_ptr;
-  tensorTable.makeSortIndicesFromIndicesView(indices_sort_ptr, device);
+  tensorTable.makeSortIndicesFromTensorIndicesComponent(tensorTable.getIndicesView(), indices_sort_ptr, device);
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {

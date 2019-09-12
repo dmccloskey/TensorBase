@@ -336,10 +336,11 @@ namespace TensorBase
         b. broadcast to the size of the tensor
         c. add all adjusted axis tensors together
 
+    @param[in] indices_component A TensorTable component e.g., indices_, indices_view_, shard_id_, or shard_index_
     @param[out] indices_sort pointer to the indices sort Tensor ([in] empty pointer)
     @param[in] device
     */
-    virtual void makeSortIndicesFromIndicesView(std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_sort, DeviceT& device) = 0;
+    virtual void makeSortIndicesFromTensorIndicesComponent(const std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& indices_component, std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_sort, DeviceT& device) = 0;
 
     /*
     @brief Update the tensor data with the given values and optionally return the original values
@@ -593,10 +594,10 @@ namespace TensorBase
     @brief Determine the slice indices to extract out the TensorData shards
 
     @param[in] modified_shard_id An ordered 1D tensor with unique TensorData shard ids
-    @param[out] slice_indices A vector of slice indices
+    @param[out] slice_indices A map of shard_id to slice indices
     @param[in] device
     */
-    virtual void makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, std::vector<std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>>& slice_indices, DeviceT& device) = 0;
+    virtual void makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>>& slice_indices, DeviceT& device) = 0;
 
   protected:
     int id_ = -1;
@@ -1224,7 +1225,7 @@ namespace TensorBase
   {
     // make the sort index tensor from the indices view
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_sort;
-    makeSortIndicesFromIndicesView(indices_sort, device);
+    makeSortIndicesFromTensorIndicesComponent(indices_view_, indices_sort, device);
 
     // apply the sort indices to the tensor data
     // TODO [in_memory]: check to make sure that the data is in memory
@@ -1412,7 +1413,7 @@ namespace TensorBase
     for (const auto& axis_to_index: axes_to_dims_)
       resetIndicesView(axis_to_index.first, device);
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_sort;
-    makeSortIndicesFromIndicesView(indices_sort, device);
+    makeSortIndicesFromTensorIndicesComponent(indices_view_, indices_sort, device);
 
     // partition the indices
     indices_sort->partition(indices_partition, device);

@@ -31,7 +31,7 @@ namespace TensorBase
     void getSelectTensorDataFromIndicesView(std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_select, Eigen::DefaultDevice& device) override;
     // Sort methods
     void sliceTensorDataForSort(std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 1>>& tensor_sort, const std::string& axis_name_sort, const int& label_index_sort, const std::string& axis_name_apply, Eigen::DefaultDevice& device) override;
-    void makeSortIndicesFromIndicesView(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_sort, Eigen::DefaultDevice& device) override;
+    void makeSortIndicesFromTensorIndicesComponent(const std::map<std::string, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>>& indices_component, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_sort, Eigen::DefaultDevice& device) override;
     int getFirstIndexFromIndicesView(const std::string& axis_name, Eigen::DefaultDevice& device) override;
     // Append to Axis methods
     void makeAppendIndices(const std::string& axis_name, const int& n_labels, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, Eigen::DefaultDevice& device) override;
@@ -45,7 +45,7 @@ namespace TensorBase
     // IO methods
     void makeShardIndicesFromShardIDs(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_shard, Eigen::DefaultDevice& device) override;
     void runLengthEncodeIndex(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& data, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& n_runs, Eigen::DefaultDevice& device) override;
-    void makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& modified_shard_ids, std::vector<std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>>& slice_indices, Eigen::DefaultDevice& device) override;
+    void makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>>& slice_indices, Eigen::DefaultDevice& device) override;
   private:
     friend class cereal::access;
     template<class Archive>
@@ -336,7 +336,7 @@ namespace TensorBase
     tensor_sort = std::make_shared<TensorDataDefaultDevice<TensorT, 1>>(tensor_sort_tmp);
   }
   template<typename TensorT, int TDim>
-  inline void TensorTableDefaultDevice<TensorT, TDim>::makeSortIndicesFromIndicesView(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_sort, Eigen::DefaultDevice & device)
+  inline void TensorTableDefaultDevice<TensorT, TDim>::makeSortIndicesFromTensorIndicesComponent(const std::map<std::string, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>>& indices_component, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_sort, Eigen::DefaultDevice & device)
   {
     // allocate memory for the indices
     TensorDataDefaultDevice<int, TDim> indices_sort_tmp(this->getDimensions());
@@ -364,7 +364,7 @@ namespace TensorBase
       }
 
       // normalize and broadcast the indices across the tensor
-      Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_view_reshape(this->indices_view_.at(axis_to_index.first)->getDataPointer().get(), indices_reshape_dimensions);
+      Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_view_reshape(indices_component.at(axis_to_index.first)->getDataPointer().get(), indices_reshape_dimensions);
       auto indices_view_norm = (indices_view_reshape - indices_view_reshape.constant(1)) * indices_view_reshape.constant(accumulative_size);
       auto indices_view_bcast_values = indices_view_norm.broadcast(indices_bcast_dimensions);
 
@@ -628,46 +628,63 @@ namespace TensorBase
     data->runLengthEncode(unique, count, n_runs, device);
   }
   template<typename TensorT, int TDim>
-  inline void TensorTableDefaultDevice<TensorT, TDim>::makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& modified_shard_ids, std::vector<std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>>& slice_indices, Eigen::DefaultDevice & device)
+  inline void TensorTableDefaultDevice<TensorT, TDim>::makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>>& slice_indices, Eigen::DefaultDevice & device)
   {
-    // Resize the slice_indices and allocate temporary memory for the min/max indices
-    slice_indices.resize(modified_shard_ids->getTensorSize());
+    // broadcast the indices view to select the indices for each modified shard
+    std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>> indices_sort;
+    this->makeSortIndicesFromTensorIndicesComponent(indices_, indices_sort, device);
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_reshape(indices_sort->getDataPointer(), (int)indices_sort->getTensorSize(), 1);
+    auto indices_bcast = indices_reshape.broadcast(Eigen::array<Eigen::Index, 2>({ 1, (int)modified_shard_ids->getTensorSize() }));
+
+    // broadcast the modified_shard_ids
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> modified_shard_ids_reshape(modified_shard_ids->getDataPointer(), (int)modified_shard_ids->getTensorSize(), 1);
+    auto modified_shard_ids_bcast = modified_shard_ids_reshape.broadcast(Eigen::array<Eigen::Index, 2>({ 1, (int)shard_id_.at(axis_to_dim.first)->getTensorSize() }));
+
+    // broadcast the shard_ids
+    std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>> shard_id_indices;
+    this->makeShardIndicesFromShardIDs(shard_id_, shard_id_indices, device);
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> shard_ids_reshape(shard_id_indices->getDataPointer(), 1, (int)shard_id_indices->getTensorSize());
+    auto shard_ids_bcast = shard_ids_reshape.broadcast(Eigen::array<Eigen::Index, 2>({ (int)modified_shard_ids->getTensorSize(), 1 }));
+
+    // select the indices that correspond to the matching shard ids, and normalize to 0-based indexing
+    auto shard_ids_slice_indices = (modified_shard_ids_bcast == shard_ids_bcast).select(indices_bcast, indices_bcast.constant(0)) - shard_ids_slice.constant(1);
+
+    // Allocate temporary memory for the min/max indices (Device-specific code block)
     TensorDataDefaultDevice<int, 1> shard_slice_min(Eigen::array<Eigen::Index, 1>({ (int)modified_shard_ids->getTensorSize() }));
     shard_slice_min.setData();
     TensorDataDefaultDevice<int, 1> shard_slice_max(Eigen::array<Eigen::Index, 1>({ (int)modified_shard_ids->getTensorSize() }));
     shard_slice_max.setData();
 
+    // find the min and max indices values (along Dim=1) 
+    shard_slice_min.syncHAndDData(device); // H to D
+    shard_slice_max.syncHAndDData(device);
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_ids_slice_max(shard_slice_max.getDataPointer(), (int)shard_slice_max.getTensorSize());
+    shard_ids_slice_max.device(device) = shard_ids_slice_indices.maximum(Eigen::array<Eigen::Index, 1>({ 1 }));
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_ids_slice_min(shard_slice_min.getDataPointer(), (int)shard_slice_min.getTensorSize());
+    auto shard_ids_slice_indices_min = (shard_ids_slice >= shard_ids_slice.constant(0)).select(indices_bcast, 1e24); // substitute -1 with a large number
+    shard_ids_slice_min.device(device) = shard_ids_slice_indices_min.minimum(Eigen::array<Eigen::Index, 1>({ 1 }));
+    shard_slice_min.syncHAndDData(device); // D to H
+    shard_slice_max.syncHAndDData(device);
+
+    // initialize the slice indices
+    for (int i = 0; i < modified_shard_ids->getTensorSize(); ++i) {
+      Eigen::array<Eigen::Index, TDim> offset, span;
+      slice_indices.emplace(i, std::make_pair(offset, span));
+    }
+
+    // assign the slice indices
+    int n_shard_ids_cumulative = 1;
     for (const auto& axis_to_dim : axes_to_dims_) {
-      // broadcast the modified_shard_ids and shard_ids
-      Eigen::TensorMap<Eigen::Tensor<int, 2>> modified_shard_ids_reshape(modified_shard_ids->getDataPointer(), (int)modified_shard_ids->getTensorSize(), 1);
-      auto modified_shard_ids_bcast = modified_shard_ids_reshape.broadcast(Eigen::array<Eigen::Index, 2>({ 1, axes_.at(axis_to_dim.first)->getNLabels() }));
-      Eigen::TensorMap<Eigen::Tensor<int, 2>> shard_ids_reshape(shard_id_.at(axis_to_dim.first)->getDataPointer(), 1, (int)shard_id_.at(axis_to_dim.first)->getTensorSize());
-      auto shard_ids_bcast = shard_ids_reshape.broadcast(Eigen::array<Eigen::Index, 2>({ (int)modified_shard_ids->getTensorSize(), 1 }));
-
-      // select the matching shard_ids
-      auto shard_ids_slice = (modified_shard_ids_bcast == shard_ids_bcast).select(shard_ids_bcast, shard_ids_bcast.constant(0));
-
-      // select the indices that correspond to the matching shard ids, and normalize to 0-based indexing
-      Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_reshape(indices_.at(axis_to_dim.first)->getDataPointer(), 1, (int)indices_.at(axis_to_dim.first)->getTensorSize());
-      auto indices_bcast = indices_reshape.broadcast(Eigen::array<Eigen::Index, 2>({ (int)modified_shard_ids->getTensorSize(), 1 }));
-      auto shard_ids_slice_indices = (shard_ids_slice > shard_ids_slice.constant(0)).select(indices_bcast, indices_bcast.constant(0)) - shard_ids_slice.constant(1);
-
-      // find the min and max indices values (along Dim=1)
-      shard_slice_min.syncHAndDData(device); // H to D
-      shard_slice_max.syncHAndDData(device);
-      Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_ids_slice_max(shard_slice_max.getDataPointer(), (int)shard_slice_max.getTensorSize());
-      shard_ids_slice_max.device(device) = shard_ids_slice_indices.maximum(Eigen::array<Eigen::Index, 1>({ 1 }));
-      Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_ids_slice_min(shard_slice_min.getDataPointer(), (int)shard_slice_min.getTensorSize());
-      auto shard_ids_slice_indices_min = (shard_ids_slice >= shard_ids_slice.constant(0)).select(indices_bcast, 1e24); // substitute -1 with a large number
-      shard_ids_slice_min.device(device) = shard_ids_slice_indices_min.minimum(Eigen::array<Eigen::Index, 1>({ 1 }));
-      shard_slice_min.syncHAndDData(device); // D to H
-      shard_slice_max.syncHAndDData(device);
-
-      // assign the slice indices
+      // NOTE: not sure if this part can be done on the GPU
+      // PARALLEL: could execute this code using multiple Threads though
       for (int i = 0; i < modified_shard_ids->getTensorSize(); ++i) {
-        slice_indices.at(i).first.at(axis_to_dim.second) = shard_ids_slice_min(i);
-        slice_indices.at(i).second.at(axis_to_dim.second) = shard_ids_slice_max(i) - shard_ids_slice_min(i);
+        int min_index = floor(float(shard_ids_slice_min(i)) / float(n_shard_ids_cumulative)) % float(axis_to_dim.second);
+        slice_indices.at(i).first.at(axis_to_dim.second) = offset_value;
+        int max_index = floor(float(shard_ids_slice_max(i)) / float(n_shard_ids_cumulative)) % float(axis_to_dim.second);
+        slice_indices.at(i).second.at(axis_to_dim.second) = max_index - min_index;
       }
+      // update the accumulative size
+      n_shard_ids_cumulative *= ceil(float(this->axes_.at(axis_to_dim.first)->getNLabels()) / float(this->shard_spans_.at(axis_to_dim.first)));
     }
   }
 };
