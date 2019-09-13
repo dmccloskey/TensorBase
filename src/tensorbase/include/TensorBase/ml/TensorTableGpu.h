@@ -135,8 +135,8 @@ namespace TensorBase
   inline void TensorTableGpu<TensorT, TDim>::broadcastSelectIndicesView(std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices_view_bcast, const std::string & axis_name, Eigen::GpuDevice& device)
   {
     // determine the dimensions for reshaping and broadcasting the indices
-    Eigen::array<int, TDim> indices_reshape_dimensions;
-    Eigen::array<int, TDim> indices_bcast_dimensions;
+    Eigen::array<Eigen::Index, TDim> indices_reshape_dimensions;
+    Eigen::array<Eigen::Index, TDim> indices_bcast_dimensions;
     for (int i = 0; i < TDim; ++i) {
       if (i == this->axes_to_dims_.at(axis_name)) {
         indices_reshape_dimensions.at(i) = (int)this->axes_.at(axis_name)->getNLabels();
@@ -196,8 +196,8 @@ namespace TensorBase
   inline void TensorTableGpu<TensorT, TDim>::selectTensorIndicesOnReducedTensorData(std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices_select, const std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 1>>& values_select, const std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>>& tensor_select, const std::string & axis_name, const int & n_select, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier, Eigen::GpuDevice & device)
   {
     // determine the dimensions for reshaping and broadcasting the values
-    Eigen::array<int, TDim> values_reshape_dimensions;
-    Eigen::array<int, TDim> values_bcast_dimensions;
+    Eigen::array<Eigen::Index, TDim> values_reshape_dimensions;
+    Eigen::array<Eigen::Index, TDim> values_bcast_dimensions;
     for (int i = 0; i < TDim; ++i) {
       if (i == axes_to_dims_.at(axis_name)) {
         values_reshape_dimensions.at(i) = n_select;
@@ -261,8 +261,8 @@ namespace TensorBase
     // [PERFORMANCE: Can this be replaced with contractions?]
     for (const auto& axis_to_index : this->axes_to_dims_) {
       // determine the dimensions for reshaping and broadcasting the indices
-      Eigen::array<int, TDim> indices_reshape_dimensions;
-      Eigen::array<int, TDim> indices_bcast_dimensions;
+      Eigen::array<Eigen::Index, TDim> indices_reshape_dimensions;
+      Eigen::array<Eigen::Index, TDim> indices_bcast_dimensions;
       for (int i = 0; i < TDim; ++i) {
         if (i == this->axes_to_dims_.at(axis_to_index.first)) {
           indices_reshape_dimensions.at(i) = (int)this->axes_.at(axis_to_index.first)->getNLabels();
@@ -325,8 +325,8 @@ namespace TensorBase
     const std::string & axis_name_sort, const int & label_index_sort, const std::string & axis_name_apply, Eigen::GpuDevice & device)
   {
     // determine the offsets and extents for the slice operation
-    Eigen::array<int, TDim> extents;
-    Eigen::array<int, TDim> offsets;
+    Eigen::array<Eigen::Index, TDim> extents;
+    Eigen::array<Eigen::Index, TDim> offsets;
     for (const auto& axis_to_name_slice : this->axes_to_dims_) {
       if (axis_to_name_slice.first == axis_name_sort) {
         extents.at(axis_to_name_slice.second) = 1;
@@ -371,8 +371,8 @@ namespace TensorBase
     int accumulative_size = 1;
     for (const auto& axis_to_index : this->axes_to_dims_) {
       // determine the dimensions for reshaping and broadcasting the indices
-      Eigen::array<int, TDim> indices_reshape_dimensions;
-      Eigen::array<int, TDim> indices_bcast_dimensions;
+      Eigen::array<Eigen::Index, TDim> indices_reshape_dimensions;
+      Eigen::array<Eigen::Index, TDim> indices_bcast_dimensions;
       for (int i = 0; i < TDim; ++i) {
         if (i == this->axes_to_dims_.at(axis_to_index.first)) {
           indices_reshape_dimensions.at(i) = (int)this->axes_.at(axis_to_index.first)->getNLabels();
@@ -436,8 +436,8 @@ namespace TensorBase
     Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_select_values(indices_select_tmp.getDataPointer().get(), indices_select_tmp.getDimensions());
 
     // Determine the dimensions for reshaping and broadcasting
-    Eigen::array<int, TDim> indices_reshape_dimensions;
-    Eigen::array<int, TDim> indices_bcast_dimensions;
+    Eigen::array<Eigen::Index, TDim> indices_reshape_dimensions;
+    Eigen::array<Eigen::Index, TDim> indices_bcast_dimensions;
     for (const auto& axis_to_index : this->axes_to_dims_) {
       if (axis_to_index.first == axis_name) {
         indices_reshape_dimensions.at(axis_to_index.second) = this->dimensions_.at(axis_to_index.second);
@@ -560,8 +560,8 @@ namespace TensorBase
       // repeatedly assign the slice
       Eigen::TensorMap<Eigen::Tensor<int, 2>> sparse_labels_values(sparse_labels.getDataPointer().get(), sparse_labels.getDimensions());
       for (int j = 0; j < n_repeats; ++j) {
-        Eigen::array<int, 2> offsets = { i, j * slice_size };
-        Eigen::array<int, 2> extents = { 1, slice_size };
+        Eigen::array<Eigen::Index, 2> offsets = { i, j * slice_size };
+        Eigen::array<Eigen::Index, 2> extents = { 1, slice_size };
         sparse_labels_values.slice(offsets, extents).device(device) = indices_bcast;
       }
     }

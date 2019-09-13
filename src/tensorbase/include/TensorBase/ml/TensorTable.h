@@ -103,7 +103,7 @@ namespace TensorBase
     int getDimFromAxisName(const std::string& axis_name) const { return axes_to_dims_.at(axis_name); }
     void clear();  ///< clears the axes and all associated data
 
-    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> getData() const { return data_->getData(); } ///< data_->getData() wrapper
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> getData() { return data_->getData(); } ///< data_->getData() wrapper
     Eigen::array<Eigen::Index, TDim> getDataDimensions() const { return data_->getDimensions(); } ///< data_->getDimensions() wrapper
     size_t getDataTensorBytes() const { return data_->getTensorBytes(); } ///< data_->getTensorBytes() wrapper
     size_t getDataTensorSize() const { return data_->getTensorSize(); } ///< data_->getTensorSize() wrapper
@@ -602,7 +602,7 @@ namespace TensorBase
     @param[out] slice_indices A map of shard_id to slice indices
     @param[in] device
     */
-    virtual void makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>>& slice_indices, DeviceT& device) const = 0;
+    virtual void makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>>& slice_indices, DeviceT& device) const = 0;
 
     /**
     @brief Determine the Tensor data shards that are not in memory from the
@@ -888,7 +888,7 @@ namespace TensorBase
       int max_shard_id = ceil(float(axes_.at(shard_span_map.first)->getNLabels()) / float(shard_span_map.second));
       for (; shard_id < max_shard_id; ++shard_id) {
         // Determine the offsets and span for slicing
-        Eigen::array<int, 1> offset, span;
+        Eigen::array<Eigen::Index, 1> offset, span;
         offset.at(0) = shard_id * shard_span_map.second;
         int remaining_length = axes_.at(shard_span_map.first)->getNLabels() - shard_id * shard_span_map.second;
         span.at(0) = (shard_span_map.second <= remaining_length) ? shard_span_map.second: remaining_length;
@@ -900,7 +900,7 @@ namespace TensorBase
         // Update the shard indices using the indices as a template
         Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_indices_values(shard_indices_.at(shard_span_map.first)->getDataPointer().get(), (int)shard_indices_.at(shard_span_map.first)->getTensorSize());
         Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_values(indices_.at(shard_span_map.first)->getDataPointer().get(), (int)indices_.at(shard_span_map.first)->getTensorSize());
-        shard_indices_values.slice(offset, span).device(device) = indices_values.slice(Eigen::array<int, 1>({0}), span);
+        shard_indices_values.slice(offset, span).device(device) = indices_values.slice(Eigen::array<Eigen::Index, 1>({0}), span);
       }
     }
   }
@@ -912,20 +912,20 @@ namespace TensorBase
     // reshape to match the axis labels shape and broadcast the length of the labels
     Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> labels_names_selected_reshape(select_labels->getDataPointer().get(), 1, (int)select_labels->getData().size());
  
-    auto labels_names_selected_bcast = labels_names_selected_reshape.broadcast(Eigen::array<int, 2>({ (int)axes_.at(axis_name)->getNLabels(), 1 }));
+    auto labels_names_selected_bcast = labels_names_selected_reshape.broadcast(Eigen::array<Eigen::Index, 2>({ (int)axes_.at(axis_name)->getNLabels(), 1 }));
     // broadcast the axis labels the size of the labels queried
     std::shared_ptr<LabelsT> labels_data;
     axes_.at(axis_name)->getLabelsDataPointer(labels_data);
     Eigen::TensorMap<Eigen::Tensor<LabelsT, 3>> labels_reshape(labels_data.get(), (int)axes_.at(axis_name)->getNDimensions(), (int)axes_.at(axis_name)->getNLabels(), 1);
-    auto labels_bcast = (labels_reshape.chip(dimension_index, 0)).broadcast(Eigen::array<int, 2>({ 1, (int)select_labels->getData().size() }));
+    auto labels_bcast = (labels_reshape.chip(dimension_index, 0)).broadcast(Eigen::array<Eigen::Index, 2>({ 1, (int)select_labels->getData().size() }));
 
     // broadcast the tensor indices the size of the labels queried
     Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_reshape(indices_.at(axis_name)->getDataPointer().get(), (int)axes_.at(axis_name)->getNLabels(), 1);
-    auto indices_bcast = indices_reshape.broadcast(Eigen::array<int, 2>({ 1, (int)select_labels->getData().size() }));
+    auto indices_bcast = indices_reshape.broadcast(Eigen::array<Eigen::Index, 2>({ 1, (int)select_labels->getData().size() }));
 
     // select the indices and reduce back to a 1D Tensor
     auto selected = (labels_bcast == labels_names_selected_bcast).select(indices_bcast, indices_bcast.constant(0));
-    auto selected_sum = selected.sum(Eigen::array<int, 1>({ 1 })).clip(0, 1);
+    auto selected_sum = selected.sum(Eigen::array<Eigen::Index, 1>({ 1 })).clip(0, 1);
 
     // update the indices view based on the selection
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_name)->getDataPointer().get(), (int)axes_.at(axis_name)->getNLabels());
@@ -1043,7 +1043,7 @@ namespace TensorBase
     if (within_continuator == logicalContinuators::logicalContinuator::OR) {
 
       // build the continuator reduction indices for the OR within continuator
-      Eigen::array<int, 1> reduction_dims;
+      Eigen::array<Eigen::Index, 1> reduction_dims;
       int index = 0;
       for (const auto& axis_to_name_red : this->axes_to_dims_) {
         if (axis_to_name_red.first != axis_name) {
@@ -1090,7 +1090,7 @@ namespace TensorBase
     if (within_continuator == logicalContinuators::logicalContinuator::OR) {
 
       // build the continuator reduction indices for the OR within continuator
-      Eigen::array<int, 1> reduction_dims;
+      Eigen::array<Eigen::Index, 1> reduction_dims;
       int index = 0;
       for (const auto& axis_to_name_red : this->axes_to_dims_) {
         if (axis_to_name_red.first != axis_name) {
@@ -1138,7 +1138,7 @@ namespace TensorBase
     if (within_continuator == logicalContinuators::logicalContinuator::OR) {
 
       // build the continuator reduction indices for the OR within continuator
-      Eigen::array<int, TDim - 1> reduction_dims;
+      Eigen::array<Eigen::Index, TDim - 1> reduction_dims;
       int index = 0;
       for (const auto& axis_to_name_red : this->axes_to_dims_) {
         if (axis_to_name_red.first != axis_name) {
@@ -1165,7 +1165,7 @@ namespace TensorBase
 
       // apply a normalized sum (OR) continuator across all other dimensions
       if (TDim > 2) {
-        Eigen::array<int, TDim - 2> reduction_dims_sum;
+        Eigen::array<Eigen::Index, TDim - 2> reduction_dims_sum;
         int index = 0;
         for (const auto& axis_to_name_red : this->axes_to_dims_) {
           if (axis_to_name_red.first != axis_name && axis_to_name_red.first != axis_name_select) {
@@ -1669,12 +1669,12 @@ namespace TensorBase
     // Select and reduce
     if (invert_selection) {
       auto indices_selected_2d = (indices_view_bcast == indices_bcast).select(indices_view_bcast.constant(0), indices_view_bcast);
-      auto indices_selected = indices_selected_2d.prod(Eigen::array<int, 1>({ 1 })).clip(0, 1);
+      auto indices_selected = indices_selected_2d.prod(Eigen::array<Eigen::Index, 1>({ 1 })).clip(0, 1);
       indices_select_values.device(device) = indices_selected;
     }
     else {
       auto indices_selected_2d = (indices_view_bcast == indices_bcast).select(indices_view_bcast, indices_view_bcast.constant(0));
-      auto indices_selected = indices_selected_2d.sum(Eigen::array<int, 1>({ 1 })).clip(0, 1);
+      auto indices_selected = indices_selected_2d.sum(Eigen::array<Eigen::Index, 1>({ 1 })).clip(0, 1);
       indices_select_values.device(device) = indices_selected;
     }
   }
@@ -1758,8 +1758,8 @@ namespace TensorBase
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_values(indices_view_.at(axis_name)->getDataPointer().get(), indices_view_.at(axis_name)->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_values(indices_.at(axis_name)->getDataPointer().get(), indices_.at(axis_name)->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_old_values(indices->getDataPointer().get(), indices->getDimensions());
-    Eigen::array<int, 1> offsets = { (int)indices_view_.at(axis_name)->getTensorSize() - (int)indices->getTensorSize() };
-    Eigen::array<int, 1> extents = { (int)indices->getTensorSize() };
+    Eigen::array<Eigen::Index, 1> offsets = { (int)indices_view_.at(axis_name)->getTensorSize() - (int)indices->getTensorSize() };
+    Eigen::array<Eigen::Index, 1> extents = { (int)indices->getTensorSize() };
     indices_view_values.slice(offsets, extents).device(device) = indices_old_values;
     indices_values.slice(offsets, extents).device(device) = indices_old_values;
 

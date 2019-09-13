@@ -4,7 +4,7 @@
 #define SMARTPEAK_TENSORTABLEFILE_H
 
 #include <unsupported/Eigen/CXX11/Tensor>
-#include <TensorBase/ml/TensorTableDefaultDevice.h>
+#include <TensorBase/ml/TensorTable.h>
 #include <TensorBase/io/DataFile.h>
 
 #include <iostream>
@@ -60,11 +60,11 @@ public:
 
     static bool storeTensorTableShard(const std::string& filename,
       const Eigen::Tensor<TensorT, TDim>& tensor_data,
-      const std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>& slice_indices);
+      const std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>& slice_indices);
 
     static bool loadTensorTableShard(const std::string& filename,
-      Eigen::Tensor<TensorT, TDim>& tensor_data,
-      const std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>& slice_indices);
+      TensorTable<TensorT, DeviceT, TDim>& tensor_table,
+      const std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>& slice_indices);
 
     //static void getNotInMemoryShardIDs(
     //  const TensorTable<TensorT, DeviceT, TDim>& tensor_table,
@@ -76,24 +76,29 @@ public:
   inline bool TensorTableFile<TensorT, DeviceT, TDim>::loadTensorTableBinary(const std::string& dir, TensorTable<TensorT, DeviceT, TDim>& tensor_table, DeviceT& device) {
     // determine the shards to read from disk
     std::shared_ptr<TensorData<int, DeviceT, 1>> not_in_memory_shard_ids;
-    tensor_table.makeModifiedShardIDTensor(not_in_memory_shard_ids, device);
+    tensor_table.makeNotInMemoryShardIDTensor(not_in_memory_shard_ids, device);
     if (not_in_memory_shard_ids->getTensorSize() == 0) {
       std::cout << "No shards have been modified." << std::endl;
       return false;
     }
-    std::map<int, std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>> slice_indices;
+    std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>> slice_indices;
     tensor_table.makeSliceIndicesFromShardIndices(not_in_memory_shard_ids, slice_indices, device);
 
     // read in the shards and update the TensorTable data asyncronously
-    tensor_table.syncHAndDData(device);
+    tensor_table.syncHAndDData(device); // D to H
     for (const auto slice_index : slice_indices) {
       const std::string filename = makeTensorTableShardFilename(dir, tensor_table.getName(), slice_index.first);
-      loadTensorTableShard(filename, tensor_table.getData(), slice_index.second);
+      loadTensorTableShard(filename, tensor_table, slice_index.second);
+    }
+    tensor_table.syncHAndDData(device); // H to D
+
+    // update the `not_in_memory` tensor table attribute
+    for (auto& not_in_memory_map : tensor_table.getNotInMemory()) {
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> not_in_memory_values(not_in_memory_map.second->getDataPointer().get(), (int)not_in_memory_map.second->getTensorSize());
+      not_in_memory_values.device(device) = not_in_memory_values.constant(0);
     }
 
-    // update the `in_memory` tensor table attribute
-
-    return true
+    return true;
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
@@ -105,11 +110,11 @@ public:
       std::cout << "No shards have been modified." << std::endl;
       return false;
     }
-    std::map<int, std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>> slice_indices;
+    std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>> slice_indices;
     tensor_table.makeSliceIndicesFromShardIndices(modified_shard_ids, slice_indices, device);
 
     // write the TensorTable shards to disk asyncronously
-    tensor_table.syncHAndDData(device);
+    tensor_table.syncHAndDData(device); // D to H
     for (const auto slice_index : slice_indices) {
       const std::string filename = makeTensorTableShardFilename(dir, tensor_table.getName(), slice_index.first);
       storeTensorTableShard(filename, tensor_table.getData(), slice_index.second);
@@ -119,7 +124,7 @@ public:
     // update the `is_modified` tensor table attribute
     for (auto& is_modified_map : tensor_table.getIsModified()) {
       Eigen::TensorMap<Eigen::Tensor<int, 1>> is_modified_values(is_modified_map.second->getDataPointer().get(), (int)is_modified_map.second->getTensorSize());
-      is_modified_values.device(device) = is_modified_values.constant(1);
+      is_modified_values.device(device) = is_modified_values.constant(0);
     }
 
     return true;
@@ -131,7 +136,7 @@ public:
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
-  inline bool TensorTableFile<TensorT, DeviceT, TDim>::storeTensorTableShard(const std::string & filename, const Eigen::Tensor<TensorT, TDim>& tensor_data, const std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>& slice_indices)
+  inline bool TensorTableFile<TensorT, DeviceT, TDim>::storeTensorTableShard(const std::string & filename, const Eigen::Tensor<TensorT, TDim>& tensor_data, const std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>& slice_indices)
   {
     Eigen::Tensor<TensorT, TDim> shard_data = tensor_data.slice(slice_indices.first, slice_indices.second);
     DataFile::storeDataBinary<TensorT, TDim>(filename, shard_data);
@@ -139,9 +144,12 @@ public:
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
-  inline bool TensorTableFile<TensorT, DeviceT, TDim>::loadTensorTableShard(const std::string & filename, Eigen::Tensor<TensorT, TDim>& tensor_data, const std::pair<Eigen::array<int, TDim>, Eigen::array<int, TDim>>& slice_indices)
+  inline bool TensorTableFile<TensorT, DeviceT, TDim>::loadTensorTableShard(const std::string & filename, TensorTable<TensorT, DeviceT, TDim>& tensor_table, const std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>& slice_indices)
   {
-    return false;
+    Eigen::Tensor<TensorT, TDim> shard_data(slice_indices.second);
+    DataFile::loadDataBinary<TensorT, TDim>(filename, shard_data);
+    tensor_table.getData().slice(slice_indices.first, slice_indices.second) = shard_data;
+    return true;
   }
 };
 #endif //SMARTPEAK_TENSORTABLEFILE_H
