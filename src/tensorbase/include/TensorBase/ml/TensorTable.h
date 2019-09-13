@@ -652,7 +652,10 @@ namespace TensorBase
   template<typename TensorT, typename DeviceT, int TDim>
   void TensorTable<TensorT, DeviceT, TDim>::clear() {
     axes_.clear();
-    dimensions_ = Eigen::array<Eigen::Index, TDim>();
+    for (auto& axis_to_dim: axes_to_dims_) {
+      dimensions_.at(axis_to_dim.second) = 0;
+    }
+    //dimensions_ = Eigen::array<Eigen::Index, TDim>();
     indices_.clear();
     indices_view_.clear();
     is_modified_.clear();
@@ -1812,18 +1815,22 @@ namespace TensorBase
   {
     // Resize the unique results and remove 0's from the unique
     unique->syncHAndDData(device); // d to h
-    Eigen::TensorMap<Eigen::Tensor<int, 1>> unqiue_values(unique->getDataPointer().get(), unique->getDimensions());
-    Eigen::TensorMap<Eigen::Tensor<int, 0>> num_runs_values(num_runs->getDataPointer().get());
-    if (num_runs->getData()(0) == 1 && unqiue_values(0) == 0) { // might not work on the GPU...
+    num_runs->syncHAndDData(device); // d to h
+    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+    std::cout << "num_runs->getData()(0)" << num_runs->getData()(0) << std::endl;
+    if (num_runs->getData()(0) == 1 && unique->getData()(0) == 0) { // might not work on the GPU...
       unique->setDimensions(Eigen::array<Eigen::Index, 1>({ 0 }));
     }
-    else if (unqiue_values(0) == 0) { // might not work on the GPU...
+    else if (unique->getData()(0) == 0) { // might not work on the GPU...
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> unqiue_values(unique->getDataPointer().get(), unique->getDimensions());
       unqiue_values.slice(Eigen::array<Eigen::Index, 1>({ 0 }), Eigen::array<Eigen::Index, 1>({ num_runs->getData()(0) - 1 })).device(device) = unqiue_values.slice(Eigen::array<Eigen::Index, 1>({ 1 }), Eigen::array<Eigen::Index, 1>({ num_runs->getData()(0) - 1 }));
       unique->setDimensions(Eigen::array<Eigen::Index, 1>({ num_runs->getData()(0) - 1 }));
     }
     else {
       unique->setDimensions(Eigen::array<Eigen::Index, 1>({ num_runs->getData()(0) }));
     }
+    unique->setDataStatus(false, true);
+    num_runs->setDataStatus(false, true);
     modified_shard_ids = unique;
   }
 
