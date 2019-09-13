@@ -247,12 +247,12 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
     if (i < nlabels2) {
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getInMemory().at("2")->getData()(i), 0);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 0);
     }
     else {
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getInMemory().at("2")->getData()(i), 1);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 1);
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1); // TODO...
     }
   }
@@ -304,7 +304,7 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
       BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(i), i + 2);
     }
     BOOST_CHECK_EQUAL(tensorTable2_ptr->getIsModified().at("2")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(tensorTable2_ptr->getInMemory().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable2_ptr->getNotInMemory().at("2")->getData()(i), 0);
     BOOST_CHECK_EQUAL(tensorTable2_ptr->getShardId().at("2")->getData()(i), 0);
   }
 
@@ -364,7 +364,7 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
     BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndices().at("2")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(i), i + 1);
     //BOOST_CHECK_EQUAL(tensorTable2_ptr->getIsModified().at("2")->getData()(i), 0); // TODO: update once the sharding model is in place
-    //BOOST_CHECK_EQUAL(tensorTable2_ptr->getInMemory().at("2")->getData()(i), 0);
+    //BOOST_CHECK_EQUAL(tensorTable2_ptr->getNotInMemory().at("2")->getData()(i), 0);
     //BOOST_CHECK_EQUAL(tensorTable2_ptr->getShardId().at("2")->getData()(i), 0);
   }
 
@@ -401,7 +401,7 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
       BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(i), i + 2);
     }
     //BOOST_CHECK_EQUAL(tensorTable2_ptr->getIsModified().at("2")->getData()(i), 0);  // TODO: update once the sharding model is in place
-    //BOOST_CHECK_EQUAL(tensorTable2_ptr->getInMemory().at("2")->getData()(i), 0);
+    //BOOST_CHECK_EQUAL(tensorTable2_ptr->getNotInMemory().at("2")->getData()(i), 0);
     //BOOST_CHECK_EQUAL(tensorTable2_ptr->getShardId().at("2")->getData()(i), 0);
   }
 
@@ -431,7 +431,7 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(tensorTable1_ptr->getInMemory().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 0);
   }
 }
@@ -567,12 +567,12 @@ BOOST_AUTO_TEST_CASE(CommitDefaultDevice)
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
     if (i < nlabels2) {
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getInMemory().at("2")->getData()(i), 0);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 0);
     }
     else {
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getInMemory().at("2")->getData()(i), 1);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 1);
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1); // TODO...
     }
   }

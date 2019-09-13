@@ -62,7 +62,7 @@ namespace TensorBase
     this->indices_.clear();
     this->indices_view_.clear();
     this->is_modified_.clear();
-    this->in_memory_.clear();
+    this->not_in_memory_.clear();
     this->shard_id_.clear();
     this->shard_spans_.clear();
 
@@ -101,8 +101,8 @@ namespace TensorBase
 
       // Set the in_memory defaults
       TensorDataDefaultDevice<int, 1> in_memory(axis_dimensions);
-      in_memory.setData(is_modified_values);
-      this->in_memory_.emplace(axis.second->getName(), std::make_shared<TensorDataDefaultDevice<int, 1>>(in_memory));
+      in_memory.setData(is_modified_values.constant(1));
+      this->not_in_memory_.emplace(axis.second->getName(), std::make_shared<TensorDataDefaultDevice<int, 1>>(in_memory));
 
       // Set the shard_id defaults
       TensorDataDefaultDevice<int, 1> shard_id(axis_dimensions);

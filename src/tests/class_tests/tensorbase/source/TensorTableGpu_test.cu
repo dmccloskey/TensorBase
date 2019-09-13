@@ -81,7 +81,7 @@ void test_gettersAndSettersGpu()
   assert(tensorTable.getIndicesView().at("1")->getData()(0) == 1);
   assert(tensorTable.getIndicesView().at("1")->getData()(nlabels1 - 1) == nlabels1);
   assert(tensorTable.getIsModified().at("1")->getData()(0) == 0);
-  assert(tensorTable.getInMemory().at("1")->getData()(0) == 0);
+  assert(tensorTable.getNotInMemory().at("1")->getData()(0) == 1);
   assert(tensorTable.getShardId().at("1")->getData()(0) == 1);
   assert(tensorTable.getShardIndices().at("1")->getData()(0) == 1);
   assert(tensorTable.getShardIndices().at("1")->getData()(nlabels1 - 1) == nlabels1);
@@ -97,7 +97,7 @@ void test_gettersAndSettersGpu()
   assert(tensorTable.getIndicesView().at("2")->getData()(0) == 1);
   assert(tensorTable.getIndicesView().at("2")->getData()(nlabels2 - 1) == nlabels2);
   assert(tensorTable.getIsModified().at("2")->getData()(0) == 0);
-  assert(tensorTable.getInMemory().at("2")->getData()(0) == 0);
+  assert(tensorTable.getNotInMemory().at("2")->getData()(0) == 1);
   assert(tensorTable.getShardId().at("2")->getData()(0) == 1);
   assert(tensorTable.getShardIndices().at("2")->getData()(0) == 1);
   assert(tensorTable.getShardIndices().at("2")->getData()(nlabels2 - 1) == nlabels);
@@ -113,7 +113,7 @@ void test_gettersAndSettersGpu()
   assert(tensorTable.getIndicesView().at("3")->getData()(0) == 1);
   assert(tensorTable.getIndicesView().at("3")->getData()(nlabels3 - 1) == nlabels3);
   assert(tensorTable.getIsModified().at("3")->getData()(0) == 0);
-  assert(tensorTable.getInMemory().at("3")->getData()(0) == 0);
+  assert(tensorTable.getNotInMemory().at("3")->getData()(0) == 1);
   assert(tensorTable.getShardId().at("3")->getData()(0) == 1);
   assert(tensorTable.getShardIndices().at("3")->getData()(0) == 1);
   assert(tensorTable.getShardIndices().at("3")->getData()(nlabels3 - 1) == nlabels3);
@@ -140,13 +140,36 @@ void test_gettersAndSettersGpu()
   size_t test = 2 * 3 * 5 * sizeof(float);
   assert(tensorTable.getDataTensorBytes() == test);
 
+  // Test setting the data
+  Eigen::Tensor<float, 3> tensor_data(Eigen::array<Eigen::Index, 3>({ nlabels1, nlabels2, nlabels3 }));
+  for (int i = 0; i < nlabels1; ++i) {
+    for (int j = 0; j < nlabels2; ++j) {
+      for (int k = 0; k < nlabels3; ++k) {
+        tensor_data(i, j, k) = i + j + k;
+      }
+    }
+  }
+  tensorTable.setData(tensor_data);
+  for (int i = 0; i < nlabels1; ++i) {
+    assert(tensorTable.getIsModified().at("1")->getData()(i) == 1);
+    assert(tensorTable.getNotInMemory().at("1")->getData()(i) == 0);
+  }
+  for (int i = 0; i < nlabels2; ++i) {
+    assert(tensorTable.getIsModified().at("2")->getData()(i) == 1);
+    assert(tensorTable.getNotInMemory().at("2")->getData()(i) == 0);
+  }
+  for (int i = 0; i < nlabels3; ++i) {
+    assert(tensorTable.getIsModified().at("3")->getData()(i) == 1);
+    assert(tensorTable.getNotInMemory().at("3")->getData()(i) == 0);
+  }
+
   // Test clear
   tensorTable.clear();
   assert(tensorTable.getAxes().size() == 0);
   assert(tensorTable.getIndices().size() == 0);
   assert(tensorTable.getIndicesView().size() == 0);
   assert(tensorTable.getIsModified().size() == 0);
-  assert(tensorTable.getInMemory().size() == 0);
+  assert(tensorTable.getNotInMemory().size() == 1);
   assert(tensorTable.getShardId().size() == 0);
   assert(tensorTable.getShardIndices().size() == 0);
   assert(tensorTable.getDimensions().at(0) == 0);
@@ -1172,7 +1195,7 @@ void test_selectTensorDataGpu()
   assert(tensorTable.getIndices().at("1")->getData()(0) == 1);
   assert(tensorTable.getIndicesView().at("1")->getData()(0) == 1);
   assert(tensorTable.getIsModified().at("1")->getData()(0) == 0);
-  assert(tensorTable.getInMemory().at("1")->getData()(0) == 0);
+  assert(tensorTable.getNotInMemory().at("1")->getData()(0) == 1);
   assert(tensorTable.getShardId().at("1")->getData()(0) == 1);
   assert(tensorTable.getShardIndices().at("1")->getData()(0) == 1);
 
@@ -1184,7 +1207,7 @@ void test_selectTensorDataGpu()
     assert(tensorTable.getIndices().at("2")->getData()(i) == i + 1);
     assert(tensorTable.getIndicesView().at("2")->getData()(i) == i + 1);
     assert(tensorTable.getIsModified().at("2")->getData()(i) == 0);
-    assert(tensorTable.getInMemory().at("2")->getData()(i) == 0);
+    assert(tensorTable.getNotInMemory().at("2")->getData()(i) == 1);
     assert(tensorTable.getShardId().at("2")->getData()(i) == 1);
     assert(tensorTable.getShardIndices().at("2")->getData()(i) == i + 1);
   }
@@ -1197,7 +1220,7 @@ void test_selectTensorDataGpu()
     assert(tensorTable.getIndices().at("3")->getData()(i) == i + 1);
     assert(tensorTable.getIndicesView().at("3")->getData()(i) == i + 1);
     assert(tensorTable.getIsModified().at("3")->getData()(i) == 0);
-    assert(tensorTable.getInMemory().at("3")->getData()(i) == 0);
+    assert(tensorTable.getNotInMemory().at("3")->getData()(i) == 1);
     assert(tensorTable.getShardId().at("3")->getData()(i) == 1);
     assert(tensorTable.getShardIndices().at("3")->getData()(i) == i + 1);
   }
@@ -1414,7 +1437,7 @@ void test_updateTensorDataValues1Gpu()
   // sync the tensorTable
   tensorTable.syncIndicesHAndDData(device);
   tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncInMemoryHAndDData(device);
+  tensorTable.syncNotInMemoryHAndDData(device);
   tensorTable.syncIsModifiedHAndDData(device);
   tensorTable.syncShardIdHAndDData(device);
   tensorTable.syncShardIndicesHAndDData(device);
@@ -1428,7 +1451,7 @@ void test_updateTensorDataValues1Gpu()
   values_old_ptr->syncHAndDData(device);
   tensorTable.syncIndicesHAndDData(device);
   tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncInMemoryHAndDData(device);
+  tensorTable.syncNotInMemoryHAndDData(device);
   tensorTable.syncIsModifiedHAndDData(device);
   tensorTable.syncShardIdHAndDData(device);
   tensorTable.syncShardIndicesHAndDData(device);
@@ -1448,9 +1471,9 @@ void test_updateTensorDataValues1Gpu()
 
   // Test for the in_memory and is_modified attributes
   for (int i = 0; i < nlabels; ++i) {
-    assert(tensorTable.getInMemory().at("1")->getData()(i) == 1);
-    assert(tensorTable.getInMemory().at("2")->getData()(i) == 1);
-    assert(tensorTable.getInMemory().at("3")->getData()(i) == 1);
+    assert(tensorTable.getNotInMemory().at("1")->getData()(i) == 0);
+    assert(tensorTable.getNotInMemory().at("2")->getData()(i) == 0);
+    assert(tensorTable.getNotInMemory().at("3")->getData()(i) == 0);
     assert(tensorTable.getIsModified().at("1")->getData()(i) == 1);
     assert(tensorTable.getIsModified().at("2")->getData()(i) == 1);
     assert(tensorTable.getIsModified().at("3")->getData()(i) == 1);
@@ -1508,7 +1531,7 @@ void test_updateTensorDataValues2Gpu()
   // sync the tensorTable
   tensorTable.syncIndicesHAndDData(device);
   tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncInMemoryHAndDData(device);
+  tensorTable.syncNotInMemoryHAndDData(device);
   tensorTable.syncIsModifiedHAndDData(device);
   tensorTable.syncShardIdHAndDData(device);
   tensorTable.syncShardIndicesHAndDData(device);
@@ -1525,7 +1548,7 @@ void test_updateTensorDataValues2Gpu()
   values_old_ptr->syncHAndDData(device);
   tensorTable.syncIndicesHAndDData(device);
   tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncInMemoryHAndDData(device);
+  tensorTable.syncNotInMemoryHAndDData(device);
   tensorTable.syncIsModifiedHAndDData(device);
   tensorTable.syncShardIdHAndDData(device);
   tensorTable.syncShardIndicesHAndDData(device);
@@ -1545,9 +1568,9 @@ void test_updateTensorDataValues2Gpu()
 
   // Test for the in_memory and is_modified attributes
   for (int i = 0; i < nlabels; ++i) {
-    assert(tensorTable.getInMemory().at("1")->getData()(i) == 1);
-    assert(tensorTable.getInMemory().at("2")->getData()(i) == 1);
-    assert(tensorTable.getInMemory().at("3")->getData()(i) == 1);
+    assert(tensorTable.getNotInMemory().at("1")->getData()(i) == 0);
+    assert(tensorTable.getNotInMemory().at("2")->getData()(i) == 0);
+    assert(tensorTable.getNotInMemory().at("3")->getData()(i) == 0);
     assert(tensorTable.getIsModified().at("1")->getData()(i) == 1);
     assert(tensorTable.getIsModified().at("2")->getData()(i) == 1);
     assert(tensorTable.getIsModified().at("3")->getData()(i) == 1);
@@ -1642,7 +1665,7 @@ void test_appendToIndicesGpu()
   tensorTable.syncIndicesHAndDData(device);
   tensorTable.syncIndicesViewHAndDData(device);
   tensorTable.syncIsModifiedHAndDData(device);
-  tensorTable.syncInMemoryHAndDData(device);
+  tensorTable.syncNotInMemoryHAndDData(device);
   tensorTable.syncShardIdHAndDData(device);
   tensorTable.syncShardIndicesHAndDData(device);
   tensorTable.syncAxesHAndDData(device);
@@ -1653,7 +1676,7 @@ void test_appendToIndicesGpu()
   tensorTable.syncIndicesHAndDData(device);
   tensorTable.syncIndicesViewHAndDData(device);
   tensorTable.syncIsModifiedHAndDData(device);
-  tensorTable.syncInMemoryHAndDData(device);
+  tensorTable.syncNotInMemoryHAndDData(device);
   tensorTable.syncShardIdHAndDData(device);
   tensorTable.syncShardIndicesHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
@@ -1664,12 +1687,12 @@ void test_appendToIndicesGpu()
     assert(tensorTable.getShardId().at("1")->getData()(i) == 1);
     if (i < nlabels) {
       assert(tensorTable.getIsModified().at("1")->getData()(i) == 0);
-      assert(tensorTable.getInMemory().at("1")->getData()(i) == 0);
+      assert(tensorTable.getNotInMemory().at("1")->getData()(i) == 1);
       assert(tensorTable.getShardIndices().at("1")->getData()(i) == i + 1);
     }
     else {
       assert(tensorTable.getIsModified().at("1")->getData()(i) == 1);
-      assert(tensorTable.getInMemory().at("1")->getData()(i) == 1);
+      assert(tensorTable.getNotInMemory().at("1")->getData()(i) == 0);
       assert(tensorTable.getShardIndices().at("1")->getData()(i) == 0);
     }
   }
@@ -1881,7 +1904,7 @@ void test_deleteFromIndicesGpu()
   tensorTable.syncIndicesViewHAndDData(device);
   tensorTable.syncAxesHAndDData(device);
   tensorTable.syncIsModifiedHAndDData(device);
-  tensorTable.syncInMemoryHAndDData(device);
+  tensorTable.syncNotInMemoryHAndDData(device);
   tensorTable.syncShardIdHAndDData(device);
   tensorTable.syncShardIndicesHAndDData(device);
   indices_to_select_ptr->syncHAndDData(device);
@@ -1892,7 +1915,7 @@ void test_deleteFromIndicesGpu()
   tensorTable.syncIndicesViewHAndDData(device);
   tensorTable.syncAxesHAndDData(device);
   tensorTable.syncIsModifiedHAndDData(device);
-  tensorTable.syncInMemoryHAndDData(device);
+  tensorTable.syncNotInMemoryHAndDData(device);
   tensorTable.syncShardIdHAndDData(device);
   tensorTable.syncShardIndicesHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
@@ -1909,7 +1932,7 @@ void test_deleteFromIndicesGpu()
       assert(tensorTable.getShardIndices().at("1")->getData()(i) == i + 2);
     }
     assert(tensorTable.getIsModified().at("1")->getData()(i) == 0);
-    assert(tensorTable.getInMemory().at("1")->getData()(i) == 0);
+    assert(tensorTable.getNotInMemory().at("1")->getData()(i) == 1);
     assert(tensorTable.getShardId().at("1")->getData()(i) == 1);
   }
   assert(cudaStreamDestroy(stream) == cudaSuccess);
@@ -2037,7 +2060,7 @@ void test_deleteFromAxisGpu()
   tensorTable.syncAxesHAndDData(device);
   tensorTable.syncHAndDData(device);
   tensorTable.syncIsModifiedHAndDData(device);
-  tensorTable.syncInMemoryHAndDData(device);
+  tensorTable.syncNotInMemoryHAndDData(device);
   tensorTable.syncShardIdHAndDData(device);
   tensorTable.syncShardIndicesHAndDData(device);
   indices_to_select_ptr->syncHAndDData(device);
@@ -2056,7 +2079,7 @@ void test_deleteFromAxisGpu()
   tensorTable.syncAxesHAndDData(device);
   tensorTable.syncHAndDData(device);
   tensorTable.syncIsModifiedHAndDData(device);
-  tensorTable.syncInMemoryHAndDData(device);
+  tensorTable.syncNotInMemoryHAndDData(device);
   tensorTable.syncShardIdHAndDData(device);
   tensorTable.syncShardIndicesHAndDData(device);
   values_ptr->syncHAndDData(device);
@@ -2075,7 +2098,7 @@ void test_deleteFromAxisGpu()
       assert(tensorTable.getShardIndices().at("1")->getData()(i) == i + 2);
     }
     assert(tensorTable.getIsModified().at("1")->getData()(i) == 1);
-    assert(tensorTable.getInMemory().at("1")->getData()(i) == 1);
+    assert(tensorTable.getNotInMemory().at("1")->getData()(i) == 0);
     assert(tensorTable.getShardId().at("1")->getData()(i) == 1);
   }
 
@@ -2228,7 +2251,7 @@ void test_insertIntoAxisGpu()
   // sync the tensorTable
   tensorTable.syncIndicesHAndDData(device);
   tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncInMemoryHAndDData(device);
+  tensorTable.syncNotInMemoryHAndDData(device);
   tensorTable.syncIsModifiedHAndDData(device);
   tensorTable.syncShardIdHAndDData(device);
   tensorTable.syncShardIndicesHAndDData(device);
@@ -2312,7 +2335,7 @@ void test_makeSparseAxisLabelsFromIndicesViewGpu()
   // sync the tensorTable
   tensorTable.syncIndicesHAndDData(device);
   tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncInMemoryHAndDData(device);
+  tensorTable.syncNotInMemoryHAndDData(device);
   tensorTable.syncIsModifiedHAndDData(device);
   tensorTable.syncShardIdHAndDData(device);
   tensorTable.syncShardIndicesHAndDData(device);
@@ -2386,7 +2409,7 @@ void test_makeSparseTensorTableGpu()
   sparse_data_ptr->syncHAndDData(device);
   sparse_table_ptr->syncIndicesHAndDData(device);
   sparse_table_ptr->syncIndicesViewHAndDData(device);
-  sparse_table_ptr->syncInMemoryHAndDData(device);
+  sparse_table_ptr->syncNotInMemoryHAndDData(device);
   sparse_table_ptr->syncIsModifiedHAndDData(device);
   sparse_table_ptr->syncShardIdHAndDData(device);
   sparse_table_ptr->syncShardIndicesHAndDData(device);
@@ -2439,7 +2462,7 @@ void test_makeSparseTensorTableGpu()
     assert(sparse_table_ptr->getIndices().at("Indices")->getData()(i) == i + 1);
     assert(sparse_table_ptr->getIndicesView().at("Indices")->getData()(i) == i + 1);
     assert(sparse_table_ptr->getIsModified().at("Indices")->getData()(i) == 1);
-    assert(sparse_table_ptr->getInMemory().at("Indices")->getData()(i) == 1);
+    assert(sparse_table_ptr->getNotInMemory().at("Indices")->getData()(i) == 0);
     assert(sparse_table_ptr->getShardId().at("Indices")->getData()(i) == 1);
     assert(sparse_table_ptr->getShardIndices().at("Indices")->getData()(i) == i + 1);
   }
@@ -2449,7 +2472,7 @@ void test_makeSparseTensorTableGpu()
     assert(sparse_table_ptr->getIndices().at("Values")->getData()(i) == i + 1);
     assert(sparse_table_ptr->getIndicesView().at("Values")->getData()(i) == i + 1);
     assert(sparse_table_ptr->getIsModified().at("Values")->getData()(i) == 1);
-    assert(sparse_table_ptr->getInMemory().at("Values")->getData()(i) == 1);
+    assert(sparse_table_ptr->getNotInMemory().at("Values")->getData()(i) == 0);
     assert(sparse_table_ptr->getShardId().at("Values")->getData()(i) == 1);
     assert(sparse_table_ptr->getShardIndices().at("Values")->getData()(i) == i + 1);
   }
@@ -2500,7 +2523,7 @@ void test_getSelectTensorDataAsSparseTensorTableGpu()
   // sync the tensorTable
   tensorTable.syncIndicesHAndDData(device);
   tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncInMemoryHAndDData(device);
+  tensorTable.syncNotInMemoryHAndDData(device);
   tensorTable.syncIsModifiedHAndDData(device);
   tensorTable.syncShardIdHAndDData(device);
   tensorTable.syncShardIndicesHAndDData(device);
@@ -2512,7 +2535,7 @@ void test_getSelectTensorDataAsSparseTensorTableGpu()
   tensorTable.getSelectTensorDataAsSparseTensorTable(sparse_table_ptr, device);
   sparse_table_ptr->syncIndicesHAndDData(device);
   sparse_table_ptr->syncIndicesViewHAndDData(device);
-  sparse_table_ptr->syncInMemoryHAndDData(device);
+  sparse_table_ptr->syncNotInMemoryHAndDData(device);
   sparse_table_ptr->syncIsModifiedHAndDData(device);
   sparse_table_ptr->syncShardIdHAndDData(device);
   sparse_table_ptr->syncShardIndicesHAndDData(device);
@@ -2572,7 +2595,7 @@ void test_getSelectTensorDataAsSparseTensorTableGpu()
     assert(sparse_table_ptr->getIndices().at("Indices")->getData()(i) == i + 1);
     assert(sparse_table_ptr->getIndicesView().at("Indices")->getData()(i) == i + 1);
     assert(sparse_table_ptr->getIsModified().at("Indices")->getData()(i) == 1);
-    assert(sparse_table_ptr->getInMemory().at("Indices")->getData()(i) == 1);
+    assert(sparse_table_ptr->getNotInMemory().at("Indices")->getData()(i) == 0);
     assert(sparse_table_ptr->getShardId().at("Indices")->getData()(i) == 1);
     assert(sparse_table_ptr->getShardIndices().at("Indices")->getData()(i) == i + 1);
   }
@@ -2582,7 +2605,7 @@ void test_getSelectTensorDataAsSparseTensorTableGpu()
     assert(sparse_table_ptr->getIndices().at("Values")->getData()(i) == i + 1);
     assert(sparse_table_ptr->getIndicesView().at("Values")->getData()(i) == i + 1);
     assert(sparse_table_ptr->getIsModified().at("Values")->getData()(i) == 1);
-    assert(sparse_table_ptr->getInMemory().at("Values")->getData()(i) == 1);
+    assert(sparse_table_ptr->getNotInMemory().at("Values")->getData()(i) == 0);
     assert(sparse_table_ptr->getShardId().at("Values")->getData()(i) == 1);
     assert(sparse_table_ptr->getShardIndices().at("Values")->getData()(i) == i + 1);
   }
@@ -2639,7 +2662,7 @@ void test_updateTensorDataConstantGpu()
   // sync the tensorTable
   tensorTable.syncIndicesHAndDData(device);
   tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncInMemoryHAndDData(device);
+  tensorTable.syncNotInMemoryHAndDData(device);
   tensorTable.syncIsModifiedHAndDData(device);
   tensorTable.syncShardIdHAndDData(device);
   tensorTable.syncShardIndicesHAndDData(device);
@@ -2652,7 +2675,7 @@ void test_updateTensorDataConstantGpu()
   tensorTable.updateTensorDataConstant(values_new_ptr, values_old_ptr, device);
   tensorTable.syncIndicesHAndDData(device);
   tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncInMemoryHAndDData(device);
+  tensorTable.syncNotInMemoryHAndDData(device);
   tensorTable.syncIsModifiedHAndDData(device);
   tensorTable.syncShardIdHAndDData(device);
   tensorTable.syncShardIndicesHAndDData(device);
@@ -2673,9 +2696,9 @@ void test_updateTensorDataConstantGpu()
 
   // Test for the in_memory and is_modified attributes
   for (int i = 0; i < nlabels; ++i) {
-    assert(tensorTable.getInMemory().at("1")->getData()(i) == 1);
-    assert(tensorTable.getInMemory().at("2")->getData()(i) == 1);
-    assert(tensorTable.getInMemory().at("3")->getData()(i) == 1);
+    assert(tensorTable.getNotInMemory().at("1")->getData()(i) == 0);
+    assert(tensorTable.getNotInMemory().at("2")->getData()(i) == 0);
+    assert(tensorTable.getNotInMemory().at("3")->getData()(i) == 0);
     assert(tensorTable.getIsModified().at("1")->getData()(i) == 1);
     assert(tensorTable.getIsModified().at("2")->getData()(i) == 1);
     assert(tensorTable.getIsModified().at("3")->getData()(i) == 1);
@@ -2689,7 +2712,7 @@ void test_updateTensorDataConstantGpu()
   // Revert the operation and test
   tensorTable.syncIndicesHAndDData(device);
   tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncInMemoryHAndDData(device);
+  tensorTable.syncNotInMemoryHAndDData(device);
   tensorTable.syncIsModifiedHAndDData(device);
   tensorTable.syncShardIdHAndDData(device);
   tensorTable.syncShardIndicesHAndDData(device);
@@ -2699,7 +2722,7 @@ void test_updateTensorDataConstantGpu()
   tensorTable.updateTensorDataFromSparseTensorTable(values_old_ptr, device);
   tensorTable.syncIndicesHAndDData(device);
   tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncInMemoryHAndDData(device);
+  tensorTable.syncNotInMemoryHAndDData(device);
   tensorTable.syncIsModifiedHAndDData(device);
   tensorTable.syncShardIdHAndDData(device);
   tensorTable.syncShardIndicesHAndDData(device);
@@ -2718,9 +2741,9 @@ void test_updateTensorDataConstantGpu()
 
   // Test for the in_memory and is_modified attributes
   for (int i = 0; i < nlabels; ++i) {
-    assert(tensorTable.getInMemory().at("1")->getData()(i) == 1);
-    assert(tensorTable.getInMemory().at("2")->getData()(i) == 1);
-    assert(tensorTable.getInMemory().at("3")->getData()(i) == 1);
+    assert(tensorTable.getNotInMemory().at("1")->getData()(i) == 0);
+    assert(tensorTable.getNotInMemory().at("2")->getData()(i) == 0);
+    assert(tensorTable.getNotInMemory().at("3")->getData()(i) == 0);
     assert(tensorTable.getIsModified().at("1")->getData()(i) == 1);
     assert(tensorTable.getIsModified().at("2")->getData()(i) == 1);
     assert(tensorTable.getIsModified().at("3")->getData()(i) == 1);

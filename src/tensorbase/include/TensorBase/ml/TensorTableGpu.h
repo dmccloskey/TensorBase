@@ -66,7 +66,7 @@ namespace TensorBase
     this->indices_.clear();
     this->indices_view_.clear();
     this->is_modified_.clear();
-    this->in_memory_.clear();
+    this->not_in_memory_.clear();
     this->shard_id_.clear();
     this->shard_spans_.clear();
 
@@ -106,11 +106,11 @@ namespace TensorBase
       // Set the in_memory defaults
       TensorDataGpu<int, 1> in_memory(axis_dimensions);
       in_memory.setData(is_modified_values.constant(1));
-      this->in_memory_.emplace(axis.second->getName(), std::make_shared<TensorDataGpu<int, 1>>(in_memory));
+      this->not_in_memory_.emplace(axis.second->getName(), std::make_shared<TensorDataGpu<int, 1>>(in_memory));
 
       // Set the shard_id defaults
       TensorDataGpu<int, 1> shard_id(axis_dimensions);
-      shard_id.setData(is_modified_values);
+      shard_id.setData(is_modified_values.constant(1));
       this->shard_id_.emplace(axis.second->getName(), std::make_shared<TensorDataGpu<int, 1>>(shard_id));
 
       // Set the shard_indices defaults
@@ -599,7 +599,7 @@ namespace TensorBase
     // sync the data
     tensorTable.syncIndicesHAndDData(device);
     tensorTable.syncIndicesViewHAndDData(device);
-    tensorTable.syncInMemoryHAndDData(device);
+    tensorTable.syncNotInMemoryHAndDData(device);
     tensorTable.syncIsModifiedHAndDData(device);
     tensorTable.syncShardIdHAndDData(device);
     tensorTable.syncShardIndicesHAndDData(device);

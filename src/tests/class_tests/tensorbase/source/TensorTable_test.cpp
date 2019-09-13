@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->getData()(0), 1);
   BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->getData()(nlabels1 - 1), nlabels1);
   BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("1")->getData()(0), 0);
-  BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("1")->getData()(0), 0);
+  BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("1")->getData()(0), 1);
   BOOST_CHECK_EQUAL(tensorTable.getShardId().at("1")->getData()(0), 1);
   BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("1")->getData()(0), 1);
   BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("1")->getData()(nlabels1 - 1), nlabels1);
@@ -140,7 +140,7 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(0), 1);
   BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(nlabels2 - 1), nlabels2);
   BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("2")->getData()(0), 0);
-  BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("2")->getData()(0), 0);
+  BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("2")->getData()(0), 1);
   BOOST_CHECK_EQUAL(tensorTable.getShardId().at("2")->getData()(0), 1);
   BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("2")->getData()(0), 1);
   BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("2")->getData()(nlabels2 - 1), nlabels2);
@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("3")->getData()(0), 1);
   BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("3")->getData()(nlabels3 - 1), nlabels3);
   BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("3")->getData()(0), 0);
-  BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("3")->getData()(0), 0);
+  BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("3")->getData()(0), 1);
   BOOST_CHECK_EQUAL(tensorTable.getShardId().at("3")->getData()(0), 1);
   BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("3")->getData()(0), 1);
   BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("3")->getData()(nlabels3 - 1), nlabels3);
@@ -195,15 +195,15 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   tensorTable.setData(tensor_data);
   for (int i = 0; i < nlabels1; ++i) {
     BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("1")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("1")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("1")->getData()(i), 0);
   }
   for (int i = 0; i < nlabels2; ++i) {
     BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("2")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("2")->getData()(i), 0);
   }
   for (int i = 0; i < nlabels3; ++i) {
     BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("3")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("3")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("3")->getData()(i), 0);
   }
 
   // Test clear
@@ -212,7 +212,7 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable.getIndices().size(), 0);
   BOOST_CHECK_EQUAL(tensorTable.getIndicesView().size(), 0);
   BOOST_CHECK_EQUAL(tensorTable.getIsModified().size(), 0);
-  BOOST_CHECK_EQUAL(tensorTable.getInMemory().size(), 0);
+  BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().size(), 0);
   BOOST_CHECK_EQUAL(tensorTable.getShardId().size(), 0);
   BOOST_CHECK_EQUAL(tensorTable.getShardIndices().size(), 0);
   BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(0), 0);
@@ -1125,7 +1125,7 @@ BOOST_AUTO_TEST_CASE(selectTensorDataDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable.getIndices().at("1")->getData()(0), 1);
   BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->getData()(0), 1);
   BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("1")->getData()(0), 0);
-  BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("1")->getData()(0), 0);
+  BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("1")->getData()(0), 1);
   BOOST_CHECK_EQUAL(tensorTable.getShardId().at("1")->getData()(0), 1);
   BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("1")->getData()(0), 1);
 
@@ -1137,7 +1137,7 @@ BOOST_AUTO_TEST_CASE(selectTensorDataDefaultDevice)
     BOOST_CHECK_EQUAL(tensorTable.getIndices().at("2")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("2")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("2")->getData()(i), 1);
     BOOST_CHECK_EQUAL(tensorTable.getShardId().at("2")->getData()(i), 1);
     BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("2")->getData()(i), i + 1);
   }
@@ -1150,7 +1150,7 @@ BOOST_AUTO_TEST_CASE(selectTensorDataDefaultDevice)
     BOOST_CHECK_EQUAL(tensorTable.getIndices().at("3")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("3")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("3")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("3")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("3")->getData()(i), 1);
     BOOST_CHECK_EQUAL(tensorTable.getShardId().at("3")->getData()(i), 1);
     BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("3")->getData()(i), i + 1);
   }
@@ -1344,9 +1344,9 @@ BOOST_AUTO_TEST_CASE(updateTensorDataValues1DefaultDevice)
 
   // Test for the in_memory and is_modified attributes
   for (int i = 0; i < nlabels; ++i) {
-    BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("1")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("2")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("3")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("1")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("3")->getData()(i), 0);
     BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("1")->getData()(i), 1);
     BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("2")->getData()(i), 1);
     BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("3")->getData()(i), 1);
@@ -1413,9 +1413,9 @@ BOOST_AUTO_TEST_CASE(updateTensorDataValues2DefaultDevice)
 
   // Test for the in_memory and is_modified attributes
   for (int i = 0; i < nlabels; ++i) {
-    BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("1")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("2")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("3")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("1")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("3")->getData()(i), 0);
     BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("1")->getData()(i), 1);
     BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("2")->getData()(i), 1);
     BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("3")->getData()(i), 1);
@@ -1496,12 +1496,12 @@ BOOST_AUTO_TEST_CASE(appendToIndicesDefaultDevice)
     BOOST_CHECK_EQUAL(tensorTable.getShardId().at("1")->getData()(i), 1);
     if (i < nlabels) {
       BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("1")->getData()(i), 0);
-      BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("1")->getData()(i), 0);
+      BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("1")->getData()(i), 1);
       BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("1")->getData()(i), i + 1);
     }
     else {
       BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("1")->getData()(i), 1);
-      BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("1")->getData()(i), 1);
+      BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("1")->getData()(i), 0);
       BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("1")->getData()(i), 0);
     }
   }
@@ -1683,7 +1683,7 @@ BOOST_AUTO_TEST_CASE(deleteFromIndicesDefaultDevice)
       BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("1")->getData()(i), i + 2);
     }
     BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("1")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("1")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("1")->getData()(i), 1);
     BOOST_CHECK_EQUAL(tensorTable.getShardId().at("1")->getData()(i), 1);
   }
 }
@@ -1806,7 +1806,7 @@ BOOST_AUTO_TEST_CASE(deleteFromAxisDefaultDevice)
       BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("1")->getData()(i), i + 2);
     }
     BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("1")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("1")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("1")->getData()(i), 0);
     BOOST_CHECK_EQUAL(tensorTable.getShardId().at("1")->getData()(i), 1);
   }
 
@@ -2091,7 +2091,7 @@ BOOST_AUTO_TEST_CASE(makeSparseTensorTableDefaultDevice)
     BOOST_CHECK_EQUAL(sparse_table_ptr->getIndicesView().at("Indices")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(sparse_table_ptr->getShardId().at("Indices")->getData()(i), 1);
     BOOST_CHECK_EQUAL(sparse_table_ptr->getIsModified().at("Indices")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(sparse_table_ptr->getInMemory().at("Indices")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(sparse_table_ptr->getNotInMemory().at("Indices")->getData()(i), 0);
     BOOST_CHECK_EQUAL(sparse_table_ptr->getShardIndices().at("Indices")->getData()(i), i + 1);
   }
 
@@ -2101,7 +2101,7 @@ BOOST_AUTO_TEST_CASE(makeSparseTensorTableDefaultDevice)
     BOOST_CHECK_EQUAL(sparse_table_ptr->getIndicesView().at("Values")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(sparse_table_ptr->getShardId().at("Values")->getData()(i), 1);
     BOOST_CHECK_EQUAL(sparse_table_ptr->getIsModified().at("Values")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(sparse_table_ptr->getInMemory().at("Values")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(sparse_table_ptr->getNotInMemory().at("Values")->getData()(i), 0);
     BOOST_CHECK_EQUAL(sparse_table_ptr->getShardIndices().at("Values")->getData()(i), i + 1);
   }
 }
@@ -2196,7 +2196,7 @@ BOOST_AUTO_TEST_CASE(getSelectTensorDataAsSparseTensorTableDefaultDevice)
     BOOST_CHECK_EQUAL(sparse_table_ptr->getIndicesView().at("Indices")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(sparse_table_ptr->getShardId().at("Indices")->getData()(i), 1);
     BOOST_CHECK_EQUAL(sparse_table_ptr->getIsModified().at("Indices")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(sparse_table_ptr->getInMemory().at("Indices")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(sparse_table_ptr->getNotInMemory().at("Indices")->getData()(i), 0);
     BOOST_CHECK_EQUAL(sparse_table_ptr->getShardIndices().at("Indices")->getData()(i), i + 1);
   }
 
@@ -2206,7 +2206,7 @@ BOOST_AUTO_TEST_CASE(getSelectTensorDataAsSparseTensorTableDefaultDevice)
     BOOST_CHECK_EQUAL(sparse_table_ptr->getIndicesView().at("Values")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(sparse_table_ptr->getShardId().at("Values")->getData()(i), 1);
     BOOST_CHECK_EQUAL(sparse_table_ptr->getIsModified().at("Values")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(sparse_table_ptr->getInMemory().at("Values")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(sparse_table_ptr->getNotInMemory().at("Values")->getData()(i), 0);
     BOOST_CHECK_EQUAL(sparse_table_ptr->getShardIndices().at("Values")->getData()(i), i + 1);
   }
 }
@@ -2268,9 +2268,9 @@ BOOST_AUTO_TEST_CASE(updateTensorDataConstantDefaultDevice)
 
   // Test for the in_memory and is_modified attributes
   for (int i = 0; i < nlabels; ++i) {
-    BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("1")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("2")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("3")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("1")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("3")->getData()(i), 0);
     BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("1")->getData()(i), 1);
     BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("2")->getData()(i), 1);
     BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("3")->getData()(i), 1);
@@ -2293,9 +2293,9 @@ BOOST_AUTO_TEST_CASE(updateTensorDataConstantDefaultDevice)
 
   // Test for the in_memory and is_modified attributes
   for (int i = 0; i < nlabels; ++i) {
-    BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("1")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("2")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(tensorTable.getInMemory().at("3")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("1")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("3")->getData()(i), 0);
     BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("1")->getData()(i), 1);
     BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("2")->getData()(i), 1);
     BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("3")->getData()(i), 1);
@@ -2495,7 +2495,7 @@ BOOST_AUTO_TEST_CASE(makeNotInMemoryShardIDTensorDefaultDevice)
   tensorTable.reShardIndices(device);
 
   // Test all in memory case
-  for (auto& in_memory_map : tensorTable.getInMemory()) {
+  for (auto& in_memory_map : tensorTable.getNotInMemory()) {
     in_memory_map.second->getData() = in_memory_map.second->getData().constant(0);
   }
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> shard_id_indices_ptr;
@@ -2507,7 +2507,7 @@ BOOST_AUTO_TEST_CASE(makeNotInMemoryShardIDTensorDefaultDevice)
   BOOST_CHECK_EQUAL(slice_indices.size(), 0);
 
   // Test all not in memory case
-  for (auto& in_memory_map : tensorTable.getInMemory()) {
+  for (auto& in_memory_map : tensorTable.getNotInMemory()) {
     in_memory_map.second->getData() = in_memory_map.second->getData().constant(1);
   }
   shard_id_indices_ptr.reset();
@@ -2537,7 +2537,7 @@ BOOST_AUTO_TEST_CASE(makeNotInMemoryShardIDTensorDefaultDevice)
   }
 
   // Test the partially in memory case
-  for (auto& in_memory_map : tensorTable.getInMemory()) {
+  for (auto& in_memory_map : tensorTable.getNotInMemory()) {
     for (int i = 0; i < nlabels; ++i) {
       if (i < shard_span)
         in_memory_map.second->getData()(i) = 1;
