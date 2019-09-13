@@ -2340,9 +2340,6 @@ void test_insertIntoAxisGpu()
   tensorTable.syncAxesHAndDData(device);
   tensorTable.syncHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  std::cout << "IndicesView:\n" << tensorTable.getIndicesView().at("1")->getData() << std::endl;
-  std::cout << "Labels:\n" << axis_1_ptr->getLabels() << std::endl;
-  std::cout << "TensorTable:\n" << tensorTable.getData() << std::endl;
   int iter = 0;
   for (int i = 0; i < nlabels + 1; ++i) {
     // check the axis
@@ -2801,12 +2798,10 @@ void test_updateTensorDataConstantGpu()
   tensorTable.syncAxesHAndDData(device);
   tensorTable.syncHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  std::cout << "tensorTable.getData()\n" << tensorTable.getData() << std::endl;
-  std::cout << "tensor_values\n" << tensor_values << std::endl;
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {
       for (int i = 0; i < nlabels; ++i) {
-        //assert(tensorTable.getData()(i, j, k) == tensor_values(i, j, k)); // FIXME!
+        assert(tensorTable.getData()(i, j, k) == tensor_values(i, j, k));
       }
     }
   }
@@ -3178,7 +3173,7 @@ int main(int argc, char** argv)
   test_makeSelectIndicesFromIndicesGpu();
   test_deleteFromAxisGpu();
   test_makeIndicesFromIndicesViewGpu();
-  //test_insertIntoAxisGpu(); ?
+  test_insertIntoAxisGpu();
   test_makeSparseAxisLabelsFromIndicesViewGpu();
   test_makeSparseTensorTableGpu();
   test_getSelectTensorDataAsSparseTensorTableGpu();

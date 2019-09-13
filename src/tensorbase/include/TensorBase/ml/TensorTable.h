@@ -1433,6 +1433,19 @@ namespace TensorBase
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_sort;
     makeSortIndicesFromTensorIndicesComponent(indices_view_, indices_sort, device);
 
+    // Synchronize the Device and Host data for paritioning and sorting
+#if COMPILE_WITH_CUDA
+    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
+      indices_sort->syncHAndDData(device); // d to h
+      indices_partition->syncHAndDData(device); // d to h
+      syncHAndDData(device); // d to h
+      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+      indices_sort->setDataStatus(false, true);
+      indices_partition->setDataStatus(false, true);
+      setDataStatus(false, true);
+    }
+#endif
+
     // partition the indices
     indices_sort->partition(indices_partition, device);
 
