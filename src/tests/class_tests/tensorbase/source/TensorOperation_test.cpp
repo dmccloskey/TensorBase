@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorAppendToAxis)
       }
     }
   }
-  tensorTable1.getData()->setData(tensor_values1);
+  tensorTable1.setData(tensor_values1);
   std::shared_ptr<TensorTableDefaultDevice<float, 3>> tensorTable1_ptr = std::make_shared<TensorTableDefaultDevice<float, 3>>(tensorTable1);
 
   // set up table 2
@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorAppendToAxis)
       tensor_values2(i, j) = i + j * nlabels1;
     }
   }
-  tensorTable2.getData()->setData(tensor_values2);
+  tensorTable2.setData(tensor_values2);
   std::shared_ptr<TensorTableDefaultDevice<int, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(tensorTable2);
 
   // Set up the collection
@@ -165,14 +165,14 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorAppendToAxis)
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
-        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getData()(i, j, k), tensor_values1(i, j, k));
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j, k), tensor_values1(i, j, k));
       }
     }
   }
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
-        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getData()(i, j + nlabels2, k), tensor_values_new(i, j, k));
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j + nlabels2, k), tensor_values_new(i, j, k));
       }
     }
   }
@@ -207,7 +207,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorAppendToAxis)
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
-        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getData()(i, j, k), tensor_values1(i, j, k));
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j, k), tensor_values1(i, j, k));
       }
     }
   }
@@ -278,7 +278,7 @@ BOOST_AUTO_TEST_CASE(redoAndTensorDeleteFromAxis)
       }
     }
   }
-  tensorTable1.getData()->setData(tensor_values1);
+  tensorTable1.setData(tensor_values1);
   std::shared_ptr<TensorTableDefaultDevice<float, 3>> tensorTable1_ptr = std::make_shared<TensorTableDefaultDevice<float, 3>>(tensorTable1);
 
   // set up table 2
@@ -293,7 +293,7 @@ BOOST_AUTO_TEST_CASE(redoAndTensorDeleteFromAxis)
       tensor_values2(i, j) = i + j * nlabels1;
     }
   }
-  tensorTable2.getData()->setData(tensor_values2);
+  tensorTable2.setData(tensor_values2);
   std::shared_ptr<TensorTableDefaultDevice<int, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(tensorTable2);
 
   // Set up the collection
@@ -323,7 +323,7 @@ BOOST_AUTO_TEST_CASE(redoAndTensorDeleteFromAxis)
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2 - 1; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
-        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getData()(i, j, k), expected_tensor_values(i, j, k));
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j, k), expected_tensor_values(i, j, k));
       }
     }
   }
@@ -360,7 +360,7 @@ BOOST_AUTO_TEST_CASE(redoAndTensorDeleteFromAxis)
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
-        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getData()(i, j, k), tensor_values1(i, j, k));
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j, k), tensor_values1(i, j, k));
       }
     }
   }
@@ -428,7 +428,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateValues)
       }
     }
   }
-  tensorTable1.getData()->setData(tensor_values1);
+  tensorTable1.setData(tensor_values1);
   std::shared_ptr<TensorTableDefaultDevice<float, 3>> tensorTable1_ptr = std::make_shared<TensorTableDefaultDevice<float, 3>>(tensorTable1);
 
   // set up table 2
@@ -443,7 +443,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateValues)
       tensor_values2(i, j) = i + j * nlabels1;
     }
   }
-  tensorTable2.getData()->setData(tensor_values2);
+  tensorTable2.setData(tensor_values2);
   std::shared_ptr<TensorTableDefaultDevice<int, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(tensorTable2);
 
   // Set up the collection
@@ -467,7 +467,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateValues)
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < 1; ++j) {
       for (int k = 0; k < 1; ++k) {
-        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getData()(i, j, k), values_new_values(i, j, k));
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j, k), values_new_values(i, j, k));
         BOOST_CHECK_EQUAL(tensorUpdate.getValuesOld()->getData()(i, j, k), tensor_values1(i, j, k));
       }
     }
@@ -478,7 +478,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateValues)
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < 1; ++j) {
       for (int k = 0; k < 1; ++k) {
-        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getData()(i, j, k), tensor_values1(i, j, k));
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j, k), tensor_values1(i, j, k));
       }
     }
   }
@@ -530,7 +530,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateConstant)
       }
     }
   }
-  tensorTable1.getData()->setData(tensor_values1);
+  tensorTable1.setData(tensor_values1);
   std::shared_ptr<TensorTableDefaultDevice<float, 3>> tensorTable1_ptr = std::make_shared<TensorTableDefaultDevice<float, 3>>(tensorTable1);
 
   // set up table 2
@@ -545,7 +545,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateConstant)
       tensor_values2(i, j) = i + j * nlabels1;
     }
   }
-  tensorTable2.getData()->setData(tensor_values2);
+  tensorTable2.setData(tensor_values2);
   std::shared_ptr<TensorTableDefaultDevice<int, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(tensorTable2);
 
   // Set up the collection
@@ -569,13 +569,13 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateConstant)
   // Test redo
   tensorUpdate.redo(collection_1_ptr, device);
   for (int i = 0; i < nlabels1; ++i) {
-    BOOST_CHECK_EQUAL(tensorUpdate.getValuesOld()->getData()->getData()(i), tensor_values1(i, 0, 0));
+    BOOST_CHECK_EQUAL(tensorUpdate.getValuesOld()->getData()(i), tensor_values1(i, 0, 0));
     for (int j = 0; j < nlabels2; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
         if (j==0 && k==0)
-          BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getData()(i, j, k), 100);
+          BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j, k), 100);
         else
-          BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getData()(i, j, k), tensor_values1(i,j,k));
+          BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j, k), tensor_values1(i,j,k));
       }
     }
   }
@@ -594,7 +594,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateConstant)
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
-        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getData()(i, j, k), tensor_values1(i, j, k));
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j, k), tensor_values1(i, j, k));
       }
     }
   }
@@ -655,7 +655,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorAddTable)
       }
     }
   }
-  tensorTable1.getData()->setData(tensor_values1);
+  tensorTable1.setData(tensor_values1);
   std::shared_ptr<TensorTableDefaultDevice<float, 3>> tensorTable1_ptr = std::make_shared<TensorTableDefaultDevice<float, 3>>(tensorTable1);
 
   // set up table 2
@@ -670,7 +670,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorAddTable)
       tensor_values2(i, j) = i + j * nlabels1;
     }
   }
-  tensorTable2.getData()->setData(tensor_values2);
+  tensorTable2.setData(tensor_values2);
   std::shared_ptr<TensorTableDefaultDevice<int, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(tensorTable2);
 
   // Set up the collection
@@ -734,7 +734,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorDropTable)
       }
     }
   }
-  tensorTable1.getData()->setData(tensor_values1);
+  tensorTable1.setData(tensor_values1);
   std::shared_ptr<TensorTableDefaultDevice<float, 3>> tensorTable1_ptr = std::make_shared<TensorTableDefaultDevice<float, 3>>(tensorTable1);
 
   // set up table 2
@@ -749,7 +749,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorDropTable)
       tensor_values2(i, j) = i + j * nlabels1;
     }
   }
-  tensorTable2.getData()->setData(tensor_values2);
+  tensorTable2.setData(tensor_values2);
   std::shared_ptr<TensorTableDefaultDevice<int, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(tensorTable2);
 
   // Set up the collection
