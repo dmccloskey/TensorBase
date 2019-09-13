@@ -2936,7 +2936,6 @@ void test_makeModifiedShardIDTensorGpu()
   tensorTable.syncShardIdHAndDData(device);
   tensorTable.syncShardIndicesHAndDData(device);
   tensorTable.syncAxesHAndDData(device);
-  tensorTable.syncHAndDData(device);
   int shard_span = 2;
   std::map<std::string, int> shard_span_new = { {"1", shard_span}, {"2", shard_span}, {"3", shard_span} };
   tensorTable.setShardSpans(shard_span_new);
@@ -2955,10 +2954,10 @@ void test_makeModifiedShardIDTensorGpu()
   assert(slice_indices.size() == 0);
 
   // Test the fully modified case
-  tensorTable.syncIsModifiedHAndDData(device);
   for (auto& is_modified_map : tensorTable.getIsModified()) {
     is_modified_map.second->getData() = is_modified_map.second->getData().constant(1);
   }
+  tensorTable.setIsModifiedDataStatus(true, false);
   tensorTable.syncIsModifiedHAndDData(device);
   shard_id_indices_ptr.reset();
   tensorTable.makeModifiedShardIDTensor(shard_id_indices_ptr, device);
@@ -2989,7 +2988,6 @@ void test_makeModifiedShardIDTensorGpu()
   }
 
   // Test the partially modified case
-  tensorTable.syncIsModifiedHAndDData(device);
   for (auto& is_modified_map : tensorTable.getIsModified()) {
     for (int i = 0; i < nlabels; ++i) {
       if (i < shard_span)
@@ -2998,6 +2996,7 @@ void test_makeModifiedShardIDTensorGpu()
         is_modified_map.second->getData()(i) = 0;
     }
   }
+  tensorTable.setIsModifiedDataStatus(true, false);
   tensorTable.syncIsModifiedHAndDData(device);
   shard_id_indices_ptr.reset();
   tensorTable.makeModifiedShardIDTensor(shard_id_indices_ptr, device);
@@ -3059,17 +3058,16 @@ void test_makeNotInMemoryShardIDTensorGpu()
   tensorTable.syncShardIdHAndDData(device);
   tensorTable.syncShardIndicesHAndDData(device);
   tensorTable.syncAxesHAndDData(device);
-  tensorTable.syncHAndDData(device);
   int shard_span = 2;
   std::map<std::string, int> shard_span_new = { {"1", shard_span}, {"2", shard_span}, {"3", shard_span} };
   tensorTable.setShardSpans(shard_span_new);
   tensorTable.reShardIndices(device);
 
   // Test all in memory case
-  tensorTable.syncNotInMemoryHAndDData(device);
   for (auto& in_memory_map : tensorTable.getNotInMemory()) {
     in_memory_map.second->getData() = in_memory_map.second->getData().constant(0);
   }
+  tensorTable.setNotInMemoryDataStatus(true, false);
   tensorTable.syncNotInMemoryHAndDData(device);
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> shard_id_indices_ptr;
   tensorTable.makeNotInMemoryShardIDTensor(shard_id_indices_ptr, device);
@@ -3079,13 +3077,13 @@ void test_makeNotInMemoryShardIDTensorGpu()
 
   std::map<int, std::pair<Eigen::array<Eigen::Index, 3>, Eigen::array<Eigen::Index, 3>>> slice_indices;
   tensorTable.makeSliceIndicesFromShardIndices(shard_id_indices_ptr, slice_indices, device);
-  assert(slice_indices.size(), 0);
+  assert(slice_indices.size() == 0);
 
   // Test all not in memory case
-  tensorTable.syncNotInMemoryHAndDData(device);
   for (auto& in_memory_map : tensorTable.getNotInMemory()) {
     in_memory_map.second->getData() = in_memory_map.second->getData().constant(1);
   }
+  tensorTable.setNotInMemoryDataStatus(true, false);
   tensorTable.syncNotInMemoryHAndDData(device);
   shard_id_indices_ptr.reset();
   tensorTable.makeNotInMemoryShardIDTensor(shard_id_indices_ptr, device);
@@ -3116,7 +3114,6 @@ void test_makeNotInMemoryShardIDTensorGpu()
   }
 
   // Test the partially in memory case
-  tensorTable.syncNotInMemoryHAndDData(device);
   for (auto& in_memory_map : tensorTable.getNotInMemory()) {
     for (int i = 0; i < nlabels; ++i) {
       if (i < shard_span)
@@ -3125,6 +3122,7 @@ void test_makeNotInMemoryShardIDTensorGpu()
         in_memory_map.second->getData()(i) = 0;
     }
   }
+  tensorTable.setNotInMemoryDataStatus(true, false);
   tensorTable.syncNotInMemoryHAndDData(device);
   shard_id_indices_ptr.reset();
   tensorTable.makeNotInMemoryShardIDTensor(shard_id_indices_ptr, device);

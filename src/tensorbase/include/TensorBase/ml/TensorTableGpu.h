@@ -723,6 +723,7 @@ namespace TensorBase
 
     // initialize the slice indices
     modified_shard_ids->syncHAndDData(device);// D to H
+    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
     for (int i = 0; i < modified_shard_ids->getTensorSize(); ++i) {
       slice_indices.emplace(modified_shard_ids->getData()(i), std::make_pair(Eigen::array<Eigen::Index, TDim>(), Eigen::array<Eigen::Index, TDim>()));
     }
@@ -733,9 +734,9 @@ namespace TensorBase
       // NOTE: not sure if this part can be done on the GPU using a % b = a - (b * int(a/b)) as the modulo operator
       // PARALLEL: could execute this code using multiple Threads though
       for (int i = 0; i < modified_shard_ids->getTensorSize(); ++i) {
-        int min_index = int(floor(float(shard_ids_slice_min(i)) / float(axis_size_cum))) % this->axes_.at(axis_to_dim.first)->getNLabels();
+        int min_index = int(floor(float(shard_slice_min.getData()(i)) / float(axis_size_cum))) % this->axes_.at(axis_to_dim.first)->getNLabels();
         slice_indices.at(modified_shard_ids->getData()(i)).first.at(this->getDimFromAxisName(axis_to_dim.first)) = min_index;
-        int max_index = int(floor(float(shard_ids_slice_max(i)) / float(axis_size_cum))) % this->axes_.at(axis_to_dim.first)->getNLabels();
+        int max_index = int(floor(float(shard_slice_max.getData()(i)) / float(axis_size_cum))) % this->axes_.at(axis_to_dim.first)->getNLabels();
         slice_indices.at(modified_shard_ids->getData()(i)).second.at(this->getDimFromAxisName(axis_to_dim.first)) = max_index - min_index + 1;
       }
       // update the accumulative size
