@@ -2333,7 +2333,7 @@ void test_insertIntoAxisGpu()
   labels_new_ptr->syncHAndDData(device);
   indices_new_ptr->syncHAndDData(device);
 
-  // test appendToAxis
+  // test insertIntoAxis
   tensorTable.insertIntoAxis("1", labels_new_ptr, values_new_ptr->getDataPointer(), indices_new_ptr, device);
   tensorTable.syncIndicesHAndDData(device);
   tensorTable.syncIndicesViewHAndDData(device);
@@ -2360,9 +2360,6 @@ void test_insertIntoAxisGpu()
     if (i >= nlabels) {
       assert(tensorTable.getShardId().at("1")->getData()(i) == 2);
       assert(tensorTable.getShardIndices().at("1")->getData()(i) == i - nlabels + 1);
-    }
-    else if (i == 2) {
-      assert(tensorTable.getShardIndices().at("1")->getData()(i) == i + 2);
     }
     else {
       assert(tensorTable.getShardId().at("1")->getData()(i) == 1);

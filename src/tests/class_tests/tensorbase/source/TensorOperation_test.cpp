@@ -391,10 +391,9 @@ BOOST_AUTO_TEST_CASE(redoAndTensorDeleteFromAxis)
 
   // Test for the expected indices data
   BOOST_CHECK_EQUAL(tensorTable1_ptr->getDimensions().at(tensorTable1_ptr->getDimFromAxisName("2")), nlabels2);
-  std::cout << "tensorTable1_ptr->getIsModified().at()->getData()\n" << tensorTable1_ptr->getIsModified().at("2")->getData() << std::endl;
   for (int i = 0; i < nlabels2; ++i) {
     if (i == 1) {
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);  // TODO
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
     }
     else {
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);

@@ -1795,12 +1795,13 @@ namespace TensorBase
 //    }
 //#endif
 
-    // Sort the indices
+    // Sort the is_modified values by the indices, and then sort the indices and update the shard indices
+    is_modified_.at(axis_name)->sort(indices_.at(axis_name), device);
     indices_.at(axis_name)->sort("ASC", device); // NOTE: this could fail if there are 0's in the index!
+    reShardIndices(device);
 
     // Sort the axis and tensor based on the indices view
     sortTensorData(device);
-    reShardIndices(device);
   }
 
   template<typename TensorT, typename DeviceT, int TDim>

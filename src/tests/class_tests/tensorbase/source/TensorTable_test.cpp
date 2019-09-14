@@ -1937,7 +1937,7 @@ BOOST_AUTO_TEST_CASE(insertIntoAxisDefaultDevice)
   tensorTable.getIndices().at("1")->getData()(nlabels - 1) = 4;
   tensorTable.getIndicesView().at("1")->getData()(nlabels - 1) = 4;
 
-  // test appendToAxis
+  // test insertIntoAxis
   tensorTable.insertIntoAxis("1", labels_new_ptr, values_new_ptr->getDataPointer(), indices_new_ptr, device);
   int iter = 0;
   for (int i = 0; i < nlabels + 1; ++i) {
@@ -1955,9 +1955,6 @@ BOOST_AUTO_TEST_CASE(insertIntoAxisDefaultDevice)
     if (i >= nlabels) {
       BOOST_CHECK_EQUAL(tensorTable.getShardId().at("1")->getData()(i), 2);
       BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("1")->getData()(i), i - nlabels + 1);
-    }
-    else if (i == 2) {
-      BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("1")->getData()(i), i + 2);
     }
     else {
       BOOST_CHECK_EQUAL(tensorTable.getShardId().at("1")->getData()(i), 1);
