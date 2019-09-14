@@ -58,18 +58,30 @@ public:
     */
     static std::string makeTensorTableShardFilename(const std::string& dir, const std::string& tensor_table_name, const int& shard_id);
 
+    /**
+      @brief store the TensorTable data corresponding to the shard slice indices
+
+      @param[in] filename The name of the shard file
+      @param[in] tensor_data The TensorTable data
+      @param[in] slice_indices The slice indices of the shard
+    */
     static bool storeTensorTableShard(const std::string& filename,
       const Eigen::Tensor<TensorT, TDim>& tensor_data,
       const std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>& slice_indices);
 
+    /**
+      @brief load the TensorTable data corresponding to the shard slice indices
+
+      TODO: need to implement logic that also aligns the `shard_indices` so as to
+      correctly update the TensorTable shard after a deletion operation
+
+      @param[in] filename The name of the shard file
+      @param[in] tensor_table The TensorTable
+      @param[in] slice_indices The slice indices of the shard
+    */
     static bool loadTensorTableShard(const std::string& filename,
       TensorTable<TensorT, DeviceT, TDim>& tensor_table,
       const std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>& slice_indices);
-
-    //static void getNotInMemoryShardIDs(
-    //  const TensorTable<TensorT, DeviceT, TDim>& tensor_table,
-    //  std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& modified_shard_id,
-    //  std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& modified_shard_indices, DeviceT& device);
   };
 
   template<typename TensorT, typename DeviceT, int TDim>
