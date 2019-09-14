@@ -245,15 +245,15 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
   for (int i = 0; i < nlabels2 + nlabels2; ++i) {
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
     if (i < nlabels2) {
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 0);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 1);
     }
     else {
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 1);
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1); // TODO...
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 2);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i - nlabels2 + 1);
     }
   }
 
@@ -298,14 +298,16 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
     if (i < 1) {
       BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndices().at("2")->getData()(i), i + 1);
       BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(i), i + 1);
+      BOOST_CHECK_EQUAL(tensorTable2_ptr->getShardIndices().at("2")->getData()(i), i + 1);
     }
     else {
       BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndices().at("2")->getData()(i), i + 2);
       BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(i), i + 2);
+      BOOST_CHECK_EQUAL(tensorTable2_ptr->getShardIndices().at("2")->getData()(i), i + 2);
     }
-    BOOST_CHECK_EQUAL(tensorTable2_ptr->getIsModified().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable2_ptr->getIsModified().at("2")->getData()(i), 1);
     BOOST_CHECK_EQUAL(tensorTable2_ptr->getNotInMemory().at("2")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(tensorTable2_ptr->getShardId().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable2_ptr->getShardId().at("2")->getData()(i), 1);
   }
 
   // operation #3: update
@@ -323,7 +325,7 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
   BOOST_CHECK_EQUAL(transactionManager.getCurrentIndex(), 2);
 
   // Test for the changed value
-  Eigen::Tensor<char, 1> values_update_expected(Eigen::array<Eigen::Index, 1>({ nlabels1 }));
+  //Eigen::Tensor<char, 1> values_update_expected(Eigen::array<Eigen::Index, 1>({ nlabels1 }));
   //values_update_expected.setValues({ 'a', 'c' });
   //for (int i = 0; i < nlabels1; ++i) {
   //  BOOST_CHECK_EQUAL(tensorTable3_ptr->getData()(i), values_update_expected(i));
@@ -363,9 +365,10 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
   for (int i = 0; i < nlabels2; ++i) {
     BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndices().at("2")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(i), i + 1);
-    //BOOST_CHECK_EQUAL(tensorTable2_ptr->getIsModified().at("2")->getData()(i), 0); // TODO: update once the sharding model is in place
-    //BOOST_CHECK_EQUAL(tensorTable2_ptr->getNotInMemory().at("2")->getData()(i), 0);
-    //BOOST_CHECK_EQUAL(tensorTable2_ptr->getShardId().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable2_ptr->getIsModified().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable2_ptr->getNotInMemory().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable2_ptr->getShardId().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable2_ptr->getShardIndices().at("2")->getData()(i), i + 1);
   }
 
   // Redo one of them
@@ -395,14 +398,16 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
     if (i < 1) {
       BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndices().at("2")->getData()(i), i + 1);
       BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(i), i + 1);
+      BOOST_CHECK_EQUAL(tensorTable2_ptr->getShardIndices().at("2")->getData()(i), i + 1);
     }
     else {
       BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndices().at("2")->getData()(i), i + 2);
       BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(i), i + 2);
+      BOOST_CHECK_EQUAL(tensorTable2_ptr->getShardIndices().at("2")->getData()(i), i + 2);
     }
-    //BOOST_CHECK_EQUAL(tensorTable2_ptr->getIsModified().at("2")->getData()(i), 0);  // TODO: update once the sharding model is in place
-    //BOOST_CHECK_EQUAL(tensorTable2_ptr->getNotInMemory().at("2")->getData()(i), 0);
-    //BOOST_CHECK_EQUAL(tensorTable2_ptr->getShardId().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable2_ptr->getIsModified().at("2")->getData()(i), 1); 
+    BOOST_CHECK_EQUAL(tensorTable2_ptr->getNotInMemory().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable2_ptr->getShardId().at("2")->getData()(i), 1);
   }
 
   // Rollback all of them
@@ -430,9 +435,10 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
   for (int i = 0; i < nlabels2; ++i) {
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
-    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 1);
   }
 }
 
@@ -565,15 +571,15 @@ BOOST_AUTO_TEST_CASE(CommitDefaultDevice)
   for (int i = 0; i < nlabels2 + nlabels2; ++i) {
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
     if (i < nlabels2) {
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 0);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 1);
     }
     else {
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 1);
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1); // TODO...
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 2);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i - nlabels2 + 1);
     }
   }
 
