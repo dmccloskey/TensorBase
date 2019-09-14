@@ -1800,6 +1800,7 @@ namespace TensorBase
 
     // Sort the axis and tensor based on the indices view
     sortTensorData(device);
+    reShardIndices(device);
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
