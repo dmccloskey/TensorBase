@@ -1948,7 +1948,21 @@ BOOST_AUTO_TEST_CASE(insertIntoAxisDefaultDevice)
       BOOST_CHECK_EQUAL(axis_1_ptr->getLabels()(0, i), labels1(iter));
 
     // check the indices
+    BOOST_CHECK_EQUAL(tensorTable.getIndices().at("1")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("1")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("1")->getData()(i), 0);
+    if (i >= nlabels) {
+      BOOST_CHECK_EQUAL(tensorTable.getShardId().at("1")->getData()(i), 2);
+      BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("1")->getData()(i), i - nlabels + 1);
+    }
+    else if (i == 2) {
+      BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("1")->getData()(i), i + 2);
+    }
+    else {
+      BOOST_CHECK_EQUAL(tensorTable.getShardId().at("1")->getData()(i), 1);
+      BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("1")->getData()(i), i + 1);
+    }
 
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {

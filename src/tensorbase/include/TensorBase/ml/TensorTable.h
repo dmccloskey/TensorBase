@@ -1600,7 +1600,8 @@ namespace TensorBase
     in_memory_values.device(device) = in_memory_copy_values.pad(padding_1) + indices_new_values.constant(0).pad(padding_2);
     // TODO: need to add in logic to check if the shard size has been exceeded, and if so, start a new shard
     shard_id_values.device(device) = shard_id_copy_values.pad(padding_1) + indices_new_values.constant(1).pad(padding_2);
-    shard_indices_values.device(device) = shard_indices_copy_values.pad(padding_1) + indices_new_values.constant(0).pad(padding_2); // TODO: correct
+    shard_indices_values.device(device) = shard_indices_copy_values.pad(padding_1) + indices_new_values.constant(0).pad(padding_2);
+    reShardIndices(device);
 
     // update the dimensions
     dimensions_.at(axes_to_dims_.at(axis_name)) += indices->getTensorSize();

@@ -2337,6 +2337,10 @@ void test_insertIntoAxisGpu()
   tensorTable.insertIntoAxis("1", labels_new_ptr, values_new_ptr->getDataPointer(), indices_new_ptr, device);
   tensorTable.syncIndicesHAndDData(device);
   tensorTable.syncIndicesViewHAndDData(device);
+  tensorTable.syncNotInMemoryHAndDData(device);
+  tensorTable.syncIsModifiedHAndDData(device);
+  tensorTable.syncShardIdHAndDData(device);
+  tensorTable.syncShardIndicesHAndDData(device);
   tensorTable.syncAxesHAndDData(device);
   tensorTable.syncHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
@@ -2349,7 +2353,21 @@ void test_insertIntoAxisGpu()
       assert(axis_1_ptr->getLabels()(0, i) == labels1(iter));
 
     // check the indices
+    assert(tensorTable.getIndices().at("1")->getData()(i) == i + 1);
     assert(tensorTable.getIndicesView().at("1")->getData()(i) == i + 1);
+    assert(tensorTable.getIsModified().at("1")->getData()(i) == 1);
+    assert(tensorTable.getNotInMemory().at("1")->getData()(i) == 0);
+    if (i >= nlabels) {
+      assert(tensorTable.getShardId().at("1")->getData()(i) == 2);
+      assert(tensorTable.getShardIndices().at("1")->getData()(i) == i - nlabels + 1);
+    }
+    else if (i == 2) {
+      assert(tensorTable.getShardIndices().at("1")->getData()(i) == i + 2);
+    }
+    else {
+      assert(tensorTable.getShardId().at("1")->getData()(i) == 1);
+      assert(tensorTable.getShardIndices().at("1")->getData()(i) == i + 1);
+    }
 
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
