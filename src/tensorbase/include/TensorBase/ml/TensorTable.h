@@ -1433,18 +1433,19 @@ namespace TensorBase
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_sort;
     makeSortIndicesFromTensorIndicesComponent(indices_view_, indices_sort, device);
 
+    // TODO: Move to device-specific code
     // Synchronize the Device and Host data for paritioning and sorting
-#if COMPILE_WITH_CUDA
-    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
-      indices_sort->syncHAndDData(device); // d to h
-      indices_partition->syncHAndDData(device); // d to h
-      syncHAndDData(device); // d to h
-      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
-      indices_sort->setDataStatus(false, true);
-      indices_partition->setDataStatus(false, true);
-      setDataStatus(false, true);
-    }
-#endif
+//#if COMPILE_WITH_CUDA
+//    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
+//      indices_sort->syncHAndDData(device); // d to h
+//      indices_partition->syncHAndDData(device); // d to h
+//      syncHAndDData(device); // d to h
+//      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+//      indices_sort->setDataStatus(false, true);
+//      indices_partition->setDataStatus(false, true);
+//      setDataStatus(false, true);
+//    }
+//#endif
 
     // partition the indices
     indices_sort->partition(indices_partition, device);
@@ -1779,19 +1780,19 @@ namespace TensorBase
     indices_view_values.slice(offsets, extents).device(device) = indices_old_values;
     indices_values.slice(offsets, extents).device(device) = indices_old_values;
 
-    // TODO: Why is this needed on the GPU?
-    // BUG: Indices and Data appear not to sync correctly
-#if COMPILE_WITH_CUDA
-    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
-      this->syncIndicesHAndDData(device);
-      this->syncHAndDData(device);
-      this->syncAxesHAndDData(device);
-      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
-      this->setIndicesDataStatus(false, true);
-      this->setDataStatus(false, true);
-      this->setAxesDataStatus(false, true);
-    }
-#endif
+    // TODO: Move to device-specific code
+    // NOTE: Required for calls to sort
+//#if COMPILE_WITH_CUDA
+//    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
+//      this->syncIndicesHAndDData(device);
+//      this->syncHAndDData(device);
+//      this->syncAxesHAndDData(device);
+//      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+//      this->setIndicesDataStatus(false, true);
+//      this->setDataStatus(false, true);
+//      this->setAxesDataStatus(false, true);
+//    }
+//#endif
 
     // Sort the indices
     indices_.at(axis_name)->sort("ASC", device); // NOTE: this could fail if there are 0's in the index!
@@ -1816,14 +1817,15 @@ namespace TensorBase
     Eigen::TensorMap<Eigen::Tensor<int, TDim>> shard_indices_values(shard_indices->getDataPointer().get(), shard_indices->getDimensions());
     shard_indices_values.device(device) = (select_indices_values > select_indices_values.constant(0)).select(shard_indices_values, shard_indices_values.constant(0));
 
+    // TODO: Move to device-specific code
     // Synchronize the Device and Host data for sorting and runLengthEncoding
-#if COMPILE_WITH_CUDA
-    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
-      shard_indices->syncHAndDData(device); // d to h
-      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
-      shard_indices->setDataStatus(false, true);
-    }
-#endif
+//#if COMPILE_WITH_CUDA
+//    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
+//      shard_indices->syncHAndDData(device); // d to h
+//      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+//      shard_indices->setDataStatus(false, true);
+//    }
+//#endif
 
     // Sort and then RunLengthEncode
     shard_indices->sort("ASC", device);
@@ -1840,11 +1842,14 @@ namespace TensorBase
     // Resize the unique results and remove 0's from the unique
     unique->syncHAndDData(device); // d to h
     num_runs->syncHAndDData(device); // d to h
-#if COMPILE_WITH_CUDA
-    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
-      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
-    }
-#endif
+
+    // TODO: Move to device-specific code
+//#if COMPILE_WITH_CUDA
+//    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
+//      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+//    }
+//#endif
+
     if (num_runs->getData()(0) == 1 && unique->getData()(0) == 0) {
       unique->setDimensions(Eigen::array<Eigen::Index, 1>({ 0 }));
     }
@@ -1877,14 +1882,15 @@ namespace TensorBase
     Eigen::TensorMap<Eigen::Tensor<int, TDim>> shard_indices_values(shard_indices->getDataPointer().get(), shard_indices->getDimensions());
     shard_indices_values.device(device) = (select_indices_values > select_indices_values.constant(0)).select(shard_indices_values, shard_indices_values.constant(0));
 
+    // TODO: Move to device-specific code
     // Synchronize the Device and Host data for sorting and runLengthEncoding
-#if COMPILE_WITH_CUDA
-    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
-      shard_indices->syncHAndDData(device); // d to h
-      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
-      shard_indices->setDataStatus(false, true);
-    }
-#endif
+//#if COMPILE_WITH_CUDA
+//    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
+//      shard_indices->syncHAndDData(device); // d to h
+//      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+//      shard_indices->setDataStatus(false, true);
+//    }
+//#endif
 
     // Sort and then RunLengthEncode
     shard_indices->sort("ASC", device);
