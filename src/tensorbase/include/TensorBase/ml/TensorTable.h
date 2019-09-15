@@ -26,6 +26,8 @@
 
 namespace TensorBase
 {
+  int MAX_INT = 1e9;
+
   /**
     @brief Class for managing Tensor data and associated Axes
   */
@@ -957,7 +959,7 @@ namespace TensorBase
 
     // sort the indices view
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_values(indices_view_.at(axis_name)->getDataPointer().get(), indices_view_.at(axis_name)->getDimensions());
-    auto indices_view_selected = (indices_view_values != indices_view_values.constant(0)).select(indices_view_values, indices_view_values.constant(1e9));
+    auto indices_view_selected = (indices_view_values != indices_view_values.constant(0)).select(indices_view_values, indices_view_values.constant(MAX_INT));
     indices_view_values.device(device) = indices_view_selected;
     indices_view_.at(axis_name)->sort("ASC", device);
     indices_view_.at(axis_name)->syncHAndDData(device);
@@ -969,6 +971,8 @@ namespace TensorBase
     // revert back to the origin indices view
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_copy_values(indices_view_copy->getDataPointer().get(), indices_view_copy->getDimensions());
     indices_view_values.device(device) = indices_view_copy_values;
+
+    // TODO [not_in_memory]: check that the needed data is in memory
 
     // iterate through each axis and apply the sort
     for (const auto& axis_to_name : axes_to_dims_) {
@@ -1475,6 +1479,8 @@ namespace TensorBase
     // make the selection indices from the indices view
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_select;
     makeSelectIndicesFromTensorIndicesComponent(this->indices_view_, indices_select, device);
+
+    // TODO [not_in_memory]: Check that the needed values are in memory
 
     // select the tensor data based on the selection indices
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> sparse_data;

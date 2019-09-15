@@ -323,7 +323,6 @@ namespace TensorBase
       }
     }
 
-    // TODO [not_in_memory]: Check that the needed values are in memory
     // slice out the 1D tensor
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> tensor_values(this->data_->getDataPointer().get(), this->data_->getDimensions());
     auto tensor_1d = tensor_values.slice(offsets, extents).reshape(Eigen::array<Eigen::Index, 1>({ (int)this->axes_.at(axis_name_apply)->getNLabels() }));
@@ -447,7 +446,6 @@ namespace TensorBase
     tensor_select_tmp.setData();
     tensor_select = std::make_shared<TensorDataDefaultDevice<TensorT, TDim>>(tensor_select_tmp);
 
-    // TODO [not_in_memory]: Check that the needed values are in memory
     // select the tensor
     this->data_->select(tensor_select, indices_select, device);
   }
@@ -666,7 +664,7 @@ namespace TensorBase
     Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_ids_slice_max(shard_slice_max.getDataPointer().get(), (int)shard_slice_max.getTensorSize());
     shard_ids_slice_max.device(device) = shard_ids_slice_indices.maximum(Eigen::array<Eigen::Index, 1>({ 1 }));
     Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_ids_slice_min(shard_slice_min.getDataPointer().get(), (int)shard_slice_min.getTensorSize());
-    auto shard_ids_slice_indices_min = (shard_ids_slice_indices >= shard_ids_slice_indices.constant(0)).select(shard_ids_slice_indices, shard_ids_slice_indices.constant(int(1e9))); // substitute -1 with a large number prior to calling minimum
+    auto shard_ids_slice_indices_min = (shard_ids_slice_indices >= shard_ids_slice_indices.constant(0)).select(shard_ids_slice_indices, shard_ids_slice_indices.constant(MAX_INT)); // substitute -1 with a large number prior to calling minimum
     shard_ids_slice_min.device(device) = shard_ids_slice_indices_min.minimum(Eigen::array<Eigen::Index, 1>({ 1 }));
     shard_slice_min.syncHAndDData(device); // D to H
     shard_slice_max.syncHAndDData(device);
