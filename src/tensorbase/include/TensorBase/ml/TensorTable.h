@@ -1011,7 +1011,8 @@ namespace TensorBase
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_copy_values(indices_view_copy->getDataPointer().get(), indices_view_copy->getDimensions());
     indices_view_values.device(device) = indices_view_copy_values;
 
-    // TODO [not_in_memory]: check that the needed data is in memory
+    // Check that the needed data is in memory
+    loadTensorTableBinary(dir_, device);
 
     // iterate through each axis and apply the sort
     for (const auto& axis_to_name : axes_to_dims_) {
@@ -1049,12 +1050,12 @@ namespace TensorBase
     // select the `labels` indices from the axis labels and store in the current indices view
     selectIndicesView(axis_name, dimension_index, select_labels, device);
 
+    // check that the needed data is in memory
+    loadTensorTableBinary(dir_, device);
+
     // Reduce the Tensor to `n_labels` using the `labels` indices as the selection criteria
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_view_bcast;
     broadcastSelectIndicesView(indices_view_bcast, axis_name, device);
-    // TODO [not_in_memory]: check to ensure the tensor data is loaded into memory
-    //       if not, load in only the needed data that covers all indices in `indices_view_bcast` from file
-    //       instead of calling `reduceTensorDataToSelectIndices`
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> tensor_select;
     reduceTensorDataToSelectIndices(indices_view_bcast, tensor_select, axis_name, select_labels->getData().size(), device);
 
@@ -1297,8 +1298,8 @@ namespace TensorBase
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_sort;
     makeSortIndicesFromTensorIndicesComponent(indices_view_, indices_sort, device);
 
-    // apply the sort indices to the tensor data
-    // TODO [not_in_memory]: check to make sure that the data is in memory
+    // check that the data is in memory and then apply the sort indices to the tensor data
+    loadTensorTableBinary(dir_, device);
     data_->sort(indices_sort, device);
 
     //sort each of the axis labels then reset the indices view
@@ -1365,7 +1366,8 @@ namespace TensorBase
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorTable<TensorT, DeviceT, TDim>::updateTensorDataValues(const std::shared_ptr<TensorT>& values_new, std::shared_ptr<TensorT>& values_old, DeviceT & device)
   {
-    // TODO [not_in_memory]: Check that the update values are in memory
+    // Check that the update values are in memory
+    loadTensorTableBinary(dir_, device);
 
     // copy the old values
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> values_old_values(values_old.get(), data_->getDimensions());
@@ -1422,7 +1424,8 @@ namespace TensorBase
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_select;
     makeSelectIndicesFromTensorIndicesComponent(this->indices_view_, indices_select, device);
 
-    // TODO [not_in_memory]: Check that the update values are in memory
+    // Check that the update values are in memory
+    loadTensorTableBinary(dir_, device);
 
     // create the selection
     Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_select_values(indices_select->getDataPointer().get(), indices_select->getDimensions());
@@ -1462,7 +1465,8 @@ namespace TensorBase
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_partition;
     makeSelectIndicesFromTensorIndicesComponent(this->indices_view_, indices_partition, device);
 
-    // TODO [not_in_memory]: Check that the update values are in memory
+    // Check that the update values are in memory
+    this->loadTensorTableBinary(this->dir_, device);
 
     // partition the data in place
     data_->partition(indices_partition, device);
@@ -1519,7 +1523,8 @@ namespace TensorBase
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_select;
     makeSelectIndicesFromTensorIndicesComponent(this->indices_view_, indices_select, device);
 
-    // TODO [not_in_memory]: Check that the needed values are in memory
+    // Check that the needed values are in memory
+    loadTensorTableBinary(dir_, device);
 
     // select the tensor data based on the selection indices
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> sparse_data;
@@ -1562,10 +1567,12 @@ namespace TensorBase
   template<typename LabelsT>
   inline void TensorTable<TensorT, DeviceT, TDim>::appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<TensorT>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device)
   {
+    // Check that the needed values are in memory
+    // TODO [not_in_memory]: only the shards on the "edge" of the insert will be needed
+    loadTensorTableBinary(dir_, device);
+
     // Append the new labels to the axis
     axes_.at(axis_name)->appendLabelsToAxis(labels, device);
-
-    // TODO [not_in_memory]: Check that the needed values are in memory
 
     // Copy the current data
     auto data_copy = data_->copy(device);
