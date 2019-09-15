@@ -38,6 +38,7 @@ namespace TensorBase
   public:
     TensorTable() = default;  ///< Default constructor
     TensorTable(const std::string& name) : name_(name) {};
+    TensorTable(const std::string& name, const std::string& dir) : name_(name), dir_(dir) {};
     virtual ~TensorTable() = default; ///< Default destruct
 
     template<typename TensorTOther, typename DeviceTOther, int TDimOther>
@@ -65,6 +66,9 @@ namespace TensorBase
 
     void setName(const std::string& name) { name_ = name; }; ///< name setter
     std::string getName() const { return name_; }; ///< name getter
+
+    void setDir(const std::string& dir) { dir_ = dir; }; ///< dir setter
+    std::string getDir() const { return dir_; }; ///< dir getter
 
     template<typename T>
     void addTensorAxis(const std::shared_ptr<T>& tensor_axis);  ///< Tensor axis adder
@@ -662,6 +666,7 @@ namespace TensorBase
   protected:
     int id_ = -1;
     std::string name_ = "";
+    std::string dir_ = "";
 
     Eigen::array<Eigen::Index, TDim> dimensions_ = Eigen::array<Eigen::Index, TDim>();
     std::map<std::string, std::shared_ptr<TensorAxisConcept<DeviceT>>> axes_; ///< primary axis is dim=0

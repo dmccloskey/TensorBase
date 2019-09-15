@@ -29,6 +29,13 @@ void test_constructorNameAndAxesGpu()
 
   assert(tensorTable.getId() == -1);
   assert(tensorTable.getName() == "1");
+  assert(tensorTable.getDir() == "");
+
+  TensorTableGpu<float, 3> tensorTable2("1", "dir");
+
+  assert(tensorTable2.getId() == -1);
+  assert(tensorTable2.getName() == "1");
+  assert(tensorTable2.getDir() == "dir");
 }
 
 void test_gettersAndSettersGpu()
@@ -38,6 +45,7 @@ void test_gettersAndSettersGpu()
   assert(tensorTable.getId() == -1);
   assert(tensorTable.getName() == "");
   assert(tensorTable.getAxes().size() == 0);
+  assert(tensorTable.getDir() == "");
 
   // Check getters/setters
   tensorTable.setId(1);
@@ -45,10 +53,12 @@ void test_gettersAndSettersGpu()
   std::map<std::string, int> shard_span = {
     {"1", 2}, {"2", 2}, {"3", 3} };
   tensorTable.setShardSpans(shard_span);
+  tensorTable.setDir("dir");
 
   assert(tensorTable.getId() == 1);
   assert(tensorTable.getName() == "1");
   assert(tensorTable.getShardSpans() == shard_span);
+  assert(tensorTable.getDir() == "dir");
 
   // SetAxes associated getters/setters
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);

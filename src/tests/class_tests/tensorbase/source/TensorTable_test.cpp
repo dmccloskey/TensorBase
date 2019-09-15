@@ -31,6 +31,13 @@ BOOST_AUTO_TEST_CASE(constructorNameAndAxesDefaultDevice)
 
   BOOST_CHECK_EQUAL(tensorTable.getId(), -1);
   BOOST_CHECK_EQUAL(tensorTable.getName(), "1");
+  BOOST_CHECK_EQUAL(tensorTable.getDir(), "");
+
+  TensorTableDefaultDevice<float, 3> tensorTable2("1", "dir");
+
+  BOOST_CHECK_EQUAL(tensorTable2.getId(), -1);
+  BOOST_CHECK_EQUAL(tensorTable2.getName(), "1");
+  BOOST_CHECK_EQUAL(tensorTable2.getDir(), "dir");
 }
 
 BOOST_AUTO_TEST_CASE(comparatorDefaultDevice)
@@ -81,6 +88,7 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable.getId(), -1);
   BOOST_CHECK_EQUAL(tensorTable.getName(), "");
   BOOST_CHECK_EQUAL(tensorTable.getAxes().size(), 0);
+  BOOST_CHECK_EQUAL(tensorTable.getDir(), "");
 
   // Check getters/setters
   tensorTable.setId(1);
@@ -88,10 +96,12 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   std::map<std::string, int> shard_span = {
     {"1", 2}, {"2", 2}, {"3", 3} };
   tensorTable.setShardSpans(shard_span);
+  tensorTable.setDir("dir");
 
   BOOST_CHECK_EQUAL(tensorTable.getId(), 1);
   BOOST_CHECK_EQUAL(tensorTable.getName(), "1");
   BOOST_CHECK(tensorTable.getShardSpans() == shard_span);
+  BOOST_CHECK_EQUAL(tensorTable.getDir(), "dir");
 
   // SetAxes associated getters/setters
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);

@@ -26,7 +26,8 @@ namespace TensorBase
   {
   public:
     TensorTableGpu() = default;
-    TensorTableGpu(const std::string& name) { this->setName(name); };
+    TensorTableGpu(const std::string& name) : TensorTable(name) {};
+    TensorTableGpu(const std::string& name, const std::string& dir) : TensorTable(name, dir) {};
     ~TensorTableGpu() = default;
     // Initialization methods
     void setAxes() override;

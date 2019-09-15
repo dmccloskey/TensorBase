@@ -18,7 +18,8 @@ namespace TensorBase
   {
   public:
     TensorTableDefaultDevice() = default;
-    TensorTableDefaultDevice(const std::string& name) { this->setName(name); };
+    TensorTableDefaultDevice(const std::string& name): TensorTable(name){};
+    TensorTableDefaultDevice(const std::string& name, const std::string& dir) : TensorTable(name, dir) {};
     ~TensorTableDefaultDevice() = default;
     // Initialization methods
     void setAxes() override;
