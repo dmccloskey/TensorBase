@@ -45,11 +45,11 @@ namespace TensorBase
       bool axes_equal = std::equal(axes_.begin(), axes_.end(), other.axes_.begin(), compare_maps);
       bool indices_equal = std::equal(indices_.begin(), indices_.end(), other.indices_.begin(), compare_maps);
       bool indices_view_equal = std::equal(indices_view_.begin(), indices_view_.end(), other.indices_view_.begin(), compare_maps);
-      bool is_shardable_equal = std::equal(is_shardable_.begin(), is_shardable_.end(), other.is_shardable_.begin(), compare_maps);
-      bool in_memory_equal = std::equal(in_memory_.begin(), in_memory_.end(), other.in_memory_.begin(), compare_maps);
+      bool shard_id_equal = std::equal(shard_id_.begin(), shard_id_.end(), other.shard_id_.begin(), compare_maps);
+      bool not_in_memory_equal = std::equal(not_in_memory_.begin(), not_in_memory_.end(), other.not_in_memory_.begin(), compare_maps);
       bool is_modified_equal = std::equal(is_modified_.begin(), is_modified_.end(), other.is_modified_.begin(), compare_maps);
-      return meta_equal && axes_equal && indices_equal && indices_view_equal && is_shardable_equal
-        && in_memory_equal && is_modified_equal;
+      return meta_equal && axes_equal && indices_equal && indices_view_equal && shard_id_equal
+        && not_in_memory_equal && is_modified_equal;
     }
 
     inline bool operator!=(const TensorTable& other) const
@@ -69,8 +69,8 @@ namespace TensorBase
     /**
       @brief Tensor Axes setter
 
-      The method sets the tensor axes and initializes the indices, indices_view, is_modified, in_memory, and
-      is_shardable attributes after all axes have been added
+      The method sets the tensor axes and initializes the indices, indices_view, is_modified, not_in_memory,
+      shard_id, and shard_indices attributes after all axes have been added
     */
     virtual void setAxes() = 0;
 
@@ -84,21 +84,32 @@ namespace TensorBase
 
     // TODO: combine into a single member called `indices` of Tensor dimensions 5 x indices_length
     //       in order to improve performance of all TensorInsert and TensorDelete methods
+    // UPDATE: attempted to do so, but lost performance in having to extract out indices_view and other 
+    //       as seperate TensorData objects for sort/select operations (see feat/TensorTableFile branch head)
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIndices() { return indices_; }; ///< indices getter
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIndicesView() { return indices_view_; }; ///< indices_view getter
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIsModified() { return is_modified_; }; ///< is_modified getter
-    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getInMemory() { return in_memory_; }; ///< in_memory getter
-    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIsShardable() { return is_shardable_; }; ///< is_shardable getter
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getNotInMemory() { return not_in_memory_; }; ///< not_in_memory getter
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getShardId() { return shard_id_; }; ///< shard_id getter
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getShardIndices() { return shard_indices_; }; ///< shard_indicies getter
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getIndices() const { return indices_; }; ///< indices getter
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getIndicesView() const { return indices_view_; }; ///< indices_view getter
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getIsModified() const { return is_modified_; }; ///< is_modified getter
-    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getInMemory() const { return in_memory_; }; ///< in_memory getter
-    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getIsShardable() const { return is_shardable_; }; ///< is_shardable getter
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getNotInMemory() const { return not_in_memory_; }; ///< not_in_memory getter
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getShardId() const { return shard_id_; }; ///< shard_id getter
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getShardIndices() const { return shard_indices_; }; ///< shard_indicies getter
 
-    Eigen::array<Eigen::Index, TDim>& getDimensions() { return dimensions_; }  ///< dimensions getter
-    int getDimFromAxisName(const std::string& axis_name) { return axes_to_dims_.at(axis_name); }
-    std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& getData() { return data_; }; ///< data getter
+    Eigen::array<Eigen::Index, TDim> getDimensions() const { return dimensions_; }  ///< dimensions getter
+    int getDimFromAxisName(const std::string& axis_name) const { return axes_to_dims_.at(axis_name); }
     void clear();  ///< clears the axes and all associated data
+
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> getData() { return data_->getData(); } ///< data_->getData() wrapper
+    Eigen::array<Eigen::Index, TDim> getDataDimensions() const { return data_->getDimensions(); } ///< data_->getDimensions() wrapper
+    size_t getDataTensorBytes() const { return data_->getTensorBytes(); } ///< data_->getTensorBytes() wrapper
+    size_t getDataTensorSize() const { return data_->getTensorSize(); } ///< data_->getTensorSize() wrapper
+    std::shared_ptr<TensorT> getDataPointer() { return data_->getDataPointer(); } ///< data_->getDataPointer() wrapper
+
+    void setData(const Eigen::Tensor<TensorT, TDim>& data); ///< data setter
 
     bool syncIndicesHAndDData(DeviceT& device); ///< Sync the host and device indices data
     void setIndicesDataStatus(const bool& h_data_updated, const bool& d_data_updated);///< Set the status of the host and device indices data
@@ -112,13 +123,17 @@ namespace TensorBase
     void setIsModifiedDataStatus(const bool& h_data_updated, const bool& d_data_updated);///< Set the status of the host and device indices view data
     std::map<std::string, std::pair<bool, bool>> getIsModifiedDataStatus(); ///< Get the status of the host and device indices view data
 
-    bool syncInMemoryHAndDData(DeviceT& device); ///< Sync the host and device indices view data
-    void setInMemoryDataStatus(const bool& h_data_updated, const bool& d_data_updated);///< Set the status of the host and device indices view data
-    std::map<std::string, std::pair<bool, bool>> getInMemoryDataStatus(); ///< Get the status of the host and device indices view data
+    bool syncNotInMemoryHAndDData(DeviceT& device); ///< Sync the host and device indices view data
+    void setNotInMemoryDataStatus(const bool& h_data_updated, const bool& d_data_updated);///< Set the status of the host and device indices view data
+    std::map<std::string, std::pair<bool, bool>> getNotInMemoryDataStatus(); ///< Get the status of the host and device indices view data
 
-    bool syncIsShardableHAndDData(DeviceT& device); ///< Sync the host and device indices view data
-    void setIsShardableDataStatus(const bool& h_data_updated, const bool& d_data_updated);///< Set the status of the host and device indices view data
-    std::map<std::string, std::pair<bool, bool>> getIsShardableDataStatus(); ///< Get the status of the host and device indices view data
+    bool syncShardIdHAndDData(DeviceT& device); ///< Sync the host and device indices view data
+    void setShardIdDataStatus(const bool& h_data_updated, const bool& d_data_updated);///< Set the status of the host and device indices view data
+    std::map<std::string, std::pair<bool, bool>> getShardIdDataStatus(); ///< Get the status of the host and device indices view data
+
+    bool syncShardIndicesHAndDData(DeviceT& device); ///< Sync the host and device indices view data
+    void setShardIndicesDataStatus(const bool& h_data_updated, const bool& d_data_updated);///< Set the status of the host and device indices view data
+    std::map<std::string, std::pair<bool, bool>> getShardIndicesDataStatus(); ///< Get the status of the host and device indices view data
 
     bool syncAxesHAndDData(DeviceT& device); ///< Sync the host and device axes data
     void setAxesDataStatus(const bool& h_data_updated, const bool& d_data_updated);///< Set the status of the host and device axes data
@@ -127,6 +142,16 @@ namespace TensorBase
     bool syncHAndDData(DeviceT& device) { return data_->syncHAndDData(device); };  ///< Sync the host and device tensor data
     void setDataStatus(const bool& h_data_updated, const bool& d_data_updated) { data_->setDataStatus(h_data_updated, d_data_updated); } ///< Set the status of the host and device tensor data
     std::pair<bool, bool> getDataStatus() { return data_->getDataStatus(); };   ///< Get the status of the host and device tensor data
+
+    void setShardSpans(const std::map<std::string, int>& shard_spans) { shard_spans_ = shard_spans; }; ///< shard_span setter
+    std::map<std::string, int> getShardSpans() const { return shard_spans_; }; ///< shard_span getter
+
+    /*
+    @brief Reset the shard indices based on the current `shard_span`
+
+    @param[in] device
+    */
+    void reShardIndices(DeviceT& device);
 
     /*
     @brief Select Tensor Axis that will be included in the view
@@ -272,10 +297,14 @@ namespace TensorBase
       2. broadcasting all indices to the size of the Tensor
       3. multiplying all indices together
 
+    Limitations: The algorithm works when selecting for true values.
+      e.g., the need to switch `not_in_memory` to `not_in_memory` when selecting for not in memory values
+
+    @param[in] indices_component A TensorTable component e.g., indices_, indices_view_, shard_id_, or shard_index_
     @param[out] indices_select Pointer to the indices Tensor ([in] empty pointer)
     @param[in] device
     */
-    virtual void makeSelectIndicesFromIndicesView(std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, DeviceT& device) = 0;
+    virtual void makeSelectIndicesFromTensorIndicesComponent(const std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& indices_component, std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_select, DeviceT& device) const = 0;
 
     /*
     @brief Select the Tensor data and return the selected/reduced data
@@ -310,10 +339,11 @@ namespace TensorBase
         b. broadcast to the size of the tensor
         c. add all adjusted axis tensors together
 
+    @param[in] indices_component A TensorTable component e.g., indices_, indices_view_, shard_id_, or shard_index_
     @param[out] indices_sort pointer to the indices sort Tensor ([in] empty pointer)
     @param[in] device
     */
-    virtual void makeSortIndicesViewFromIndicesView(std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_sort, DeviceT& device) = 0;
+    virtual void makeSortIndicesFromTensorIndicesComponent(const std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& indices_component, std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_sort, DeviceT& device) const = 0;
 
     /*
     @brief Update the tensor data with the given values and optionally return the original values
@@ -391,16 +421,6 @@ namespace TensorBase
     @param[in] device
     */
     virtual void makeSparseTensorTable(const Eigen::Tensor<std::string, 1>& sparse_dimensions, const std::shared_ptr<TensorData<int, DeviceT, 2>>& sparse_labels, const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& sparse_data, std::shared_ptr<TensorTable<TensorT, DeviceT, 2>>& sparse_table, DeviceT& device) = 0;
-
-    /*
-    @brief Update the TensorTable data according to the values in the "Sparse" Tensor Table representation
-
-    @param[in] axes The axis for the tensor table of nDimensions (Dim 0) = TDim and nLabels (Dim 1) = # of selected items where
-      Dimensions are integers from 0 to TDim and the labels are the indices of the selected data
-    @param[in] data The 1D TensorData of length = # of selected items
-    @param[in] device
-    */
-    void updateTensorTableFromSparseTensorTable(const std::shared_ptr<TensorTable<TensorT, DeviceT, 1>>& sparse_table, DeviceT& device);
 
     /*
     @brief Append new labels to the specified axis and append new data to the Tensor Data at the specified axis
@@ -535,7 +555,65 @@ namespace TensorBase
     void insertIntoAxisConcept(const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<T>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device);
     template<typename LabelsT>
     void insertIntoAxis(const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<TensorT>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device);
-    
+
+    /**
+    @brief Determine the Tensor data shards that have been modified from the
+      `is_modified` and `shard_id` members, and make an ordered 1D Tensor with
+      unique TensorData shard ids
+
+    @param[out] modified_shard_id
+    @param[in] device
+    */
+    void makeModifiedShardIDTensor(std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, DeviceT& device) const;
+
+    void makeShardIDTensor(std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, std::shared_ptr<TensorData<int, DeviceT, 1>>& unique, std::shared_ptr<TensorData<int, DeviceT, 1>>& num_runs, DeviceT & device) const;
+
+    /*
+    @brief Convert the 1D shard ID into a TDim indices tensor that describes the shart IDs of each Tensor element
+
+    The conversion is done by the following algorithm:
+      1. set Dim = 0 as the reference axis
+      2. compute Tensor shard IDs i, j, k, ... as (index i - 1) + (index j - 1)*SUM(axis i - 1) + (index k - 1)*SUM(axis i - 1)*SUM(axis j - 1) ...
+        where the - 1 is due to the indices starting at 1
+        a. compute an adjusted axis index as (Index - 1) if Dim = 0 or as (Index - 1)*Prod[(Dim - 1).size() to Dim = 1]
+        b. broadcast to the size of the tensor
+        c. add all adjusted axis tensors together
+
+    @param[out] indices_sort pointer to the indices sort Tensor ([in] empty pointer)
+    @param[in] device
+    */
+    virtual void makeShardIndicesFromShardIDs(std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_shard, DeviceT& device) const = 0;
+
+    /*
+    @brief Apply run length encode algorithm to a TensorData object
+
+    @param[in] data Pointer to the data to apply the algorithm to
+    @param[out] unique pointer to the unique data ([in] empty pointer)
+    @param[out] count pointer to the count data ([in] empty pointer)
+    @param[out] n_runs pointer to the number of runs data ([in] empty pointer)
+    @param[in] device
+    */
+    virtual void runLengthEncodeIndex(const std::shared_ptr<TensorData<int, DeviceT, TDim>>& data, std::shared_ptr<TensorData<int, DeviceT, 1>>& unique, std::shared_ptr<TensorData<int, DeviceT, 1>>& count, std::shared_ptr<TensorData<int, DeviceT, 1>>& n_runs, DeviceT & device) const = 0;
+
+    /**
+    @brief Determine the slice indices to extract out the TensorData shards
+
+    @param[in] modified_shard_id An ordered 1D tensor with unique TensorData shard ids
+    @param[out] slice_indices A map of shard_id to slice indices
+    @param[in] device
+    */
+    virtual void makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>>& slice_indices, DeviceT& device) const = 0;
+
+    /**
+    @brief Determine the Tensor data shards that are not in memory from the
+      `not_in_memory` and `shard_id` members, and make an ordered 1D Tensor with
+      unique TensorData shard ids
+
+    @param[out] modified_shard_id
+    @param[in] device
+    */
+    void makeNotInMemoryShardIDTensor(std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, DeviceT& device) const;
+
   protected:
     int id_ = -1;
     std::string name_ = "";
@@ -543,23 +621,24 @@ namespace TensorBase
     Eigen::array<Eigen::Index, TDim> dimensions_ = Eigen::array<Eigen::Index, TDim>();
     std::map<std::string, std::shared_ptr<TensorAxisConcept<DeviceT>>> axes_; ///< primary axis is dim=0
 
-    // TODO: combine into a single member called `indices` of Tensor dimensions 5 x indices_length
-    //       in order to improve performance of all TensorInsert and TensorDelete methods
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> indices_; ///< starting at 1
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> indices_view_; ///< sorted and/or selected indices
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> is_modified_;
-    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> in_memory_;
-    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> is_shardable_;
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> not_in_memory_;
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> shard_id_;
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> shard_indices_;
 
     std::map<std::string, int> axes_to_dims_;
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> data_; ///< The actual tensor data
+
+    std::map<std::string, int> shard_spans_; ///< the shard span in each dimension
     
   private:
   	friend class cereal::access;
   	template<class Archive>
   	void serialize(Archive& archive) {
-  		archive(id_, name_, dimensions_, axes_, indices_, indices_view_, is_modified_, in_memory_, is_shardable_,
-        axes_to_dims_, data_);
+  		archive(id_, name_, dimensions_, axes_, indices_, indices_view_, is_modified_, not_in_memory_, shard_id_, shard_indices_,
+        axes_to_dims_, data_, shard_spans_);
   	}
   };
 
@@ -573,13 +652,30 @@ namespace TensorBase
   template<typename TensorT, typename DeviceT, int TDim>
   void TensorTable<TensorT, DeviceT, TDim>::clear() {
     axes_.clear();
-    dimensions_ = Eigen::array<Eigen::Index, TDim>();
+    for (auto& axis_to_dim: axes_to_dims_) {
+      dimensions_.at(axis_to_dim.second) = 0;
+    }
+    //dimensions_ = Eigen::array<Eigen::Index, TDim>();
     indices_.clear();
     indices_view_.clear();
     is_modified_.clear();
-    in_memory_.clear();
-    is_shardable_.clear();
+    not_in_memory_.clear();
+    shard_id_.clear();
+    shard_indices_.clear();
     data_.reset();
+    shard_spans_.clear();
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::setData(const Eigen::Tensor<TensorT, TDim>& data)
+  {
+    data_->setData(data);
+    for (auto& in_memory_map : not_in_memory_) {
+      in_memory_map.second->getData() = in_memory_map.second->getData().constant(0); // host
+    }
+    for (auto& is_modified_map : is_modified_) {
+      is_modified_map.second->getData() = is_modified_map.second->getData().constant(1); // host
+    }
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
@@ -670,10 +766,10 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
-  inline bool TensorTable<TensorT, DeviceT, TDim>::syncInMemoryHAndDData(DeviceT & device)
+  inline bool TensorTable<TensorT, DeviceT, TDim>::syncNotInMemoryHAndDData(DeviceT & device)
   {
     bool synced = true;
-    for (auto& index_map : in_memory_) {
+    for (auto& index_map : not_in_memory_) {
       bool synced_tmp = index_map.second->syncHAndDData(device);
       if (!synced_tmp) synced = false;
     }
@@ -681,28 +777,28 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
-  inline void TensorTable<TensorT, DeviceT, TDim>::setInMemoryDataStatus(const bool & h_data_updated, const bool & d_data_updated)
+  inline void TensorTable<TensorT, DeviceT, TDim>::setNotInMemoryDataStatus(const bool & h_data_updated, const bool & d_data_updated)
   {
-    for (auto& index_map : in_memory_) {
+    for (auto& index_map : not_in_memory_) {
       index_map.second->setDataStatus(h_data_updated, d_data_updated);
     }
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
-  inline std::map<std::string, std::pair<bool, bool>> TensorTable<TensorT, DeviceT, TDim>::getInMemoryDataStatus()
+  inline std::map<std::string, std::pair<bool, bool>> TensorTable<TensorT, DeviceT, TDim>::getNotInMemoryDataStatus()
   {
     std::map<std::string, std::pair<bool, bool>> statuses;
-    for (auto& index_map : in_memory_) {
+    for (auto& index_map : not_in_memory_) {
       statuses.emplace(index_map.first, index_map.second->getDataStatus());
     }
     return statuses;
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
-  inline bool TensorTable<TensorT, DeviceT, TDim>::syncIsShardableHAndDData(DeviceT & device)
+  inline bool TensorTable<TensorT, DeviceT, TDim>::syncShardIdHAndDData(DeviceT & device)
   {
     bool synced = true;
-    for (auto& index_map : is_shardable_) {
+    for (auto& index_map : shard_id_) {
       bool synced_tmp = index_map.second->syncHAndDData(device);
       if (!synced_tmp) synced = false;
     }
@@ -710,18 +806,48 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
-  inline void TensorTable<TensorT, DeviceT, TDim>::setIsShardableDataStatus(const bool & h_data_updated, const bool & d_data_updated)
+  inline void TensorTable<TensorT, DeviceT, TDim>::setShardIdDataStatus(const bool & h_data_updated, const bool & d_data_updated)
   {
-    for (auto& index_map : is_shardable_) {
+    for (auto& index_map : shard_id_) {
       index_map.second->setDataStatus(h_data_updated, d_data_updated);
     }
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
-  inline std::map<std::string, std::pair<bool, bool>> TensorTable<TensorT, DeviceT, TDim>::getIsShardableDataStatus()
+  inline std::map<std::string, std::pair<bool, bool>> TensorTable<TensorT, DeviceT, TDim>::getShardIdDataStatus()
   {
     std::map<std::string, std::pair<bool, bool>> statuses;
-    for (auto& index_map : is_shardable_) {
+    for (auto& index_map : shard_id_) {
+      statuses.emplace(index_map.first, index_map.second->getDataStatus());
+    }
+    return statuses;
+  }
+
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline bool TensorTable<TensorT, DeviceT, TDim>::syncShardIndicesHAndDData(DeviceT & device)
+  {
+    bool synced = true;
+    for (auto& index_map : shard_indices_) {
+      bool synced_tmp = index_map.second->syncHAndDData(device);
+      if (!synced_tmp) synced = false;
+    }
+    return synced;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::setShardIndicesDataStatus(const bool & h_data_updated, const bool & d_data_updated)
+  {
+    for (auto& index_map : shard_indices_) {
+      index_map.second->setDataStatus(h_data_updated, d_data_updated);
+    }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline std::map<std::string, std::pair<bool, bool>> TensorTable<TensorT, DeviceT, TDim>::getShardIndicesDataStatus()
+  {
+    std::map<std::string, std::pair<bool, bool>> statuses;
+    for (auto& index_map : shard_indices_) {
       statuses.emplace(index_map.first, index_map.second->getDataStatus());
     }
     return statuses;
@@ -757,26 +883,52 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::reShardIndices(DeviceT& device)
+  {
+    for (const auto& shard_span_map : shard_spans_) {
+      // Determine the max shard id value
+      int shard_id = 0;
+      int max_shard_id = ceil(float(axes_.at(shard_span_map.first)->getNLabels()) / float(shard_span_map.second));
+      for (; shard_id < max_shard_id; ++shard_id) {
+        // Determine the offsets and span for slicing
+        Eigen::array<Eigen::Index, 1> offset, span;
+        offset.at(0) = shard_id * shard_span_map.second;
+        int remaining_length = axes_.at(shard_span_map.first)->getNLabels() - shard_id * shard_span_map.second;
+        span.at(0) = (shard_span_map.second <= remaining_length) ? shard_span_map.second: remaining_length;
+
+        // Update the shard id
+        Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_id_values(shard_id_.at(shard_span_map.first)->getDataPointer().get(), (int)shard_id_.at(shard_span_map.first)->getTensorSize());
+        shard_id_values.slice(offset, span).device(device) = shard_id_values.slice(offset, span).constant(shard_id + 1);
+
+        // Update the shard indices using the indices as a template
+        Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_indices_values(shard_indices_.at(shard_span_map.first)->getDataPointer().get(), (int)shard_indices_.at(shard_span_map.first)->getTensorSize());
+        Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_values(indices_.at(shard_span_map.first)->getDataPointer().get(), (int)indices_.at(shard_span_map.first)->getTensorSize());
+        shard_indices_values.slice(offset, span).device(device) = indices_values.slice(Eigen::array<Eigen::Index, 1>({0}), span);
+      }
+    }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
   template<typename LabelsT>
   inline void TensorTable<TensorT, DeviceT, TDim>::selectIndicesView(const std::string & axis_name, const int& dimension_index, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& select_labels, DeviceT & device)
   {
     // reshape to match the axis labels shape and broadcast the length of the labels
     Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> labels_names_selected_reshape(select_labels->getDataPointer().get(), 1, (int)select_labels->getData().size());
  
-    auto labels_names_selected_bcast = labels_names_selected_reshape.broadcast(Eigen::array<int, 2>({ (int)axes_.at(axis_name)->getNLabels(), 1 }));
+    auto labels_names_selected_bcast = labels_names_selected_reshape.broadcast(Eigen::array<Eigen::Index, 2>({ (int)axes_.at(axis_name)->getNLabels(), 1 }));
     // broadcast the axis labels the size of the labels queried
     std::shared_ptr<LabelsT> labels_data;
     axes_.at(axis_name)->getLabelsDataPointer(labels_data);
     Eigen::TensorMap<Eigen::Tensor<LabelsT, 3>> labels_reshape(labels_data.get(), (int)axes_.at(axis_name)->getNDimensions(), (int)axes_.at(axis_name)->getNLabels(), 1);
-    auto labels_bcast = (labels_reshape.chip(dimension_index, 0)).broadcast(Eigen::array<int, 2>({ 1, (int)select_labels->getData().size() }));
+    auto labels_bcast = (labels_reshape.chip(dimension_index, 0)).broadcast(Eigen::array<Eigen::Index, 2>({ 1, (int)select_labels->getData().size() }));
 
     // broadcast the tensor indices the size of the labels queried
     Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_reshape(indices_.at(axis_name)->getDataPointer().get(), (int)axes_.at(axis_name)->getNLabels(), 1);
-    auto indices_bcast = indices_reshape.broadcast(Eigen::array<int, 2>({ 1, (int)select_labels->getData().size() }));
+    auto indices_bcast = indices_reshape.broadcast(Eigen::array<Eigen::Index, 2>({ 1, (int)select_labels->getData().size() }));
 
     // select the indices and reduce back to a 1D Tensor
     auto selected = (labels_bcast == labels_names_selected_bcast).select(indices_bcast, indices_bcast.constant(0));
-    auto selected_sum = selected.sum(Eigen::array<int, 1>({ 1 })).clip(0, 1);
+    auto selected_sum = selected.sum(Eigen::array<Eigen::Index, 1>({ 1 })).clip(0, 1);
 
     // update the indices view based on the selection
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_name)->getDataPointer().get(), (int)axes_.at(axis_name)->getNLabels());
@@ -848,6 +1000,9 @@ namespace TensorBase
     // Reduce the Tensor to `n_labels` using the `labels` indices as the selection criteria
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_view_bcast;
     broadcastSelectIndicesView(indices_view_bcast, axis_name, device);
+    // TODO [not_in_memory]: check to ensure the tensor data is loaded into memory
+    //       if not, load in only the needed data that covers all indices in `indices_view_bcast` from file
+    //       instead of calling `reduceTensorDataToSelectIndices`
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> tensor_select;
     reduceTensorDataToSelectIndices(indices_view_bcast, tensor_select, axis_name, select_labels->getData().size(), device);
 
@@ -891,7 +1046,7 @@ namespace TensorBase
     if (within_continuator == logicalContinuators::logicalContinuator::OR) {
 
       // build the continuator reduction indices for the OR within continuator
-      Eigen::array<int, 1> reduction_dims;
+      Eigen::array<Eigen::Index, 1> reduction_dims;
       int index = 0;
       for (const auto& axis_to_name_red : this->axes_to_dims_) {
         if (axis_to_name_red.first != axis_name) {
@@ -938,7 +1093,7 @@ namespace TensorBase
     if (within_continuator == logicalContinuators::logicalContinuator::OR) {
 
       // build the continuator reduction indices for the OR within continuator
-      Eigen::array<int, 1> reduction_dims;
+      Eigen::array<Eigen::Index, 1> reduction_dims;
       int index = 0;
       for (const auto& axis_to_name_red : this->axes_to_dims_) {
         if (axis_to_name_red.first != axis_name) {
@@ -986,7 +1141,7 @@ namespace TensorBase
     if (within_continuator == logicalContinuators::logicalContinuator::OR) {
 
       // build the continuator reduction indices for the OR within continuator
-      Eigen::array<int, TDim - 1> reduction_dims;
+      Eigen::array<Eigen::Index, TDim - 1> reduction_dims;
       int index = 0;
       for (const auto& axis_to_name_red : this->axes_to_dims_) {
         if (axis_to_name_red.first != axis_name) {
@@ -1013,7 +1168,7 @@ namespace TensorBase
 
       // apply a normalized sum (OR) continuator across all other dimensions
       if (TDim > 2) {
-        Eigen::array<int, TDim - 2> reduction_dims_sum;
+        Eigen::array<Eigen::Index, TDim - 2> reduction_dims_sum;
         int index = 0;
         for (const auto& axis_to_name_red : this->axes_to_dims_) {
           if (axis_to_name_red.first != axis_name && axis_to_name_red.first != axis_name_select) {
@@ -1067,7 +1222,7 @@ namespace TensorBase
   {
     // make the selection indices from the indices view
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_select;
-    makeSelectIndicesFromIndicesView(indices_select, device);
+    makeSelectIndicesFromTensorIndicesComponent(this->indices_view_, indices_select, device);
 
     // select the tensor data based on the selection indices and update
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> tensor_select;
@@ -1088,9 +1243,10 @@ namespace TensorBase
   {
     // make the sort index tensor from the indices view
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_sort;
-    makeSortIndicesViewFromIndicesView(indices_sort, device);
+    makeSortIndicesFromTensorIndicesComponent(indices_view_, indices_sort, device);
 
     // apply the sort indices to the tensor data
+    // TODO [not_in_memory]: check to make sure that the data is in memory
     data_->sort(indices_sort, device);
 
     //sort each of the axis labels then reset the indices view
@@ -1141,11 +1297,24 @@ namespace TensorBase
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> values_new_values(values_new->getDataPointer().get(), values_new->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(data_->getDataPointer().get(), data_->getDimensions());
     data_values.device(device) = values_new_values;
+
+    // update the not_in_memory and is_modified attributes
+    for (auto& in_memory_map : not_in_memory_) {
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> not_in_memory(in_memory_map.second->getDataPointer().get(), (int)in_memory_map.second->getTensorSize());
+      not_in_memory.device(device) = not_in_memory.constant(0); // device
+    }
+    for (auto& is_modified_map : is_modified_) {
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> is_modified(is_modified_map.second->getDataPointer().get(), (int)is_modified_map.second->getTensorSize());
+      is_modified.device(device) = is_modified.constant(1); // device
+    }
+
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorTable<TensorT, DeviceT, TDim>::updateTensorDataValues(const std::shared_ptr<TensorT>& values_new, std::shared_ptr<TensorT>& values_old, DeviceT & device)
   {
+    // TODO [not_in_memory]: Check that the update values are in memory
+
     // copy the old values
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> values_old_values(values_old.get(), data_->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(data_->getDataPointer().get(), data_->getDimensions());
@@ -1161,6 +1330,16 @@ namespace TensorBase
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> values_new_values(values_new.get(), data_->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(data_->getDataPointer().get(), data_->getDimensions());
     data_values.device(device) = values_new_values;
+
+    // update the not_in_memory and is_modified attributes
+    for (auto& in_memory_map : not_in_memory_) {
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> not_in_memory(in_memory_map.second->getDataPointer().get(), (int)in_memory_map.second->getTensorSize());
+      not_in_memory.device(device) = not_in_memory.constant(0); // device
+    }
+    for (auto& is_modified_map : is_modified_) {
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> is_modified(is_modified_map.second->getDataPointer().get(), (int)is_modified_map.second->getTensorSize());
+      is_modified.device(device) = is_modified.constant(1); // device
+    }
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
@@ -1189,7 +1368,9 @@ namespace TensorBase
 
     // make the selection indices from the indices view
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_select;
-    makeSelectIndicesFromIndicesView(indices_select, device);
+    makeSelectIndicesFromTensorIndicesComponent(this->indices_view_, indices_select, device);
+
+    // TODO [not_in_memory]: Check that the update values are in memory
 
     // create the selection
     Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_select_values(indices_select->getDataPointer().get(), indices_select->getDimensions());
@@ -1199,6 +1380,17 @@ namespace TensorBase
       
     // assign the new values
     data_values.device(device) = selection;
+
+    // update the not_in_memory and is_modified attributes
+    for (const auto& axis_to_dim : axes_to_dims_) {
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_to_dim.first)->getDataPointer().get(), (int)indices_view_.at(axis_to_dim.first)->getTensorSize());
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> not_in_memory(not_in_memory_.at(axis_to_dim.first)->getDataPointer().get(), (int)not_in_memory_.at(axis_to_dim.first)->getTensorSize());
+      auto in_memory_selection = (indices_view > indices_view.constant(0)).select(not_in_memory.constant(0), not_in_memory);
+      not_in_memory.device(device) = in_memory_selection;
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> is_modified(is_modified_.at(axis_to_dim.first)->getDataPointer().get(), (int)is_modified_.at(axis_to_dim.first)->getTensorSize());
+      auto is_modified_selection = (indices_view > indices_view.constant(0)).select(is_modified.constant(1), is_modified);
+      is_modified.device(device) = is_modified_selection;
+    }
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
@@ -1216,23 +1408,50 @@ namespace TensorBase
   {
     // make the partition index tensor from the indices view
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_partition;
-    makeSelectIndicesFromIndicesView(indices_partition, device);
+    makeSelectIndicesFromTensorIndicesComponent(this->indices_view_, indices_partition, device);
+
+    // TODO [not_in_memory]: Check that the update values are in memory
 
     // partition the data in place
     data_->partition(indices_partition, device);
 
     // update the sorted tensor data "slice" with the old values
     Eigen::array<Eigen::Index, 1> offsets = {0};
-    Eigen::array<Eigen::Index, 1> extents = { values_old->getData()->getTensorSize() };
-    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> values_old_values(values_old->getData()->getDataPointer().get(), values_old->getData()->getTensorSize());
-    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> data_values(data_->getDataPointer().get(), data_->getTensorSize());
+    Eigen::array<Eigen::Index, 1> extents = { (int)values_old->getDataTensorSize() };
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> values_old_values(values_old->getDataPointer().get(), (int)values_old->getDataTensorSize());
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> data_values(data_->getDataPointer().get(), (int)data_->getTensorSize());
     data_values.slice(offsets, extents).device(device) = values_old_values;
+
+    // update the not_in_memory and is_modified attributes
+    for (const auto& axis_to_dim : axes_to_dims_) {
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_to_dim.first)->getDataPointer().get(), (int)indices_view_.at(axis_to_dim.first)->getTensorSize());
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> not_in_memory(not_in_memory_.at(axis_to_dim.first)->getDataPointer().get(), (int)not_in_memory_.at(axis_to_dim.first)->getTensorSize());
+      auto in_memory_selection = (indices_view > indices_view.constant(0)).select(not_in_memory.constant(0), not_in_memory);
+      not_in_memory.device(device) = in_memory_selection;
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> is_modified(is_modified_.at(axis_to_dim.first)->getDataPointer().get(), (int)is_modified_.at(axis_to_dim.first)->getTensorSize());
+      auto is_modified_selection = (indices_view > indices_view.constant(0)).select(is_modified.constant(1), is_modified);
+      is_modified.device(device) = is_modified_selection;
+    }
 
     // make the sort index tensor
     for (const auto& axis_to_index: axes_to_dims_)
       resetIndicesView(axis_to_index.first, device);
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_sort;
-    makeSortIndicesViewFromIndicesView(indices_sort, device);
+    makeSortIndicesFromTensorIndicesComponent(indices_view_, indices_sort, device);
+
+    // TODO: Move to device-specific code
+    // Synchronize the Device and Host data for paritioning and sorting
+//#if COMPILE_WITH_CUDA
+//    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
+//      indices_sort->syncHAndDData(device); // d to h
+//      indices_partition->syncHAndDData(device); // d to h
+//      syncHAndDData(device); // d to h
+//      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+//      indices_sort->setDataStatus(false, true);
+//      indices_partition->setDataStatus(false, true);
+//      setDataStatus(false, true);
+//    }
+//#endif
 
     // partition the indices
     indices_sort->partition(indices_partition, device);
@@ -1246,7 +1465,7 @@ namespace TensorBase
   {
     // make the selection indices from the indices view
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_select;
-    makeSelectIndicesFromIndicesView(indices_select, device);
+    makeSelectIndicesFromTensorIndicesComponent(this->indices_view_, indices_select, device);
 
     // select the tensor data based on the selection indices
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> sparse_data;
@@ -1292,6 +1511,8 @@ namespace TensorBase
     // Append the new labels to the axis
     axes_.at(axis_name)->appendLabelsToAxis(labels, device);
 
+    // TODO [not_in_memory]: Check that the needed values are in memory
+
     // Copy the current data
     auto data_copy = data_->copy(device);
     data_copy->syncHAndDData(device);
@@ -1330,13 +1551,15 @@ namespace TensorBase
     std::shared_ptr<TensorData<int, DeviceT, 1>> indices_copy = indices_.at(axis_name)->copy(device);
     std::shared_ptr<TensorData<int, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copy(device);
     std::shared_ptr<TensorData<int, DeviceT, 1>> is_modified_copy = is_modified_.at(axis_name)->copy(device);
-    std::shared_ptr<TensorData<int, DeviceT, 1>> in_memory_copy = in_memory_.at(axis_name)->copy(device);
-    std::shared_ptr<TensorData<int, DeviceT, 1>> is_shardable_copy = is_shardable_.at(axis_name)->copy(device);
+    std::shared_ptr<TensorData<int, DeviceT, 1>> in_memory_copy = not_in_memory_.at(axis_name)->copy(device);
+    std::shared_ptr<TensorData<int, DeviceT, 1>> shard_id_copy = shard_id_.at(axis_name)->copy(device);
+    std::shared_ptr<TensorData<int, DeviceT, 1>> shard_indices_copy = shard_indices_.at(axis_name)->copy(device);
     indices_copy->syncHAndDData(device);
     indices_view_copy->syncHAndDData(device);
     is_modified_copy->syncHAndDData(device);
     in_memory_copy->syncHAndDData(device);
-    is_shardable_copy->syncHAndDData(device);
+    shard_id_copy->syncHAndDData(device);
+    shard_indices_copy->syncHAndDData(device);
 
     // resize and reset the indices
     Eigen::array<Eigen::Index, 1> new_dimensions = indices_.at(axis_name)->getDimensions();
@@ -1350,39 +1573,43 @@ namespace TensorBase
     is_modified_.at(axis_name)->setDimensions(new_dimensions); 
     is_modified_.at(axis_name)->setData();
     is_modified_.at(axis_name)->syncHAndDData(device);
-    in_memory_.at(axis_name)->setDimensions(new_dimensions); 
-    in_memory_.at(axis_name)->setData();
-    in_memory_.at(axis_name)->syncHAndDData(device);
-    is_shardable_.at(axis_name)->setDimensions(new_dimensions); 
-    is_shardable_.at(axis_name)->setData();
-    is_shardable_.at(axis_name)->syncHAndDData(device);
-
-    // create a dummy single value tensor of 1 of the same length as the indices
-    std::shared_ptr<TensorData<int, DeviceT, 1>> ones = indices->copy(device);
-    ones->syncHAndDData(device);
+    not_in_memory_.at(axis_name)->setDimensions(new_dimensions); 
+    not_in_memory_.at(axis_name)->setData();
+    not_in_memory_.at(axis_name)->syncHAndDData(device);
+    shard_id_.at(axis_name)->setDimensions(new_dimensions); 
+    shard_id_.at(axis_name)->setData();
+    shard_id_.at(axis_name)->syncHAndDData(device);
+    shard_indices_.at(axis_name)->setDimensions(new_dimensions);
+    shard_indices_.at(axis_name)->setData();
+    shard_indices_.at(axis_name)->syncHAndDData(device);
 
     // concatenate the new indices
-    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_new_values(indices->getDataPointer().get(), (int)indices->getTensorSize(), 1);
-    Eigen::TensorMap<Eigen::Tensor<int, 2>> ones_concatenate(ones->getDataPointer().get(), (int)ones->getTensorSize(), 1);
-    ones_concatenate.device(device) = indices_new_values.constant(1);
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_new_values(indices->getDataPointer().get(), (int)indices->getTensorSize());
 
-    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_copy_values(indices_copy->getDataPointer().get(), (int)indices_copy->getTensorSize(), 1);
-    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_view_copy_values(indices_view_copy->getDataPointer().get(), (int)indices_view_copy->getTensorSize(), 1);
-    Eigen::TensorMap<Eigen::Tensor<int, 2>> is_modified_copy_values(is_modified_copy->getDataPointer().get(), (int)is_modified_copy->getTensorSize(), 1);
-    Eigen::TensorMap<Eigen::Tensor<int, 2>> in_memory_copy_values(in_memory_copy->getDataPointer().get(), (int)in_memory_copy->getTensorSize(), 1);
-    Eigen::TensorMap<Eigen::Tensor<int, 2>> is_shardable_copy_values(is_shardable_copy->getDataPointer().get(), (int)is_shardable_copy->getTensorSize(), 1);
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_copy_values(indices_copy->getDataPointer().get(), (int)indices_copy->getTensorSize());
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_copy_values(indices_view_copy->getDataPointer().get(), (int)indices_view_copy->getTensorSize());
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> is_modified_copy_values(is_modified_copy->getDataPointer().get(), (int)is_modified_copy->getTensorSize());
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> in_memory_copy_values(in_memory_copy->getDataPointer().get(), (int)in_memory_copy->getTensorSize());
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_id_copy_values(shard_id_copy->getDataPointer().get(), (int)shard_id_copy->getTensorSize());
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_indices_copy_values(shard_indices_copy->getDataPointer().get(), (int)shard_indices_copy->getTensorSize());
 
-    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_values(indices_.at(axis_name)->getDataPointer().get(), new_dimensions.at(0), 1);
-    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_view_values(indices_view_.at(axis_name)->getDataPointer().get(), new_dimensions.at(0), 1);
-    Eigen::TensorMap<Eigen::Tensor<int, 2>> is_modified_values(is_modified_.at(axis_name)->getDataPointer().get(), new_dimensions.at(0), 1);
-    Eigen::TensorMap<Eigen::Tensor<int, 2>> in_memory_values(in_memory_.at(axis_name)->getDataPointer().get(), new_dimensions.at(0), 1);
-    Eigen::TensorMap<Eigen::Tensor<int, 2>> is_shardable_values(is_shardable_.at(axis_name)->getDataPointer().get(), new_dimensions.at(0), 1);
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_values(indices_.at(axis_name)->getDataPointer().get(), new_dimensions.at(0));
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_values(indices_view_.at(axis_name)->getDataPointer().get(), new_dimensions.at(0));
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> is_modified_values(is_modified_.at(axis_name)->getDataPointer().get(), new_dimensions.at(0));
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> in_memory_values(not_in_memory_.at(axis_name)->getDataPointer().get(), new_dimensions.at(0));
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_id_values(shard_id_.at(axis_name)->getDataPointer().get(), new_dimensions.at(0));
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_indices_values(shard_indices_.at(axis_name)->getDataPointer().get(), new_dimensions.at(0));
 
-    indices_values.device(device) = indices_copy_values.concatenate(indices_new_values, 0);
-    indices_view_values.device(device) = indices_view_copy_values.concatenate(indices_new_values, 0);
-    is_modified_values.device(device) = is_modified_copy_values.concatenate(ones_concatenate, 0);
-    in_memory_values.device(device) = in_memory_copy_values.concatenate(ones_concatenate, 0);
-    is_shardable_values.device(device) = is_shardable_copy_values.concatenate(ones_concatenate, 0);
+    const Eigen::array<std::pair<int, int>, 1> padding_1({ std::make_pair(0, indices->getDimensions().at(0)) });
+    const Eigen::array<std::pair<int, int>, 1> padding_2({ std::make_pair((int)indices_copy->getTensorSize(), 0) });
+    indices_values.device(device) = indices_copy_values.pad(padding_1) + indices_new_values.pad(padding_2);
+    indices_view_values.device(device) = indices_view_copy_values.pad(padding_1) + indices_new_values.pad(padding_2);
+    is_modified_values.device(device) = is_modified_copy_values.pad(padding_1) + indices_new_values.constant(1).pad(padding_2);
+    in_memory_values.device(device) = in_memory_copy_values.pad(padding_1) + indices_new_values.constant(0).pad(padding_2);
+    // TODO: need to add in logic to check if the shard size has been exceeded, and if so, start a new shard
+    shard_id_values.device(device) = shard_id_copy_values.pad(padding_1) + indices_new_values.constant(1).pad(padding_2);
+    shard_indices_values.device(device) = shard_indices_copy_values.pad(padding_1) + indices_new_values.constant(0).pad(padding_2);
+    reShardIndices(device);
 
     // update the dimensions
     dimensions_.at(axes_to_dims_.at(axis_name)) += indices->getTensorSize();
@@ -1468,12 +1695,12 @@ namespace TensorBase
     // Select and reduce
     if (invert_selection) {
       auto indices_selected_2d = (indices_view_bcast == indices_bcast).select(indices_view_bcast.constant(0), indices_view_bcast);
-      auto indices_selected = indices_selected_2d.prod(Eigen::array<int, 1>({ 1 })).clip(0, 1);
+      auto indices_selected = indices_selected_2d.prod(Eigen::array<Eigen::Index, 1>({ 1 })).clip(0, 1);
       indices_select_values.device(device) = indices_selected;
     }
     else {
       auto indices_selected_2d = (indices_view_bcast == indices_bcast).select(indices_view_bcast, indices_view_bcast.constant(0));
-      auto indices_selected = indices_selected_2d.sum(Eigen::array<int, 1>({ 1 })).clip(0, 1);
+      auto indices_selected = indices_selected_2d.sum(Eigen::array<Eigen::Index, 1>({ 1 })).clip(0, 1);
       indices_select_values.device(device) = indices_selected;
     }
   }
@@ -1489,8 +1716,9 @@ namespace TensorBase
     std::shared_ptr<TensorData<int, DeviceT, 1>> indices_copy = indices_.at(axis_name)->copy(device);
     std::shared_ptr<TensorData<int, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copy(device);
     std::shared_ptr<TensorData<int, DeviceT, 1>> is_modified_copy = is_modified_.at(axis_name)->copy(device);
-    std::shared_ptr<TensorData<int, DeviceT, 1>> in_memory_copy = in_memory_.at(axis_name)->copy(device);
-    std::shared_ptr<TensorData<int, DeviceT, 1>> is_shardable_copy = is_shardable_.at(axis_name)->copy(device);
+    std::shared_ptr<TensorData<int, DeviceT, 1>> in_memory_copy = not_in_memory_.at(axis_name)->copy(device);
+    std::shared_ptr<TensorData<int, DeviceT, 1>> shard_id_copy = shard_id_.at(axis_name)->copy(device);
+    std::shared_ptr<TensorData<int, DeviceT, 1>> shard_indices_copy = shard_indices_.at(axis_name)->copy(device);
     indices_copy->setDimensions(new_dimensions); 
     indices_copy->setData();
     indices_view_copy->setDimensions(new_dimensions); 
@@ -1499,13 +1727,16 @@ namespace TensorBase
     is_modified_copy->setData();
     in_memory_copy->setDimensions(new_dimensions); 
     in_memory_copy->setData();
-    is_shardable_copy->setDimensions(new_dimensions); 
-    is_shardable_copy->setData();
+    shard_id_copy->setDimensions(new_dimensions); 
+    shard_id_copy->setData();
+    shard_indices_copy->setDimensions(new_dimensions);
+    shard_indices_copy->setData();
     indices_copy->syncHAndDData(device);
     indices_view_copy->syncHAndDData(device);
     is_modified_copy->syncHAndDData(device);
     in_memory_copy->syncHAndDData(device);
-    is_shardable_copy->syncHAndDData(device);
+    shard_id_copy->syncHAndDData(device);
+    shard_indices_copy->syncHAndDData(device);
 
     // make the selection tensor based off of the selection indices
     std::shared_ptr<TensorData<int, DeviceT, 1>> selection_indices;
@@ -1515,15 +1746,17 @@ namespace TensorBase
     indices_.at(axis_name)->select(indices_copy, selection_indices, device);
     indices_view_.at(axis_name)->select(indices_view_copy, selection_indices, device);
     is_modified_.at(axis_name)->select(is_modified_copy, selection_indices, device);
-    in_memory_.at(axis_name)->select(in_memory_copy, selection_indices, device);
-    is_shardable_.at(axis_name)->select(is_shardable_copy, selection_indices, device);
+    not_in_memory_.at(axis_name)->select(in_memory_copy, selection_indices, device);
+    shard_id_.at(axis_name)->select(shard_id_copy, selection_indices, device);
+    shard_indices_.at(axis_name)->select(shard_indices_copy, selection_indices, device);
 
     // swap the indices
     indices_.at(axis_name) = indices_copy;
     indices_view_.at(axis_name) = indices_view_copy;
     is_modified_.at(axis_name) = is_modified_copy;
-    in_memory_.at(axis_name) = in_memory_copy;
-    is_shardable_.at(axis_name) = is_shardable_copy;
+    not_in_memory_.at(axis_name) = in_memory_copy;
+    shard_id_.at(axis_name) = shard_id_copy;
+    shard_indices_.at(axis_name) = shard_indices_copy;
 
     // update the dimensions
     dimensions_.at(axes_to_dims_.at(axis_name)) -= indices->getTensorSize();
@@ -1551,28 +1784,132 @@ namespace TensorBase
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_values(indices_view_.at(axis_name)->getDataPointer().get(), indices_view_.at(axis_name)->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_values(indices_.at(axis_name)->getDataPointer().get(), indices_.at(axis_name)->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_old_values(indices->getDataPointer().get(), indices->getDimensions());
-    Eigen::array<int, 1> offsets = { (int)indices_view_.at(axis_name)->getTensorSize() - (int)indices->getTensorSize() };
-    Eigen::array<int, 1> extents = { (int)indices->getTensorSize() };
+    Eigen::array<Eigen::Index, 1> offsets = { (int)indices_view_.at(axis_name)->getTensorSize() - (int)indices->getTensorSize() };
+    Eigen::array<Eigen::Index, 1> extents = { (int)indices->getTensorSize() };
     indices_view_values.slice(offsets, extents).device(device) = indices_old_values;
     indices_values.slice(offsets, extents).device(device) = indices_old_values;
 
-    // TODO: Why is this needed on the GPU?
-    // BUG: Indices and Data appear not to sync correctly
+    // TODO: Move to device-specific code
+    // NOTE: Required for calls to sort
 //#if COMPILE_WITH_CUDA
-//    this->syncIndicesHAndDData(device);
-//    this->syncHAndDData(device);
-//    this->syncAxesHAndDData(device);
-//    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
-//    this->syncIndicesHAndDData(device);
-//    this->syncHAndDData(device);
-//    this->syncAxesHAndDData(device);
+//    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
+//      this->syncIndicesHAndDData(device);
+//      this->syncHAndDData(device);
+//      this->syncAxesHAndDData(device);
+//      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+//      this->setIndicesDataStatus(false, true);
+//      this->setDataStatus(false, true);
+//      this->setAxesDataStatus(false, true);
+//    }
 //#endif
 
-    // Sort the indices
+    // Sort the is_modified values by the indices, and then sort the indices and update the shard indices
+    is_modified_.at(axis_name)->sort(indices_.at(axis_name), device);
     indices_.at(axis_name)->sort("ASC", device); // NOTE: this could fail if there are 0's in the index!
+    reShardIndices(device);
 
     // Sort the axis and tensor based on the indices view
     sortTensorData(device);
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::makeModifiedShardIDTensor(std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, DeviceT & device) const
+  {
+    // Make the selection indices from the modified tensor indices
+    std::shared_ptr<TensorData<int, DeviceT, TDim>> select_indices;
+    makeSelectIndicesFromTensorIndicesComponent(is_modified_, select_indices, device);
+
+    // Make the sort indices from the `shard_id` values
+    std::shared_ptr<TensorData<int, DeviceT, TDim>> shard_indices;
+    makeShardIndicesFromShardIDs(shard_indices, device);
+
+    // Select the `shard_id` values to use for writing
+    Eigen::TensorMap<Eigen::Tensor<int, TDim>> select_indices_values(select_indices->getDataPointer().get(), select_indices->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<int, TDim>> shard_indices_values(shard_indices->getDataPointer().get(), shard_indices->getDimensions());
+    shard_indices_values.device(device) = (select_indices_values > select_indices_values.constant(0)).select(shard_indices_values, shard_indices_values.constant(0));
+
+    // TODO: Move to device-specific code
+    // Synchronize the Device and Host data for sorting and runLengthEncoding
+//#if COMPILE_WITH_CUDA
+//    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
+//      shard_indices->syncHAndDData(device); // d to h
+//      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+//      shard_indices->setDataStatus(false, true);
+//    }
+//#endif
+
+    // Sort and then RunLengthEncode
+    shard_indices->sort("ASC", device);
+    std::shared_ptr<TensorData<int, DeviceT, 1>> unique, count, num_runs;
+    runLengthEncodeIndex(shard_indices, unique, count, num_runs, device);
+
+    // Resize the unique results and remove 0's from the unique
+    makeShardIDTensor(modified_shard_ids, unique, num_runs, device);
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::makeShardIDTensor(std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, std::shared_ptr<TensorData<int, DeviceT, 1>>& unique, std::shared_ptr<TensorData<int, DeviceT, 1>>& num_runs, DeviceT & device) const
+  {
+    // Resize the unique results and remove 0's from the unique
+    unique->syncHAndDData(device); // d to h
+    num_runs->syncHAndDData(device); // d to h
+
+    // TODO: Move to device-specific code
+//#if COMPILE_WITH_CUDA
+//    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
+//      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+//    }
+//#endif
+
+    if (num_runs->getData()(0) == 1 && unique->getData()(0) == 0) {
+      unique->setDimensions(Eigen::array<Eigen::Index, 1>({ 0 }));
+    }
+    else if (unique->getData()(0) == 0) {
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> unqiue_values(unique->getDataPointer().get(), unique->getDimensions());
+      unqiue_values.slice(Eigen::array<Eigen::Index, 1>({ 0 }), Eigen::array<Eigen::Index, 1>({ num_runs->getData()(0) - 1 })).device(device) = unqiue_values.slice(Eigen::array<Eigen::Index, 1>({ 1 }), Eigen::array<Eigen::Index, 1>({ num_runs->getData()(0) - 1 }));
+      unique->setDimensions(Eigen::array<Eigen::Index, 1>({ num_runs->getData()(0) - 1 }));
+    }
+    else {
+      unique->setDimensions(Eigen::array<Eigen::Index, 1>({ num_runs->getData()(0) }));
+    }
+    unique->setDataStatus(false, true);
+    num_runs->setDataStatus(false, true);
+    modified_shard_ids = unique;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::makeNotInMemoryShardIDTensor(std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, DeviceT & device) const
+  {
+    // Make the selection indices from the in memory tensor indices
+    std::shared_ptr<TensorData<int, DeviceT, TDim>> select_indices;
+    makeSelectIndicesFromTensorIndicesComponent(not_in_memory_, select_indices, device);
+
+    // Make the sort indices from the `shard_id` values
+    std::shared_ptr<TensorData<int, DeviceT, TDim>> shard_indices;
+    makeShardIndicesFromShardIDs(shard_indices, device);
+
+    // Select the `shard_id` values to use for writing
+    Eigen::TensorMap<Eigen::Tensor<int, TDim>> select_indices_values(select_indices->getDataPointer().get(), select_indices->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<int, TDim>> shard_indices_values(shard_indices->getDataPointer().get(), shard_indices->getDimensions());
+    shard_indices_values.device(device) = (select_indices_values > select_indices_values.constant(0)).select(shard_indices_values, shard_indices_values.constant(0));
+
+    // TODO: Move to device-specific code
+    // Synchronize the Device and Host data for sorting and runLengthEncoding
+//#if COMPILE_WITH_CUDA
+//    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
+//      shard_indices->syncHAndDData(device); // d to h
+//      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+//      shard_indices->setDataStatus(false, true);
+//    }
+//#endif
+
+    // Sort and then RunLengthEncode
+    shard_indices->sort("ASC", device);
+    std::shared_ptr<TensorData<int, DeviceT, 1>> unique, count, num_runs;
+    runLengthEncodeIndex(shard_indices, unique, count, num_runs, device);
+
+    // Resize the unique results and remove 0's from the unique
+    makeShardIDTensor(modified_shard_ids, unique, num_runs, device);
   }
 };
 #endif //TENSORBASE_TENSORTABLE_H

@@ -125,8 +125,8 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   BOOST_CHECK(tt1_ptr->getIndices() == tensorTable1_ptr->getIndices());
   BOOST_CHECK(tt1_ptr->getIndicesView() == tensorTable1_ptr->getIndicesView());
   BOOST_CHECK(tt1_ptr->getIsModified() == tensorTable1_ptr->getIsModified());
-  BOOST_CHECK(tt1_ptr->getInMemory() == tensorTable1_ptr->getInMemory());
-  BOOST_CHECK(tt1_ptr->getIsShardable() == tensorTable1_ptr->getIsShardable());
+  BOOST_CHECK(tt1_ptr->getNotInMemory() == tensorTable1_ptr->getNotInMemory());
+  BOOST_CHECK(tt1_ptr->getShardId() == tensorTable1_ptr->getShardId());
 
   // remove tensor tables
   tensorCollection.removeTensorTable("2");
@@ -181,8 +181,8 @@ BOOST_AUTO_TEST_CASE(addTensorTableConceptDefaultDevice)
   BOOST_CHECK(tt1_ptr->getIndices() == tensorTable1_ptr->getIndices());
   BOOST_CHECK(tt1_ptr->getIndicesView() == tensorTable1_ptr->getIndicesView());
   BOOST_CHECK(tt1_ptr->getIsModified() == tensorTable1_ptr->getIsModified());
-  BOOST_CHECK(tt1_ptr->getInMemory() == tensorTable1_ptr->getInMemory());
-  BOOST_CHECK(tt1_ptr->getIsShardable() == tensorTable1_ptr->getIsShardable());
+  BOOST_CHECK(tt1_ptr->getNotInMemory() == tensorTable1_ptr->getNotInMemory());
+  BOOST_CHECK(tt1_ptr->getShardId() == tensorTable1_ptr->getShardId());
 
   // table concept adder
   tensorCollection.removeTensorTable("1");

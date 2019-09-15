@@ -31,7 +31,7 @@ public:
       @returns Status True on success, False if not
     */ 
     template<typename T, int R>
-    bool loadDataBinary(const std::string& filename, Eigen::Tensor<T, R>& data)
+    static bool loadDataBinary(const std::string& filename, Eigen::Tensor<T, R>& data)
     {
       try
       {
@@ -71,7 +71,7 @@ public:
       @returns Status True on success, False if not
     */ 
     template<typename T, int R>
-    bool storeTensorCollectionBinary(const std::string& filename, const Eigen::Tensor<T, R>& data)
+    static bool storeDataBinary(const std::string& filename, const Eigen::Tensor<T, R>& data)
     {
       try
       {

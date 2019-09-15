@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorAppendToAxis)
       }
     }
   }
-  tensorTable1.getData()->setData(tensor_values1);
+  tensorTable1.setData(tensor_values1);
   std::shared_ptr<TensorTableDefaultDevice<float, 3>> tensorTable1_ptr = std::make_shared<TensorTableDefaultDevice<float, 3>>(tensorTable1);
 
   // set up table 2
@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorAppendToAxis)
       tensor_values2(i, j) = i + j * nlabels1;
     }
   }
-  tensorTable2.getData()->setData(tensor_values2);
+  tensorTable2.setData(tensor_values2);
   std::shared_ptr<TensorTableDefaultDevice<int, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(tensorTable2);
 
   // Set up the collection
@@ -157,6 +157,13 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorAppendToAxis)
   values_new.setData(tensor_values_new);
   std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 3>> values_new_ptr = std::make_shared<TensorDataDefaultDevice<float, 3>>(values_new);
 
+  // Reset `is_modified` to test for the new additions after the call to `setData`
+  for (auto& tensor_table_map : collection_1_ptr->tables_) {
+    for (auto& is_modified_map : tensor_table_map.second->getIsModified()) {
+      is_modified_map.second->getData() = is_modified_map.second->getData().constant(0);
+    }
+  }
+
   // Test redo to append the new values
   TensorAppendToAxis<int, float, Eigen::DefaultDevice, 3> appendToAxis("1", "2", labels_new_ptr, values_new_ptr);
   appendToAxis.redo(collection_1_ptr, device);
@@ -165,14 +172,14 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorAppendToAxis)
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
-        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getData()(i, j, k), tensor_values1(i, j, k));
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j, k), tensor_values1(i, j, k));
       }
     }
   }
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
-        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getData()(i, j + nlabels2, k), tensor_values_new(i, j, k));
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j + nlabels2, k), tensor_values_new(i, j, k));
       }
     }
   }
@@ -188,15 +195,16 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorAppendToAxis)
   for (int i = 0; i < nlabels2 + nlabels2; ++i) {
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
     if (i < nlabels2) {
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getInMemory().at("2")->getData()(i), 0);
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsShardable().at("2")->getData()(i), 0);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 1);
     }
     else {
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getInMemory().at("2")->getData()(i), 1);
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsShardable().at("2")->getData()(i), 1); // TODO...
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 2);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i - nlabels2 + 1);
     }
   }
 
@@ -207,7 +215,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorAppendToAxis)
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
-        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getData()(i, j, k), tensor_values1(i, j, k));
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j, k), tensor_values1(i, j, k));
       }
     }
   }
@@ -223,9 +231,10 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorAppendToAxis)
   for (int i = 0; i < nlabels2; ++i) {
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
-    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsShardable().at("2")->getData()(i), 0);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(tensorTable1_ptr->getInMemory().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 1);
   }
 }
 
@@ -278,7 +287,7 @@ BOOST_AUTO_TEST_CASE(redoAndTensorDeleteFromAxis)
       }
     }
   }
-  tensorTable1.getData()->setData(tensor_values1);
+  tensorTable1.setData(tensor_values1);
   std::shared_ptr<TensorTableDefaultDevice<float, 3>> tensorTable1_ptr = std::make_shared<TensorTableDefaultDevice<float, 3>>(tensorTable1);
 
   // set up table 2
@@ -293,7 +302,7 @@ BOOST_AUTO_TEST_CASE(redoAndTensorDeleteFromAxis)
       tensor_values2(i, j) = i + j * nlabels1;
     }
   }
-  tensorTable2.getData()->setData(tensor_values2);
+  tensorTable2.setData(tensor_values2);
   std::shared_ptr<TensorTableDefaultDevice<int, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(tensorTable2);
 
   // Set up the collection
@@ -315,6 +324,13 @@ BOOST_AUTO_TEST_CASE(redoAndTensorDeleteFromAxis)
     }
   }
 
+  // Reset `is_modified` to test for the new additions after the call to `setData`
+  for (auto& tensor_table_map : collection_1_ptr->tables_) {
+    for (auto& is_modified_map : tensor_table_map.second->getIsModified()) {
+      is_modified_map.second->getData() = is_modified_map.second->getData().constant(0);
+    }
+  }
+
   // Test redo to delete the specified values
   TensorDeleteFromAxisDefaultDevice<int, float, 3> deleteFromAxis("1", "2", DeleteTable1());
   deleteFromAxis.redo(collection_1_ptr, device);
@@ -323,7 +339,7 @@ BOOST_AUTO_TEST_CASE(redoAndTensorDeleteFromAxis)
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2 - 1; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
-        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getData()(i, j, k), expected_tensor_values(i, j, k));
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j, k), expected_tensor_values(i, j, k));
       }
     }
   }
@@ -343,14 +359,16 @@ BOOST_AUTO_TEST_CASE(redoAndTensorDeleteFromAxis)
     if (i < 1) {
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 1);
     }
     else {
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 2);
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 2);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 2);
     }
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(tensorTable1_ptr->getInMemory().at("2")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsShardable().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1);
   }
 
   // Test redo to restore the deleted values
@@ -360,7 +378,7 @@ BOOST_AUTO_TEST_CASE(redoAndTensorDeleteFromAxis)
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
-        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getData()(i, j, k), tensor_values1(i, j, k));
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j, k), tensor_values1(i, j, k));
       }
     }
   }
@@ -374,11 +392,17 @@ BOOST_AUTO_TEST_CASE(redoAndTensorDeleteFromAxis)
   // Test for the expected indices data
   BOOST_CHECK_EQUAL(tensorTable1_ptr->getDimensions().at(tensorTable1_ptr->getDimFromAxisName("2")), nlabels2);
   for (int i = 0; i < nlabels2; ++i) {
+    if (i == 1) {
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
+    }
+    else {
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
+    }
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
-    //BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsShardable().at("2")->getData()(i), 0); // FIXME: fix after making the memory/IO model
-    //BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0); // FIXME: fix after making the memory/IO model
-    //BOOST_CHECK_EQUAL(tensorTable1_ptr->getInMemory().at("2")->getData()(i), 0); // FIXME: fix after making the memory/IO model
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 1);
   }
 }
 
@@ -428,7 +452,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateValues)
       }
     }
   }
-  tensorTable1.getData()->setData(tensor_values1);
+  tensorTable1.setData(tensor_values1);
   std::shared_ptr<TensorTableDefaultDevice<float, 3>> tensorTable1_ptr = std::make_shared<TensorTableDefaultDevice<float, 3>>(tensorTable1);
 
   // set up table 2
@@ -443,7 +467,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateValues)
       tensor_values2(i, j) = i + j * nlabels1;
     }
   }
-  tensorTable2.getData()->setData(tensor_values2);
+  tensorTable2.setData(tensor_values2);
   std::shared_ptr<TensorTableDefaultDevice<int, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(tensorTable2);
 
   // Set up the collection
@@ -462,15 +486,32 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateValues)
   // Set up the update
   TensorUpdateValues<float, Eigen::DefaultDevice, 3> tensorUpdate("1", SelectTable1(), std::make_shared<TensorDataDefaultDevice<float, 3>>(values_new));
 
+  // Reset `is_modified` to test for the new additions after the call to `setData`
+  for (auto& tensor_table_map : collection_1_ptr->tables_) {
+    for (auto& is_modified_map : tensor_table_map.second->getIsModified()) {
+      is_modified_map.second->getData() = is_modified_map.second->getData().constant(0);
+    }
+  }
+
   // Test redo
   tensorUpdate.redo(collection_1_ptr, device);
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < 1; ++j) {
       for (int k = 0; k < 1; ++k) {
-        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getData()(i, j, k), values_new_values(i, j, k));
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j, k), values_new_values(i, j, k));
         BOOST_CHECK_EQUAL(tensorUpdate.getValuesOld()->getData()(i, j, k), tensor_values1(i, j, k));
       }
     }
+  }
+
+  // Test the changed indices
+  for (int i = 0; i < nlabels1; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("1")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("1")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("1")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("1")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("1")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("1")->getData()(i), i + 1);
   }
 
   // Test undo
@@ -478,9 +519,19 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateValues)
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < 1; ++j) {
       for (int k = 0; k < 1; ++k) {
-        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getData()(i, j, k), tensor_values1(i, j, k));
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j, k), tensor_values1(i, j, k));
       }
     }
+  }
+
+  // Test the changed indices
+  for (int i = 0; i < nlabels1; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("1")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("1")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("1")->getData()(i), 1); // TODO: should be reverted to 0
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("1")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("1")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("1")->getData()(i), i + 1);
   }
 }
 
@@ -530,7 +581,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateConstant)
       }
     }
   }
-  tensorTable1.getData()->setData(tensor_values1);
+  tensorTable1.setData(tensor_values1);
   std::shared_ptr<TensorTableDefaultDevice<float, 3>> tensorTable1_ptr = std::make_shared<TensorTableDefaultDevice<float, 3>>(tensorTable1);
 
   // set up table 2
@@ -545,7 +596,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateConstant)
       tensor_values2(i, j) = i + j * nlabels1;
     }
   }
-  tensorTable2.getData()->setData(tensor_values2);
+  tensorTable2.setData(tensor_values2);
   std::shared_ptr<TensorTableDefaultDevice<int, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(tensorTable2);
 
   // Set up the collection
@@ -566,27 +617,55 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateConstant)
   selectTable1.apply_select = false;
   TensorUpdateConstant<float, Eigen::DefaultDevice> tensorUpdate("1", selectTable1, values_new_ptr);
 
+  // Reset `is_modified` to test for the new additions after the call to `setData`
+  for (auto& tensor_table_map : collection_1_ptr->tables_) {
+    for (auto& is_modified_map : tensor_table_map.second->getIsModified()) {
+      is_modified_map.second->getData() = is_modified_map.second->getData().constant(0);
+    }
+  }
+
   // Test redo
   tensorUpdate.redo(collection_1_ptr, device);
   for (int i = 0; i < nlabels1; ++i) {
-    BOOST_CHECK_EQUAL(tensorUpdate.getValuesOld()->getData()->getData()(i), tensor_values1(i, 0, 0));
+    BOOST_CHECK_EQUAL(tensorUpdate.getValuesOld()->getData()(i), tensor_values1(i, 0, 0));
     for (int j = 0; j < nlabels2; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
         if (j==0 && k==0)
-          BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getData()(i, j, k), 100);
+          BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j, k), 100);
         else
-          BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getData()(i, j, k), tensor_values1(i,j,k));
+          BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j, k), tensor_values1(i,j,k));
       }
     }
   }
   for (int i = 0; i < nlabels1; ++i) {
-    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("1")->getData()(i), i+1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("1")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("1")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("1")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("1")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("1")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("1")->getData()(i), i + 1);
   }
   for (int i = 0; i < nlabels2; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
+    if (i==0)
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
+    else
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 1);
   }
   for (int i = 0; i < nlabels3; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("3")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(i), i + 1);
+    if (i==0)
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("3")->getData()(i), 1);
+    else
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("3")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("3")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("3")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("3")->getData()(i), i + 1);
   }
 
   // Test undo
@@ -594,18 +673,39 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateConstant)
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
-        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getData()(i, j, k), tensor_values1(i, j, k));
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j, k), tensor_values1(i, j, k));
       }
     }
   }
   for (int i = 0; i < nlabels1; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("1")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("1")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("1")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("1")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("1")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("1")->getData()(i), i + 1);
   }
   for (int i = 0; i < nlabels2; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
+    if (i == 0)
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
+    else
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 1);
   }
   for (int i = 0; i < nlabels3; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("3")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(i), i + 1);
+    if (i == 0)
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("3")->getData()(i), 1);
+    else
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("3")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("3")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("3")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("3")->getData()(i), i + 1);
   }
 }
 
@@ -655,7 +755,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorAddTable)
       }
     }
   }
-  tensorTable1.getData()->setData(tensor_values1);
+  tensorTable1.setData(tensor_values1);
   std::shared_ptr<TensorTableDefaultDevice<float, 3>> tensorTable1_ptr = std::make_shared<TensorTableDefaultDevice<float, 3>>(tensorTable1);
 
   // set up table 2
@@ -670,7 +770,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorAddTable)
       tensor_values2(i, j) = i + j * nlabels1;
     }
   }
-  tensorTable2.getData()->setData(tensor_values2);
+  tensorTable2.setData(tensor_values2);
   std::shared_ptr<TensorTableDefaultDevice<int, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(tensorTable2);
 
   // Set up the collection
@@ -734,7 +834,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorDropTable)
       }
     }
   }
-  tensorTable1.getData()->setData(tensor_values1);
+  tensorTable1.setData(tensor_values1);
   std::shared_ptr<TensorTableDefaultDevice<float, 3>> tensorTable1_ptr = std::make_shared<TensorTableDefaultDevice<float, 3>>(tensorTable1);
 
   // set up table 2
@@ -749,7 +849,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorDropTable)
       tensor_values2(i, j) = i + j * nlabels1;
     }
   }
-  tensorTable2.getData()->setData(tensor_values2);
+  tensorTable2.setData(tensor_values2);
   std::shared_ptr<TensorTableDefaultDevice<int, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(tensorTable2);
 
   // Set up the collection

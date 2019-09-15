@@ -134,7 +134,7 @@ BOOST_AUTO_TEST_CASE(whereClauseDefaultDevice)
       }
     }
   }
-  tensorTable1.getData()->setData(tensor_values1);
+  tensorTable1.setData(tensor_values1);
   std::shared_ptr<TensorTableDefaultDevice<float, 3>> tensorTable1_ptr = std::make_shared<TensorTableDefaultDevice<float, 3>>(tensorTable1);
 
   // Setup table 2 axes
@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE(whereClauseDefaultDevice)
       ++iter;
     }
   }
-  tensorTable2.getData()->setData(tensor_values2);
+  tensorTable2.setData(tensor_values2);
   std::shared_ptr<TensorTableDefaultDevice<double, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<double, 2>>(tensorTable2);
 
   // Set up the collection
@@ -213,7 +213,7 @@ BOOST_AUTO_TEST_CASE(whereClauseDefaultDevice)
   Eigen::array<Eigen::Index, 3> dimensions1_test = { 2, 1, 2 };
   for (int i = 0; i < 3; ++i) {
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getDimensions().at(i), dimensions1_test.at(i));
-    BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getDimensions().at(i), dimensions1_test.at(i));
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getDataDimensions().at(i), dimensions1_test.at(i));
   }
   BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("1")->getData()(0), 1);
   BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("1")->getData()(1), 2);
@@ -224,7 +224,7 @@ BOOST_AUTO_TEST_CASE(whereClauseDefaultDevice)
   Eigen::array<Eigen::Index, 2> dimensions2_test = { 1, 3 };
   for (int i = 0; i < 2; ++i) {
     BOOST_CHECK_EQUAL(tensorTable2_ptr->getDimensions().at(i), dimensions2_test.at(i));
-    BOOST_CHECK_EQUAL(tensorTable2_ptr->getData()->getDimensions().at(i), dimensions2_test.at(i));
+    BOOST_CHECK_EQUAL(tensorTable2_ptr->getDataDimensions().at(i), dimensions2_test.at(i));
   }
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("1")->getData()(0), 1);
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 1); 
@@ -265,7 +265,7 @@ BOOST_AUTO_TEST_CASE(sortClauseDefaultDevice)
       }
     }
   }
-  tensorTable1.getData()->setData(tensor_values1);
+  tensorTable1.setData(tensor_values1);
   std::shared_ptr<TensorTableDefaultDevice<float, 3>> tensorTable1_ptr = std::make_shared<TensorTableDefaultDevice<float, 3>>(tensorTable1);
 
   // Setup table 2 axes
@@ -283,7 +283,7 @@ BOOST_AUTO_TEST_CASE(sortClauseDefaultDevice)
       ++iter;
     }
   }
-  tensorTable2.getData()->setData(tensor_values2);
+  tensorTable2.setData(tensor_values2);
   std::shared_ptr<TensorTableDefaultDevice<double, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<double, 2>>(tensorTable2);
 
   // Set up the collection
@@ -333,7 +333,7 @@ BOOST_AUTO_TEST_CASE(sortClauseDefaultDevice)
   Eigen::array<Eigen::Index, 3> dimensions1_test = { nlabels1, nlabels2, nlabels3 };
   for (int i = 0; i < 3; ++i) {
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getDimensions().at(i), dimensions1_test.at(i));
-    BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getDimensions().at(i), dimensions1_test.at(i));
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getDataDimensions().at(i), dimensions1_test.at(i));
   }
   BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("1")->getData()(0), 1);
   BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("1")->getData()(1), 2);
@@ -349,7 +349,7 @@ BOOST_AUTO_TEST_CASE(sortClauseDefaultDevice)
   Eigen::array<Eigen::Index, 2> dimensions2_test = { nlabels1, nlabels2 };
   for (int i = 0; i < 2; ++i) {
     BOOST_CHECK_EQUAL(tensorTable2_ptr->getDimensions().at(i), dimensions2_test.at(i));
-    BOOST_CHECK_EQUAL(tensorTable2_ptr->getData()->getDimensions().at(i), dimensions2_test.at(i));
+    BOOST_CHECK_EQUAL(tensorTable2_ptr->getDataDimensions().at(i), dimensions2_test.at(i));
   }
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("1")->getData()(0), 1);
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("1")->getData()(1), 2);

@@ -9,7 +9,7 @@ using namespace std;
 
 BOOST_AUTO_TEST_SUITE(DataFile1)
 
-BOOST_AUTO_TEST_CASE(constructor) 
+BOOST_AUTO_TEST_CASE(constructor)
 {
   DataFile* ptr = nullptr;
   DataFile* nullPointer = nullptr;
@@ -17,25 +17,25 @@ BOOST_AUTO_TEST_CASE(constructor)
   BOOST_CHECK_NE(ptr, nullPointer);
 }
 
-BOOST_AUTO_TEST_CASE(destructor) 
+BOOST_AUTO_TEST_CASE(destructor)
 {
   DataFile* ptr = nullptr;
-	ptr = new DataFile();
+  ptr = new DataFile();
   delete ptr;
 }
 
-BOOST_AUTO_TEST_CASE(storeAndLoadBinary) 
+BOOST_AUTO_TEST_CASE(storeAndLoadBinary)
 {
   DataFile data;
 
   std::string filename = "DataFileTest.dat";
 
-  Eigen::Tensor<float, 3> random_dat(2,2,2);
+  Eigen::Tensor<float, 3> random_dat(2, 2, 2);
   random_dat.setRandom();
-	data.storeTensorCollectionBinary<float, 3>(filename, random_dat);
+  data.storeDataBinary<float, 3>(filename, random_dat);
 
-  Eigen::Tensor<float, 3> test_dat(2,2,2);
-	data.loadDataBinary<float, 3>(filename, test_dat);
+  Eigen::Tensor<float, 3> test_dat(2, 2, 2);
+  data.loadDataBinary<float, 3>(filename, test_dat);
 
   for (int i = 0; i < 2; ++i) {
     for (int j = 0; j < 2; ++j) {

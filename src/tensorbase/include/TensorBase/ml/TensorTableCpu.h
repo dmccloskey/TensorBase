@@ -31,7 +31,7 @@ namespace TensorBase
 
   template<typename TensorT, int TDim>
   void TensorTableCpu<TensorT, TDim>::initData() {
-    this->getData().reset(new TensorDataCpu<TensorT, TDim>(this->getDimensions()));
+    this->data_.reset(new TensorDataCpu<TensorT, TDim>(this->getDimensions()));
   }
 };
 

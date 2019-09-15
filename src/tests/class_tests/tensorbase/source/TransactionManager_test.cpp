@@ -11,7 +11,7 @@ using namespace std;
 
 BOOST_AUTO_TEST_SUITE(TransactionManager1)
 
-/// The delete select Functor for table 1
+/// The delete select Functor for table 2
 struct DeleteTable2 {
   template<typename DeviceT>
   void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) {
@@ -151,7 +151,7 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
       }
     }
   }
-  tensorTable1.getData()->setData(tensor_values1);
+  tensorTable1.setData(tensor_values1);
   std::shared_ptr<TensorTableDefaultDevice<float, 3>> tensorTable1_ptr = std::make_shared<TensorTableDefaultDevice<float, 3>>(tensorTable1);
 
   TensorTableDefaultDevice<int, 2> tensorTable2("2");
@@ -167,7 +167,7 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
       tensor_values2(i, j) = i + j * nlabels1;
     }
   }
-  tensorTable2.getData()->setData(tensor_values2);
+  tensorTable2.setData(tensor_values2);
   std::shared_ptr<TensorTableDefaultDevice<int, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(tensorTable2);
 
   TensorTableDefaultDevice<char, 1> tensorTable3("3");
@@ -176,7 +176,7 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
 
   Eigen::Tensor<char, 1> tensor_values3(Eigen::array<Eigen::Index, 1>({ nlabels1 }));
   tensor_values3.setValues({ 'a', 'b' });
-  tensorTable3.getData()->setData(tensor_values3);
+  tensorTable3.setData(tensor_values3);
   std::shared_ptr<TensorTableDefaultDevice<char, 1>> tensorTable3_ptr = std::make_shared<TensorTableDefaultDevice<char, 1>>(tensorTable3);
 
   // Setup the tensor collection
@@ -222,14 +222,14 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
-        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getData()(i, j, k), tensor_values1(i, j, k));
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j, k), tensor_values1(i, j, k));
       }
     }
   }
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
-        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getData()(i, j + nlabels2, k), tensor_values_new(i, j, k));
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j + nlabels2, k), tensor_values_new(i, j, k));
       }
     }
   }
@@ -245,15 +245,15 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
   for (int i = 0; i < nlabels2 + nlabels2; ++i) {
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
     if (i < nlabels2) {
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getInMemory().at("2")->getData()(i), 0);
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsShardable().at("2")->getData()(i), 0);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 1);
     }
     else {
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getInMemory().at("2")->getData()(i), 1);
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsShardable().at("2")->getData()(i), 1); // TODO...
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 2);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i - nlabels2 + 1);
     }
   }
 
@@ -279,7 +279,7 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
   // Test for the expected table data
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2 - 1; ++j) {
-      BOOST_CHECK_EQUAL(tensorTable2_ptr->getData()->getData()(i, j), expected_tensor_values(i, j));
+      BOOST_CHECK_EQUAL(tensorTable2_ptr->getData()(i, j), expected_tensor_values(i, j));
     }
   }
 
@@ -298,14 +298,16 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
     if (i < 1) {
       BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndices().at("2")->getData()(i), i + 1);
       BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(i), i + 1);
+      BOOST_CHECK_EQUAL(tensorTable2_ptr->getShardIndices().at("2")->getData()(i), i + 1);
     }
     else {
       BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndices().at("2")->getData()(i), i + 2);
       BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(i), i + 2);
+      BOOST_CHECK_EQUAL(tensorTable2_ptr->getShardIndices().at("2")->getData()(i), i + 2);
     }
-    BOOST_CHECK_EQUAL(tensorTable2_ptr->getIsModified().at("2")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(tensorTable2_ptr->getInMemory().at("2")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(tensorTable2_ptr->getIsShardable().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable2_ptr->getIsModified().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable2_ptr->getNotInMemory().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable2_ptr->getShardId().at("2")->getData()(i), 1);
   }
 
   // operation #3: update
@@ -323,12 +325,12 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
   BOOST_CHECK_EQUAL(transactionManager.getCurrentIndex(), 2);
 
   // Test for the changed value
-  Eigen::Tensor<char, 1> values_update_expected(Eigen::array<Eigen::Index, 1>({ nlabels1 }));
+  //Eigen::Tensor<char, 1> values_update_expected(Eigen::array<Eigen::Index, 1>({ nlabels1 }));
   //values_update_expected.setValues({ 'a', 'c' });
   //for (int i = 0; i < nlabels1; ++i) {
-  //  BOOST_CHECK_EQUAL(tensorTable3_ptr->getData()->getData()(i), values_update_expected(i));
+  //  BOOST_CHECK_EQUAL(tensorTable3_ptr->getData()(i), values_update_expected(i));
   //}
-  BOOST_CHECK_EQUAL(tensorTable3_ptr->getData()->getData()(0), 'c'); // TODO: Revert to the above when Update is fixed
+  BOOST_CHECK_EQUAL(tensorTable3_ptr->getData()(0), 'c'); // TODO: Revert to the above when Update is fixed
 
   // Undo #1
   transactionManager.undo(device);
@@ -336,9 +338,9 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
 
   // Test that table 3 update has been reverted
   //for (int i = 0; i < nlabels1; ++i) {
-  //  BOOST_CHECK_EQUAL(tensorTable3_ptr->getData()->getData()(i), tensor_values3(i));
+  //  BOOST_CHECK_EQUAL(tensorTable3_ptr->getData()(i), tensor_values3(i));
   //}
-  BOOST_CHECK_EQUAL(tensorTable3_ptr->getData()->getData()(0), 'b'); // TODO: Revert to the above when Update is fixed
+  BOOST_CHECK_EQUAL(tensorTable3_ptr->getData()(0), 'b'); // TODO: Revert to the above when Update is fixed
 
   // Undo #2
   transactionManager.undo(device);
@@ -348,7 +350,7 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
   // Test for the expected table data
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2 - 1; ++j) {
-      BOOST_CHECK_EQUAL(tensorTable2_ptr->getData()->getData()(i, j), tensor_values2(i, j));
+      BOOST_CHECK_EQUAL(tensorTable2_ptr->getData()(i, j), tensor_values2(i, j));
     }
   }
 
@@ -363,9 +365,10 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
   for (int i = 0; i < nlabels2; ++i) {
     BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndices().at("2")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(i), i + 1);
-    //BOOST_CHECK_EQUAL(tensorTable2_ptr->getIsModified().at("2")->getData()(i), 0); // TODO: update once the sharding model is in place
-    //BOOST_CHECK_EQUAL(tensorTable2_ptr->getInMemory().at("2")->getData()(i), 0);
-    //BOOST_CHECK_EQUAL(tensorTable2_ptr->getIsShardable().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable2_ptr->getIsModified().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable2_ptr->getNotInMemory().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable2_ptr->getShardId().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable2_ptr->getShardIndices().at("2")->getData()(i), i + 1);
   }
 
   // Redo one of them
@@ -376,7 +379,7 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
   // Test for the expected table data
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2 - 1; ++j) {
-      BOOST_CHECK_EQUAL(tensorTable2_ptr->getData()->getData()(i, j), expected_tensor_values(i, j));
+      BOOST_CHECK_EQUAL(tensorTable2_ptr->getData()(i, j), expected_tensor_values(i, j));
     }
   }
 
@@ -395,14 +398,16 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
     if (i < 1) {
       BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndices().at("2")->getData()(i), i + 1);
       BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(i), i + 1);
+      BOOST_CHECK_EQUAL(tensorTable2_ptr->getShardIndices().at("2")->getData()(i), i + 1);
     }
     else {
       BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndices().at("2")->getData()(i), i + 2);
       BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(i), i + 2);
+      BOOST_CHECK_EQUAL(tensorTable2_ptr->getShardIndices().at("2")->getData()(i), i + 2);
     }
-    //BOOST_CHECK_EQUAL(tensorTable2_ptr->getIsModified().at("2")->getData()(i), 0);  // TODO: update once the sharding model is in place
-    //BOOST_CHECK_EQUAL(tensorTable2_ptr->getInMemory().at("2")->getData()(i), 0);
-    //BOOST_CHECK_EQUAL(tensorTable2_ptr->getIsShardable().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable2_ptr->getIsModified().at("2")->getData()(i), 1); 
+    BOOST_CHECK_EQUAL(tensorTable2_ptr->getNotInMemory().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable2_ptr->getShardId().at("2")->getData()(i), 1);
   }
 
   // Rollback all of them
@@ -414,7 +419,7 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
-        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getData()(i, j, k), tensor_values1(i, j, k));
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j, k), tensor_values1(i, j, k));
       }
     }
   }
@@ -430,9 +435,10 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
   for (int i = 0; i < nlabels2; ++i) {
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
-    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(tensorTable1_ptr->getInMemory().at("2")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsShardable().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 1);
   }
 }
 
@@ -470,7 +476,7 @@ BOOST_AUTO_TEST_CASE(CommitDefaultDevice)
       }
     }
   }
-  tensorTable1.getData()->setData(tensor_values1);
+  tensorTable1.setData(tensor_values1);
   std::shared_ptr<TensorTableDefaultDevice<float, 3>> tensorTable1_ptr = std::make_shared<TensorTableDefaultDevice<float, 3>>(tensorTable1);
 
   TensorTableDefaultDevice<int, 2> tensorTable2("2");
@@ -486,7 +492,7 @@ BOOST_AUTO_TEST_CASE(CommitDefaultDevice)
       tensor_values2(i, j) = i + j * nlabels1;
     }
   }
-  tensorTable2.getData()->setData(tensor_values2);
+  tensorTable2.setData(tensor_values2);
   std::shared_ptr<TensorTableDefaultDevice<int, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(tensorTable2);
 
   TensorTableDefaultDevice<char, 1> tensorTable3("3");
@@ -495,7 +501,7 @@ BOOST_AUTO_TEST_CASE(CommitDefaultDevice)
 
   Eigen::Tensor<char, 1> tensor_values3(Eigen::array<Eigen::Index, 1>({ nlabels1 }));
   tensor_values3.setValues({ 'a', 'b' });
-  tensorTable3.getData()->setData(tensor_values3);
+  tensorTable3.setData(tensor_values3);
   std::shared_ptr<TensorTableDefaultDevice<char, 1>> tensorTable3_ptr = std::make_shared<TensorTableDefaultDevice<char, 1>>(tensorTable3);
 
   // Setup the tensor collection
@@ -542,14 +548,14 @@ BOOST_AUTO_TEST_CASE(CommitDefaultDevice)
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
-        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getData()(i, j, k), tensor_values1(i, j, k));
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j, k), tensor_values1(i, j, k));
       }
     }
   }
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
-        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()->getData()(i, j + nlabels2, k), tensor_values_new(i, j, k));
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j + nlabels2, k), tensor_values_new(i, j, k));
       }
     }
   }
@@ -565,15 +571,15 @@ BOOST_AUTO_TEST_CASE(CommitDefaultDevice)
   for (int i = 0; i < nlabels2 + nlabels2; ++i) {
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
     if (i < nlabels2) {
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getInMemory().at("2")->getData()(i), 0);
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsShardable().at("2")->getData()(i), 0);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 1);
     }
     else {
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getInMemory().at("2")->getData()(i), 1);
-      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsShardable().at("2")->getData()(i), 1); // TODO...
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 2);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i - nlabels2 + 1);
     }
   }
 

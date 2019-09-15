@@ -301,6 +301,81 @@ void test_partitionGpu()
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
 
+
+void test_runLengthEncodeGpu()
+{
+  // Make the tensor data and expected data values
+  int dim_sizes = 3;
+  Eigen::Tensor<float, 2> tensor_values(Eigen::array<Eigen::Index, 2>({ dim_sizes, dim_sizes }));
+  tensor_values.setValues({ { 0, 1, 2}, { 0, 1, 2}, { 0, 1, 2} });
+  Eigen::Tensor<float, 1> unique_values(Eigen::array<Eigen::Index, 1>({ dim_sizes * dim_sizes }));
+  unique_values.setValues({ 0, 1, 2, -1, -1, -1, -1, -1, -1 });
+  Eigen::Tensor<int, 1> count_values(Eigen::array<Eigen::Index, 1>({ dim_sizes * dim_sizes }));
+  count_values.setValues({ 3, 3, 3, -1, -1, -1, -1, -1, -1 });
+  Eigen::Tensor<int, 1> num_runs_values(Eigen::array<Eigen::Index, 1>({ 1 }));
+  num_runs_values.setValues({ 3 });
+
+  // Make the tensor data and test data pointers
+  TensorDataGpu<float, 2> tensordata(Eigen::array<Eigen::Index, 2>({ dim_sizes, dim_sizes }));
+  tensordata.setData(tensor_values);
+  TensorDataGpu<float, 1> unique(Eigen::array<Eigen::Index, 1>({ dim_sizes * dim_sizes }));
+  unique.setData();
+  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 1>> uniquev_ptr = std::make_shared<TensorDataGpu<float, 1>>(unique);
+  TensorDataGpu<int, 1> count(Eigen::array<Eigen::Index, 1>({ dim_sizes * dim_sizes }));
+  count.setData();
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> count_ptr = std::make_shared<TensorDataGpu<int, 1>>(count);
+  TensorDataGpu<int, 1> num_runs(Eigen::array<Eigen::Index, 1>({ 1 }));
+  num_runs.setData();
+  num_runs.getData()(0) = 0;
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> num_runs_ptr = std::make_shared<TensorDataGpu<int, 1>>(num_runs);
+
+  // Initialize the device
+  cudaStream_t stream;
+  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  Eigen::GpuStreamDevice stream_device(&stream, 0);
+  Eigen::GpuDevice device(&stream_device);
+
+  // Test runLengthEncode for the case where the last value is the same as the previous
+  tensordata.syncHAndDData(device);
+  uniquev_ptr->syncHAndDData(device);
+  count_ptr->syncHAndDData(device);
+  num_runs_ptr->syncHAndDData(device);
+  tensordata.runLengthEncode(uniquev_ptr, count_ptr, num_runs_ptr, device);
+  tensordata.syncHAndDData(device);
+  uniquev_ptr->syncHAndDData(device);
+  count_ptr->syncHAndDData(device);
+  num_runs_ptr->syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  assert(num_runs_ptr->getData()(0) == 3);
+  for (int i = 0; i < num_runs_ptr->getData()(0); ++i) {
+    assert(uniquev_ptr->getData()(i) == unique_values(i));
+    assert(count_ptr->getData()(i) == count_values(i));
+  }
+
+  // Test runLengthEncode for the case where the last value is not the same as the previous
+  tensor_values.setValues({ { 1, 2, 3}, { 1, 2, 3}, { 1, 2, 4} });
+  tensordata.setData(tensor_values);
+  unique_values.setValues({ 1, 2, 3, 4, -1, -1, -1, -1, -1 });
+  count_values.setValues({ 3, 3, 2, 1, -1, -1, -1, -1, -1 });
+  num_runs_values.setValues({ 4 });  
+  uniquev_ptr->syncHAndDData(device);
+  count_ptr->syncHAndDData(device);
+  num_runs_ptr->syncHAndDData(device);
+  tensordata.syncHAndDData(device);
+  tensordata.runLengthEncode(uniquev_ptr, count_ptr, num_runs_ptr, device);
+  uniquev_ptr->syncHAndDData(device);
+  count_ptr->syncHAndDData(device);
+  num_runs_ptr->syncHAndDData(device);
+  tensordata.syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  assert(num_runs_ptr->getData()(0) == 4);
+  for (int i = 0; i < num_runs_ptr->getData()(0); ++i) {
+    assert(uniquev_ptr->getData()(i) == unique_values(i));
+    assert(count_ptr->getData()(i) == count_values(i));
+  }
+  assert(cudaStreamDestroy(stream) == cudaSuccess);
+}
+
 void test_gettersAndSettersGpu()
 {
   TensorDataGpu<float, 3> tensordata(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
@@ -373,6 +448,7 @@ int main(int argc, char** argv)
   test_selectGpu();
   test_sortIndicesGpu();
   test_partitionGpu();
+  test_runLengthEncodeGpu();
   return 0;
 }
 #endif
