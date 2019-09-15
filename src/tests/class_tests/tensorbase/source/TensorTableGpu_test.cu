@@ -173,6 +173,21 @@ void test_gettersAndSettersGpu()
     assert(tensorTable.getNotInMemory().at("3")->getData()(i) == 0);
   }
 
+  // Test setting the data
+  tensorTable.setData();
+  for (int i = 0; i < nlabels1; ++i) {
+    assert(tensorTable.getIsModified().at("1")->getData()(i) == 0);
+    assert(tensorTable.getNotInMemory().at("1")->getData()(i) == 1);
+  }
+  for (int i = 0; i < nlabels2; ++i) {
+    assert(tensorTable.getIsModified().at("2")->getData()(i) == 0);
+    assert(tensorTable.getNotInMemory().at("2")->getData()(i) == 1);
+  }
+  for (int i = 0; i < nlabels3; ++i) {
+    assert(tensorTable.getIsModified().at("3")->getData()(i) == 0);
+    assert(tensorTable.getNotInMemory().at("3")->getData()(i) == 1);
+  }
+
   // Test clear
   tensorTable.clear();
   assert(tensorTable.getAxes().size() == 0);

@@ -117,6 +117,7 @@ namespace TensorBase
     std::shared_ptr<TensorT> getDataPointer() { return data_->getDataPointer(); } ///< data_->getDataPointer() wrapper
 
     void setData(const Eigen::Tensor<TensorT, TDim>& data); ///< data setter
+    void setData(); ///< data setter
 
     bool syncIndicesHAndDData(DeviceT& device); ///< Sync the host and device indices data
     void setIndicesDataStatus(const bool& h_data_updated, const bool& d_data_updated);///< Set the status of the host and device indices data
@@ -729,6 +730,18 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::setData()
+  {
+    data_->setData();
+    for (auto& in_memory_map : not_in_memory_) {
+      in_memory_map.second->getData() = in_memory_map.second->getData().constant(1); // host
+    }
+    for (auto& is_modified_map : is_modified_) {
+      is_modified_map.second->getData() = is_modified_map.second->getData().constant(0); // host
+    }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
   inline bool TensorTable<TensorT, DeviceT, TDim>::syncIndicesHAndDData(DeviceT & device)
   {
     bool synced = true;
@@ -1333,6 +1346,8 @@ namespace TensorBase
   inline void TensorTable<TensorT, DeviceT, TDim>::updateTensorDataValues(const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_new, std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_old, DeviceT & device)
   {
     assert(values_new->getDimensions() == data_->getDimensions());
+    // Check that the update values are in memory
+    loadTensorTableBinary(dir_, device);
 
     // copy the old values
     values_old = data_->copy(device);
