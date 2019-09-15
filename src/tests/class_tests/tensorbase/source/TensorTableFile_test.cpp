@@ -25,13 +25,13 @@ BOOST_AUTO_TEST_CASE(destructor)
   delete ptr;
 }
 
-BOOST_AUTO_TEST_CASE(makeTensorTableShardFilename)
+BOOST_AUTO_TEST_CASE(makeTensorTableShardFilenameDefaultDevice)
 {
   TensorTableFile<float, Eigen::DefaultDevice, 3> data;
   BOOST_CHECK_EQUAL(data.makeTensorTableShardFilename("dir/", "table1", 1), "dir/table1_1.tts");
 }
 
-BOOST_AUTO_TEST_CASE(storeAndLoadBinary)
+BOOST_AUTO_TEST_CASE(storeAndLoadBinaryDefaultDevice)
 {
   // setup the table
   TensorTableDefaultDevice<float, 3> tensorTable;

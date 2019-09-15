@@ -13,6 +13,7 @@
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/ml/TensorAxisConcept.h>
 #include <TensorBase/ml/TensorClauses.h>
+#include <TensorBase/io/DataFile.h>
 #include <map>
 #include <array>
 
@@ -557,6 +558,27 @@ namespace TensorBase
     void insertIntoAxisConcept(const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<T>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device);
     template<typename LabelsT>
     void insertIntoAxis(const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<TensorT>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device);
+    
+    /**
+      @brief Load data from file
+
+      @param[in] filename The name of the data file
+      @param[in] device
+
+      @returns Status True on success, False if not
+    */
+    bool loadTensorTableBinary(const std::string& dir, DeviceT& device);
+
+    /**
+      @brief Create a unique name for each TensorTableShard
+
+      @param[in] dir The directory name
+      @param[in] tensor_table_name The tensor table name
+      @param[in] shard_id The id of the tensor table shard
+
+      @returns A string with the filename for the TensorTableShard
+    */
+    static std::string makeTensorTableShardFilename(const std::string& dir, const std::string& tensor_table_name, const int& shard_id);
 
     /**
     @brief Determine the Tensor data shards that have been modified from the
@@ -567,6 +589,18 @@ namespace TensorBase
     @param[in] device
     */
     void makeModifiedShardIDTensor(std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, DeviceT& device) const;
+
+    /**
+      @brief Write data to file
+
+      The TensorData is transfered to the host, and the `is_modified` attribute is reset to all 0's
+
+      @param[in] filename The name of the data file
+      @param[in] device
+
+      @returns Status True on success, False if not
+    */
+    bool storeTensorTableBinary(const std::string& dir, DeviceT& device);
 
     /**
     @brief Make the shard_id 1D tensor with unique TensorData shard_id
@@ -1825,6 +1859,76 @@ namespace TensorBase
 
     // Sort the axis and tensor based on the indices view
     sortTensorData(device);
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline bool TensorTable<TensorT, DeviceT, TDim>::loadTensorTableBinary(const std::string& dir, DeviceT& device) {
+    // determine the shards to read from disk
+    std::shared_ptr<TensorData<int, DeviceT, 1>> not_in_memory_shard_ids;
+    makeNotInMemoryShardIDTensor(not_in_memory_shard_ids, device);
+    if (not_in_memory_shard_ids->getTensorSize() == 0) {
+      std::cout << "No shards have been modified." << std::endl;
+      return false;
+    }
+    std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>> slice_indices;
+    makeSliceIndicesFromShardIndices(not_in_memory_shard_ids, slice_indices, device);
+
+    // read in the shards and update the TensorTable data asyncronously
+    syncHAndDData(device); // D to H
+    for (const auto slice_index : slice_indices) {
+      const std::string filename = makeTensorTableShardFilename(dir, getName(), slice_index.first);
+      Eigen::Tensor<TensorT, TDim> shard_data(slice_index.second.second);
+      DataFile::loadDataBinary<TensorT, TDim>(filename, shard_data);
+      getData().slice(slice_index.second.first, slice_index.second.second) = shard_data;
+
+      // update the `not_in_memory` tensor table attribute
+      for (auto& not_in_memory_map : not_in_memory_) {
+        Eigen::array<Eigen::Index, 1> offset;
+        offset.at(0) = slice_index.second.first.at(getDimFromAxisName(not_in_memory_map.first));
+        Eigen::array<Eigen::Index, 1> span;
+        span.at(0) = slice_index.second.second.at(getDimFromAxisName(not_in_memory_map.first));
+        Eigen::TensorMap<Eigen::Tensor<int, 1>> not_in_memory_values(not_in_memory_map.second->getDataPointer().get(), (int)not_in_memory_map.second->getTensorSize());
+        not_in_memory_values.slice(offset, span).device(device) = not_in_memory_values.slice(offset, span).constant(0);
+      }
+    }
+    syncHAndDData(device); // H to D
+
+    return true;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline bool TensorTable<TensorT, DeviceT, TDim>::storeTensorTableBinary(const std::string& dir, DeviceT& device) {
+    // determine the shards to write to disk
+    std::shared_ptr<TensorData<int, DeviceT, 1>> modified_shard_ids;
+    makeModifiedShardIDTensor(modified_shard_ids, device);
+    if (modified_shard_ids->getTensorSize() == 0) {
+      std::cout << "No shards have been modified." << std::endl;
+      return false;
+    }
+    std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>> slice_indices;
+    makeSliceIndicesFromShardIndices(modified_shard_ids, slice_indices, device);
+
+    // write the TensorTable shards to disk asyncronously
+    syncHAndDData(device); // D to H
+    for (const auto slice_index : slice_indices) {
+      const std::string filename = makeTensorTableShardFilename(dir, getName(), slice_index.first);
+      Eigen::Tensor<TensorT, TDim> shard_data = getData().slice(slice_index.second.first, slice_index.second.second);
+      DataFile::storeDataBinary<TensorT, TDim>(filename, shard_data);
+    }
+    setDataStatus(false, true);
+
+    // update the `is_modified` tensor table attribute
+    for (auto& is_modified_map : is_modified_) {
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> is_modified_values(is_modified_map.second->getDataPointer().get(), (int)is_modified_map.second->getTensorSize());
+      is_modified_values.device(device) = is_modified_values.constant(0);
+    }
+
+    return true;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline std::string TensorTable<TensorT, DeviceT, TDim>::makeTensorTableShardFilename(const std::string& dir, const std::string& tensor_table_name, const int& shard_id) {
+    return dir + tensor_table_name + "_" + std::to_string(shard_id) + ".tts";
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
