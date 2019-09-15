@@ -181,7 +181,8 @@ namespace TensorBase
 
     // move over the results
     tensor_select = std::make_shared<TensorDataDefaultDevice<TensorT, TDim>>(tensor_select_tmp);
-
+    
+    // TODO [not_in_memory]: Check that the needed values are in memory
     // apply the device specific select algorithm
     this->data_->select(tensor_select, indices_view_bcast, device);
   }
@@ -322,6 +323,7 @@ namespace TensorBase
       }
     }
 
+    // TODO [not_in_memory]: Check that the needed values are in memory
     // slice out the 1D tensor
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> tensor_values(this->data_->getDataPointer().get(), this->data_->getDimensions());
     auto tensor_1d = tensor_values.slice(offsets, extents).reshape(Eigen::array<Eigen::Index, 1>({ (int)this->axes_.at(axis_name_apply)->getNLabels() }));
@@ -445,6 +447,7 @@ namespace TensorBase
     tensor_select_tmp.setData();
     tensor_select = std::make_shared<TensorDataDefaultDevice<TensorT, TDim>>(tensor_select_tmp);
 
+    // TODO [not_in_memory]: Check that the needed values are in memory
     // select the tensor
     this->data_->select(tensor_select, indices_select, device);
   }

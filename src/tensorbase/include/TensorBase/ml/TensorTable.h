@@ -1001,7 +1001,7 @@ namespace TensorBase
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_view_bcast;
     broadcastSelectIndicesView(indices_view_bcast, axis_name, device);
     // TODO [not_in_memory]: check to ensure the tensor data is loaded into memory
-    //       if not, load in only the needed data the covers all indices in `indices_view_bcast` from file
+    //       if not, load in only the needed data that covers all indices in `indices_view_bcast` from file
     //       instead of calling `reduceTensorDataToSelectIndices`
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> tensor_select;
     reduceTensorDataToSelectIndices(indices_view_bcast, tensor_select, axis_name, select_labels->getData().size(), device);
@@ -1313,6 +1313,8 @@ namespace TensorBase
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorTable<TensorT, DeviceT, TDim>::updateTensorDataValues(const std::shared_ptr<TensorT>& values_new, std::shared_ptr<TensorT>& values_old, DeviceT & device)
   {
+    // TODO [not_in_memory]: Check that the update values are in memory
+
     // copy the old values
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> values_old_values(values_old.get(), data_->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(data_->getDataPointer().get(), data_->getDimensions());
@@ -1368,6 +1370,8 @@ namespace TensorBase
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_select;
     makeSelectIndicesFromTensorIndicesComponent(this->indices_view_, indices_select, device);
 
+    // TODO [not_in_memory]: Check that the update values are in memory
+
     // create the selection
     Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_select_values(indices_select->getDataPointer().get(), indices_select->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> values_new_values(values_new->getDataPointer().get(), reshape_dimensions);
@@ -1405,6 +1409,8 @@ namespace TensorBase
     // make the partition index tensor from the indices view
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_partition;
     makeSelectIndicesFromTensorIndicesComponent(this->indices_view_, indices_partition, device);
+
+    // TODO [not_in_memory]: Check that the update values are in memory
 
     // partition the data in place
     data_->partition(indices_partition, device);
@@ -1504,6 +1510,8 @@ namespace TensorBase
   {
     // Append the new labels to the axis
     axes_.at(axis_name)->appendLabelsToAxis(labels, device);
+
+    // TODO [not_in_memory]: Check that the needed values are in memory
 
     // Copy the current data
     auto data_copy = data_->copy(device);
