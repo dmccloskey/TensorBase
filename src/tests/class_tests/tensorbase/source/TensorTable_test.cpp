@@ -2505,7 +2505,7 @@ BOOST_AUTO_TEST_CASE(makeNotInMemoryShardIDTensorDefaultDevice)
   tensorTable.setShardSpans(shard_span_new);
   tensorTable.reShardIndices(device);
 
-  // Test all in memory case
+  // Test all in memory case and all selected case
   for (auto& in_memory_map : tensorTable.getNotInMemory()) {
     in_memory_map.second->getData() = in_memory_map.second->getData().constant(0);
   }
@@ -2517,10 +2517,28 @@ BOOST_AUTO_TEST_CASE(makeNotInMemoryShardIDTensorDefaultDevice)
   tensorTable.makeSliceIndicesFromShardIndices(shard_id_indices_ptr, slice_indices, device);
   BOOST_CHECK_EQUAL(slice_indices.size(), 0);
 
-  // Test all not in memory case
+  // Test not all in memory case and none selected case
   for (auto& in_memory_map : tensorTable.getNotInMemory()) {
     in_memory_map.second->getData() = in_memory_map.second->getData().constant(1);
   }
+  for (auto& indices_view_map : tensorTable.getIndicesView()) {
+    indices_view_map.second->getData() = indices_view_map.second->getData().constant(0);
+  }
+  shard_id_indices_ptr.reset();
+  tensorTable.makeNotInMemoryShardIDTensor(shard_id_indices_ptr, device);
+  BOOST_CHECK_EQUAL(shard_id_indices_ptr->getTensorSize(), 0);
+
+  slice_indices.clear();
+  tensorTable.makeSliceIndicesFromShardIndices(shard_id_indices_ptr, slice_indices, device);
+  BOOST_CHECK_EQUAL(slice_indices.size(), 0);
+
+  // Test all not in memory case and all selected case
+  for (auto& in_memory_map : tensorTable.getNotInMemory()) {
+    in_memory_map.second->getData() = in_memory_map.second->getData().constant(1);
+  }
+  tensorTable.resetIndicesView("1", device);
+  tensorTable.resetIndicesView("2", device);
+  tensorTable.resetIndicesView("3", device);
   shard_id_indices_ptr.reset();
   tensorTable.makeNotInMemoryShardIDTensor(shard_id_indices_ptr, device);
   BOOST_CHECK_EQUAL(shard_id_indices_ptr->getTensorSize(), 8);
@@ -2547,13 +2565,49 @@ BOOST_AUTO_TEST_CASE(makeNotInMemoryShardIDTensorDefaultDevice)
     ++iter;
   }
 
-  // Test the partially in memory case
+  // Test the partially in memory case and all selected case
   for (auto& in_memory_map : tensorTable.getNotInMemory()) {
     for (int i = 0; i < nlabels; ++i) {
       if (i < shard_span)
         in_memory_map.second->getData()(i) = 1;
       else
         in_memory_map.second->getData()(i) = 0;
+    }
+  }
+  shard_id_indices_ptr.reset();
+  tensorTable.makeNotInMemoryShardIDTensor(shard_id_indices_ptr, device);
+  BOOST_CHECK_EQUAL(shard_id_indices_ptr->getTensorSize(), 1);
+  for (int i = 0; i < shard_id_indices_ptr->getTensorSize(); ++i) {
+    BOOST_CHECK_EQUAL(shard_id_indices_ptr->getData()(i), i + 1);
+  }
+
+  slice_indices.clear();
+  tensorTable.makeSliceIndicesFromShardIndices(shard_id_indices_ptr, slice_indices, device);
+  slice_indices_test.clear();
+  slice_indices_test.emplace(1, std::make_pair(Eigen::array<Eigen::Index, 3>({ 0,0,0 }), Eigen::array<Eigen::Index, 3>({ 2,2,2 })));
+  iter = 1;
+  for (const auto& slice_indices_map : slice_indices) {
+    BOOST_CHECK_EQUAL(slice_indices_map.first, iter);
+    BOOST_CHECK(slice_indices_map.second.first == slice_indices_test.at(slice_indices_map.first).first);
+    BOOST_CHECK(slice_indices_map.second.second == slice_indices_test.at(slice_indices_map.first).second);
+    ++iter;
+  }
+
+  // Test the partially in memory case and partially selected case
+  for (auto& in_memory_map : tensorTable.getNotInMemory()) {
+    for (int i = 0; i < nlabels; ++i) {
+      if (i < shard_span)
+        in_memory_map.second->getData()(i) = 1;
+      else
+        in_memory_map.second->getData()(i) = 0;
+    }
+  }
+  for (auto& indices_view_map : tensorTable.getIndicesView()) {
+    for (int i = 0; i < nlabels; ++i) {
+      if (i < 1)
+        indices_view_map.second->getData()(i) = i + 1;
+      else
+        indices_view_map.second->getData()(i) = 0;
     }
   }
   shard_id_indices_ptr.reset();

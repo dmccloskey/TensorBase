@@ -566,6 +566,15 @@ namespace TensorBase
     */
     void makeModifiedShardIDTensor(std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, DeviceT& device) const;
 
+    /**
+    @brief Make the shard_id 1D tensor with unique TensorData shard_id
+      based on the unique and num_runs data generated from the calls to sort and runLengthEncode
+
+    @param[out] modified_shard_id
+    @param[in] unique
+    @param[in] num_runs
+    @param[in] device
+    */
     void makeShardIDTensor(std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, std::shared_ptr<TensorData<int, DeviceT, 1>>& unique, std::shared_ptr<TensorData<int, DeviceT, 1>>& num_runs, DeviceT & device) const;
 
     /*
@@ -605,8 +614,8 @@ namespace TensorBase
     virtual void makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>>& slice_indices, DeviceT& device) const = 0;
 
     /**
-    @brief Determine the Tensor data shards that are not in memory from the
-      `not_in_memory` and `shard_id` members, and make an ordered 1D Tensor with
+    @brief Determine the Tensor data shards that are not in memory and are selected from the
+      `not_in_memory`, `indices_view` and `shard_id` members, and make an ordered 1D Tensor with
       unique TensorData shard ids
 
     @param[out] modified_shard_id
@@ -1880,18 +1889,24 @@ namespace TensorBase
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorTable<TensorT, DeviceT, TDim>::makeNotInMemoryShardIDTensor(std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, DeviceT & device) const
   {
-    // Make the selection indices from the in memory tensor indices
+    // Make the selection indices from the indices view tensor indices
     std::shared_ptr<TensorData<int, DeviceT, TDim>> select_indices;
-    makeSelectIndicesFromTensorIndicesComponent(not_in_memory_, select_indices, device);
+    makeSelectIndicesFromTensorIndicesComponent(indices_view_, select_indices, device);
+
+    // Make the selection indices from the in memory tensor indices
+    std::shared_ptr<TensorData<int, DeviceT, TDim>> not_in_memory_indices;
+    makeSelectIndicesFromTensorIndicesComponent(not_in_memory_, not_in_memory_indices, device);
 
     // Make the sort indices from the `shard_id` values
     std::shared_ptr<TensorData<int, DeviceT, TDim>> shard_indices;
     makeShardIndicesFromShardIDs(shard_indices, device);
 
     // Select the `shard_id` values to use for writing
+    Eigen::TensorMap<Eigen::Tensor<int, TDim>> not_in_memory_indices_values(not_in_memory_indices->getDataPointer().get(), not_in_memory_indices->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<int, TDim>> select_indices_values(select_indices->getDataPointer().get(), select_indices->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<int, TDim>> shard_indices_values(shard_indices->getDataPointer().get(), shard_indices->getDimensions());
-    shard_indices_values.device(device) = (select_indices_values > select_indices_values.constant(0)).select(shard_indices_values, shard_indices_values.constant(0));
+    shard_indices_values.device(device) = (select_indices_values > select_indices_values.constant(0) &&
+      not_in_memory_indices_values > not_in_memory_indices_values.constant(0)).select(shard_indices_values, shard_indices_values.constant(0));
 
     // TODO: Move to device-specific code
     // Synchronize the Device and Host data for sorting and runLengthEncoding
