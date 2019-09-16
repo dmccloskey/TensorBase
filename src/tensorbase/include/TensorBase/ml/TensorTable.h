@@ -1512,17 +1512,17 @@ namespace TensorBase
 
     // TODO: Move to device-specific code
     // Synchronize the Device and Host data for paritioning and sorting
-//#if COMPILE_WITH_CUDA
-//    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
-//      indices_sort->syncHAndDData(device); // d to h
-//      indices_partition->syncHAndDData(device); // d to h
-//      syncHAndDData(device); // d to h
-//      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
-//      indices_sort->setDataStatus(false, true);
-//      indices_partition->setDataStatus(false, true);
-//      setDataStatus(false, true);
-//    }
-//#endif
+#if COMPILE_WITH_CUDA
+    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
+      indices_sort->syncHAndDData(device); // d to h
+      indices_partition->syncHAndDData(device); // d to h
+      syncHAndDData(device); // d to h
+      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+      indices_sort->setDataStatus(false, true);
+      indices_partition->setDataStatus(false, true);
+      setDataStatus(false, true);
+    }
+#endif
 
     // partition the indices
     indices_sort->partition(indices_partition, device);
@@ -1867,17 +1867,17 @@ namespace TensorBase
 
     // TODO: Move to device-specific code
     // NOTE: Required for calls to sort
-//#if COMPILE_WITH_CUDA
-//    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
-//      this->syncIndicesHAndDData(device);
-//      this->syncHAndDData(device);
-//      this->syncAxesHAndDData(device);
-//      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
-//      this->setIndicesDataStatus(false, true);
-//      this->setDataStatus(false, true);
-//      this->setAxesDataStatus(false, true);
-//    }
-//#endif
+#if COMPILE_WITH_CUDA
+    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
+      this->syncIndicesHAndDData(device);
+      this->syncHAndDData(device);
+      this->syncAxesHAndDData(device);
+      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+      this->setIndicesDataStatus(false, true);
+      this->setDataStatus(false, true);
+      this->setAxesDataStatus(false, true);
+    }
+#endif
 
     // Sort the is_modified values by the indices, and then sort the indices and update the shard indices
     is_modified_.at(axis_name)->sort(indices_.at(axis_name), device);
@@ -1976,13 +1976,13 @@ namespace TensorBase
 
     // TODO: Move to device-specific code
     // Synchronize the Device and Host data for sorting and runLengthEncoding
-//#if COMPILE_WITH_CUDA
-//    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
-//      shard_indices->syncHAndDData(device); // d to h
-//      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
-//      shard_indices->setDataStatus(false, true);
-//    }
-//#endif
+#if COMPILE_WITH_CUDA
+    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
+      shard_indices->syncHAndDData(device); // d to h
+      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+      shard_indices->setDataStatus(false, true);
+    }
+#endif
 
     // Sort and then RunLengthEncode
     shard_indices->sort("ASC", device);
@@ -2001,11 +2001,11 @@ namespace TensorBase
     num_runs->syncHAndDData(device); // d to h
 
     // TODO: Move to device-specific code
-//#if COMPILE_WITH_CUDA
-//    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
-//      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
-//    }
-//#endif
+#if COMPILE_WITH_CUDA
+    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
+      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+    }
+#endif
 
     if (num_runs->getData()(0) == 1 && unique->getData()(0) == 0) {
       unique->setDimensions(Eigen::array<Eigen::Index, 1>({ 0 }));
@@ -2047,13 +2047,13 @@ namespace TensorBase
 
     // TODO: Move to device-specific code
     // Synchronize the Device and Host data for sorting and runLengthEncoding
-//#if COMPILE_WITH_CUDA
-//    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
-//      shard_indices->syncHAndDData(device); // d to h
-//      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
-//      shard_indices->setDataStatus(false, true);
-//    }
-//#endif
+#if compile_with_cuda
+    if (typeid(device).name() == typeid(eigen::gpudevice).name()) {
+      shard_indices->synchandddata(device); // d to h
+      assert(cudastreamsynchronize(device.stream()) == cudasuccess);
+      shard_indices->setdatastatus(false, true);
+    }
+#endif
 
     // Sort and then RunLengthEncode
     shard_indices->sort("ASC", device);
