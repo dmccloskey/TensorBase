@@ -55,6 +55,9 @@ namespace TensorBase
     void makeShardIndicesFromShardIDs(std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices_shard, Eigen::GpuDevice& device) const override;
     void runLengthEncodeIndex(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& data, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& n_runs, Eigen::GpuDevice& device) const override;
     void makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>>& slice_indices, Eigen::GpuDevice& device) const override;
+    void makeShardIDTensor(std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& modified_shard_ids, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& num_runs, Eigen::GpuDevice & device) const override;
+    bool loadTensorTableBinary(const std::string& dir, Eigen::GpuDevice& device) override;
+    bool storeTensorTableBinary(const std::string& dir, Eigen::GpuDevice& device) override;
   private:
     friend class cereal::access;
     template<class Archive>
@@ -743,6 +746,114 @@ namespace TensorBase
       // update the accumulative size
       axis_size_cum *= this->axes_.at(axis_to_dim.first)->getNLabels();
     }
+  }
+  template<typename TensorT, int TDim>
+  inline void TensorTableGpu<TensorT, TDim>::makeShardIDTensor(std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& modified_shard_ids, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& num_runs, Eigen::GpuDevice & device) const
+  {
+    // Resize the unique results and remove 0's from the unique
+    unique->syncHAndDData(device); // d to h
+    num_runs->syncHAndDData(device); // d to h
+
+    // TODO: Move to device-specific code
+#if COMPILE_WITH_CUDA
+    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
+      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+    }
+#endif
+
+    if (num_runs->getData()(0) == 1 && unique->getData()(0) == 0) {
+      unique->setDimensions(Eigen::array<Eigen::Index, 1>({ 0 }));
+    }
+    else if (unique->getData()(0) == 0) {
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> unqiue_values(unique->getDataPointer().get(), unique->getDimensions());
+      unqiue_values.slice(Eigen::array<Eigen::Index, 1>({ 0 }), Eigen::array<Eigen::Index, 1>({ num_runs->getData()(0) - 1 })).device(device) = unqiue_values.slice(Eigen::array<Eigen::Index, 1>({ 1 }), Eigen::array<Eigen::Index, 1>({ num_runs->getData()(0) - 1 }));
+      unique->setDimensions(Eigen::array<Eigen::Index, 1>({ num_runs->getData()(0) - 1 }));
+    }
+    else {
+      unique->setDimensions(Eigen::array<Eigen::Index, 1>({ num_runs->getData()(0) }));
+    }
+    unique->setDataStatus(false, true);
+    num_runs->setDataStatus(false, true);
+    modified_shard_ids = unique;
+  }
+  template<typename TensorT, int TDim>
+  inline bool TensorTableGpu<TensorT, TDim>::loadTensorTableBinary(const std::string & dir, Eigen::GpuDevice & device)
+  {
+    // determine the shards to read from disk
+    std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> not_in_memory_shard_ids;
+    makeNotInMemoryShardIDTensor(not_in_memory_shard_ids, device);
+    if (not_in_memory_shard_ids->getTensorSize() == 0) {
+      //std::cout << "No shards have been modified." << std::endl; // TODO: Move to logging
+      return false;
+    }
+    std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>> slice_indices;
+    makeSliceIndicesFromShardIndices(not_in_memory_shard_ids, slice_indices, device);
+
+    // read in the shards and update the TensorTable data asyncronously
+    syncHAndDData(device); // D to H
+    // TODO: Move to device-specific code
+    // Synchronize the Device and Host data for reading from disk
+#if COMPILE_WITH_CUDA
+    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
+      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+    }
+#endif
+    for (const auto slice_index : slice_indices) {
+      const std::string filename = makeTensorTableShardFilename(dir, getName(), slice_index.first);
+      Eigen::Tensor<TensorT, TDim> shard_data(slice_index.second.second);
+      DataFile::loadDataBinary<TensorT, TDim>(filename, shard_data);
+      getData().slice(slice_index.second.first, slice_index.second.second) = shard_data;
+
+      // update the `not_in_memory` tensor table attribute
+      for (auto& not_in_memory_map : not_in_memory_) {
+        Eigen::array<Eigen::Index, 1> offset;
+        offset.at(0) = slice_index.second.first.at(getDimFromAxisName(not_in_memory_map.first));
+        Eigen::array<Eigen::Index, 1> span;
+        span.at(0) = slice_index.second.second.at(getDimFromAxisName(not_in_memory_map.first));
+        Eigen::TensorMap<Eigen::Tensor<int, 1>> not_in_memory_values(not_in_memory_map.second->getDataPointer().get(), (int)not_in_memory_map.second->getTensorSize());
+        not_in_memory_values.slice(offset, span).device(device) = not_in_memory_values.slice(offset, span).constant(0);
+      }
+    }
+    syncHAndDData(device); // H to D
+
+    return true;
+  }
+  template<typename TensorT, int TDim>
+  inline bool TensorTableGpu<TensorT, TDim>::storeTensorTableBinary(const std::string & dir, Eigen::GpuDevice & device)
+  {
+    // determine the shards to write to disk
+    std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> modified_shard_ids;
+    makeModifiedShardIDTensor(modified_shard_ids, device);
+    if (modified_shard_ids->getTensorSize() == 0) {
+      //std::cout << "No shards have been modified." << std::endl; // TODO: Move to logging
+      return false;
+    }
+    std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>> slice_indices;
+    makeSliceIndicesFromShardIndices(modified_shard_ids, slice_indices, device);
+
+    // write the TensorTable shards to disk asyncronously
+    syncHAndDData(device); // D to H
+    // TODO: Move to device-specific code
+    // Synchronize the Device and Host data for writing to disk
+#if COMPILE_WITH_CUDA
+    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
+      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+    }
+#endif
+    for (const auto slice_index : slice_indices) {
+      const std::string filename = makeTensorTableShardFilename(dir, getName(), slice_index.first);
+      Eigen::Tensor<TensorT, TDim> shard_data = getData().slice(slice_index.second.first, slice_index.second.second);
+      DataFile::storeDataBinary<TensorT, TDim>(filename, shard_data);
+    }
+    setDataStatus(false, true);
+
+    // update the `is_modified` tensor table attribute
+    for (auto& is_modified_map : is_modified_) {
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> is_modified_values(is_modified_map.second->getDataPointer().get(), (int)is_modified_map.second->getTensorSize());
+      is_modified_values.device(device) = is_modified_values.constant(0);
+    }
+
+    return true;
   }
 };
 
