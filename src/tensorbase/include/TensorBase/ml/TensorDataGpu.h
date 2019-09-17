@@ -26,6 +26,54 @@
 
 namespace TensorBase
 {
+  template<bool IsClass> struct selectGpu {
+    template<typename TensorT, int TDim>
+    static void select(TensorData<TensorT, Eigen::GpuDevice, TDim>& data, std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice& device) {
+
+      // Temporary device storage for the size of the selection
+      int *d_n_selected;
+      assert(cudaMalloc((void**)(&d_n_selected), sizeof(int)) == cudaSuccess);
+
+      // Determine temporary device storage requirements
+      void     *d_temp_storage = NULL;
+      size_t   temp_storage_bytes = 0;
+      cub::DeviceSelect::Flagged(d_temp_storage, temp_storage_bytes, data.getDataPointer().get(), indices->getDataPointer().get(), tensor_select->getDataPointer().get(),
+        d_n_selected, indices->getTensorSize(), device.stream());
+
+      // Allocate temporary storage
+      assert(cudaMalloc((void**)(&d_temp_storage), temp_storage_bytes) == cudaSuccess);
+
+      // Run selection
+      cub::DeviceSelect::Flagged(d_temp_storage, temp_storage_bytes, data.getDataPointer().get(), indices->getDataPointer().get(), tensor_select->getDataPointer().get(),
+        d_n_selected, indices->getTensorSize(), device.stream());
+
+      assert(cudaFree(d_n_selected) == cudaSuccess);
+      assert(cudaFree(d_temp_storage) == cudaSuccess);
+    }
+  };
+  template<> struct selectGpu<true> {
+    template<typename TensorT, int TDim>
+    static void select(TensorData<TensorT, Eigen::GpuDevice, TDim>& data, std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice& device) {
+      thrust::cuda::par.on(device.stream());
+      // Create a copy of the data
+      auto data_copy = data.copy(device);
+      data_copy->syncHAndDData(device);
+
+      // make thrust device pointers to the data
+      thrust::device_ptr<TensorT> d_data(data_copy->getDataPointer().get());
+      thrust::device_ptr<int> d_indices(indices->getDataPointer().get());
+
+      // call remove_if on the flagged entries marked as false (i.e., 0)
+      thrust::remove_if(d_data, d_data + data_copy->getTensorSize(), d_indices, thrust::logical_not<bool>());
+
+      // Copy over the selected values
+      Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> tensor_select_values(tensor_select->getDataPointer().get(), tensor_select->getDimensions());
+      Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy_values(data_copy->getDataPointer().get(), data_copy->getDimensions());
+      Eigen::array<Eigen::Index, TDim> offset; // initialized to all 0s
+      tensor_select_values.slice(offset, tensor_select->getDimensions()).device(device) = data_copy_values.slice(offset, tensor_select->getDimensions());
+    }
+  };
+
   /**
     @brief Tensor data class specialization for Eigen::GpuDevice (single GPU)
   */
@@ -53,14 +101,7 @@ namespace TensorBase
     void sortCub(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice& device);
     void partitionCub(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice& device);
     void runLengthEncodeCub(std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& n_runs, Eigen::GpuDevice& device);
-
-    void selectThrust(std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice& device);
-    void sortIndicesThrust(std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, const std::string& sort_order, Eigen::GpuDevice& device);
-    void sortThrust(const std::string& sort_order, Eigen::GpuDevice& device);
-    void sortThrust(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice& device);
-    void partitionThrust(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice& device);
-    void runLengthEncodeThrust(std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& n_runs, Eigen::GpuDevice& device);
-    private:
+  private:
     	friend class cereal::access;
     	template<class Archive>
     	void serialize(Archive& archive) {
@@ -88,10 +129,7 @@ namespace TensorBase
   template<typename TensorT, int TDim>
   inline void TensorDataGpu<TensorT, TDim>::select(std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice & device)
   {
-    if (std::is_same<TensorArrayGpu8<char>, TensorT>::value)
-      this->selectThrust(tensor_select, indices, device);
-    else
-      this->selectCub(tensor_select, indices, device);
+    selectGpu<std::is_class<TensorT>::value>::select(*this, tensor_select, indices, device);
   }
   template<typename TensorT, int TDim>
   inline void TensorDataGpu<TensorT, TDim>::sortIndices(std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, const std::string & sort_order, Eigen::GpuDevice & device)
@@ -342,27 +380,6 @@ namespace TensorBase
       unique->getDataPointer().get(), count->getDataPointer().get(), n_runs->getDataPointer().get(), this->getTensorSize(), device.stream());
 
     assert(cudaFree(d_temp_storage) == cudaSuccess);
-  }
-  template<typename TensorT, int TDim>
-  inline void TensorDataGpu<TensorT, TDim>::selectThrust(std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice & device)
-  {
-    thrust::cuda::par.on(device.stream());
-    // Create a copy of the data
-    auto data_copy = this->copy(device);
-    data_copy->syncHAndDData(device);
-
-    // make thrust device pointers to the data
-    thrust::device_ptr<TensorT> d_data(data_copy->getDataPointer().get());
-    thrust::device_ptr<int> d_indices(indices->getDataPointer().get());
-
-    // call remove_if on the flagged entries marked as false (i.e., 0)
-    thrust::remove_if(d_data, d_data + data_copy->getTensorSize(), d_indices, thrust::logical_not<bool>());
-
-    // Copy over the selected values
-    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> tensor_select_values(tensor_select->getDataPointer().get(), tensor_select->getDimensions());
-    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy_values(data_copy->getDataPointer().get(), data_copy->getDimensions());
-    Eigen::array<Eigen::Index, TDim> offset; // initialized to all 0s
-    tensor_select_values.slice(offset, tensor_select->getDimensions()).device(device) = data_copy_values.slice(offset, tensor_select->getDimensions());
   }
 }
 
