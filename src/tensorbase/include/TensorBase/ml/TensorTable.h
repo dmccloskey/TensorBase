@@ -1510,19 +1510,19 @@ namespace TensorBase
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_sort;
     makeSortIndicesFromTensorIndicesComponent(indices_view_, indices_sort, device);
 
-    // TODO: Move to device-specific code
-    // Synchronize the Device and Host data for paritioning and sorting
-#if COMPILE_WITH_CUDA
-    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
-      indices_sort->syncHAndDData(device); // d to h
-      indices_partition->syncHAndDData(device); // d to h
-      syncHAndDData(device); // d to h
-      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
-      indices_sort->setDataStatus(false, true);
-      indices_partition->setDataStatus(false, true);
-      setDataStatus(false, true);
-    }
-#endif
+//    // TODO: Move to device-specific code
+//    // Synchronize the Device and Host data for paritioning and sorting
+//#if COMPILE_WITH_CUDA
+//    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
+//      indices_sort->syncHAndDData(device); // d to h
+//      indices_partition->syncHAndDData(device); // d to h
+//      syncHAndDData(device); // d to h
+//      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+//      indices_sort->setDataStatus(false, true);
+//      indices_partition->setDataStatus(false, true);
+//      setDataStatus(false, true);
+//    }
+//#endif
 
     // partition the indices
     indices_sort->partition(indices_partition, device);
@@ -1865,19 +1865,19 @@ namespace TensorBase
     indices_view_values.slice(offsets, extents).device(device) = indices_old_values;
     indices_values.slice(offsets, extents).device(device) = indices_old_values;
 
-    // TODO: Move to device-specific code
-    // NOTE: Required for calls to sort
-#if COMPILE_WITH_CUDA
-    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
-      this->syncIndicesHAndDData(device);
-      this->syncHAndDData(device);
-      this->syncAxesHAndDData(device);
-      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
-      this->setIndicesDataStatus(false, true);
-      this->setDataStatus(false, true);
-      this->setAxesDataStatus(false, true);
-    }
-#endif
+//    // TODO: Move to device-specific code
+//    // NOTE: Required for calls to sort
+//#if COMPILE_WITH_CUDA
+//    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
+//      this->syncIndicesHAndDData(device);
+//      this->syncHAndDData(device);
+//      this->syncAxesHAndDData(device);
+//      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+//      this->setIndicesDataStatus(false, true);
+//      this->setDataStatus(false, true);
+//      this->setAxesDataStatus(false, true);
+//    }
+//#endif
 
     // Sort the is_modified values by the indices, and then sort the indices and update the shard indices
     is_modified_.at(axis_name)->sort(indices_.at(axis_name), device);
@@ -1988,15 +1988,15 @@ namespace TensorBase
     Eigen::TensorMap<Eigen::Tensor<int, TDim>> shard_indices_values(shard_indices->getDataPointer().get(), shard_indices->getDimensions());
     shard_indices_values.device(device) = (select_indices_values > select_indices_values.constant(0)).select(shard_indices_values, shard_indices_values.constant(0));
 
-    // TODO: Move to device-specific code
-    // Synchronize the Device and Host data for sorting and runLengthEncoding
-#if COMPILE_WITH_CUDA
-    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
-      shard_indices->syncHAndDData(device); // d to h
-      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
-      shard_indices->setDataStatus(false, true);
-    }
-#endif
+//    // TODO: Move to device-specific code
+//    // Synchronize the Device and Host data for sorting and runLengthEncoding
+//#if COMPILE_WITH_CUDA
+//    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
+//      shard_indices->syncHAndDData(device); // d to h
+//      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+//      shard_indices->setDataStatus(false, true);
+//    }
+//#endif
 
     // Sort and then RunLengthEncode
     shard_indices->sort("ASC", device);
