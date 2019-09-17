@@ -720,7 +720,7 @@ namespace TensorBase
   inline bool TensorTableDefaultDevice<TensorT, TDim>::loadTensorTableBinary(const std::string & dir, Eigen::DefaultDevice & device)
   {
     // determine the shards to read from disk
-    std::shared_ptr<TensorData<int, DeviceT, 1>> not_in_memory_shard_ids;
+    std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> not_in_memory_shard_ids;
     makeNotInMemoryShardIDTensor(not_in_memory_shard_ids, device);
     if (not_in_memory_shard_ids->getTensorSize() == 0) {
       //std::cout << "No shards have been modified." << std::endl; // TODO: Move to logging
@@ -755,7 +755,7 @@ namespace TensorBase
   inline bool TensorTableDefaultDevice<TensorT, TDim>::storeTensorTableBinary(const std::string & dir, Eigen::DefaultDevice & device)
   {
     // determine the shards to write to disk
-    std::shared_ptr<TensorData<int, DeviceT, 1>> modified_shard_ids;
+    std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> modified_shard_ids;
     makeModifiedShardIDTensor(modified_shard_ids, device);
     if (modified_shard_ids->getTensorSize() == 0) {
       //std::cout << "No shards have been modified." << std::endl; // TODO: Move to logging
