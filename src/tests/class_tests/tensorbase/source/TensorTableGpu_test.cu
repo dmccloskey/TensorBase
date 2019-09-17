@@ -1358,8 +1358,8 @@ void test_selectTensorDataGpu()
   assert(tensorTable.getAxes().at("1")->getDimensions()(0) == "x");
   assert(tensorTable.getIndices().at("1")->getData()(0) == 1);
   assert(tensorTable.getIndicesView().at("1")->getData()(0) == 1);
-  assert(tensorTable.getIsModified().at("1")->getData()(0) == 0);
-  assert(tensorTable.getNotInMemory().at("1")->getData()(0) == 1);
+  assert(tensorTable.getIsModified().at("1")->getData()(0) == 1);
+  assert(tensorTable.getNotInMemory().at("1")->getData()(0) == 0);
   assert(tensorTable.getShardId().at("1")->getData()(0) == 1);
   assert(tensorTable.getShardIndices().at("1")->getData()(0) == 1);
 
@@ -1370,8 +1370,8 @@ void test_selectTensorDataGpu()
   for (int i = 0; i < nlabels; ++i) {
     assert(tensorTable.getIndices().at("2")->getData()(i) == i + 1);
     assert(tensorTable.getIndicesView().at("2")->getData()(i) == i + 1);
-    assert(tensorTable.getIsModified().at("2")->getData()(i) == 0);
-    assert(tensorTable.getNotInMemory().at("2")->getData()(i) == 1);
+    assert(tensorTable.getIsModified().at("2")->getData()(i) == 1);
+    assert(tensorTable.getNotInMemory().at("2")->getData()(i) == 0);
     assert(tensorTable.getShardId().at("2")->getData()(i) == 1);
     assert(tensorTable.getShardIndices().at("2")->getData()(i) == i + 1);
   }
@@ -1383,8 +1383,8 @@ void test_selectTensorDataGpu()
   for (int i = 0; i < nlabels; ++i) {
     assert(tensorTable.getIndices().at("3")->getData()(i) == i + 1);
     assert(tensorTable.getIndicesView().at("3")->getData()(i) == i + 1);
-    assert(tensorTable.getIsModified().at("3")->getData()(i) == 0);
-    assert(tensorTable.getNotInMemory().at("3")->getData()(i) == 1);
+    assert(tensorTable.getIsModified().at("3")->getData()(i) == 1);
+    assert(tensorTable.getNotInMemory().at("3")->getData()(i) == 0);
     assert(tensorTable.getShardId().at("3")->getData()(i) == 1);
     assert(tensorTable.getShardIndices().at("3")->getData()(i) == i + 1);
   }
@@ -1448,8 +1448,8 @@ void test_selectTensorDataGpu()
   assert(tensorTable.getAxes().at("1")->getDimensions()(0) == "x");
   assert(tensorTable.getIndices().at("1")->getData()(0) == 1);
   assert(tensorTable.getIndicesView().at("1")->getData()(0) == 1);
-  assert(tensorTable.getIsModified().at("1")->getData()(0) == 0);
-  assert(tensorTable.getNotInMemory().at("1")->getData()(0) == 1);
+  assert(tensorTable.getIsModified().at("1")->getData()(0) == 1);
+  assert(tensorTable.getNotInMemory().at("1")->getData()(0) == 0);
   assert(tensorTable.getShardId().at("1")->getData()(0) == 1);
   assert(tensorTable.getShardIndices().at("1")->getData()(0) == 1);
 
@@ -1460,8 +1460,8 @@ void test_selectTensorDataGpu()
   for (int i = 0; i < nlabels; ++i) {
     assert(tensorTable.getIndices().at("2")->getData()(i) == i + 1);
     assert(tensorTable.getIndicesView().at("2")->getData()(i) == i + 1);
-    assert(tensorTable.getIsModified().at("2")->getData()(i) == 0);
-    assert(tensorTable.getNotInMemory().at("2")->getData()(i) == 1);
+    assert(tensorTable.getIsModified().at("2")->getData()(i) == 1);
+    assert(tensorTable.getNotInMemory().at("2")->getData()(i) == 0);
     assert(tensorTable.getShardId().at("2")->getData()(i) == 1);
     assert(tensorTable.getShardIndices().at("2")->getData()(i) == i + 1);
   }
@@ -1473,8 +1473,8 @@ void test_selectTensorDataGpu()
   for (int i = 0; i < nlabels; ++i) {
     assert(tensorTable.getIndices().at("3")->getData()(i) == i + 1);
     assert(tensorTable.getIndicesView().at("3")->getData()(i) == i + 1);
-    assert(tensorTable.getIsModified().at("3")->getData()(i) == 0);
-    assert(tensorTable.getNotInMemory().at("3")->getData()(i) == 1);
+    assert(tensorTable.getIsModified().at("3")->getData()(i) == 1);
+    assert(tensorTable.getNotInMemory().at("3")->getData()(i) == 0);
     assert(tensorTable.getShardId().at("3")->getData()(i) == 1);
     assert(tensorTable.getShardIndices().at("3")->getData()(i) == i + 1);
   }

@@ -1302,6 +1302,27 @@ namespace TensorBase
     // remake the axes and move over the tensor data
     setAxes();
     data_ = tensor_select;
+
+    // TODO: does it make sense to move this over to `setAxes()` ?
+    // Sync all of the axes and reShard
+    syncIndicesHAndDData(device);
+    syncIndicesViewHAndDData(device);
+    syncIsModifiedHAndDData(device);
+    syncNotInMemoryHAndDData(device);
+    syncShardIdHAndDData(device);
+    syncShardIndicesHAndDData(device);
+    reShardIndices(device);
+    syncAxesHAndDData(device);
+
+    // update the not_in_memory and is_modified attributes
+    for (auto& in_memory_map : not_in_memory_) {
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> not_in_memory(in_memory_map.second->getDataPointer().get(), (int)in_memory_map.second->getTensorSize());
+      not_in_memory.device(device) = not_in_memory.constant(0); // device
+    }
+    for (auto& is_modified_map : is_modified_) {
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> is_modified(is_modified_map.second->getDataPointer().get(), (int)is_modified_map.second->getTensorSize());
+      is_modified.device(device) = is_modified.constant(1); // device
+    }
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
