@@ -26,8 +26,8 @@
 
 namespace TensorBase
 {
-  template<bool IsClass> struct selectGpu {
-    template<typename TensorT, int TDim>
+  template<typename TensorT, int TDim, typename Enable = void>
+  struct selectGpu {
     static void select(TensorData<TensorT, Eigen::GpuDevice, TDim>& data, std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice& device) {
 
       // Temporary device storage for the size of the selection
@@ -51,8 +51,8 @@ namespace TensorBase
       assert(cudaFree(d_temp_storage) == cudaSuccess);
     }
   };
-  template<> struct selectGpu<true> {
-    template<typename TensorT, int TDim>
+  template<typename TensorT, int TDim>
+  struct selectGpu<TensorT, TDim, typename std::enable_if<std::is_class<TensorT>::value>> {
     static void select(TensorData<TensorT, Eigen::GpuDevice, TDim>& data, std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice& device) {
       thrust::cuda::par.on(device.stream());
       // Create a copy of the data
@@ -129,7 +129,7 @@ namespace TensorBase
   template<typename TensorT, int TDim>
   inline void TensorDataGpu<TensorT, TDim>::select(std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice & device)
   {
-    selectGpu<std::is_class<TensorT>::value>::select(*this, tensor_select, indices, device);
+    selectGpu<TensorT, TDim>::select(*this, tensor_select, indices, device);
   }
   template<typename TensorT, int TDim>
   inline void TensorDataGpu<TensorT, TDim>::sortIndices(std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, const std::string & sort_order, Eigen::GpuDevice & device)
