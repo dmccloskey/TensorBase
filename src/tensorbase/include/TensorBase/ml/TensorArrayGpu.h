@@ -11,7 +11,6 @@
 
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/ml/TensorArray.h>
-#include <TensorBase/ml/TensorDataGpu.h>
 
 #include <cereal/access.hpp>  // serialiation of private members
 #undef min // clashes with std::limit on windows in polymorphic.hpp

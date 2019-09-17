@@ -4,8 +4,6 @@
 #if COMPILE_WITH_CUDA
 #include <TensorBase/ml/TensorArrayGpu.h>
 #include <thrust/sort.h>
-#include <thrust/host_vector.h>
-#include <thrust/device_vector.h>
 #include <thrust/device_ptr.h>
 #include <thrust/execution_policy.h>
 
