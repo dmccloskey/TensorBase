@@ -101,15 +101,19 @@ public:
     for (const auto slice_index : slice_indices) {
       const std::string filename = makeTensorTableShardFilename(dir, tensor_table.getName(), slice_index.first);
       loadTensorTableShard(filename, tensor_table, slice_index.second);
+
+      // update the `not_in_memory` tensor table attribute
+      for (auto& not_in_memory_map : tensor_table.getNotInMemory()) {
+        Eigen::array<Eigen::Index, 1> offset;
+        offset.at(0) = slice_index.second.first.at(tensor_table.getDimFromAxisName(not_in_memory_map.first));
+        Eigen::array<Eigen::Index, 1> span;
+        span.at(0) = slice_index.second.second.at(tensor_table.getDimFromAxisName(not_in_memory_map.first));
+        Eigen::TensorMap<Eigen::Tensor<int, 1>> not_in_memory_values(not_in_memory_map.second->getDataPointer().get(), (int)not_in_memory_map.second->getTensorSize());
+        not_in_memory_values.slice(offset, span).device(device) = not_in_memory_values.slice(offset, span).constant(0);
+      }
     }
     tensor_table.syncHAndDData(device); // H to D
-
-    // update the `not_in_memory` tensor table attribute
-    for (auto& not_in_memory_map : tensor_table.getNotInMemory()) {
-      Eigen::TensorMap<Eigen::Tensor<int, 1>> not_in_memory_values(not_in_memory_map.second->getDataPointer().get(), (int)not_in_memory_map.second->getTensorSize());
-      not_in_memory_values.device(device) = not_in_memory_values.constant(0);
-    }
-
+    
     return true;
   }
 

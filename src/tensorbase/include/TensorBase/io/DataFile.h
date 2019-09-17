@@ -60,7 +60,7 @@ public:
         printf("Exception");
 		    return false;
       }
-    };
+    }
  
     /**
       @brief Load data from file
@@ -97,7 +97,7 @@ public:
         printf("Exception");
 		return false;
       }
-    };
+    }
   };
 }
 

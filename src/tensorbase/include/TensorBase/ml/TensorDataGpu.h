@@ -49,11 +49,11 @@ namespace TensorBase
   template<typename TensorT, int TDim>
   std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>> TensorDataGpu<TensorT, TDim>::copy(Eigen::GpuDevice& device) {
     // initialize the new data
-    //if (this->h_data_updated_) {
-    //  this->syncHAndDData(device);
-    //  assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
-    //  this->setDataStatus(false, true);
-    //}
+    if (this->d_data_updated_) {
+      this->syncHAndDData(device);
+      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+      this->setDataStatus(false, true);
+    }
     TensorDataGpu<TensorT, TDim> data_new(this->getDimensions());
     data_new.setData(this->getData());
     //data_new.setData();
