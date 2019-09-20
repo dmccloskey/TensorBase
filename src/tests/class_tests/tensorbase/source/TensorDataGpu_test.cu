@@ -174,11 +174,10 @@ void test_sortGpuPrimitiveT()
   tensordata.sort("DESC", device);
   tensordata.syncHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  Eigen::TensorMap<Eigen::Tensor<float, 3>> tensor_sorted_values2(tensordata.getDataPointer().get(), tensordata.getDimensions());
   for (int i = 0; i < dim_sizes; ++i) {
     for (int j = 0; j < dim_sizes; ++j) {
       for (int k = 0; k < dim_sizes; ++k) {
-        assert(tensor_sorted_values2(i, j, k) == tensor_values_test(i, j, k));
+        assert(tensordata.getData()(i, j, k) == tensor_values_test(i, j, k));
       }
     }
   }
@@ -611,11 +610,10 @@ void test_sortGpuClassT()
   tensordata.sort("DESC", device);
   tensordata.syncHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 3>> tensor_sorted_values2(tensordata.getDataPointer().get(), tensordata.getDimensions());
   for (int i = 0; i < dim_sizes; ++i) {
     for (int j = 0; j < dim_sizes; ++j) {
       for (int k = 0; k < dim_sizes; ++k) {
-        assert(tensor_sorted_values2(i, j, k) == tensor_values_test(i, j, k));
+        assert(tensordata.getData()(i, j, k) == tensor_values_test(i, j, k));
       }
     }
   }
@@ -874,6 +872,7 @@ int main(int argc, char** argv)
   test_assignmentGpuPrimitiveT();
   test_copyGpuPrimitiveT();
   test_selectGpuPrimitiveT();
+  test_sortGpuPrimitiveT();
   test_sortIndicesGpuPrimitiveT();
   test_partitionGpuPrimitiveT();
   test_runLengthEncodeGpuPrimitiveT();
@@ -883,6 +882,7 @@ int main(int argc, char** argv)
   test_destructorGpuClassT();
   test_copyGpuClassT();
   test_selectGpuClassT();
+  //test_sortGpuClassT();
   //test_sortIndicesGpuClassT();
   test_partitionGpuClassT();
   test_runLengthEncodeGpuClassT();
