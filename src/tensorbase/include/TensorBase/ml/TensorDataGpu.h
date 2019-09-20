@@ -393,8 +393,8 @@ namespace TensorBase
       thrust::sort_by_key(d_data, d_data + data_copy->getTensorSize(), d_indices);
     }
     else if (sort_order == "DESC") {
-      isGreaterThanGpu comp(data_copy->getTensorSize());
-      thrust::sort_by_key(d_data, d_data + data_copy->getTensorSize(), d_indices, comp);
+      //isGreaterThanGpu comp(data_copy->getTensorSize());
+      //thrust::sort_by_key(d_data, d_data + data_copy->getTensorSize(), d_indices, comp);
     }
   }
   template<typename TensorT, int TDim>
@@ -407,8 +407,8 @@ namespace TensorBase
       thrust::sort(d_data, d_data + this->getTensorSize());
     }
     else if (sort_order == "DESC") {
-      isGreaterThanGpu comp(this->getTensorSize());
-      thrust::sort(d_data, d_data + this->getTensorSize(), comp);
+      //isGreaterThanGpu comp(this->getTensorSize());
+      //thrust::sort(d_data, d_data + this->getTensorSize(), comp);
     }
   }
   template<typename TensorT, int TDim>
@@ -435,7 +435,8 @@ namespace TensorBase
     thrust::device_ptr<int> d_indices(indices->getDataPointer().get());
 
     // call remove_if on the flagged entries marked as false (i.e., 0)
-    thrust::partition(d_data, d_data + data_copy->getTensorSize(), d_indices, thrust::logical_not<bool>());
+    //thrust::partition(d_data, d_data + data_copy->getTensorSize(), d_indices, thrust::logical_not<bool>()); // Does not guarantee order
+    thrust::stable_partition(d_data, d_data + data_copy->getTensorSize(), d_indices, thrust::logical_not<bool>());
   }
   template<typename TensorT, int TDim>
   inline void TensorDataGpuClassT<TensorT, TDim>::runLengthEncode(std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& n_runs, Eigen::GpuDevice & device)
@@ -454,6 +455,12 @@ namespace TensorBase
       d_unique,                      // output key sequence
       d_count                      // output value sequence
     ).first - d_unique;            // compute the output size
+
+    // update the n_runs
+    n_runs->syncHAndDData(device); // D to H
+    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+    n_runs->getData()(0) = num_runs;
+    n_runs->syncHAndDData(device); // H to D
   }
 }
 
