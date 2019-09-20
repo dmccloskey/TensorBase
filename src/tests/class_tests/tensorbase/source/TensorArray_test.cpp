@@ -107,21 +107,13 @@ BOOST_AUTO_TEST_CASE(comparisonDefaultDevice)
   BOOST_CHECK(tensorArrayChar1 >= tensorArrayChar3);
 }
 
-BOOST_AUTO_TEST_CASE(assignmentDefaultDevice)
+BOOST_AUTO_TEST_CASE(coutDefaultDevice)
 {
-  //TensorArray8<float> tensordata_test(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
-  //Eigen::Tensor<float> data(2, 3, 4);
-  //data.setConstant(1);
-  //tensordata_test.setData(data);
-
-  //// Check copy
-  //TensorArray8<float> tensordata(tensordata_test);
-  //BOOST_CHECK(tensordata == tensordata_test);
-  //BOOST_CHECK_EQUAL(tensordata.getData()(0, 0, 0), 1);
-
-  //// Check reference sharing
-  //tensordata.getData()(0, 0, 0) = 2;
-  //BOOST_CHECK_EQUAL(tensordata.getData()(0, 0, 0), tensordata_test.getData()(0, 0, 0));
+  // Check same and equal length float
+  Eigen::Tensor<float, 1> same_equal_float_1(8);
+  same_equal_float_1.setValues({ 1,2,3,4,5,6,7,8 });
+  TensorArray8<float> tensorArrayFloat1(same_equal_float_1);
+  std::cout << "TEST COUT: " << tensorArrayFloat1 << std::endl;
 }
 
 BOOST_AUTO_TEST_CASE(copyDefaultDevice)

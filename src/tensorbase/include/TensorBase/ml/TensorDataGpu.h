@@ -35,7 +35,6 @@ namespace TensorBase
     using TensorData<TensorT, Eigen::GpuDevice, TDim>::TensorData;
     ~TensorDataGpu() = default;
     // Interface overrides
-    std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>> copy(Eigen::GpuDevice& device) override;
     void setData(const Eigen::Tensor<TensorT, TDim>& data) override; ///< data setter
     void setData() override;
     bool syncHAndDData(Eigen::GpuDevice& device) override;
@@ -47,24 +46,6 @@ namespace TensorBase
     		archive(cereal::base_class<TensorData<TensorT, Eigen::GpuDevice, TDim>>(this));
     	}
   };
-  template<typename TensorT, int TDim>
-  std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>> TensorDataGpu<TensorT, TDim>::copy(Eigen::GpuDevice& device) {
-    // initialize the new data
-    if (this->d_data_updated_) {
-      this->syncHAndDData(device);
-      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
-      this->setDataStatus(false, true);
-    }
-    TensorDataGpu<TensorT, TDim> data_new(this->getDimensions());
-    data_new.setData(this->getData());
-    //data_new.setData();
-    //// copy over the values
-    //Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_new_values(data_new.getDataPointer().get(), data_new.getDimensions());
-    //Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(this->getDataPointer().get(), this->getDimensions());
-    //this->syncHAndDData(device);
-    //data_new_values.device(device) = data_values; // NOTE: .device(device) fails
-    return std::make_shared<TensorDataGpu<TensorT, TDim>>(data_new);
-  }
   template<typename TensorT, int TDim>
   void TensorDataGpu<TensorT, TDim>::setData(const Eigen::Tensor<TensorT, TDim>& data) {
     // allocate cuda and pinned host memory
@@ -130,6 +111,8 @@ namespace TensorBase
   public:
     using TensorDataGpu<TensorT, TDim>::TensorDataGpu;
     ~TensorDataGpuPrimitiveT() = default;
+    // Interface overrides
+    std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>> copy(Eigen::GpuDevice& device) override;
     // Algorithm Interface overrides
     void select(std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice& device) override;
     void sortIndices(std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, const std::string& sort_order, Eigen::GpuDevice& device) override;
@@ -144,6 +127,24 @@ namespace TensorBase
       archive(cereal::base_class<TensorData<TensorT, Eigen::GpuDevice, TDim>>(this));
     }
   };
+  template<typename TensorT, int TDim>
+  std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>> TensorDataGpuPrimitiveT<TensorT, TDim>::copy(Eigen::GpuDevice& device) {
+    // initialize the new data
+    if (this->d_data_updated_) {
+      this->syncHAndDData(device);
+      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+      this->setDataStatus(false, true);
+    }
+    TensorDataGpuPrimitiveT<TensorT, TDim> data_new(this->getDimensions());
+    data_new.setData(this->getData());
+    //data_new.setData();
+    //// copy over the values
+    //Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_new_values(data_new.getDataPointer().get(), data_new.getDimensions());
+    //Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(this->getDataPointer().get(), this->getDimensions());
+    //this->syncHAndDData(device);
+    //data_new_values.device(device) = data_values; // NOTE: .device(device) fails
+    return std::make_shared<TensorDataGpuPrimitiveT<TensorT, TDim>>(data_new);
+  }
   template<typename TensorT, int TDim>
   inline void TensorDataGpuPrimitiveT<TensorT, TDim>::select(std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice & device)
   {
@@ -319,6 +320,8 @@ namespace TensorBase
   public:
     using TensorDataGpu<TensorT, TDim>::TensorDataGpu;
     ~TensorDataGpuClassT() = default;
+    // Interface overrides
+    std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>> copy(Eigen::GpuDevice& device) override;
     // Algorithm Interface overrides
     void select(std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice& device) override;
     void sortIndices(std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, const std::string& sort_order, Eigen::GpuDevice& device) override;
@@ -333,6 +336,24 @@ namespace TensorBase
       archive(cereal::base_class<TensorData<TensorT, Eigen::GpuDevice, TDim>>(this));
     }
   };
+  template<typename TensorT, int TDim>
+  std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>> TensorDataGpuClassT<TensorT, TDim>::copy(Eigen::GpuDevice& device) {
+    // initialize the new data
+    if (this->d_data_updated_) {
+      this->syncHAndDData(device);
+      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+      this->setDataStatus(false, true);
+    }
+    TensorDataGpuClassT<TensorT, TDim> data_new(this->getDimensions());
+    data_new.setData(this->getData());
+    //data_new.setData();
+    //// copy over the values
+    //Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_new_values(data_new.getDataPointer().get(), data_new.getDimensions());
+    //Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(this->getDataPointer().get(), this->getDimensions());
+    //this->syncHAndDData(device);
+    //data_new_values.device(device) = data_values; // NOTE: .device(device) fails
+    return std::make_shared<TensorDataGpuClassT<TensorT, TDim>>(data_new);
+  }
   template<typename TensorT, int TDim>
   inline void TensorDataGpuClassT<TensorT, TDim>::select(std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice & device)
   {
@@ -351,7 +372,8 @@ namespace TensorBase
     // Copy over the selected values
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> tensor_select_values(tensor_select->getDataPointer().get(), tensor_select->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy_values(data_copy->getDataPointer().get(), data_copy->getDimensions());
-    Eigen::array<Eigen::Index, TDim> offset; // initialized to all 0s
+    Eigen::array<Eigen::Index, TDim> offset;
+    for (int i = 0; i < TDim; ++i) offset.at(i) = 0; // initialize to all 0's
     tensor_select_values.slice(offset, tensor_select->getDimensions()).device(device) = data_copy_values.slice(offset, tensor_select->getDimensions());
   }
   template<typename TensorT, int TDim>

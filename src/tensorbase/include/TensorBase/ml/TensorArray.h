@@ -152,6 +152,11 @@ namespace TensorBase
     Eigen::Tensor<TensorT, 1> getTensorArray() override;
     TensorT at(const int& i) const override;
 
+    /// Inline << operator overload
+    friend std::ostream& operator<<(std::ostream& os, const TensorArray8& data) {
+      os << data.item_0_ << data.item_1_ << data.item_2_ << data.item_3_ << data.item_4_ << data.item_5_ << data.item_6_ << data.item_7_;
+      return os;
+    }
   protected:
     TensorT item_0_ = TensorT(0);
     TensorT item_1_ = TensorT(0);

@@ -57,7 +57,7 @@ void test_copyGpu()
   assert(tensordata->getDimensions() == tensordata_test.getDimensions());
   assert(tensordata->getTensorSize() == tensordata_test.getTensorSize());
   assert(tensordata->getDeviceName() == tensordata_test.getDeviceName());
-  assert(tensordata->getData()(0, 0, 0), 1);
+  assert(tensordata->getData()(0, 0, 0) == 1);
 
   // Check reference change
   tensordata->getData()(0, 0, 0) = 2;
@@ -389,7 +389,7 @@ void test_gettersAndSettersGpu()
   data.setConstant(0.5);
 
   tensordata.setData(data);
-  assert(tensordata.getData()(1, 2, 3), 0.5);
+  assert(tensordata.getData()(1, 2, 3) == 0.5);
   assert(tensordata.getDataStatus().first);
   assert(!tensordata.getDataStatus().second);
 
@@ -443,19 +443,19 @@ void test_selectStringGpu()
   int dim_sizes = 3;
   Eigen::Tensor<TensorArray8<char>, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
   Eigen::Tensor<int, 3> indices_values(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
-  std::cout << "tensor_values(i, j, k)" << std::endl;
+  //std::cout << "tensor_values(i, j, k)" << std::endl; //DEBUG
   int iter = 0;
   for (int i = 0; i < dim_sizes; ++i) {
     for (int j = 0; j < dim_sizes; ++j) {
       for (int k = 0; k < dim_sizes; ++k) {
-        Eigen::Tensor<char, 1> tmp(8); 
+        Eigen::Tensor<char, 1> tmp(8); tmp.setZero(); 
         sprintf(tmp.data(), "%d", i);
         tensor_values(i, j, k) = tmp;
-
-        for (int z = 0; z < 8; ++z) {
-          std::cout << "i(" << i << ")j(" << j << ")k(" << k << "): " << tensor_values(i, j, k).at(z) << std::endl;
-        }
-        std::cout << std::endl;
+        //std::cout << "i(" << i << ")j(" << j << ")k(" << k << "): "; //DEBUG
+        //for (int z = 0; z < 8; ++z) {
+        //  std::cout << tensor_values(i, j, k).at(z) << " ";
+        //}
+        //std::cout << std::endl;
 
         if (i == dim_sizes - 1 || j == dim_sizes - 1 || k == dim_sizes - 1)
           indices_values(i, j, k) = 0;
@@ -480,7 +480,7 @@ void test_selectStringGpu()
     for (int j = 0; j < dim_sizes; ++j) {
       for (int k = 0; k < dim_sizes; ++k) {
         if (i < dim_sizes - 1 && j < dim_sizes - 1 && k < dim_sizes - 1) {
-          Eigen::Tensor<char, 1> tmp(8);
+          Eigen::Tensor<char, 1> tmp(8); tmp.setZero();
           sprintf(tmp.data(), "%d", iter);
           tensor_values_test(i, j, k) = tmp;
         }
@@ -511,7 +511,7 @@ void test_selectStringGpu()
   for (int i = 0; i < dim_sizes_select; ++i) {
     for (int j = 0; j < dim_sizes_select; ++j) {
       for (int k = 0; k < dim_sizes_select; ++k) {
-        //std::cout << "Test Select i,j,k :" << i << "," << j << "," << k << "; Tensor select: " << tensorselect_ptr->getData()(i, j, k) << "; Expected: " << tensor_values_test(i, j, k) << std::endl;
+        std::cout << "Test Select i,j,k :" << i << "," << j << "," << k << "; Tensor select: " << tensorselect_ptr->getData()(i, j, k).at(0) << "; Expected: " << tensor_values_test(i, j, k).at(0) << std::endl;
         assert(tensorselect_ptr->getData()(i, j, k) == tensor_values_test(i, j, k));
       }
     }
@@ -524,7 +524,7 @@ void test_selectStringGpu()
 //  int dim_sizes = 3;
 //  Eigen::Tensor<TensorArray8<char>, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
 //  for (int i = 0; i < tensor_values.size(); ++i) {
-//    Eigen::Tensor<char, 1> tmp(8);
+//    Eigen::Tensor<char, 1> tmp(8); tmp.setZero();
 //    sprintf(tmp.data(), "%d", i);
 //    tensor_values.data()[i] = tmp;
 //  }
@@ -553,7 +553,7 @@ void test_selectStringGpu()
 //  // Make the expected indices and values
 //  Eigen::Tensor<TensorArray8<char>, 3> tensor_values_test(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
 //  for (int i = 0; i < tensor_values.size(); ++i) {
-//    Eigen::Tensor<char, 1> tmp(8);
+//    Eigen::Tensor<char, 1> tmp(8); tmp.setZero();
 //    sprintf(tmp.data(), "%d", tensor_values.size() - i - 1);
 //    tensor_values_test.data()[i] = tmp;
 //  }
@@ -582,7 +582,7 @@ void test_selectStringGpu()
 //  Eigen::Tensor<int, 3> indices_values(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
 //  for (int i = 0; i < tensor_values.size(); ++i) {
 //    indices_values.data()[i] = i + 1;
-//    Eigen::Tensor<char, 1> tmp(8);
+//    Eigen::Tensor<char, 1> tmp(8); tmp.setZero();
 //    sprintf(tmp.data(), "%d", i);
 //    tensor_values.data()[i] = tmp;
 //  }
@@ -623,7 +623,7 @@ void test_selectStringGpu()
 //  for (int i = 0; i < tensor_values.size(); ++i) {
 //    indices_values_test.data()[i] = tensor_values.size() - i;
 //
-//    Eigen::Tensor<char, 1> tmp(8);
+//    Eigen::Tensor<char, 1> tmp(8); tmp.setZero();
 //    sprintf(tmp.data(), "%d", tensor_values.size() - i - 1);
 //    tensor_values_test.data()[i] = tmp;
 //  }
@@ -660,7 +660,7 @@ void test_selectStringGpu()
 //      indices_values.data()[i] = 1;
 //    else
 //      indices_values.data()[i] = 0;
-//    Eigen::Tensor<char, 1> tmp(8);
+//    Eigen::Tensor<char, 1> tmp(8); tmp.setZero();
 //    sprintf(tmp.data(), "%d", i);
 //    tensor_values.data()[i] = tmp;
 //  }

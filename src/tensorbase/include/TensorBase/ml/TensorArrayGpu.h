@@ -11,6 +11,7 @@
 
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/ml/TensorArray.h>
+#include <iostream> // << operator overload
 
 #include <cereal/access.hpp>  // serialiation of private members
 #undef min // clashes with std::limit on windows in polymorphic.hpp
@@ -211,6 +212,12 @@ namespace TensorBase
     void setTensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array);
     Eigen::Tensor<TensorT, 1> getTensorArray();
     __host__ __device__ TensorT at(const int& i) const;
+
+    /// Inline << operator overload
+    friend std::ostream& operator<<(std::ostream& os, const TensorArrayGpu8& data) {
+      os << data.item_0_ << data.item_1_ << data.item_2_ << data.item_3_ << data.item_4_ << data.item_5_ << data.item_6_ << data.item_7_;
+      return os;
+    }
   protected:
     size_t array_size_;
     TensorT item_0_ = TensorT(0);
