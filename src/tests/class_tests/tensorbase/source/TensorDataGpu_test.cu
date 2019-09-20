@@ -733,7 +733,6 @@ void test_partitionGpuClassT()
     TensorArrayGpu8<char>({'2','2'}),
     TensorArrayGpu8<char>({'2','4'}),
     TensorArrayGpu8<char>({'2','6'}),
-    TensorArrayGpu8<char>({'2','5'}),
     //TensorArrayGpu8<char>({'2','3'}),
     //TensorArrayGpu8<char>({'2','1'}),
     //TensorArrayGpu8<char>({'1','9'}),
@@ -777,8 +776,8 @@ void test_partitionGpuClassT()
   for (int i = 0; i < dim_sizes; ++i) {
     for (int j = 0; j < dim_sizes; ++j) {
       for (int k = 0; k < dim_sizes; ++k) {
-        std::cout << "Test Partition i,j,k :" << i << "," << j << "," << k << "; Tensor select: " << tensordata.getData()(i, j, k) << "; Expected: " << expected_values(i, j, k) << std::endl;
-        //assert(tensordata.getData()(i, j, k) == expected_values(i, j, k)); // FIXME
+        //std::cout << "Test Partition i,j,k :" << i << "," << j << "," << k << "; Tensor partition: " << tensordata.getData()(i, j, k) << "; Expected: " << expected_values(i, j, k) << std::endl;
+        assert(tensordata.getData()(i, j, k) == expected_values(i, j, k));
       }
     }
   }

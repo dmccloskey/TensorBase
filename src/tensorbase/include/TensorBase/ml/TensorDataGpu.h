@@ -434,7 +434,7 @@ namespace TensorBase
     thrust::device_ptr<int> d_indices(indices->getDataPointer().get());
 
     // call partition on the flagged entries marked as true (i.e., 1)
-    thrust::partition(thrust::cuda::par.on(device.stream()), d_data, d_data + this->getTensorSize(), d_indices, isGreaterThanZero());
+    thrust::stable_partition(thrust::cuda::par.on(device.stream()), d_data, d_data + this->getTensorSize(), d_indices, isGreaterThanZero());
   }
   template<typename TensorT, int TDim>
   inline void TensorDataGpuClassT<TensorT, TDim>::runLengthEncode(std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& n_runs, Eigen::GpuDevice & device)
