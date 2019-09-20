@@ -312,6 +312,15 @@ namespace TensorBase
     assert(cudaFree(d_temp_storage) == cudaSuccess);
   }
 
+  struct isGreaterThanZero
+  {
+    __host__ __device__
+      bool operator()(const int &x)
+    {
+      return x > 0;
+    }
+  };
+
   /**
     @brief Tensor data class specialization for Eigen::GpuDevice (single GPU) using custom class template types
   */
@@ -420,17 +429,12 @@ namespace TensorBase
   template<typename TensorT, int TDim>
   inline void TensorDataGpuClassT<TensorT, TDim>::partition(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice & device)
   {
-    // Create a copy of the data
-    auto data_copy = this->copy(device);
-    data_copy->syncHAndDData(device);
-
     // make thrust device pointers to the data
-    thrust::device_ptr<TensorT> d_data(data_copy->getDataPointer().get());
+    thrust::device_ptr<TensorT> d_data(this->getDataPointer().get());
     thrust::device_ptr<int> d_indices(indices->getDataPointer().get());
 
-    // call remove_if on the flagged entries marked as false (i.e., 0)
-    //thrust::partition(thrust::cuda::par.on(device.stream()), d_data, d_data + data_copy->getTensorSize(), d_indices, thrust::logical_not<bool>()); // Does not guarantee order
-    thrust::stable_partition(thrust::cuda::par.on(device.stream()), d_data, d_data + data_copy->getTensorSize(), d_indices, thrust::logical_not<bool>());
+    // call partition on the flagged entries marked as true (i.e., 1)
+    thrust::partition(thrust::cuda::par.on(device.stream()), d_data, d_data + this->getTensorSize(), d_indices, isGreaterThanZero());
   }
   template<typename TensorT, int TDim>
   inline void TensorDataGpuClassT<TensorT, TDim>::runLengthEncode(std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& n_runs, Eigen::GpuDevice & device)

@@ -734,18 +734,32 @@ void test_partitionGpuClassT()
     TensorArrayGpu8<char>({'2','4'}),
     TensorArrayGpu8<char>({'2','6'}),
     TensorArrayGpu8<char>({'2','5'}),
-    TensorArrayGpu8<char>({'2','3'}),
-    TensorArrayGpu8<char>({'2','1'}),
-    TensorArrayGpu8<char>({'1','9'}),
-    TensorArrayGpu8<char>({'1','7'}),
-    TensorArrayGpu8<char>({'1','5'}),
-    TensorArrayGpu8<char>({'1','3'}),
-    TensorArrayGpu8<char>({'1','1'}),
-    TensorArrayGpu8<char>({'9'}),
-    TensorArrayGpu8<char>({'7'}),
-    TensorArrayGpu8<char>({'5'}),
+    //TensorArrayGpu8<char>({'2','3'}),
+    //TensorArrayGpu8<char>({'2','1'}),
+    //TensorArrayGpu8<char>({'1','9'}),
+    //TensorArrayGpu8<char>({'1','7'}),
+    //TensorArrayGpu8<char>({'1','5'}),
+    //TensorArrayGpu8<char>({'1','3'}),
+    //TensorArrayGpu8<char>({'1','1'}),
+    //TensorArrayGpu8<char>({'9'}),
+    //TensorArrayGpu8<char>({'7'}),
+    //TensorArrayGpu8<char>({'5'}),
+    //TensorArrayGpu8<char>({'3'}),
+    //TensorArrayGpu8<char>({'1'})
+    TensorArrayGpu8<char>({'1'}),
     TensorArrayGpu8<char>({'3'}),
-    TensorArrayGpu8<char>({'1'}) });
+    TensorArrayGpu8<char>({'5'}),
+    TensorArrayGpu8<char>({'7'}),
+    TensorArrayGpu8<char>({'9'}),
+    TensorArrayGpu8<char>({'1','1'}),
+    TensorArrayGpu8<char>({'1','3'}),
+    TensorArrayGpu8<char>({'1','5'}),
+    TensorArrayGpu8<char>({'1','7'}),
+    TensorArrayGpu8<char>({'1','9'}),
+    TensorArrayGpu8<char>({'2','1'}),
+    TensorArrayGpu8<char>({'2','3'}),
+    TensorArrayGpu8<char>({'2','5'})
+    });
   Eigen::Tensor<TensorArrayGpu8<char>, 3> expected_values = expected_values_flat.reshape(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
 
   // Initialize the device
