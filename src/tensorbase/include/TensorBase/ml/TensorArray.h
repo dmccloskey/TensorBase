@@ -32,6 +32,7 @@ namespace TensorBase
 
     size_t getArraySize() const { return array_size_; } ///< array_size getter
 
+    virtual void setTensorArray(const std::initializer_list<TensorT>& tensor_array) = 0; ///< tensor_array setter
     virtual void setTensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array) = 0; ///< tensor_array setter
     virtual Eigen::Tensor<TensorT, 1> getTensorArray() = 0; ///< tensor_array getter
     virtual TensorT at(const int& i) const = 0; /// tensor_array accessor
@@ -141,6 +142,7 @@ namespace TensorBase
   public:
     TensorArray8() = default;
     ~TensorArray8() = default;
+    TensorArray8(const std::initializer_list<TensorT>& tensor_array) { this->setTensorArray(tensor_array); }
     TensorArray8(const Eigen::Tensor<TensorT, 1>& tensor_array) { this->setTensorArray(tensor_array); }
     bool operator==(const TensorArray& other) const override;
     bool operator!=(const TensorArray& other) const override;
@@ -148,6 +150,7 @@ namespace TensorBase
     bool operator<=(const TensorArray& other) const override;
     bool operator>(const TensorArray& other) const override;
     bool operator>=(const TensorArray& other) const override;
+    void setTensorArray(const std::initializer_list<TensorT>& tensor_array) override;
     void setTensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array) override;
     Eigen::Tensor<TensorT, 1> getTensorArray() override;
     TensorT at(const int& i) const override;
@@ -191,7 +194,57 @@ namespace TensorBase
       return TensorT(0);
     }
   }
+  template<typename TensorT>
+  inline void TensorArray8<TensorT>::setTensorArray(const std::initializer_list<TensorT>& tensor_array)
+  {
+    // check the array size
+    assert(8 >= tensor_array.size());
+    this->array_size_ = 8;
 
+    // copy the data
+    bool iterate = true;
+    auto tensor_array_iter = tensor_array.begin();
+    if (tensor_array_iter != tensor_array.end()) {
+      this->item_0_ = *tensor_array_iter;
+      ++tensor_array_iter;
+    }
+    else this->item_0_ = TensorT(0);
+    if (tensor_array_iter != tensor_array.end()) {
+      this->item_1_ = *tensor_array_iter;
+      ++tensor_array_iter;
+    }
+    else this->item_1_ = TensorT(0);
+    if (tensor_array_iter != tensor_array.end()) {
+      this->item_2_ = *tensor_array_iter;
+      ++tensor_array_iter;
+    }
+    else this->item_2_ = TensorT(0);
+    if (tensor_array_iter != tensor_array.end()) {
+      this->item_3_ = *tensor_array_iter;
+      ++tensor_array_iter;
+    }
+    else this->item_3_ = TensorT(0);
+    if (tensor_array_iter != tensor_array.end()) {
+      this->item_4_ = *tensor_array_iter;
+      ++tensor_array_iter;
+    }
+    else this->item_4_ = TensorT(0);
+    if (tensor_array_iter != tensor_array.end()) {
+      this->item_5_ = *tensor_array_iter;
+      ++tensor_array_iter;
+    }
+    else this->item_5_ = TensorT(0);
+    if (tensor_array_iter != tensor_array.end()) {
+      this->item_6_ = *tensor_array_iter;
+      ++tensor_array_iter;
+    }
+    else this->item_6_ = TensorT(0);
+    if (tensor_array_iter != tensor_array.end()) {
+      this->item_7_ = *tensor_array_iter;
+      ++tensor_array_iter;
+    }
+    else this->item_7_ = TensorT(0);
+  }
   template<typename TensorT>
   inline void TensorArray8<TensorT>::setTensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array)
   {

@@ -370,31 +370,90 @@ namespace TensorBase
     thrust::remove_if(d_data, d_data + data_copy->getTensorSize(), d_indices, thrust::logical_not<bool>());
 
     // Copy over the selected values
-    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> tensor_select_values(tensor_select->getDataPointer().get(), tensor_select->getDimensions());
-    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy_values(data_copy->getDataPointer().get(), data_copy->getDimensions());
-    Eigen::array<Eigen::Index, TDim> offset;
-    for (int i = 0; i < TDim; ++i) offset.at(i) = 0; // initialize to all 0's
-    tensor_select_values.slice(offset, tensor_select->getDimensions()).device(device) = data_copy_values.slice(offset, tensor_select->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> tensor_select_values(tensor_select->getDataPointer().get(), (int)tensor_select->getTensorSize());
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> data_copy_values(data_copy->getDataPointer().get(), (int)data_copy->getTensorSize());
+    Eigen::array<Eigen::Index, 1> offset, span; 
+    offset.at(0) = 0;
+    span.at(0) = (int)tensor_select->getTensorSize();
+    tensor_select_values.slice(offset, span).device(device) = data_copy_values.slice(offset, span);
   }
   template<typename TensorT, int TDim>
   inline void TensorDataGpuClassT<TensorT, TDim>::sortIndices(std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, const std::string & sort_order, Eigen::GpuDevice & device)
   {
+    thrust::cuda::par.on(device.stream());
+    // Create a copy of the data
+    auto data_copy = this->copy(device);
+    data_copy->syncHAndDData(device);
+
+    // make thrust device pointers to the data
+    thrust::device_ptr<TensorT> d_data(data_copy->getDataPointer().get());
+    thrust::device_ptr<int> d_indices(indices->getDataPointer().get());
+
+    if (sort_order == "ASC") {
+      thrust::sort_by_key(d_data, d_data + data_copy->getTensorSize(), d_indices);
+    }
+    else if (sort_order == "DESC") {
+      isGreaterThanGpu comp(data_copy->getTensorSize());
+      thrust::sort_by_key(d_data, d_data + data_copy->getTensorSize(), d_indices, comp);
+    }
   }
   template<typename TensorT, int TDim>
   inline void TensorDataGpuClassT<TensorT, TDim>::sort(const std::string & sort_order, Eigen::GpuDevice & device)
   {
+    thrust::cuda::par.on(device.stream());
+    // make thrust device pointers to the data
+    thrust::device_ptr<TensorT> d_data(this->getDataPointer().get());
+    if (sort_order == "ASC") {
+      thrust::sort(d_data, d_data + this->getTensorSize());
+    }
+    else if (sort_order == "DESC") {
+      isGreaterThanGpu comp(this->getTensorSize());
+      thrust::sort(d_data, d_data + this->getTensorSize(), comp);
+    }
   }
   template<typename TensorT, int TDim>
   inline void TensorDataGpuClassT<TensorT, TDim>::sort(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice & device)
   {
+    thrust::cuda::par.on(device.stream());
+
+    // make thrust device pointers to the data
+    thrust::device_ptr<TensorT> d_data(this->getDataPointer().get());
+    thrust::device_ptr<int> d_indices(indices->getDataPointer().get());
+
+    thrust::sort_by_key(d_indices, d_indices + this->getTensorSize(), d_data);
   }
   template<typename TensorT, int TDim>
   inline void TensorDataGpuClassT<TensorT, TDim>::partition(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice & device)
   {
+    thrust::cuda::par.on(device.stream());
+    // Create a copy of the data
+    auto data_copy = this->copy(device);
+    data_copy->syncHAndDData(device);
+
+    // make thrust device pointers to the data
+    thrust::device_ptr<TensorT> d_data(data_copy->getDataPointer().get());
+    thrust::device_ptr<int> d_indices(indices->getDataPointer().get());
+
+    // call remove_if on the flagged entries marked as false (i.e., 0)
+    thrust::partition(d_data, d_data + data_copy->getTensorSize(), d_indices, thrust::logical_not<bool>());
   }
   template<typename TensorT, int TDim>
   inline void TensorDataGpuClassT<TensorT, TDim>::runLengthEncode(std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& n_runs, Eigen::GpuDevice & device)
   {
+    thrust::cuda::par.on(device.stream());
+
+    // make thrust device pointers to the data
+    thrust::device_ptr<TensorT> d_data(this->getDataPointer().get());
+    thrust::device_ptr<TensorT> d_unique(unique->getDataPointer().get());
+    thrust::device_ptr<int> d_count(count->getDataPointer().get());
+
+    // compute run lengths
+    size_t num_runs = thrust::reduce_by_key(
+      d_data, d_data + this->getTensorSize(),          // input key sequence
+      thrust::constant_iterator<int>(1),   // input value sequence
+      d_unique,                      // output key sequence
+      d_count                      // output value sequence
+    ).first - d_unique;            // compute the output size
   }
 }
 

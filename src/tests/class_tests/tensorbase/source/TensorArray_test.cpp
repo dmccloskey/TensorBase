@@ -52,6 +52,45 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   BOOST_CHECK_EQUAL(tensorArrayFloat1.at(5), 6);
   BOOST_CHECK_EQUAL(tensorArrayFloat1.at(6), 7);
   BOOST_CHECK_EQUAL(tensorArrayFloat1.at(7), 8);
+
+  // Check same and equal length char
+  TensorArray8<char> tensorArrayChar1({ '1','2','3','4','5','6','7','8' });
+  BOOST_CHECK_EQUAL(tensorArrayChar1.getArraySize(), 8);
+  BOOST_CHECK_EQUAL(tensorArrayChar1.getTensorArray()(0), '1');
+  BOOST_CHECK_EQUAL(tensorArrayChar1.getTensorArray()(1), '2');
+  BOOST_CHECK_EQUAL(tensorArrayChar1.getTensorArray()(2), '3');
+  BOOST_CHECK_EQUAL(tensorArrayChar1.getTensorArray()(3), '4');
+  BOOST_CHECK_EQUAL(tensorArrayChar1.getTensorArray()(4), '5');
+  BOOST_CHECK_EQUAL(tensorArrayChar1.getTensorArray()(5), '6');
+  BOOST_CHECK_EQUAL(tensorArrayChar1.getTensorArray()(6), '7');
+  BOOST_CHECK_EQUAL(tensorArrayChar1.getTensorArray()(7), '8');
+  BOOST_CHECK_EQUAL(tensorArrayChar1.at(0), '1');
+  BOOST_CHECK_EQUAL(tensorArrayChar1.at(1), '2');
+  BOOST_CHECK_EQUAL(tensorArrayChar1.at(2), '3');
+  BOOST_CHECK_EQUAL(tensorArrayChar1.at(3), '4');
+  BOOST_CHECK_EQUAL(tensorArrayChar1.at(4), '5');
+  BOOST_CHECK_EQUAL(tensorArrayChar1.at(5), '6');
+  BOOST_CHECK_EQUAL(tensorArrayChar1.at(6), '7');
+  BOOST_CHECK_EQUAL(tensorArrayChar1.at(7), '8');
+
+  TensorArray8<char> tensorArrayChar2({ '1','2','3','4','5','6' });
+  BOOST_CHECK_EQUAL(tensorArrayChar2.getArraySize(), 8);
+  BOOST_CHECK_EQUAL(tensorArrayChar2.getTensorArray()(0), '1');
+  BOOST_CHECK_EQUAL(tensorArrayChar2.getTensorArray()(1), '2');
+  BOOST_CHECK_EQUAL(tensorArrayChar2.getTensorArray()(2), '3');
+  BOOST_CHECK_EQUAL(tensorArrayChar2.getTensorArray()(3), '4');
+  BOOST_CHECK_EQUAL(tensorArrayChar2.getTensorArray()(4), '5');
+  BOOST_CHECK_EQUAL(tensorArrayChar2.getTensorArray()(5), '6');
+  BOOST_CHECK_EQUAL(tensorArrayChar2.getTensorArray()(6), '\0');
+  BOOST_CHECK_EQUAL(tensorArrayChar2.getTensorArray()(7), '\0');
+  BOOST_CHECK_EQUAL(tensorArrayChar2.at(0), '1');
+  BOOST_CHECK_EQUAL(tensorArrayChar2.at(1), '2');
+  BOOST_CHECK_EQUAL(tensorArrayChar2.at(2), '3');
+  BOOST_CHECK_EQUAL(tensorArrayChar2.at(3), '4');
+  BOOST_CHECK_EQUAL(tensorArrayChar2.at(4), '5');
+  BOOST_CHECK_EQUAL(tensorArrayChar2.at(5), '6');
+  BOOST_CHECK_EQUAL(tensorArrayChar2.at(6), '\0');
+  BOOST_CHECK_EQUAL(tensorArrayChar2.at(7), '\0');
 }
 
 BOOST_AUTO_TEST_CASE(comparisonDefaultDevice)
@@ -116,7 +155,7 @@ BOOST_AUTO_TEST_CASE(coutDefaultDevice)
   std::cout << "TEST COUT: " << tensorArrayFloat1 << std::endl;
 }
 
-BOOST_AUTO_TEST_CASE(copyDefaultDevice)
+BOOST_AUTO_TEST_CASE(selectDefaultDevice)
 {
   Eigen::Tensor<char, 1> same_equal_char_1(8);
   same_equal_char_1.setValues({ 'a', 'b', 'c', 'd', 'e', 'f', 'g', '\0' });
@@ -129,27 +168,6 @@ BOOST_AUTO_TEST_CASE(copyDefaultDevice)
   in1.setValues({ tensorArrayChar1 , tensorArrayChar2 });
 
   Eigen::Tensor<TensorArray8<char>, 1> selected = (in1 == in1).select(in1, in1);
-  //TensorArray8<float> tensordata_test(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
-  //Eigen::Tensor<float> data(2, 3, 4);
-  //data.setConstant(1);
-  //tensordata_test.setData(data);
-  //Eigen::DefaultDevice device;
-
-  //// Check copy
-  //std::shared_ptr<TensorArray<float, Eigen::DefaultDevice, 3>> tensordata = tensordata_test.copy(device);
-  //BOOST_CHECK(tensordata->getDimensions() == tensordata_test.getDimensions());
-  //BOOST_CHECK(tensordata->getTensorBytes() == tensordata_test.getTensorBytes());
-  //BOOST_CHECK(tensordata->getDeviceName() == tensordata_test.getDeviceName());
-  //BOOST_CHECK_EQUAL(tensordata->getData()(0, 0, 0), 1);
-
-  //// Check reference change
-  //tensordata->getData()(0, 0, 0) = 2;
-  //BOOST_CHECK_NE(tensordata->getData()(0, 0, 0), tensordata_test.getData()(0, 0, 0));
-  //BOOST_CHECK_EQUAL(tensordata->getData()(1, 0, 0), tensordata_test.getData()(1, 0, 0));
-}
-
-BOOST_AUTO_TEST_CASE(selectDefaultDevice)
-{
 }
 
 BOOST_AUTO_TEST_SUITE_END()

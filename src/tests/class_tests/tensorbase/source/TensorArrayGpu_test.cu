@@ -49,6 +49,45 @@ void test_gettersAndSettersGpu()
   assert(tensorArrayFloat1.at(5) == 6);
   assert(tensorArrayFloat1.at(6) == 7);
   assert(tensorArrayFloat1.at(7) == 8);
+
+  // Check same and equal length char
+  TensorArrayGpu8<char> tensorArrayChar1({ '1','2','3','4','5','6','7','8' });
+  assert(tensorArrayChar1.getArraySize() == 8);
+  assert(tensorArrayChar1.getTensorArray()(0) == '1');
+  assert(tensorArrayChar1.getTensorArray()(1) == '2');
+  assert(tensorArrayChar1.getTensorArray()(2) == '3');
+  assert(tensorArrayChar1.getTensorArray()(3) == '4');
+  assert(tensorArrayChar1.getTensorArray()(4) == '5');
+  assert(tensorArrayChar1.getTensorArray()(5) == '6');
+  assert(tensorArrayChar1.getTensorArray()(6) == '7');
+  assert(tensorArrayChar1.getTensorArray()(7) == '8');
+  assert(tensorArrayChar1.at(0) == '1');
+  assert(tensorArrayChar1.at(1) == '2');
+  assert(tensorArrayChar1.at(2) == '3');
+  assert(tensorArrayChar1.at(3) == '4');
+  assert(tensorArrayChar1.at(4) == '5');
+  assert(tensorArrayChar1.at(5) == '6');
+  assert(tensorArrayChar1.at(6) == '7');
+  assert(tensorArrayChar1.at(7) == '8');
+
+  TensorArrayGpu8<char> tensorArrayChar2({ '1','2','3','4','5','6' });
+  assert(tensorArrayChar2.getArraySize() == 8);
+  assert(tensorArrayChar2.getTensorArray()(0) == '1');
+  assert(tensorArrayChar2.getTensorArray()(1) == '2');
+  assert(tensorArrayChar2.getTensorArray()(2) == '3');
+  assert(tensorArrayChar2.getTensorArray()(3) == '4');
+  assert(tensorArrayChar2.getTensorArray()(4) == '5');
+  assert(tensorArrayChar2.getTensorArray()(5) == '6');
+  assert(tensorArrayChar2.getTensorArray()(6) == '\0');
+  assert(tensorArrayChar2.getTensorArray()(7) == '\0');
+  assert(tensorArrayChar2.at(0) == '1');
+  assert(tensorArrayChar2.at(1) == '2');
+  assert(tensorArrayChar2.at(2) == '3');
+  assert(tensorArrayChar2.at(3) == '4');
+  assert(tensorArrayChar2.at(4) == '5');
+  assert(tensorArrayChar2.at(5) == '6');
+  assert(tensorArrayChar2.at(6) == '\0');
+  assert(tensorArrayChar2.at(7) == '\0');
 }
 
 void test_coutGpu()

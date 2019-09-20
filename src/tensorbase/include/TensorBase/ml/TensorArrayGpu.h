@@ -201,6 +201,7 @@ namespace TensorBase
   public:
     TensorArrayGpu8() = default;
     ~TensorArrayGpu8() = default;
+    TensorArrayGpu8(const std::initializer_list<TensorT>& tensor_array) { this->setTensorArray(tensor_array); }
     TensorArrayGpu8(const Eigen::Tensor<TensorT, 1>& tensor_array) { this->setTensorArray(tensor_array); }
     __host__ __device__ bool operator==(const TensorArrayGpu8& other) const;
     __host__ __device__ bool operator!=(const TensorArrayGpu8& other) const;
@@ -209,6 +210,7 @@ namespace TensorBase
     __host__ __device__ bool operator>(const TensorArrayGpu8& other) const;
     __host__ __device__ bool operator>=(const TensorArrayGpu8& other) const;
     __host__ __device__ size_t getArraySize() const { return array_size_; } ///< array_size getter
+    void setTensorArray(const std::initializer_list<TensorT>& tensor_array);
     void setTensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array);
     Eigen::Tensor<TensorT, 1> getTensorArray();
     __host__ __device__ TensorT at(const int& i) const;
@@ -320,6 +322,58 @@ namespace TensorBase
       else return false;
     }
   };
+
+  template<typename TensorT>
+  inline void TensorArrayGpu8<TensorT>::setTensorArray(const std::initializer_list<TensorT>& tensor_array)
+  {
+    // check the array size
+    assert(8 >= tensor_array.size());
+    this->array_size_ = 8;
+
+    // copy the data
+    bool iterate = true;
+    auto tensor_array_iter = tensor_array.begin();
+    if (tensor_array_iter != tensor_array.end()) {
+      this->item_0_ = *tensor_array_iter;
+      ++tensor_array_iter;
+    }
+    else this->item_0_ = TensorT(0);
+    if (tensor_array_iter != tensor_array.end()) {
+      this->item_1_ = *tensor_array_iter;
+      ++tensor_array_iter;
+    }
+    else this->item_1_ = TensorT(0);
+    if (tensor_array_iter != tensor_array.end()) {
+      this->item_2_ = *tensor_array_iter;
+      ++tensor_array_iter;
+    }
+    else this->item_2_ = TensorT(0);
+    if (tensor_array_iter != tensor_array.end()) {
+      this->item_3_ = *tensor_array_iter;
+      ++tensor_array_iter;
+    }
+    else this->item_3_ = TensorT(0);
+    if (tensor_array_iter != tensor_array.end()) {
+      this->item_4_ = *tensor_array_iter;
+      ++tensor_array_iter;
+    }
+    else this->item_4_ = TensorT(0);
+    if (tensor_array_iter != tensor_array.end()) {
+      this->item_5_ = *tensor_array_iter;
+      ++tensor_array_iter;
+    }
+    else this->item_5_ = TensorT(0);
+    if (tensor_array_iter != tensor_array.end()) {
+      this->item_6_ = *tensor_array_iter;
+      ++tensor_array_iter;
+    }
+    else this->item_6_ = TensorT(0);
+    if (tensor_array_iter != tensor_array.end()) {
+      this->item_7_ = *tensor_array_iter;
+      ++tensor_array_iter;
+    }
+    else this->item_7_ = TensorT(0);
+  }
 
   template<typename TensorT>
   inline void TensorArrayGpu8<TensorT>::setTensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array)
