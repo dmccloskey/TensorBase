@@ -440,17 +440,17 @@ void test_syncHAndDGpuPrimitiveT()
 */
 void test_constructorGpuClassT()
 {
-  TensorDataGpuClassT<float, 3>* ptr = nullptr;
-  TensorDataGpuClassT<float, 3>* nullPointer = nullptr;
-  ptr = new TensorDataGpuClassT<float, 3>();
+  TensorDataGpuClassT<TensorArrayGpu8, float, 3>* ptr = nullptr;
+  TensorDataGpuClassT<TensorArrayGpu8, float, 3>* nullPointer = nullptr;
+  ptr = new TensorDataGpuClassT<TensorArrayGpu8, float, 3>();
   assert(ptr != nullPointer);
   delete ptr;
 }
 
 void test_destructorGpuClassT()
 {
-  TensorDataGpuClassT<float, 3>* ptr = nullptr;
-  ptr = new TensorDataGpuClassT<float, 3>();
+  TensorDataGpuClassT<TensorArrayGpu8, float, 3>* ptr = nullptr;
+  ptr = new TensorDataGpuClassT<TensorArrayGpu8, float, 3>();
   delete ptr;
 }
 
@@ -471,7 +471,7 @@ void test_copyGpuClassT()
   }
 
   // make the tensor data class
-  TensorDataGpuClassT<TensorArrayGpu8<char>, 3> tensordata_test(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+  TensorDataGpuClassT<TensorArrayGpu8, char, 3> tensordata_test(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
   tensordata_test.setData(tensor_values);
   Eigen::GpuStreamDevice stream_device;
   Eigen::GpuDevice device(&stream_device);
@@ -513,11 +513,11 @@ void test_selectGpuClassT()
       }
     }
   }
-  TensorDataGpuClassT<TensorArrayGpu8<char>, 3> tensordata(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+  TensorDataGpuClassT<TensorArrayGpu8, char, 3> tensordata(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
   tensordata.setData(tensor_values);
-  TensorDataGpuClassT<int, 3> indices(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+  TensorDataGpuPrimitiveT<int, 3> indices(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
   indices.setData(indices_values);
-  std::shared_ptr<TensorDataGpuClassT<int, 3>> indices_ptr = std::make_shared<TensorDataGpuClassT<int, 3>>(indices);
+  std::shared_ptr<TensorDataGpuPrimitiveT<int, 3>> indices_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 3>>(indices);
 
   // Make the expected tensor
   int dim_sizes_select = 2;
@@ -535,9 +535,9 @@ void test_selectGpuClassT()
       }
     }
   }
-  TensorDataGpuClassT<TensorArrayGpu8<char>, 3> tensorselect(Eigen::array<Eigen::Index, 3>({ dim_sizes_select, dim_sizes_select, dim_sizes_select }));
+  TensorDataGpuClassT<TensorArrayGpu8, char, 3> tensorselect(Eigen::array<Eigen::Index, 3>({ dim_sizes_select, dim_sizes_select, dim_sizes_select }));
   tensorselect.setData();
-  std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 3>> tensorselect_ptr = std::make_shared<TensorDataGpuClassT<TensorArrayGpu8<char>, 3>>(tensorselect);
+  std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 3>> tensorselect_ptr = std::make_shared<TensorDataGpuClassT<TensorArrayGpu8, char, 3>>(tensorselect);
 
   // Initialize the device
   cudaStream_t stream;
@@ -574,7 +574,7 @@ void test_sortGpuClassT()
     Eigen::Tensor<char, 1> tmp(8); tmp.setZero();
     tensor_values.data()[i] = TensorArrayGpu8<char>(std::to_string(i));
   }
-  TensorDataGpuClassT<TensorArrayGpu8<char>, 3> tensordata(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+  TensorDataGpuClassT<TensorArrayGpu8, char, 3> tensordata(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
   tensordata.setData(tensor_values);
 
   // Initialize the device
@@ -631,7 +631,7 @@ void test_sortIndicesGpuClassT()
     sprintf(tmp.data(), "%d", i);
     tensor_values.data()[i] = tmp;
   }
-  TensorDataGpuClassT<TensorArrayGpu8<char>, 3> tensordata(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+  TensorDataGpuClassT<TensorArrayGpu8, char, 3> tensordata(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
   tensordata.setData(tensor_values);
   TensorDataGpuPrimitiveT<int, 3> indices(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
   indices.setData(indices_values);
@@ -709,7 +709,7 @@ void test_partitionGpuClassT()
     sprintf(tmp.data(), "%d", i);
     tensor_values.data()[i] = tmp;
   }
-  TensorDataGpuClassT<TensorArrayGpu8<char>, 3> tensordata(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+  TensorDataGpuClassT<TensorArrayGpu8, char, 3> tensordata(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
   tensordata.setData(tensor_values);
   TensorDataGpuPrimitiveT<int, 3> indices(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
   indices.setData(indices_values);
@@ -806,11 +806,11 @@ void test_runLengthEncodeGpuClassT()
   num_runs_values.setValues({ 3 });
 
   // Make the tensor data and test data pointers
-  TensorDataGpuClassT<TensorArrayGpu8<char>, 2> tensordata(Eigen::array<Eigen::Index, 2>({ dim_sizes, dim_sizes }));
+  TensorDataGpuClassT<TensorArrayGpu8, char, 2> tensordata(Eigen::array<Eigen::Index, 2>({ dim_sizes, dim_sizes }));
   tensordata.setData(tensor_values);
-  TensorDataGpuClassT<TensorArrayGpu8<char>, 1> unique(Eigen::array<Eigen::Index, 1>({ dim_sizes * dim_sizes }));
+  TensorDataGpuClassT<TensorArrayGpu8, char, 1> unique(Eigen::array<Eigen::Index, 1>({ dim_sizes * dim_sizes }));
   unique.setData();
-  std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 1>> uniquev_ptr = std::make_shared<TensorDataGpuClassT<TensorArrayGpu8<char>, 1>>(unique);
+  std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 1>> uniquev_ptr = std::make_shared<TensorDataGpuClassT<TensorArrayGpu8, char, 1>>(unique);
   TensorDataGpuPrimitiveT<int, 1> count(Eigen::array<Eigen::Index, 1>({ dim_sizes * dim_sizes }));
   count.setData();
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> count_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(count);
