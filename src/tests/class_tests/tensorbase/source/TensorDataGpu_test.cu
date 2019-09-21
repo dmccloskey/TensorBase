@@ -878,6 +878,7 @@ void test_runLengthEncodeGpuClassT()
 int main(int argc, char** argv)
 {
   // PrimitiveT
+  assert(cudaDeviceReset() == cudaSuccess);
   test_constructorGpuPrimitiveT();
   test_destructorGpuPrimitiveT();
   test_gettersAndSettersGpuPrimitiveT();
@@ -891,12 +892,13 @@ int main(int argc, char** argv)
   test_runLengthEncodeGpuPrimitiveT();
 
   // ClassT
+  assert(cudaDeviceReset() == cudaSuccess);
   test_constructorGpuClassT();
   test_destructorGpuClassT();
   test_copyGpuClassT();
   test_selectGpuClassT();
   //test_sortGpuClassT();
-  //test_sortIndicesGpuClassT();
+  test_sortIndicesGpuClassT();
   test_partitionGpuClassT();
   test_runLengthEncodeGpuClassT();
   return 0;
