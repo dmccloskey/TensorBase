@@ -91,6 +91,26 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   BOOST_CHECK_EQUAL(tensorArrayChar2.at(5), '6');
   BOOST_CHECK_EQUAL(tensorArrayChar2.at(6), '\0');
   BOOST_CHECK_EQUAL(tensorArrayChar2.at(7), '\0');
+
+  // Check same and equal length char
+  TensorArray8<char> tensorArrayString1("12345678");
+  BOOST_CHECK_EQUAL(tensorArrayString1.getArraySize(), 8);
+  BOOST_CHECK_EQUAL(tensorArrayString1.getTensorArray()(0), '1');
+  BOOST_CHECK_EQUAL(tensorArrayString1.getTensorArray()(1), '2');
+  BOOST_CHECK_EQUAL(tensorArrayString1.getTensorArray()(2), '3');
+  BOOST_CHECK_EQUAL(tensorArrayString1.getTensorArray()(3), '4');
+  BOOST_CHECK_EQUAL(tensorArrayString1.getTensorArray()(4), '5');
+  BOOST_CHECK_EQUAL(tensorArrayString1.getTensorArray()(5), '6');
+  BOOST_CHECK_EQUAL(tensorArrayString1.getTensorArray()(6), '7');
+  BOOST_CHECK_EQUAL(tensorArrayString1.getTensorArray()(7), '8');
+  BOOST_CHECK_EQUAL(tensorArrayString1.at(0), '1');
+  BOOST_CHECK_EQUAL(tensorArrayString1.at(1), '2');
+  BOOST_CHECK_EQUAL(tensorArrayString1.at(2), '3');
+  BOOST_CHECK_EQUAL(tensorArrayString1.at(3), '4');
+  BOOST_CHECK_EQUAL(tensorArrayString1.at(4), '5');
+  BOOST_CHECK_EQUAL(tensorArrayString1.at(5), '6');
+  BOOST_CHECK_EQUAL(tensorArrayString1.at(6), '7');
+  BOOST_CHECK_EQUAL(tensorArrayString1.at(7), '8');
 }
 
 BOOST_AUTO_TEST_CASE(comparisonDefaultDevice)
