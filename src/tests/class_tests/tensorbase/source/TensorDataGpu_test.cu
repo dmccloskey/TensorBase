@@ -572,8 +572,7 @@ void test_sortGpuClassT()
   Eigen::Tensor<TensorArrayGpu8<char>, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
   for (int i = 0; i < tensor_values.size(); ++i) {
     Eigen::Tensor<char, 1> tmp(8); tmp.setZero();
-    sprintf(tmp.data(), "%d", i);
-    tensor_values.data()[i] = tmp;
+    tensor_values.data()[i] = TensorArrayGpu8<char>(std::to_string(i));
   }
   TensorDataGpuClassT<TensorArrayGpu8<char>, 3> tensordata(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
   tensordata.setData(tensor_values);
@@ -897,7 +896,7 @@ int main(int argc, char** argv)
   test_destructorGpuClassT();
   test_copyGpuClassT();
   test_selectGpuClassT();
-  //test_sortGpuClassT();
+  test_sortGpuClassT();
   test_sortIndicesGpuClassT();
   test_partitionGpuClassT();
   test_runLengthEncodeGpuClassT();

@@ -410,12 +410,12 @@ namespace TensorBase
     // make thrust device pointers to the data
     thrust::device_ptr<TensorT> d_data(this->getDataPointer().get());
     if (sort_order == "ASC") {
-      thrust::sort(thrust::cuda::par.on(device.stream()), d_data, d_data + this->getTensorSize());
+      thrust::stable_sort(thrust::cuda::par.on(device.stream()), d_data, d_data + this->getTensorSize());
       //thrust::sort(d_data, d_data + this->getTensorSize());
     }
     else if (sort_order == "DESC") {
-      //isGreaterThanGpu comp(this->getTensorSize());
-      //thrust::sort(thrust::cuda::par.on(device.stream()), d_data, d_data + this->getTensorSize(), comp);
+      isGreaterThanGpu comp(this->getTensorSize());
+      thrust::stable_sort(thrust::cuda::par.on(device.stream()), d_data, d_data + this->getTensorSize(), comp);
     }
   }
   template<typename TensorT, int TDim>

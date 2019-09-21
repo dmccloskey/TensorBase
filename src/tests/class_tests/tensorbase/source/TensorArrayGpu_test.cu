@@ -88,6 +88,26 @@ void test_gettersAndSettersGpu()
   assert(tensorArrayChar2.at(5) == '6');
   assert(tensorArrayChar2.at(6) == '\0');
   assert(tensorArrayChar2.at(7) == '\0');
+
+  // Check same and equal length char
+  TensorArrayGpu8<char> tensorArrayString1("12345678");
+  assert(tensorArrayString1.getArraySize() == 8);
+  assert(tensorArrayString1.getTensorArray()(0) == '1');
+  assert(tensorArrayString1.getTensorArray()(1) == '2');
+  assert(tensorArrayString1.getTensorArray()(2) == '3');
+  assert(tensorArrayString1.getTensorArray()(3) == '4');
+  assert(tensorArrayString1.getTensorArray()(4) == '5');
+  assert(tensorArrayString1.getTensorArray()(5) == '6');
+  assert(tensorArrayString1.getTensorArray()(6) == '7');
+  assert(tensorArrayString1.getTensorArray()(7) == '8');
+  assert(tensorArrayString1.at(0) == '1');
+  assert(tensorArrayString1.at(1) == '2');
+  assert(tensorArrayString1.at(2) == '3');
+  assert(tensorArrayString1.at(3) == '4');
+  assert(tensorArrayString1.at(4) == '5');
+  assert(tensorArrayString1.at(5) == '6');
+  assert(tensorArrayString1.at(6) == '7');
+  assert(tensorArrayString1.at(7) == '8');
 }
 
 void test_coutGpu()
