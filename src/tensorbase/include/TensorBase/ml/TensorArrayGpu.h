@@ -280,8 +280,8 @@ namespace TensorBase
     }
   };
 
-  struct isNotEqualToGpu : TensorArrayFunctors {
-    using TensorArrayFunctors::TensorArrayFunctors;
+  struct isNotEqualToGpu : TensorArrayFunctorsGpu {
+    using TensorArrayFunctorsGpu::TensorArrayFunctorsGpu;
     template<typename TensorT>
     __host__ __device__ bool operator()(const TensorArrayGpu8<TensorT>& s1, const TensorArrayGpu8<TensorT>& s2) {
       if (TensorArrayComparisonGpu::compare(s1, s2, this->size_) != 0) return true;
@@ -289,8 +289,8 @@ namespace TensorBase
     }
   };
 
-  struct isLessThanGpu : TensorArrayFunctors {
-    using TensorArrayFunctors::TensorArrayFunctors;
+  struct isLessThanGpu : TensorArrayFunctorsGpu {
+    using TensorArrayFunctorsGpu::TensorArrayFunctorsGpu;
     template<typename TensorT>
     __host__ __device__ bool operator()(const TensorArrayGpu8<TensorT>& s1, const TensorArrayGpu8<TensorT>& s2) {
       if (TensorArrayComparisonGpu::compare(s1, s2, this->size_) < 0) return true;
@@ -298,8 +298,8 @@ namespace TensorBase
     }
   };
 
-  struct isGreaterThanGpu : TensorArrayFunctors {
-    using TensorArrayFunctors::TensorArrayFunctors;
+  struct isGreaterThanGpu : TensorArrayFunctorsGpu {
+    using TensorArrayFunctorsGpu::TensorArrayFunctorsGpu;
     template<typename TensorT>
     __host__ __device__ bool operator()(const TensorArrayGpu8<TensorT>& s1, const TensorArrayGpu8<TensorT>& s2) {
       if (TensorArrayComparisonGpu::compare(s1, s2, this->size_) > 0) return true;
@@ -307,8 +307,8 @@ namespace TensorBase
     }
   };
 
-  struct isLessThanOrEqualToGpu : TensorArrayFunctors {
-    using TensorArrayFunctors::TensorArrayFunctors;
+  struct isLessThanOrEqualToGpu : TensorArrayFunctorsGpu {
+    using TensorArrayFunctorsGpu::TensorArrayFunctorsGpu;
     template<typename TensorT>
     __host__ __device__ bool operator()(const TensorArrayGpu8<TensorT>& s1, const TensorArrayGpu8<TensorT>& s2) {
       if (TensorArrayComparisonGpu::compare(s1, s2, this->size_) <= 0) return true;
@@ -316,8 +316,8 @@ namespace TensorBase
     }
   };
 
-  struct isGreaterThanOrEqualToGpu : TensorArrayFunctors {
-    using TensorArrayFunctors::TensorArrayFunctors;
+  struct isGreaterThanOrEqualToGpu : TensorArrayFunctorsGpu {
+    using TensorArrayFunctorsGpu::TensorArrayFunctorsGpu;
     template<typename TensorT>
     __host__ __device__  bool operator()(const TensorArrayGpu8<TensorT>& s1, const TensorArrayGpu8<TensorT>& s2) {
       if (TensorArrayComparisonGpu::compare(s1, s2, this->size_) >= 0) return true;
