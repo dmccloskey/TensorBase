@@ -3307,7 +3307,7 @@ void test_updateTensorDataConstantGpu()
     for (int j = 0; j < nlabels; ++j) {
       for (int i = 0; i < nlabels; ++i) {
         assert(values_old_ptr->getData()(i + j * nlabels + k * nlabels*nlabels) == tensor_values(i, j, k));
-        assert(tensorTable.getData()(i, j, k) == TensorArrayGpu8(std::to_string(100)));
+        assert(tensorTable.getData()(i, j, k) == TensorArrayGpu8<char>(std::to_string(100)));
       }
     }
   }
