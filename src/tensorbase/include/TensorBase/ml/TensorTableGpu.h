@@ -585,14 +585,14 @@ namespace TensorBase
     assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
 
     // make the sparse axis
-    std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>> axis_1_ptr = std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("Indices", sparse_dimensions, sparse_labels->getData()));
+    std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>> axis_1_ptr = std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("Indices", sparse_dimensions, sparse_labels->getData()));
 
     // make the values axis
     Eigen::Tensor<std::string, 1> values_dimension(1);
     values_dimension.setValues({ "Values" });
     Eigen::Tensor<int, 2> values_labels(1, 1);
     values_labels.setZero();
-    std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>> axis_2_ptr = std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("Values", values_dimension, values_labels));
+    std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>> axis_2_ptr = std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("Values", values_dimension, values_labels));
 
     // add the axes to the tensorTable
     TensorTableGpu<TensorT, 2> tensorTable;

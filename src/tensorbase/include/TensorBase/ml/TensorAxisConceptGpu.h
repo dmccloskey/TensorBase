@@ -13,9 +13,9 @@
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/ml/TensorAxisConcept.h>
 
-CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisGpu<int>, Eigen::GpuDevice>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisGpu<float>, Eigen::GpuDevice>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisGpu<double>, Eigen::GpuDevice>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisGpu<char>, Eigen::GpuDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisGpuPrimitiveT<int>, Eigen::GpuDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisGpuPrimitiveT<float>, Eigen::GpuDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisGpuPrimitiveT<double>, Eigen::GpuDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisGpuPrimitiveT<char>, Eigen::GpuDevice>);
 #endif
 #endif //TENSORBASE_TENSORAXISCONCEPTGPU_H
