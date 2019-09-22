@@ -365,9 +365,9 @@ void test_selectIndicesViewGpu()
       ++iter;
     }
   }
-  TensorDataGpu<int, 1> select_labels(Eigen::array<Eigen::Index, 1>({ nlabels / 2 }));
+  TensorDataGpuPrimitiveT<int, 1> select_labels(Eigen::array<Eigen::Index, 1>({ nlabels / 2 }));
   select_labels.setData(select_labels_values);
-  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> select_labels_ptr = std::make_shared<TensorDataGpu<int, 1>>(select_labels);
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> select_labels_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(select_labels);
 
   // sync the tensorTable
   tensorTable.syncIndicesHAndDData(device);
@@ -448,7 +448,7 @@ void test_broadcastSelectIndicesViewGpu()
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
 
-void test_extractTensorDataGpu()
+void test_extractTensorDataGpuPrimitiveT()
 {
   // setup the table
   TensorTableGpu<float, 3> tensorTable;
@@ -494,9 +494,9 @@ void test_extractTensorDataGpu()
     }
   }
   tensorTable.setData(tensor_values);
-  TensorDataGpu<int, 3> indices_select(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  TensorDataGpuPrimitiveT<int, 3> indices_select(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   indices_select.setData(indices_values);
-  auto indices_select_ptr = std::make_shared<TensorDataGpu<int, 3>>(indices_select);
+  auto indices_select_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 3>>(indices_select);
 
   // sync the tensorTable
   tensorTable.syncIndicesHAndDData(device);
@@ -560,12 +560,12 @@ void test_selectTensorIndicesGpu()
       }
     }
   }
-  TensorDataGpu<float, 3> tensor_select(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  TensorDataGpuPrimitiveT<float, 3> tensor_select(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   tensor_select.setData(tensor_select_values);
-  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> tensor_select_ptr = std::make_shared<TensorDataGpu<float, 3>>(tensor_select);
-  TensorDataGpu<float, 1> values_select(Eigen::array<Eigen::Index, 1>({ nlabels }));
+  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> tensor_select_ptr = std::make_shared<TensorDataGpuPrimitiveT<float, 3>>(tensor_select);
+  TensorDataGpuPrimitiveT<float, 1> values_select(Eigen::array<Eigen::Index, 1>({ nlabels }));
   values_select.setData(values_select_values);
-  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 1>> values_select_ptr = std::make_shared<TensorDataGpu<float, 1>>(values_select);
+  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 1>> values_select_ptr = std::make_shared<TensorDataGpuPrimitiveT<float, 1>>(values_select);
 
   // Sync the data
   tensor_select_ptr->syncHAndDData(device);
@@ -722,9 +722,9 @@ void test_applyIndicesSelectToIndicesViewGpu()
       }
     }
   }
-  TensorDataGpu<int, 3> indices_select(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  TensorDataGpuPrimitiveT<int, 3> indices_select(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   indices_select.setData(indices_select_values);
-  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 3>> indices_select_ptr = std::make_shared<TensorDataGpu<int, 3>>(indices_select);
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 3>> indices_select_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 3>>(indices_select);
   indices_select_ptr->syncHAndDData(device);
 
   // test using the second indices view  
@@ -870,17 +870,17 @@ void test_whereIndicesViewDataGpu()
   // set up the selection labels
   Eigen::Tensor<int, 1> select_labels_values(2);
   select_labels_values(0) = 0; select_labels_values(1) = 2;
-  TensorDataGpu<int, 1> select_labels(Eigen::array<Eigen::Index, 1>({ 2 }));
+  TensorDataGpuPrimitiveT<int, 1> select_labels(Eigen::array<Eigen::Index, 1>({ 2 }));
   select_labels.setData(select_labels_values);
-  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> select_labels_ptr = std::make_shared<TensorDataGpu<int, 1>>(select_labels);
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> select_labels_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(select_labels);
   select_labels_ptr->syncHAndDData(device);
 
   // set up the selection values
   Eigen::Tensor<float, 1> select_values_values(2);
   select_values_values(0) = 9; select_values_values(1) = 9;
-  TensorDataGpu<float, 1> select_values(Eigen::array<Eigen::Index, 1>({ 2 }));
+  TensorDataGpuPrimitiveT<float, 1> select_values(Eigen::array<Eigen::Index, 1>({ 2 }));
   select_values.setData(select_values_values);
-  std::shared_ptr<TensorDataGpu<float, 1>> select_values_ptr = std::make_shared<TensorDataGpu<float, 1>>(select_values);
+  std::shared_ptr<TensorDataGpuPrimitiveT<float, 1>> select_values_ptr = std::make_shared<TensorDataGpuPrimitiveT<float, 1>>(select_values);
   select_values_ptr->syncHAndDData(device);
 
   // test
@@ -1074,9 +1074,9 @@ void test_sortIndicesViewDataGpu()
   // set up the selection labels
   Eigen::Tensor<int, 1> select_labels_values(1);
   select_labels_values(0) = 1;
-  TensorDataGpu<int, 1> select_labels(Eigen::array<Eigen::Index, 1>({ 1 }));
+  TensorDataGpuPrimitiveT<int, 1> select_labels(Eigen::array<Eigen::Index, 1>({ 1 }));
   select_labels.setData(select_labels_values);
-  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> select_labels_ptr = std::make_shared<TensorDataGpu<int, 1>>(select_labels);
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> select_labels_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(select_labels);
   select_labels_ptr->syncHAndDData(device);
 
   // test sort ASC
@@ -1161,11 +1161,11 @@ void test_makeSelectIndicesFromIndicesViewGpu()
   }
 
   // select
-  TensorDataGpu<int, 1> select_labels(Eigen::array<Eigen::Index, 1>({ 1 }));
+  TensorDataGpuPrimitiveT<int, 1> select_labels(Eigen::array<Eigen::Index, 1>({ 1 }));
   Eigen::Tensor<int, 1> select_labels_values(Eigen::array<Eigen::Index, 1>({ 1 }));
   select_labels_values.setValues({ 1 });
   select_labels.setData(select_labels_values);
-  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> select_labels_ptr = std::make_shared<TensorDataGpu<int, 1>>(select_labels);
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> select_labels_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(select_labels);
   select_labels_ptr->syncHAndDData(device);
   tensorTable.selectIndicesView("1", 0, select_labels_ptr, device);
 
@@ -1230,11 +1230,11 @@ void test_getSelectTensorDataFromIndicesViewGpu()
   tensorTable.syncHAndDData(device);
 
   // select label 1 from axis 1
-  TensorDataGpu<int, 1> select_labels(Eigen::array<Eigen::Index, 1>({ 1 }));
+  TensorDataGpuPrimitiveT<int, 1> select_labels(Eigen::array<Eigen::Index, 1>({ 1 }));
   Eigen::Tensor<int, 1> select_labels_values(Eigen::array<Eigen::Index, 1>({ 1 }));
   select_labels_values.setValues({ 1 });
   select_labels.setData(select_labels_values);
-  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> select_labels_ptr = std::make_shared<TensorDataGpu<int, 1>>(select_labels);
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> select_labels_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(select_labels);
   select_labels_ptr->syncHAndDData(device);
   tensorTable.selectIndicesView("1", 0, select_labels_ptr, device);
 
@@ -1259,9 +1259,9 @@ void test_getSelectTensorDataFromIndicesViewGpu()
       }
     }
   }
-  TensorDataGpu<int, 3> indices_select(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  TensorDataGpuPrimitiveT<int, 3> indices_select(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   indices_select.setData(indices_select_values);
-  std::shared_ptr<TensorDataGpu<int, 3>> indices_select_ptr = std::make_shared<TensorDataGpu<int, 3>>(indices_select);
+  std::shared_ptr<TensorDataGpuPrimitiveT<int, 3>> indices_select_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 3>>(indices_select);
   indices_select_ptr->syncHAndDData(device);
 
   // test for the selected data
@@ -1278,7 +1278,7 @@ void test_getSelectTensorDataFromIndicesViewGpu()
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
 
-void test_selectTensorDataGpu()
+void test_selectTensorDataGpuPrimitiveT()
 {
   // setup the table
   TensorTableGpu<float, 3> tensorTable;
@@ -1330,11 +1330,11 @@ void test_selectTensorDataGpu()
   tensorTable.syncHAndDData(device);
 
   // select label 1 from axis 1
-  TensorDataGpu<int, 1> select_labels(Eigen::array<Eigen::Index, 1>({ 1 }));
+  TensorDataGpuPrimitiveT<int, 1> select_labels(Eigen::array<Eigen::Index, 1>({ 1 }));
   Eigen::Tensor<int, 1> select_labels_values(Eigen::array<Eigen::Index, 1>({ 1 }));
   select_labels_values.setValues({ 1 });
   select_labels.setData(select_labels_values);
-  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> select_labels_ptr = std::make_shared<TensorDataGpu<int, 1>>(select_labels);
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> select_labels_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(select_labels);
   select_labels_ptr->syncHAndDData(device);
   tensorTable.selectIndicesView("1", 0, select_labels_ptr, device);
 
@@ -1554,7 +1554,7 @@ void test_makeSortIndicesViewFromIndicesViewGpu()
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
 
-void test_sortTensorDataGpu()
+void test_sortTensorDataGpuPrimitiveT()
 {
   // setup the table
   TensorTableGpu<float, 3> tensorTable;
@@ -1609,9 +1609,9 @@ void test_sortTensorDataGpu()
   // set up the selection labels
   Eigen::Tensor<int, 1> select_labels_values(1);
   select_labels_values(0) = 0;
-  TensorDataGpu<int, 1> select_labels(Eigen::array<Eigen::Index, 1>({ 1 }));
+  TensorDataGpuPrimitiveT<int, 1> select_labels(Eigen::array<Eigen::Index, 1>({ 1 }));
   select_labels.setData(select_labels_values);
-  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> select_labels_ptr = std::make_shared<TensorDataGpu<int, 1>>(select_labels);
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> select_labels_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(select_labels);
   select_labels_ptr->syncHAndDData(device);
 
   // make the expected sorted tensor
@@ -1632,7 +1632,7 @@ void test_sortTensorDataGpu()
   tensorTable.syncAxesHAndDData(device);
   tensorTable.syncHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  //std::cout << "test_sortTensorDataGpu Expected:" << std::endl;
+  //std::cout << "test_sortTensorDataGpuPrimitiveT Expected:" << std::endl;
   //std::cout << "axis_1_ptr->getLabels()\n" << axis_1_ptr->getLabels() << std::endl;
   //std::cout << "axis_2_ptr->getLabels()\n" << axis_2_ptr->getLabels() << std::endl;
   //std::cout << "axis_3_ptr->getLabels()\n" << axis_3_ptr->getLabels() << std::endl;
@@ -1692,7 +1692,7 @@ void test_sortTensorDataGpu()
   tensorTable.syncAxesHAndDData(device);
   tensorTable.syncHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  //std::cout << "test_sortTensorDataGpu Failing:" << std::endl;
+  //std::cout << "test_sortTensorDataGpuPrimitiveT Failing:" << std::endl;
   //std::cout << "axis_1_ptr->getLabels()\n" << axis_1_ptr->getLabels() << std::endl;
   //std::cout << "axis_2_ptr->getLabels()\n" << axis_2_ptr->getLabels() << std::endl;
   //std::cout << "axis_3_ptr->getLabels()\n" << axis_3_ptr->getLabels() << std::endl;
@@ -1760,9 +1760,9 @@ void test_updateTensorDataValues1Gpu()
     }
   }
   tensorTable.setData(tensor_values);
-  TensorDataGpu<float, 3> values_new(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  TensorDataGpuPrimitiveT<float, 3> values_new(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   values_new.setData(update_values);
-  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> values_new_ptr = std::make_shared<TensorDataGpu<float, 3>>(values_new);
+  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> values_new_ptr = std::make_shared<TensorDataGpuPrimitiveT<float, 3>>(values_new);
   
   // sync the tensorTable
   tensorTable.syncIndicesHAndDData(device);
@@ -1918,9 +1918,9 @@ void test_updateTensorDataValues2Gpu()
     }
   }
   tensorTable.setData(tensor_values);
-  TensorDataGpu<float, 3> values_new(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  TensorDataGpuPrimitiveT<float, 3> values_new(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   values_new.setData(update_values);
-  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> values_new_ptr = std::make_shared<TensorDataGpu<float, 3>>(values_new);
+  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> values_new_ptr = std::make_shared<TensorDataGpuPrimitiveT<float, 3>>(values_new);
 
   // sync the tensorTable
   tensorTable.syncIndicesHAndDData(device);
@@ -1934,9 +1934,9 @@ void test_updateTensorDataValues2Gpu()
   values_new_ptr->syncHAndDData(device);
 
   // Test update
-  TensorDataGpu<float, 3> values_old(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  TensorDataGpuPrimitiveT<float, 3> values_old(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   values_old.setData();
-  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> values_old_ptr = std::make_shared<TensorDataGpu<float, 3>>(values_old);
+  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> values_old_ptr = std::make_shared<TensorDataGpuPrimitiveT<float, 3>>(values_old);
   values_old_ptr->syncHAndDData(device);
   tensorTable.updateTensorDataValues(values_new_ptr->getDataPointer(), values_old_ptr->getDataPointer(), device);
   values_old_ptr->syncHAndDData(device);
@@ -1997,7 +1997,7 @@ void test_updateTensorDataValues2Gpu()
   tensorTable.syncHAndDData(device);
 
   // Test update
-  values_old_ptr = std::make_shared<TensorDataGpu<float, 3>>(values_old);
+  values_old_ptr = std::make_shared<TensorDataGpuPrimitiveT<float, 3>>(values_old);
   values_old_ptr->syncHAndDData(device);
   tensorTable.updateTensorDataValues(values_new_ptr->getDataPointer(), values_old_ptr->getDataPointer(), device);
   values_old_ptr->syncHAndDData(device);
@@ -2116,9 +2116,9 @@ void test_appendToIndicesGpu()
   for (int i = 0; i < nlabels - 1; ++i) {
     indices_new_values(i) = nlabels + i + 1;
   }
-  TensorDataGpu<int, 1> indices_new(Eigen::array<Eigen::Index, 1>({ nlabels - 1 }));
+  TensorDataGpuPrimitiveT<int, 1> indices_new(Eigen::array<Eigen::Index, 1>({ nlabels - 1 }));
   indices_new.setData(indices_new_values);
-  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_new_ptr = std::make_shared<TensorDataGpu<int, 1>>(indices_new);
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_new_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(indices_new);
 
   // sync the tensorTable
   tensorTable.syncIndicesHAndDData(device);
@@ -2207,21 +2207,21 @@ void test_appendToAxisGpu()
       update_values(0, i, j) = i;
     }
   }
-  TensorDataGpu<float, 3> values_new(Eigen::array<Eigen::Index, 3>({ 1, nlabels, nlabels }));
+  TensorDataGpuPrimitiveT<float, 3> values_new(Eigen::array<Eigen::Index, 3>({ 1, nlabels, nlabels }));
   values_new.setData(update_values);
-  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> values_new_ptr = std::make_shared<TensorDataGpu<float, 3>>(values_new);
+  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> values_new_ptr = std::make_shared<TensorDataGpuPrimitiveT<float, 3>>(values_new);
 
   // setup the new axis labels
   Eigen::Tensor<int, 2> labels_values(Eigen::array<Eigen::Index, 2>({ 1, 1 }));
   labels_values(0, 0) = 3;
-  TensorDataGpu<int, 2> labels_new(Eigen::array<Eigen::Index, 2>({ 1, 1 }));
+  TensorDataGpuPrimitiveT<int, 2> labels_new(Eigen::array<Eigen::Index, 2>({ 1, 1 }));
   labels_new.setData(labels_values);
-  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>> labels_new_ptr = std::make_shared<TensorDataGpu<int, 2>>(labels_new);
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>> labels_new_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 2>>(labels_new);
 
   // setup the new indices
-  TensorDataGpu<int, 1> indices_new(Eigen::array<Eigen::Index, 1>({ 1 }));
+  TensorDataGpuPrimitiveT<int, 1> indices_new(Eigen::array<Eigen::Index, 1>({ 1 }));
   indices_new.setData();
-  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_new_ptr = std::make_shared<TensorDataGpu<int, 1>>(indices_new);
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_new_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(indices_new);
 
   // sync the tensorTable
   tensorTable.syncIndicesHAndDData(device);
@@ -2347,9 +2347,9 @@ void test_makeIndicesViewSelectFromIndicesGpu()
   // setup the selection indices
   Eigen::Tensor<int, 1> indices_to_select_values(Eigen::array<Eigen::Index, 1>({ 2 }));
   indices_to_select_values.setValues({ 1, 2 });
-  TensorDataGpu<int, 1> indices_to_select(Eigen::array<Eigen::Index, 1>({ 2 }));
+  TensorDataGpuPrimitiveT<int, 1> indices_to_select(Eigen::array<Eigen::Index, 1>({ 2 }));
   indices_to_select.setData(indices_to_select_values);
-  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_to_select_ptr = std::make_shared<TensorDataGpu<int, 1>>(indices_to_select);
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_to_select_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(indices_to_select);
   
   // sync the tensorTable
   tensorTable.syncIndicesHAndDData(device);
@@ -2413,9 +2413,9 @@ void test_deleteFromIndicesGpu()
   // setup the selection indices
   Eigen::Tensor<int, 1> indices_to_select_values(Eigen::array<Eigen::Index, 1>({ 1 }));
   indices_to_select_values.setValues({ 2 });
-  TensorDataGpu<int, 1> indices_to_select(Eigen::array<Eigen::Index, 1>({ 1 }));
+  TensorDataGpuPrimitiveT<int, 1> indices_to_select(Eigen::array<Eigen::Index, 1>({ 1 }));
   indices_to_select.setData(indices_to_select_values);
-  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_to_select_ptr = std::make_shared<TensorDataGpu<int, 1>>(indices_to_select);
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_to_select_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(indices_to_select);
 
   // sync the tensorTable
   tensorTable.syncIndicesHAndDData(device);
@@ -2491,9 +2491,9 @@ void test_makeSelectIndicesFromIndicesGpu()
     if (i % 2 == 0) indices_to_select_values(i) = i + 1;
     else indices_to_select_values(i) = 0;
   }
-  TensorDataGpu<int, 1> indices_to_select(Eigen::array<Eigen::Index, 1>({ nlabels }));
+  TensorDataGpuPrimitiveT<int, 1> indices_to_select(Eigen::array<Eigen::Index, 1>({ nlabels }));
   indices_to_select.setData(indices_to_select_values);
-  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_to_select_ptr = std::make_shared<TensorDataGpu<int, 1>>(indices_to_select);
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_to_select_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(indices_to_select);
 
   // sync the tensorTable
   tensorTable.syncIndicesHAndDData(device);
@@ -2568,9 +2568,9 @@ void test_deleteFromAxisGpu()
   // setup the selection indices
   Eigen::Tensor<int, 1> indices_to_select_values(Eigen::array<Eigen::Index, 1>({ 1 }));
   indices_to_select_values.setValues({ 2 });
-  TensorDataGpu<int, 1> indices_to_select(Eigen::array<Eigen::Index, 1>({ 1 }));
+  TensorDataGpuPrimitiveT<int, 1> indices_to_select(Eigen::array<Eigen::Index, 1>({ 1 }));
   indices_to_select.setData(indices_to_select_values);
-  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_to_select_ptr = std::make_shared<TensorDataGpu<int, 1>>(indices_to_select);
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_to_select_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(indices_to_select);
 
   // sync the tensorTable
   tensorTable.syncIndicesHAndDData(device);
@@ -2584,9 +2584,9 @@ void test_deleteFromAxisGpu()
   indices_to_select_ptr->syncHAndDData(device);
 
   // test deleteFromAxis
-  TensorDataGpu<float, 3> values(Eigen::array<Eigen::Index, 3>({ 1, nlabels, nlabels }));
+  TensorDataGpuPrimitiveT<float, 3> values(Eigen::array<Eigen::Index, 3>({ 1, nlabels, nlabels }));
   values.setData();
-  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> values_ptr = std::make_shared<TensorDataGpu<float, 3>>(values);
+  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> values_ptr = std::make_shared<TensorDataGpuPrimitiveT<float, 3>>(values);
   values_ptr->syncHAndDData(device);
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>> labels_ptr;
   tensorTable.deleteFromAxis("1", indices_to_select_ptr, labels_ptr, values_ptr->getDataPointer(), device);
@@ -2744,23 +2744,23 @@ void test_insertIntoAxisGpu()
       update_values(0, i, j) = 100;
     }
   }
-  TensorDataGpu<float, 3> values_new(Eigen::array<Eigen::Index, 3>({ 1, nlabels, nlabels }));
+  TensorDataGpuPrimitiveT<float, 3> values_new(Eigen::array<Eigen::Index, 3>({ 1, nlabels, nlabels }));
   values_new.setData(update_values);
-  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> values_new_ptr = std::make_shared<TensorDataGpu<float, 3>>(values_new);
+  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> values_new_ptr = std::make_shared<TensorDataGpuPrimitiveT<float, 3>>(values_new);
 
   // setup the new axis labels
   Eigen::Tensor<int, 2> labels_values(Eigen::array<Eigen::Index, 2>({ 1, 1 }));
   labels_values(0, 0) = 100;
-  TensorDataGpu<int, 2> labels_new(Eigen::array<Eigen::Index, 2>({ 1, 1 }));
+  TensorDataGpuPrimitiveT<int, 2> labels_new(Eigen::array<Eigen::Index, 2>({ 1, 1 }));
   labels_new.setData(labels_values);
-  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>> labels_new_ptr = std::make_shared<TensorDataGpu<int, 2>>(labels_new);
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>> labels_new_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 2>>(labels_new);
 
   // setup the new indices
   Eigen::Tensor<int, 1> indices_values(Eigen::array<Eigen::Index, 1>({ 1 }));
   indices_values(0) = 3;
-  TensorDataGpu<int, 1> indices_new(Eigen::array<Eigen::Index, 1>({ 1 }));
+  TensorDataGpuPrimitiveT<int, 1> indices_new(Eigen::array<Eigen::Index, 1>({ 1 }));
   indices_new.setData(indices_values);
-  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_new_ptr = std::make_shared<TensorDataGpu<int, 1>>(indices_new);
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_new_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(indices_new);
 
   // Change the indices and indices view to simulate a deletion
   tensorTable.getIndices().at("1")->getData()(nlabels - 1) = 4;
@@ -2910,9 +2910,9 @@ void test_makeSparseTensorTableGpu()
     {1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3 },
     {1,1,1,2,2,2,3,3,3,1,1,1,2,2,2,3,3,3,1,1,1,2,2,2,3,3,3 },
     {1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3 } });
-  TensorDataGpu<int, 2> sparse_labels(Eigen::array<Eigen::Index, 2>({ 3, nlabels1 }));
+  TensorDataGpuPrimitiveT<int, 2> sparse_labels(Eigen::array<Eigen::Index, 2>({ 3, nlabels1 }));
   sparse_labels.setData(labels1);
-  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>> sparse_labels_ptr = std::make_shared<TensorDataGpu<int, 2>>(sparse_labels);
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>> sparse_labels_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 2>>(sparse_labels);
 
   labels2.setConstant(0);
 
@@ -2926,9 +2926,9 @@ void test_makeSparseTensorTableGpu()
       }
     }
   }
-  TensorDataGpu<float, 3> sparse_data(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  TensorDataGpuPrimitiveT<float, 3> sparse_data(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   sparse_data.setData(tensor_values);
-  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> sparse_data_ptr = std::make_shared<TensorDataGpu<float, 3>>(sparse_data);
+  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> sparse_data_ptr = std::make_shared<TensorDataGpuPrimitiveT<float, 3>>(sparse_data);
 
   // Test
   std::shared_ptr<TensorTable<float, Eigen::GpuDevice, 2>> sparse_table_ptr;
@@ -3272,10 +3272,10 @@ void test_updateTensorDataConstantGpu()
   tensorTable.setData(tensor_values);
 
   // setup the update values
-  TensorDataGpu<float, 1> values_new(Eigen::array<Eigen::Index, 1>({ 1 }));
+  TensorDataGpuPrimitiveT<float, 1> values_new(Eigen::array<Eigen::Index, 1>({ 1 }));
   values_new.setData();
   values_new.getData()(0) = 100;
-  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 1>> values_new_ptr = std::make_shared<TensorDataGpu<float, 1>>(values_new);
+  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 1>> values_new_ptr = std::make_shared<TensorDataGpuPrimitiveT<float, 1>>(values_new);
 
   // sync the tensorTable
   tensorTable.syncIndicesHAndDData(device);
@@ -3863,7 +3863,7 @@ int main(int argc, char** argv)
   test_zeroIndicesViewAndResetIndicesViewGpu();
   test_selectIndicesViewGpu();
   test_broadcastSelectIndicesViewGpu();
-  test_extractTensorDataGpu();
+  test_extractTensorDataGpuPrimitiveT();
   test_selectTensorIndicesGpu();
   test_applyIndicesSelectToIndicesViewGpu();
   test_whereIndicesViewDataGpu();
@@ -3871,9 +3871,9 @@ int main(int argc, char** argv)
   test_sortIndicesViewDataGpu();
   test_makeSelectIndicesFromIndicesViewGpu();
   test_getSelectTensorDataFromIndicesViewGpu();
-  test_selectTensorDataGpu();
+  test_selectTensorDataGpuPrimitiveT();
   test_makeSortIndicesViewFromIndicesViewGpu();
-  test_sortTensorDataGpu();
+  test_sortTensorDataGpuPrimitiveT();
   test_updateTensorDataValues1Gpu();
   test_updateTensorDataValues2Gpu();
   test_makeAppendIndicesGpu();

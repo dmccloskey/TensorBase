@@ -21,16 +21,16 @@
 namespace TensorBase
 {
   template<typename TensorT>
-  class TensorDimensionGpu : public TensorDimension<TensorT, Eigen::GpuDevice>
+  class TensorDimensionGpuPrimitiveT : public TensorDimension<TensorT, Eigen::GpuDevice>
   {
   public:
-    TensorDimensionGpu() = default;  ///< Default constructor
-    TensorDimensionGpu(const std::string& name) { setName(name); };
-    TensorDimensionGpu(const std::string& name, const Eigen::Tensor<TensorT, 1>& labels) { setName(name); setLabels(labels); };
-    ~TensorDimensionGpu() = default; ///< Default destructor
-    void setLabels(const Eigen::Tensor<TensorT, 1>& labels) {
+    TensorDimensionGpuPrimitiveT() = default;  ///< Default constructor
+    TensorDimensionGpuPrimitiveT(const std::string& name) { setName(name); };
+    TensorDimensionGpuPrimitiveT(const std::string& name, const Eigen::Tensor<TensorT, 1>& labels) { setName(name); setLabels(labels); };
+    ~TensorDimensionGpuPrimitiveT() = default; ///< Default destructor
+    void setLabels(const Eigen::Tensor<TensorT, 1>& labels) override {
       Eigen::array<Eigen::Index, 1> dimensions = labels.dimensions();
-      this->labels_.reset(new TensorDataGpu<TensorT, 1>(dimensions));
+      this->labels_.reset(new TensorDataGpuPrimitiveT<TensorT, 1>(dimensions));
       this->labels_->setData(labels);
       this->setNLabels(labels.size());
     };
@@ -41,12 +41,35 @@ namespace TensorBase
       archive(cereal::base_class<TensorDimension<TensorT, Eigen::GpuDevice>>(this));
     }
   };
+
+  template<template<class> class ArrayT, class TensorT>
+  class TensorDimensionGpuClassT : public TensorDimension<ArrayT<TensorT>, Eigen::GpuDevice>
+  {
+  public:
+    TensorDimensionGpuClassT() = default;  ///< Default constructor
+    TensorDimensionGpuClassT(const std::string& name) { setName(name); };
+    TensorDimensionGpuClassT(const std::string& name, const Eigen::Tensor<ArrayT<TensorT>, 1>& labels) { setName(name); setLabels(labels); };
+    ~TensorDimensionGpuClassT() = default; ///< Default destructor
+    void setLabels(const Eigen::Tensor<ArrayT<TensorT>, 1>& labels) override {
+      Eigen::array<Eigen::Index, 1> dimensions = labels.dimensions();
+      this->labels_.reset(new TensorDataGpuClassT<ArrayT, TensorT, 1>(dimensions));
+      this->labels_->setData(labels);
+      this->setNLabels(labels.size());
+    };
+  private:
+    friend class cereal::access;
+    template<class Archive>
+    void serialize(Archive& archive) {
+      archive(cereal::base_class<TensorDimension<ArrayT<TensorT>, Eigen::GpuDevice>>(this));
+    }
+  };
 };
 
-// Cereal registration of TensorTs: float, int, char, double
-CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionGpu<int>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionGpu<float>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionGpu<double>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionGpu<char>);
+// Cereal registration of TensorTs: float, int, char, double, charArray8
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionGpuPrimitiveT<int>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionGpuPrimitiveT<float>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionGpuPrimitiveT<double>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionGpuPrimitiveT<char>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionGpuClassT<TensorBase::TensorArrayGpu8, char>);
 #endif
 #endif //TENSORBASE_TENSORDIMENSIONGPU_H

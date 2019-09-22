@@ -10,8 +10,6 @@
 #include <cuda_runtime.h>
 #include <cub/cub.cuh> // CUB sort, select, partition, and runLengthEncode
 #include <thrust/remove.h> // THRUST select
-#include <thrust/iterator/zip_iterator.h>
-#include <thrust/tuple.h>
 #include <thrust/sort.h> // THRUST sort
 #include <thrust/device_ptr.h> // THRUST sort, select, partition, and runLengthEncode
 #include <thrust/execution_policy.h> // THRUST sort, select, partition, and runLengthEncode
@@ -477,5 +475,10 @@ CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuPrimitiveT<int, 4>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuPrimitiveT<float, 4>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuPrimitiveT<double, 4>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuPrimitiveT<char, 4>);
+
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu8, char, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu8, char, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu8, char, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu8, char, 4>);
 #endif
 #endif //TENSORBASE_TENSORDATAGPU_H

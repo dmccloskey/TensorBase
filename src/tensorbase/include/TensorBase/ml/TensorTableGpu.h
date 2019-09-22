@@ -95,36 +95,36 @@ namespace TensorBase
       for (int i = 0; i < axis.second->getNLabels(); ++i) {
         indices_values(i) = i + 1;
       }
-      TensorDataGpu<int, 1> indices(axis_dimensions);
+      TensorDataGpuPrimitiveT<int, 1> indices(axis_dimensions);
       indices.setData(indices_values);
-      this->indices_.emplace(axis.second->getName(), std::make_shared<TensorDataGpu<int, 1>>(indices));
+      this->indices_.emplace(axis.second->getName(), std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(indices));
 
       // Set the indices view
-      TensorDataGpu<int, 1> indices_view(axis_dimensions);
+      TensorDataGpuPrimitiveT<int, 1> indices_view(axis_dimensions);
       indices_view.setData(indices_values);
-      this->indices_view_.emplace(axis.second->getName(), std::make_shared<TensorDataGpu<int, 1>>(indices_view));
+      this->indices_view_.emplace(axis.second->getName(), std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(indices_view));
 
       // Set the is_modified defaults
       Eigen::Tensor<int, 1> is_modified_values(axis.second->getNLabels());
       is_modified_values.setZero();
-      TensorDataGpu<int, 1> is_modified(axis_dimensions);
+      TensorDataGpuPrimitiveT<int, 1> is_modified(axis_dimensions);
       is_modified.setData(is_modified_values);
-      this->is_modified_.emplace(axis.second->getName(), std::make_shared<TensorDataGpu<int, 1>>(is_modified));
+      this->is_modified_.emplace(axis.second->getName(), std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(is_modified));
 
       // Set the in_memory defaults
-      TensorDataGpu<int, 1> in_memory(axis_dimensions);
+      TensorDataGpuPrimitiveT<int, 1> in_memory(axis_dimensions);
       in_memory.setData(is_modified_values.constant(1));
-      this->not_in_memory_.emplace(axis.second->getName(), std::make_shared<TensorDataGpu<int, 1>>(in_memory));
+      this->not_in_memory_.emplace(axis.second->getName(), std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(in_memory));
 
       // Set the shard_id defaults
-      TensorDataGpu<int, 1> shard_id(axis_dimensions);
+      TensorDataGpuPrimitiveT<int, 1> shard_id(axis_dimensions);
       shard_id.setData(is_modified_values.constant(1));
-      this->shard_id_.emplace(axis.second->getName(), std::make_shared<TensorDataGpu<int, 1>>(shard_id));
+      this->shard_id_.emplace(axis.second->getName(), std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(shard_id));
 
       // Set the shard_indices defaults
-      TensorDataGpu<int, 1> shard_indices(axis_dimensions);
+      TensorDataGpuPrimitiveT<int, 1> shard_indices(axis_dimensions);
       shard_indices.setData(indices_values);
-      this->shard_indices_.emplace(axis.second->getName(), std::make_shared<TensorDataGpu<int, 1>>(shard_indices));
+      this->shard_indices_.emplace(axis.second->getName(), std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(shard_indices));
 
       // Next iteration
       ++axis_cnt;
@@ -136,7 +136,7 @@ namespace TensorBase
 
   template<typename TensorT, int TDim>
   void TensorTableGpu<TensorT, TDim>::initData() {
-    this->data_.reset(new TensorDataGpu<TensorT, TDim>(this->getDimensions()));
+    this->data_.reset(new TensorDataGpuPrimitiveT<TensorT, TDim>(this->getDimensions()));
   }
 
   template<typename TensorT, int TDim>
@@ -157,7 +157,7 @@ namespace TensorBase
     }
 
     // allocate to memory
-    TensorDataGpu<int, TDim> indices_view_bcast_tmp(this->dimensions_);
+    TensorDataGpuPrimitiveT<int, TDim> indices_view_bcast_tmp(this->dimensions_);
     indices_view_bcast_tmp.setData();
     indices_view_bcast_tmp.syncHAndDData(device);
 
@@ -168,7 +168,7 @@ namespace TensorBase
     indices_view_bcast_map.device(device) = indices_view_bcast_values;
 
     // move over the results
-    indices_view_bcast = std::make_shared<TensorDataGpu<int, TDim>>(indices_view_bcast_tmp);
+    indices_view_bcast = std::make_shared<TensorDataGpuPrimitiveT<int, TDim>>(indices_view_bcast_tmp);
   }
 
   template<typename TensorT, int TDim>
@@ -187,14 +187,14 @@ namespace TensorBase
     }
 
     // allocate memory for the selected tensor
-    TensorDataGpu<TensorT, TDim> tensor_select_tmp(tensor_select_dimensions);
+    TensorDataGpuPrimitiveT<TensorT, TDim> tensor_select_tmp(tensor_select_dimensions);
     Eigen::Tensor<TensorT, TDim> tensor_select_data(tensor_select_dimensions);
     tensor_select_data.setZero();
     tensor_select_tmp.setData(tensor_select_data);
     tensor_select_tmp.syncHAndDData(device);
 
     // move over the results
-    tensor_select = std::make_shared<TensorDataGpu<TensorT, TDim>>(tensor_select_tmp);
+    tensor_select = std::make_shared<TensorDataGpuPrimitiveT<TensorT, TDim>>(tensor_select_tmp);
 
     // apply the device specific select algorithm
     this->data_->select(tensor_select, indices_view_bcast, device);
@@ -222,7 +222,7 @@ namespace TensorBase
     auto values_bcast = values_reshape.broadcast(values_bcast_dimensions);
 
     // allocate memory for the indices
-    TensorDataGpu<int, TDim> indices_select_tmp(tensor_select->getDimensions());
+    TensorDataGpuPrimitiveT<int, TDim> indices_select_tmp(tensor_select->getDimensions());
     indices_select_tmp.setData();
     indices_select_tmp.syncHAndDData(device);
 
@@ -252,14 +252,14 @@ namespace TensorBase
     }
 
     // move over the results
-    indices_select = std::make_shared<TensorDataGpu<int, TDim>>(indices_select_tmp);
+    indices_select = std::make_shared<TensorDataGpuPrimitiveT<int, TDim>>(indices_select_tmp);
   }
 
   template<typename TensorT, int TDim>
   inline void TensorTableGpu<TensorT, TDim>::makeSelectIndicesFromTensorIndicesComponent(const std::map<std::string, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>>& indices_component, std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices_select, Eigen::GpuDevice & device) const
   {
     // allocate memory for the indices
-    TensorDataGpu<int, TDim> indices_select_tmp(this->getDimensions());
+    TensorDataGpuPrimitiveT<int, TDim> indices_select_tmp(this->getDimensions());
     Eigen::Tensor<int, TDim> ones(this->getDimensions());
     ones.setConstant(1);
     indices_select_tmp.setData(ones);
@@ -291,14 +291,14 @@ namespace TensorBase
     }
 
     // move over the results
-    indices_select = std::make_shared<TensorDataGpu<int, TDim>>(indices_select_tmp);
+    indices_select = std::make_shared<TensorDataGpuPrimitiveT<int, TDim>>(indices_select_tmp);
   }
 
   template<typename TensorT, int TDim>
   inline void TensorTableGpu<TensorT, TDim>::getSelectTensorDataFromIndicesView(std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices_select, Eigen::GpuDevice & device)
   {
     // temporary memory for calculating the sum of each axis
-    TensorDataGpu<int, 1> dim_size(Eigen::array<Eigen::Index, 1>({ 1 }));
+    TensorDataGpuPrimitiveT<int, 1> dim_size(Eigen::array<Eigen::Index, 1>({ 1 }));
     dim_size.setData();
     dim_size.syncHAndDData(device);
     Eigen::TensorMap<Eigen::Tensor<int, 0>> dim_size_value(dim_size.getDataPointer().get());
@@ -319,9 +319,9 @@ namespace TensorBase
     }
 
     // allocate memory for the selected tensor
-    TensorDataGpu<TensorT, TDim> tensor_select_tmp(select_dimensions);
+    TensorDataGpuPrimitiveT<TensorT, TDim> tensor_select_tmp(select_dimensions);
     tensor_select_tmp.setData();
-    tensor_select = std::make_shared<TensorDataGpu<TensorT, TDim>>(tensor_select_tmp);
+    tensor_select = std::make_shared<TensorDataGpuPrimitiveT<TensorT, TDim>>(tensor_select_tmp);
     tensor_select->syncHAndDData(device);
 
     // select the tensor
@@ -355,20 +355,20 @@ namespace TensorBase
     auto tensor_1d = tensor_values.slice(offsets, extents).reshape(Eigen::array<Eigen::Index, 1>({ (int)this->axes_.at(axis_name_apply)->getNLabels() }));
 
     // allocate memory for the slice
-    TensorDataGpu<TensorT, 1> tensor_sort_tmp(Eigen::array<Eigen::Index, 1>({ (int)this->axes_.at(axis_name_apply)->getNLabels() }));
+    TensorDataGpuPrimitiveT<TensorT, 1> tensor_sort_tmp(Eigen::array<Eigen::Index, 1>({ (int)this->axes_.at(axis_name_apply)->getNLabels() }));
     tensor_sort_tmp.setData();
     tensor_sort_tmp.syncHAndDData(device);
     Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> tensor_sort_values(tensor_sort_tmp.getDataPointer().get(), tensor_sort_tmp.getDimensions());
     tensor_sort_values.device(device) = tensor_1d;
 
     // move over the tensor sort data
-    tensor_sort = std::make_shared<TensorDataGpu<TensorT, 1>>(tensor_sort_tmp);
+    tensor_sort = std::make_shared<TensorDataGpuPrimitiveT<TensorT, 1>>(tensor_sort_tmp);
   }
   template<typename TensorT, int TDim>
   inline void TensorTableGpu<TensorT, TDim>::makeSortIndicesFromTensorIndicesComponent(const std::map<std::string, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>>& indices_component, std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices_sort, Eigen::GpuDevice & device) const
   {
     // allocate memory for the indices
-    TensorDataGpu<int, TDim> indices_sort_tmp(this->getDimensions());
+    TensorDataGpuPrimitiveT<int, TDim> indices_sort_tmp(this->getDimensions());
     Eigen::Tensor<int, TDim> zeros(this->getDimensions());
     zeros.setZero();
     indices_sort_tmp.setData(zeros);
@@ -405,7 +405,7 @@ namespace TensorBase
     }
     indices_sort_values.device(device) += indices_sort_values.constant(1);
     // move over the results
-    indices_sort = std::make_shared<TensorDataGpu<int, TDim>>(indices_sort_tmp);
+    indices_sort = std::make_shared<TensorDataGpuPrimitiveT<int, TDim>>(indices_sort_tmp);
   }
   template<typename TensorT, int TDim>
   inline int TensorTableGpu<TensorT, TDim>::getFirstIndexFromIndicesView(const std::string & axis_name, Eigen::GpuDevice & device)
@@ -418,7 +418,7 @@ namespace TensorBase
   inline void TensorTableGpu<TensorT, TDim>::makeAppendIndices(const std::string & axis_name, const int & n_labels, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, Eigen::GpuDevice & device)
   {
     // Allocate memory for the extend axis indices
-    TensorDataGpu<int, 1> indices_tmp(Eigen::array<Eigen::Index, 1>({ n_labels }));
+    TensorDataGpuPrimitiveT<int, 1> indices_tmp(Eigen::array<Eigen::Index, 1>({ n_labels }));
     indices_tmp.setData();
     indices_tmp.syncHAndDData(device);
 
@@ -432,13 +432,13 @@ namespace TensorBase
     indices_values.device(device) = max_bcast + tmp;
 
     // Move over the indices to the output
-    indices = std::make_shared<TensorDataGpu<int, 1>>(indices_tmp);
+    indices = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(indices_tmp);
   }
   template<typename TensorT, int TDim>
   inline void TensorTableGpu<TensorT, TDim>::makeSelectIndicesFromIndices(const std::string & axis_name, const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices_select, Eigen::GpuDevice & device)
   {
     // allocate memory for the indices
-    TensorDataGpu<int, TDim> indices_select_tmp(this->getDimensions());
+    TensorDataGpuPrimitiveT<int, TDim> indices_select_tmp(this->getDimensions());
     indices_select_tmp.setData();
     indices_select_tmp.syncHAndDData(device);
     Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_select_values(indices_select_tmp.getDataPointer().get(), indices_select_tmp.getDimensions());
@@ -465,17 +465,17 @@ namespace TensorBase
     indices_select_values.device(device) = indices_view_bcast_values;
 
     // move over the results
-    indices_select = std::make_shared<TensorDataGpu<int, TDim>>(indices_select_tmp);
+    indices_select = std::make_shared<TensorDataGpuPrimitiveT<int, TDim>>(indices_select_tmp);
   }
 
   template<typename TensorT, int TDim>
   inline void TensorTableGpu<TensorT, TDim>::getSelectTensorDataFromIndices(std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices_select, const Eigen::array<Eigen::Index, TDim>& dimensions_select, Eigen::GpuDevice & device)
   {
     // allocate memory for the selected tensor
-    TensorDataGpu<TensorT, TDim> tensor_select_tmp(dimensions_select);
+    TensorDataGpuPrimitiveT<TensorT, TDim> tensor_select_tmp(dimensions_select);
     tensor_select_tmp.setData();
     tensor_select_tmp.syncHAndDData(device);
-    tensor_select = std::make_shared<TensorDataGpu<TensorT, TDim>>(tensor_select_tmp);
+    tensor_select = std::make_shared<TensorDataGpuPrimitiveT<TensorT, TDim>>(tensor_select_tmp);
 
     // select the tensor
     this->data_->select(tensor_select, indices_select, device);
@@ -491,7 +491,7 @@ namespace TensorBase
     indices_view_copy_values.device(device) = indices_view_values.clip(0, 1);
 
     // Determine the size of the indices
-    TensorDataGpu<int, 1> dim_size(Eigen::array<Eigen::Index, 1>({ 1 }));
+    TensorDataGpuPrimitiveT<int, 1> dim_size(Eigen::array<Eigen::Index, 1>({ 1 }));
     dim_size.setData();
     dim_size.syncHAndDData(device);
     Eigen::TensorMap<Eigen::Tensor<int, 0>> dim_size_value(dim_size.getDataPointer().get());
@@ -500,10 +500,10 @@ namespace TensorBase
     assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
 
     // Allocate memory for the indices
-    TensorDataGpu<int, 1> indices_tmp(Eigen::array<Eigen::Index, 1>({ dim_size.getData()(0) }));
+    TensorDataGpuPrimitiveT<int, 1> indices_tmp(Eigen::array<Eigen::Index, 1>({ dim_size.getData()(0) }));
     indices_tmp.setData();
     indices_tmp.syncHAndDData(device);
-    indices = std::make_shared<TensorDataGpu<int, 1>>(indices_tmp);
+    indices = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(indices_tmp);
 
     // Select out the non zero indices
     this->indices_view_.at(axis_name)->select(indices, indices_view_copy, device);
@@ -512,7 +512,7 @@ namespace TensorBase
   inline void TensorTableGpu<TensorT, TDim>::makeSparseAxisLabelsFromIndicesView(std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>>& sparse_select, Eigen::GpuDevice & device)
   {
     // temporary memory for calculating the total sum of each axis
-    TensorDataGpu<int, 1> dim_size(Eigen::array<Eigen::Index, 1>({ 1 }));
+    TensorDataGpuPrimitiveT<int, 1> dim_size(Eigen::array<Eigen::Index, 1>({ 1 }));
     dim_size.setData();
     dim_size.getData()(0) = 0;
 
@@ -538,16 +538,16 @@ namespace TensorBase
       indices_select_values.device(device) = indices_view_values.clip(0, 1);
 
       // select out the indices
-      TensorDataGpu<int, 1> indices_selected(Eigen::array<Eigen::Index, 1>({ dim_size.getData()(0) }));
+      TensorDataGpuPrimitiveT<int, 1> indices_selected(Eigen::array<Eigen::Index, 1>({ dim_size.getData()(0) }));
       indices_selected.setData();
-      std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_selected_ptr = std::make_shared<TensorDataGpu<int, 1>>(indices_selected);
+      std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_selected_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(indices_selected);
       indices_selected_ptr->syncHAndDData(device);
       this->indices_view_.at(axis_to_name.first)->select(indices_selected_ptr, indices_select, device);
       indices_selected_vec.push_back(indices_selected_ptr);
     }
 
     // allocate memory for the labels
-    TensorDataGpu<int, 2> sparse_labels(Eigen::array<Eigen::Index, 2>({ (int)this->axes_to_dims_.size(), labels_size }));
+    TensorDataGpuPrimitiveT<int, 2> sparse_labels(Eigen::array<Eigen::Index, 2>({ (int)this->axes_to_dims_.size(), labels_size }));
     sparse_labels.setData();
     sparse_labels.syncHAndDData(device);
 
@@ -575,7 +575,7 @@ namespace TensorBase
     }
 
     // move over the output
-    sparse_select = std::make_shared<TensorDataGpu<int, 2>>(sparse_labels);
+    sparse_select = std::make_shared<TensorDataGpuPrimitiveT<int, 2>>(sparse_labels);
   }
   template<typename TensorT, int TDim>
   inline void TensorTableGpu<TensorT, TDim>::makeSparseTensorTable(const Eigen::Tensor<std::string, 1>& sparse_dimensions, const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>>& sparse_labels, const std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>>& sparse_data, std::shared_ptr<TensorTable<TensorT, Eigen::GpuDevice, 2>>& sparse_table, Eigen::GpuDevice & device)
@@ -621,7 +621,7 @@ namespace TensorBase
   inline void TensorTableGpu<TensorT, TDim>::makeShardIndicesFromShardIDs(std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices_shard, Eigen::GpuDevice & device) const
   {
     // allocate memory for the indices
-    TensorDataGpu<int, TDim> indices_shard_tmp(this->getDimensions());
+    TensorDataGpuPrimitiveT<int, TDim> indices_shard_tmp(this->getDimensions());
     Eigen::Tensor<int, TDim> zeros(this->getDimensions());
     zeros.setZero();
     indices_shard_tmp.setData(zeros);
@@ -660,26 +660,26 @@ namespace TensorBase
     indices_shard_values.device(device) += indices_shard_values.constant(1);
 
     // move over the results
-    indices_shard = std::make_shared<TensorDataGpu<int, TDim>>(indices_shard_tmp);
+    indices_shard = std::make_shared<TensorDataGpuPrimitiveT<int, TDim>>(indices_shard_tmp);
   }
   template<typename TensorT, int TDim>
   inline void TensorTableGpu<TensorT, TDim>::runLengthEncodeIndex(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& data, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& n_runs, Eigen::GpuDevice &device) const
   {
     // Allocate memory
-    TensorDataGpu<int, 1> unique_tmp(Eigen::array<Eigen::Index, 1>({ (int)data->getTensorSize() }));
+    TensorDataGpuPrimitiveT<int, 1> unique_tmp(Eigen::array<Eigen::Index, 1>({ (int)data->getTensorSize() }));
     unique_tmp.setData();
     unique_tmp.syncHAndDData(device);
-    TensorDataGpu<int, 1> count_tmp(Eigen::array<Eigen::Index, 1>({ (int)data->getTensorSize() }));
+    TensorDataGpuPrimitiveT<int, 1> count_tmp(Eigen::array<Eigen::Index, 1>({ (int)data->getTensorSize() }));
     count_tmp.setData();
     count_tmp.syncHAndDData(device);
-    TensorDataGpu<int, 1> n_runs_tmp(Eigen::array<Eigen::Index, 1>({ 1 }));
+    TensorDataGpuPrimitiveT<int, 1> n_runs_tmp(Eigen::array<Eigen::Index, 1>({ 1 }));
     n_runs_tmp.setData();
     n_runs_tmp.syncHAndDData(device);
 
     // Move over the memory
-    unique = std::make_shared<TensorDataGpu<int, 1>>(unique_tmp);
-    count = std::make_shared<TensorDataGpu<int, 1>>(count_tmp);
-    n_runs = std::make_shared<TensorDataGpu<int, 1>>(n_runs_tmp);
+    unique = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(unique_tmp);
+    count = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(count_tmp);
+    n_runs = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(n_runs_tmp);
 
     // Run the algorithm
     data->runLengthEncode(unique, count, n_runs, device);
@@ -709,9 +709,9 @@ namespace TensorBase
     auto shard_ids_slice_indices = (modified_shard_ids_bcast == shard_ids_bcast).select(indices_bcast, indices_bcast.constant(0)) - indices_bcast.constant(1);
 
     // Allocate temporary memory for the min/max indices (Device-specific code block)
-    TensorDataGpu<int, 1> shard_slice_min(Eigen::array<Eigen::Index, 1>({ (int)modified_shard_ids->getTensorSize() }));
+    TensorDataGpuPrimitiveT<int, 1> shard_slice_min(Eigen::array<Eigen::Index, 1>({ (int)modified_shard_ids->getTensorSize() }));
     shard_slice_min.setData();
-    TensorDataGpu<int, 1> shard_slice_max(Eigen::array<Eigen::Index, 1>({ (int)modified_shard_ids->getTensorSize() }));
+    TensorDataGpuPrimitiveT<int, 1> shard_slice_max(Eigen::array<Eigen::Index, 1>({ (int)modified_shard_ids->getTensorSize() }));
     shard_slice_max.setData();
 
     // find the min and max indices values (along Dim=1) 

@@ -108,9 +108,9 @@ void test_deleteFromAxisGpu()
       ++iter;
     }
   }
-  TensorDataGpu<int, 1> indices(Eigen::array<Eigen::Index, 1>({ n_labels }));
+  TensorDataGpuPrimitiveT<int, 1> indices(Eigen::array<Eigen::Index, 1>({ n_labels }));
   indices.setData(indices_values);
-  std::shared_ptr<TensorDataGpu<int, 1>> indices_ptr = std::make_shared<TensorDataGpu<int, 1>>(indices);
+  std::shared_ptr<TensorDataGpuPrimitiveT<int, 1>> indices_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(indices);
 
   // Initialize the device
   cudaStream_t stream;
@@ -165,9 +165,9 @@ void test_appendLabelsToAxisGpu()
       ++iter;
     }
   }
-  TensorDataGpu<int, 2> labels_new(Eigen::array<Eigen::Index, 2>({ n_dimensions, n_new_labels }));
+  TensorDataGpuPrimitiveT<int, 2> labels_new(Eigen::array<Eigen::Index, 2>({ n_dimensions, n_new_labels }));
   labels_new.setData(labels_values);
-  std::shared_ptr<TensorDataGpu<int, 2>> labels_new_ptr = std::make_shared<TensorDataGpu<int, 2>>(labels_new);
+  std::shared_ptr<TensorDataGpuPrimitiveT<int, 2>> labels_new_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 2>>(labels_new);
 
   // Initialize the device
   cudaStream_t stream;
@@ -226,9 +226,9 @@ void test_makeSortIndicesGpu()
   Eigen::Tensor<int, 1> indices_view_values(n_labels);
   for (int i = 0; i < n_labels; ++i)
     indices_view_values(i) = i + 1;
-  TensorDataGpu<int, 1> indices_view(Eigen::array<Eigen::Index, 1>({ n_labels }));
+  TensorDataGpuPrimitiveT<int, 1> indices_view(Eigen::array<Eigen::Index, 1>({ n_labels }));
   indices_view.setData(indices_view_values);
-  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_view_ptr = std::make_shared<TensorDataGpu<int, 1>>(indices_view);
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_view_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(indices_view);
 
   indices_view_ptr->syncHAndDData(device);
   tensoraxis.syncHAndDData(device);
@@ -280,9 +280,9 @@ void test_sortLabelsGpu()
   Eigen::Tensor<int, 1> indices_view_values(n_labels);
   for (int i = 0; i < n_labels; ++i)
     indices_view_values(i) = i + 1;
-  TensorDataGpu<int, 1> indices_view(Eigen::array<Eigen::Index, 1>({ n_labels }));
+  TensorDataGpuPrimitiveT<int, 1> indices_view(Eigen::array<Eigen::Index, 1>({ n_labels }));
   indices_view.setData(indices_view_values);
-  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_view_ptr = std::make_shared<TensorDataGpu<int, 1>>(indices_view);
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_view_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(indices_view);
 
   indices_view_ptr->syncHAndDData(device);
   tensoraxis.syncHAndDData(device);

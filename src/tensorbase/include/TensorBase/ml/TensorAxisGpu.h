@@ -47,7 +47,7 @@ namespace TensorBase
   void TensorAxisGpu<TensorT>::setDimensionsAndLabels(const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) {
     assert(labels.dimension(0) == dimensions.dimension(0));
     Eigen::array<Eigen::Index, 2> labels_dims = labels.dimensions();
-    this->tensor_dimension_labels_.reset(new TensorDataGpu<TensorT, 2>(labels_dims));
+    this->tensor_dimension_labels_.reset(new TensorDataGpuPrimitiveT<TensorT, 2>(labels_dims));
     this->tensor_dimension_labels_->setData(labels);
     this->tensor_dimension_names_ = dimensions;
     this->setNDimensions(labels.dimension(0));
@@ -58,7 +58,7 @@ namespace TensorBase
   inline void TensorAxisGpu<TensorT>::selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 2>>& labels_select, Eigen::GpuDevice & device)
   {
     // temporary memory for calculating the sum of the new axis
-    TensorDataGpu<int, 1> axis_size(Eigen::array<Eigen::Index, 1>({ 1 }));
+    TensorDataGpuPrimitiveT<int, 1> axis_size(Eigen::array<Eigen::Index, 1>({ 1 }));
     axis_size.setData();
     axis_size.syncHAndDData(device);
     Eigen::TensorMap<Eigen::Tensor<int, 0>> axis_size_value(axis_size.getDataPointer().get());
@@ -71,15 +71,15 @@ namespace TensorBase
     assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
 
     // allocate memory for the new labels
-    TensorDataGpu<TensorT, 2> new_labels(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, axis_size.getData()(0) }));
+    TensorDataGpuPrimitiveT<TensorT, 2> new_labels(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, axis_size.getData()(0) }));
     new_labels.setData();
-    std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 2>> new_labels_ptr = std::make_shared<TensorDataGpu<TensorT, 2>>(new_labels);
+    std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 2>> new_labels_ptr = std::make_shared<TensorDataGpuPrimitiveT<TensorT, 2>>(new_labels);
     new_labels_ptr->syncHAndDData(device);
 
     // broadcast the indices across the dimensions and allocate to memory
-    TensorDataGpu<int, 2> indices_select(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, (int)this->n_labels_ }));
+    TensorDataGpuPrimitiveT<int, 2> indices_select(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, (int)this->n_labels_ }));
     indices_select.setData();
-    std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>> indices_select_ptr = std::make_shared<TensorDataGpu<int, 2>>(indices_select);
+    std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>> indices_select_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 2>>(indices_select);
     indices_select_ptr->syncHAndDData(device);
     Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_select_values(indices_select_ptr->getDataPointer().get(), indices_select_ptr->getDimensions());
     indices_select_values.device(device) = indices_values.broadcast(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, 1 }));
@@ -98,9 +98,9 @@ namespace TensorBase
     n_labels_ += labels->getDimensions().at(1);
 
     // Allocate additional memory for the new labels
-    TensorDataGpu<TensorT, 2> labels_concat(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, (int)this->n_labels_ }));
+    TensorDataGpuPrimitiveT<TensorT, 2> labels_concat(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, (int)this->n_labels_ }));
     labels_concat.setData();
-    std::shared_ptr<TensorDataGpu<TensorT, 2>> labels_concat_ptr = std::make_shared<TensorDataGpu<TensorT, 2>>(labels_concat);
+    std::shared_ptr<TensorDataGpuPrimitiveT<TensorT, 2>> labels_concat_ptr = std::make_shared<TensorDataGpuPrimitiveT<TensorT, 2>>(labels_concat);
     labels_concat_ptr->syncHAndDData(device);
     Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> labels_concat_values(labels_concat_ptr->getDataPointer().get(), labels_concat_ptr->getDimensions());
 
@@ -116,12 +116,12 @@ namespace TensorBase
   inline void TensorAxisGpu<TensorT>::makeSortIndices(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>>& indices_sort, Eigen::GpuDevice & device)
   {
     // allocate memory for the indices and set the values to zero
-    TensorDataGpu<int, 2> indices_sort_tmp(Eigen::array<Eigen::Index, 2>({ (int)this->getNDimensions(), (int)this->getNLabels() }));
+    TensorDataGpuPrimitiveT<int, 2> indices_sort_tmp(Eigen::array<Eigen::Index, 2>({ (int)this->getNDimensions(), (int)this->getNLabels() }));
     indices_sort_tmp.setData();
     indices_sort_tmp.syncHAndDData(device);
 
     // create a dummy index along the dimension
-    TensorDataGpu<int, 1> indices_dimension(Eigen::array<Eigen::Index, 1>({ (int)this->getNDimensions() }));
+    TensorDataGpuPrimitiveT<int, 1> indices_dimension(Eigen::array<Eigen::Index, 1>({ (int)this->getNDimensions() }));
     indices_dimension.setData();
     for (int i = 0; i < this->getNDimensions(); ++i) {
       indices_dimension.getData()(i) = i + 1;
@@ -143,7 +143,7 @@ namespace TensorBase
     indices_sort_values.device(device) = indices_view_bcast_values + indices_dimension_bcast_values + indices_sort_values.constant(1);
 
     // move over the results
-    indices_sort = std::make_shared<TensorDataGpu<int, 2>>(indices_sort_tmp);
+    indices_sort = std::make_shared<TensorDataGpuPrimitiveT<int, 2>>(indices_sort_tmp);
   }
 };
 
