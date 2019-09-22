@@ -1,7 +1,7 @@
 /**TODO:  Add copyright*/
 
 #if COMPILE_WITH_CUDA
-#include <TensorBase/ml/TensorTableGpu.h>
+#include <TensorBase/ml/TensorTableGpuClassT.h>
 #include <string>
 
 using namespace TensorBase;
@@ -9,29 +9,29 @@ using namespace std;
 
 void test_constructorGpu()
 {
-  TensorTableGpu<float, 3>* ptr = nullptr;
-  TensorTableGpu<float, 3>* nullPointer = nullptr;
-  ptr = new TensorTableGpu<float, 3>();
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3>* ptr = nullptr;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3>* nullPointer = nullptr;
+  ptr = new TensorTableGpuClassT<TensorArrayGpu8, char, 3>();
   assert(ptr != nullPointer);
   delete ptr;
 }
 
 void test_destructorGpu()
 {
-  TensorTableGpu<float, 3>* ptr = nullptr;
-  ptr = new TensorTableGpu<float, 3>();
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3>* ptr = nullptr;
+  ptr = new TensorTableGpuClassT<TensorArrayGpu8, char, 3>();
   delete ptr;
 }
 
 void test_constructorNameAndAxesGpu()
 {
-  TensorTableGpu<float, 3> tensorTable("1");
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable("1");
 
   assert(tensorTable.getId() == -1);
   assert(tensorTable.getName() == "1");
   assert(tensorTable.getDir() == "");
 
-  TensorTableGpu<float, 3> tensorTable2("1", "dir");
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable2("1", "dir");
 
   assert(tensorTable2.getId() == -1);
   assert(tensorTable2.getName() == "1");
@@ -40,7 +40,7 @@ void test_constructorNameAndAxesGpu()
 
 void test_gettersAndSettersGpu()
 {
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
   // Check defaults
   assert(tensorTable.getId() == -1);
   assert(tensorTable.getName() == "");
@@ -151,11 +151,11 @@ void test_gettersAndSettersGpu()
   assert(tensorTable.getDataTensorBytes() == test);
 
   // Test setting the data
-  Eigen::Tensor<float, 3> tensor_data(Eigen::array<Eigen::Index, 3>({ nlabels1, nlabels2, nlabels3 }));
+  Eigen::Tensor<TensorArrayGpu8<char>, 3> tensor_data(Eigen::array<Eigen::Index, 3>({ nlabels1, nlabels2, nlabels3 }));
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
-        tensor_data(i, j, k) = i + j + k;
+        tensor_data(i, j, k).setTensorArray(std::to_string(i + j + k));
       }
     }
   }
@@ -206,7 +206,7 @@ void test_gettersAndSettersGpu()
 void test_reShardIndicesGpu()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
@@ -278,7 +278,7 @@ void test_reShardIndicesGpu()
 void test_zeroIndicesViewAndResetIndicesViewGpu()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
@@ -333,7 +333,7 @@ void test_zeroIndicesViewAndResetIndicesViewGpu()
 void test_selectIndicesViewGpu()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
@@ -393,7 +393,7 @@ void test_selectIndicesViewGpu()
 void test_broadcastSelectIndicesViewGpu()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
@@ -451,7 +451,7 @@ void test_broadcastSelectIndicesViewGpu()
 void test_extractTensorDataGpuPrimitiveT()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
@@ -475,17 +475,17 @@ void test_extractTensorDataGpuPrimitiveT()
   tensorTable.setAxes();
 
   // setup the tensor data, selection indices, and test selection data
-  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  Eigen::Tensor<TensorArrayGpu8<char>, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   Eigen::Tensor<int, 3> indices_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
-  Eigen::Tensor<float, 3> tensor_test(Eigen::array<Eigen::Index, 3>({ nlabels / 2, nlabels, nlabels }));
+  Eigen::Tensor<TensorArrayGpu8<char>, 3> tensor_test(Eigen::array<Eigen::Index, 3>({ nlabels / 2, nlabels, nlabels }));
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
         float value = i * nlabels + j * nlabels + k;
-        tensor_values(i, j, k) = value;
+        tensor_values(i, j, k).setTensorArray(std::to_string(value));
         if (i % 2 == 0) {
           indices_values(i, j, k) = 1;
-          tensor_test(i / 2, j, k) = value;
+          tensor_test(i / 2, j, k).setTensorArray(std::to_string(value));
         }
         else {
           indices_values(i, j, k) = 0;
@@ -506,7 +506,7 @@ void test_extractTensorDataGpuPrimitiveT()
 
   // test
   indices_select_ptr->syncHAndDData(device);
-  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> tensor_select;
+  std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 3>> tensor_select;
   tensorTable.reduceTensorDataToSelectIndices(indices_select_ptr,
     tensor_select, "1", nlabels / 2, device);
   tensor_select->syncHAndDData(device);
@@ -524,7 +524,7 @@ void test_extractTensorDataGpuPrimitiveT()
 void test_selectTensorIndicesGpu()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
@@ -548,24 +548,24 @@ void test_selectTensorIndicesGpu()
   tensorTable.setAxes();
 
   // setup the tensor select and values select data
-  Eigen::Tensor<float, 3> tensor_select_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
-  Eigen::Tensor<float, 1> values_select_values(Eigen::array<Eigen::Index, 1>({ nlabels }));
+  Eigen::Tensor<TensorArrayGpu8<char>, 3> tensor_select_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  Eigen::Tensor<TensorArrayGpu8<char>, 1> values_select_values(Eigen::array<Eigen::Index, 1>({ nlabels }));
   int iter = 0;
   for (int i = 0; i < nlabels; ++i) {
-    values_select_values(i) = 2.0;
+    values_select_values(i).setTensorArray("2");
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
-        tensor_select_values(i, j, k) = float(iter);
+        tensor_select_values(i, j, k).setTensorArray(std::to_string(iter));
         ++iter;
       }
     }
   }
-  TensorDataGpuPrimitiveT<float, 3> tensor_select(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  TensorDataGpuClassT<TensorArrayGpu8, char, 3> tensor_select(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   tensor_select.setData(tensor_select_values);
-  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> tensor_select_ptr = std::make_shared<TensorDataGpuPrimitiveT<float, 3>>(tensor_select);
-  TensorDataGpuPrimitiveT<float, 1> values_select(Eigen::array<Eigen::Index, 1>({ nlabels }));
+  std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 3>> tensor_select_ptr = std::make_shared<TensorDataGpuClassT<TensorArrayGpu8, char, 3>>(tensor_select);
+  TensorDataGpuClassT<TensorArrayGpu8, char, 1> values_select(Eigen::array<Eigen::Index, 1>({ nlabels }));
   values_select.setData(values_select_values);
-  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 1>> values_select_ptr = std::make_shared<TensorDataGpuPrimitiveT<float, 1>>(values_select);
+  std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 1>> values_select_ptr = std::make_shared<TensorDataGpuClassT<TensorArrayGpu8, char, 1>>(values_select);
 
   // Sync the data
   tensor_select_ptr->syncHAndDData(device);
@@ -583,7 +583,7 @@ void test_selectTensorIndicesGpu()
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
-        if (tensor_select_values(i, j, k) == 2.0)
+        if (tensor_select_values(i, j, k) == TensorArrayGpu8<char>("2"))
           assert(indices_select->getData()(i, j, k) == 0);
         else
           assert(indices_select->getData()(i, j, k) == 1);
@@ -600,7 +600,7 @@ void test_selectTensorIndicesGpu()
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
-        if (tensor_select_values(i, j, k) == 2.0)
+        if (tensor_select_values(i, j, k) == TensorArrayGpu8<char>("2"))
           assert(indices_select->getData()(i, j, k) == 1);
         else
           assert(indices_select->getData()(i, j, k) == 0);
@@ -617,7 +617,7 @@ void test_selectTensorIndicesGpu()
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
-        if (tensor_select_values(i, j, k) < 2.0)
+        if (tensor_select_values(i, j, k) < TensorArrayGpu8<char>("2"))
           assert(indices_select->getData()(i, j, k) == 1);
         else
           assert(indices_select->getData()(i, j, k) == 0);
@@ -634,7 +634,7 @@ void test_selectTensorIndicesGpu()
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
-        if (tensor_select_values(i, j, k) <= 2.0)
+        if (tensor_select_values(i, j, k) <= TensorArrayGpu8<char>("2"))
           assert(indices_select->getData()(i, j, k) == 1);
         else
           assert(indices_select->getData()(i, j, k) == 0);
@@ -651,7 +651,7 @@ void test_selectTensorIndicesGpu()
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
-        if (tensor_select_values(i, j, k) > 2.0)
+        if (tensor_select_values(i, j, k) > TensorArrayGpu8<char>("2"))
           assert(indices_select->getData()(i, j, k) == 1);
         else
           assert(indices_select->getData()(i, j, k) == 0);
@@ -668,7 +668,7 @@ void test_selectTensorIndicesGpu()
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
-        if (tensor_select_values(i, j, k) >= 2.0)
+        if (tensor_select_values(i, j, k) >= TensorArrayGpu8<char>("2"))
           assert(indices_select->getData()(i, j, k) == 1);
         else
           assert(indices_select->getData()(i, j, k) == 0);
@@ -681,7 +681,7 @@ void test_selectTensorIndicesGpu()
 void test_applyIndicesSelectToIndicesViewGpu()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
@@ -821,7 +821,7 @@ void test_applyIndicesSelectToIndicesViewGpu()
 void test_whereIndicesViewDataGpu()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
@@ -845,12 +845,12 @@ void test_whereIndicesViewDataGpu()
   tensorTable.setAxes();
 
   // setup the tensor data
-  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  Eigen::Tensor<TensorArrayGpu8<char>, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   int iter = 0;
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
-        tensor_values(i, j, k) = float(iter);
+        tensor_values(i, j, k).setTensorArray(std::to_string(iter));
         ++iter;
       }
     }
@@ -876,11 +876,11 @@ void test_whereIndicesViewDataGpu()
   select_labels_ptr->syncHAndDData(device);
 
   // set up the selection values
-  Eigen::Tensor<float, 1> select_values_values(2);
-  select_values_values(0) = 9; select_values_values(1) = 9;
-  TensorDataGpuPrimitiveT<float, 1> select_values(Eigen::array<Eigen::Index, 1>({ 2 }));
+  Eigen::Tensor<TensorArrayGpu8<char>, 1> select_values_values(2);
+  select_values_values(0).setTensorArray("9"); select_values_values(1).setTensorArray("9");
+  TensorDataGpuClassT<TensorArrayGpu8, char, 1> select_values(Eigen::array<Eigen::Index, 1>({ 2 }));
   select_values.setData(select_values_values);
-  std::shared_ptr<TensorDataGpuPrimitiveT<float, 1>> select_values_ptr = std::make_shared<TensorDataGpuPrimitiveT<float, 1>>(select_values);
+  std::shared_ptr<TensorDataGpuClassT<TensorArrayGpu8, char, 1>> select_values_ptr = std::make_shared<TensorDataGpuClassT<TensorArrayGpu8, char, 1>>(select_values);
   select_values_ptr->syncHAndDData(device);
 
   // test
@@ -962,7 +962,7 @@ void test_whereIndicesViewDataGpu()
 void test_sliceTensorForSortGpu()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
@@ -986,12 +986,12 @@ void test_sliceTensorForSortGpu()
   tensorTable.setAxes();
 
   // setup the tensor data
-  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  Eigen::Tensor<TensorArrayGpu8<char>, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   int iter = 0;
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
-        tensor_values(i, j, k) = float(iter);
+        tensor_values(i, j, k).setTensorArray(std::to_string(iter));
         ++iter;
       }
     }
@@ -1005,13 +1005,13 @@ void test_sliceTensorForSortGpu()
   tensorTable.syncHAndDData(device);
 
   // test sliceTensorForSort for axis 2
-  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 1>> tensor_sort;
+  std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 1>> tensor_sort;
   tensorTable.sliceTensorDataForSort(tensor_sort, "1", 1, "2", device); 
   tensor_sort->syncHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  std::vector<float> tensor_slice_2_test = { 9, 12, 15 };
+  std::vector<TensorArrayGpu8<char>> tensor_slice_2_test = { TensorArrayGpu8<char>("9"),  TensorArrayGpu8<char>("12"),  TensorArrayGpu8<char>("15") };
   for (int i = 0; i < nlabels; ++i) {
-    assert(tensor_sort->getData()(i) == tensor_slice_2_test.at(i), 1e-3);
+    assert(tensor_sort->getData()(i) == tensor_slice_2_test.at(i));
   }
 
   // test sliceTensorForSort for axis 2
@@ -1019,9 +1019,9 @@ void test_sliceTensorForSortGpu()
   tensorTable.sliceTensorDataForSort(tensor_sort, "1", 1, "3", device);
   tensor_sort->syncHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  std::vector<float> tensor_slice_3_test = { 9, 10, 11 };
+  std::vector<TensorArrayGpu8<char>> tensor_slice_3_test = { TensorArrayGpu8<char>("9"),  TensorArrayGpu8<char>("10"),  TensorArrayGpu8<char>("11") };
   for (int i = 0; i < nlabels; ++i) {
-    assert(tensor_sort->getData()(i) == tensor_slice_3_test.at(i), 1e-3);
+    assert(tensor_sort->getData()(i) == tensor_slice_3_test.at(i));
   }
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
@@ -1029,7 +1029,7 @@ void test_sliceTensorForSortGpu()
 void test_sortIndicesViewDataGpu()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
@@ -1053,12 +1053,12 @@ void test_sortIndicesViewDataGpu()
   tensorTable.setAxes();
 
   // setup the tensor data
-  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  Eigen::Tensor<TensorArrayGpu8<char>, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   int iter = 0;
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
-        tensor_values(i, j, k) = float(iter);
+        tensor_values(i, j, k).setTensorArray(std::to_string(iter));
         ++iter;
       }
     }
@@ -1106,7 +1106,7 @@ void test_sortIndicesViewDataGpu()
 void test_makeSelectIndicesFromIndicesViewGpu()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
@@ -1187,7 +1187,7 @@ void test_makeSelectIndicesFromIndicesViewGpu()
 void test_getSelectTensorDataFromIndicesViewGpu()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
@@ -1211,12 +1211,12 @@ void test_getSelectTensorDataFromIndicesViewGpu()
   tensorTable.setAxes();
 
   // setup the tensor data
-  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  Eigen::Tensor<TensorArrayGpu8<char>, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   int iter = 0;
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
-        tensor_values(i, j, k) = float(iter);
+        tensor_values(i, j, k).setTensorArray(std::to_string(iter));
         ++iter;
       }
     }
@@ -1242,7 +1242,7 @@ void test_getSelectTensorDataFromIndicesViewGpu()
   Eigen::array<Eigen::Index, 3> select_dimensions = { 1, 3, 3 };
 
   // make the indices_select
-  Eigen::Tensor<float, 3> tensor_select_test(select_dimensions);
+  Eigen::Tensor<TensorArrayGpu8<char>, 3> tensor_select_test(select_dimensions);
   Eigen::Tensor<int, 3> indices_select_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   iter = 0;
   for (int i = 0; i < nlabels; ++i) {
@@ -1250,7 +1250,7 @@ void test_getSelectTensorDataFromIndicesViewGpu()
       for (int k = 0; k < nlabels; ++k) {
         if (i == 1) {
           indices_select_values(i, j, k) = 1;
-          tensor_select_test(0, j, k) = float(iter);
+          tensor_select_test(0, j, k).setTensorArray(std::to_string(iter));
         }
         else {
           indices_select_values(i, j, k) = 0;
@@ -1265,7 +1265,7 @@ void test_getSelectTensorDataFromIndicesViewGpu()
   indices_select_ptr->syncHAndDData(device);
 
   // test for the selected data
-  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> tensor_select_ptr;
+  std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 3>> tensor_select_ptr;
   tensorTable.getSelectTensorDataFromIndicesView(tensor_select_ptr, indices_select_ptr, device);
   tensor_select_ptr->syncHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
@@ -1281,7 +1281,7 @@ void test_getSelectTensorDataFromIndicesViewGpu()
 void test_selectTensorDataGpuPrimitiveT()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
@@ -1305,12 +1305,12 @@ void test_selectTensorDataGpuPrimitiveT()
   tensorTable.setAxes();
 
   // setup the tensor data
-  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  Eigen::Tensor<TensorArrayGpu8<char>, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   int iter = 0;
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
-        tensor_values(i, j, k) = float(iter);
+        tensor_values(i, j, k).setTensorArray(std::to_string(iter));
         ++iter;
       }
     }
@@ -1501,7 +1501,7 @@ void test_selectTensorDataGpuPrimitiveT()
 void test_makeSortIndicesViewFromIndicesViewGpu()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
@@ -1557,7 +1557,7 @@ void test_makeSortIndicesViewFromIndicesViewGpu()
 void test_sortTensorDataGpuPrimitiveT()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
@@ -1584,12 +1584,12 @@ void test_sortTensorDataGpuPrimitiveT()
   tensorTable.setAxes();
 
   // setup the tensor data
-  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  Eigen::Tensor<TensorArrayGpu8<char>, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   int iter = 0;
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {
       for (int i = 0; i < nlabels; ++i) {
-        tensor_values(i, j, k) = float(iter);
+        tensor_values(i, j, k).setTensorArray(std::to_string(iter));
         ++iter;
       }
     }
@@ -1615,8 +1615,8 @@ void test_sortTensorDataGpuPrimitiveT()
   select_labels_ptr->syncHAndDData(device);
 
   // make the expected sorted tensor
-  float sorted_data[] = { 24, 25, 26, 21, 22, 23, 18, 19, 20, 15, 16, 17, 12, 13, 14, 9, 10, 11, 6, 7, 8, 3, 4, 5, 0, 1, 2 };
-  Eigen::TensorMap<Eigen::Tensor<float, 3>> tensor_sorted_values(sorted_data, Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  TensorArrayGpu8<char> sorted_data[] = { TensorArrayGpu8<char>("24"),  TensorArrayGpu8<char>("25"),  TensorArrayGpu8<char>("26"),  TensorArrayGpu8<char>("21"),  TensorArrayGpu8<char>("22"),  TensorArrayGpu8<char>("23"),  TensorArrayGpu8<char>("18"),  TensorArrayGpu8<char>("19"),  TensorArrayGpu8<char>("20"),  TensorArrayGpu8<char>("15"),  TensorArrayGpu8<char>("16"),  TensorArrayGpu8<char>("17"),  TensorArrayGpu8<char>("12"),  TensorArrayGpu8<char>("13"),  TensorArrayGpu8<char>("14"),  TensorArrayGpu8<char>("9"),  TensorArrayGpu8<char>("10"),  TensorArrayGpu8<char>("11"),  TensorArrayGpu8<char>("6"),  TensorArrayGpu8<char>("7"),  TensorArrayGpu8<char>("8"),  TensorArrayGpu8<char>("3"),  TensorArrayGpu8<char>("4"),  TensorArrayGpu8<char>("5"),  TensorArrayGpu8<char>("0"),  TensorArrayGpu8<char>("1"),  TensorArrayGpu8<char>("2") };
+  Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 3>> tensor_sorted_values(sorted_data, Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
 
   // sort each of the axes
   tensorTable.sortIndicesView("1", 0, select_labels_ptr, sortOrder::DESC, device);
@@ -1720,7 +1720,7 @@ void test_sortTensorDataGpuPrimitiveT()
 void test_updateTensorDataValues1Gpu()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
@@ -1747,22 +1747,22 @@ void test_updateTensorDataValues1Gpu()
   tensorTable.setAxes();
 
   // setup the tensor data and the update values
-  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
-  Eigen::Tensor<float, 3> update_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  Eigen::Tensor<TensorArrayGpu8<char>, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  Eigen::Tensor<TensorArrayGpu8<char>, 3> update_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   int iter = 0;
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {
       for (int i = 0; i < nlabels; ++i) {
-        tensor_values(i, j, k) = float(iter);
-        update_values(i, j, k) = 100;
+        tensor_values(i, j, k).setTensorArray(std::to_string(iter));
+        update_values(i, j, k).setTensorArray(std::to_string(100));
         ++iter;
       }
     }
   }
   tensorTable.setData(tensor_values);
-  TensorDataGpuPrimitiveT<float, 3> values_new(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  TensorDataGpuClassT<TensorArrayGpu8, char, 3> values_new(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   values_new.setData(update_values);
-  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> values_new_ptr = std::make_shared<TensorDataGpuPrimitiveT<float, 3>>(values_new);
+  std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 3>> values_new_ptr = std::make_shared<TensorDataGpuClassT<TensorArrayGpu8, char, 3>>(values_new);
   
   // sync the tensorTable
   tensorTable.syncIndicesHAndDData(device);
@@ -1776,7 +1776,7 @@ void test_updateTensorDataValues1Gpu()
   values_new_ptr->syncHAndDData(device);
 
   // Test update
-  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> values_old_ptr;
+  std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 3>> values_old_ptr;
   tensorTable.updateTensorDataValues(values_new_ptr, values_old_ptr, device);
   values_old_ptr->syncHAndDData(device);
   tensorTable.syncIndicesHAndDData(device);
@@ -1792,8 +1792,8 @@ void test_updateTensorDataValues1Gpu()
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {
       for (int i = 0; i < nlabels; ++i) {
-        assert(values_old_ptr->getData()(i, j, k) == float(iter));
-        assert(tensorTable.getData()(i, j, k) == 100);
+        assert(values_old_ptr->getData()(i, j, k) == TensorArrayGpu8<char>(std::to_string(iter)));
+        assert(tensorTable.getData()(i, j, k) == TensorArrayGpu8<char>(std::to_string(100)));
         ++iter;
       }
     }
@@ -1855,8 +1855,8 @@ void test_updateTensorDataValues1Gpu()
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {
       for (int i = 0; i < nlabels; ++i) {
-        assert(values_old_ptr->getData()(i, j, k) == float(iter)); // FIXME
-        assert(tensorTable.getData()(i, j, k) == 100);
+        assert(values_old_ptr->getData()(i, j, k) == TensorArrayGpu8<char>(std::to_string(iter))); // FIXME
+        assert(tensorTable.getData()(i, j, k) == TensorArrayGpu8<char>(std::to_string(100)));
         ++iter;
       }
     }
@@ -1878,7 +1878,7 @@ void test_updateTensorDataValues1Gpu()
 void test_updateTensorDataValues2Gpu()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
@@ -1905,22 +1905,22 @@ void test_updateTensorDataValues2Gpu()
   tensorTable.setAxes();
 
   // setup the tensor data and the update values
-  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
-  Eigen::Tensor<float, 3> update_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  Eigen::Tensor<TensorArrayGpu8<char>, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  Eigen::Tensor<TensorArrayGpu8<char>, 3> update_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   int iter = 0;
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {
       for (int i = 0; i < nlabels; ++i) {
-        tensor_values(i, j, k) = float(iter);
-        update_values(i, j, k) = 100;
+        tensor_values(i, j, k).setTensorArray(std::to_string(iter));
+        update_values(i, j, k).setTensorArray(std::to_string(100));
         ++iter;
       }
     }
   }
   tensorTable.setData(tensor_values);
-  TensorDataGpuPrimitiveT<float, 3> values_new(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  TensorDataGpuClassT<TensorArrayGpu8, char, 3> values_new(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   values_new.setData(update_values);
-  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> values_new_ptr = std::make_shared<TensorDataGpuPrimitiveT<float, 3>>(values_new);
+  std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 3>> values_new_ptr = std::make_shared<TensorDataGpuClassT<TensorArrayGpu8, char, 3>>(values_new);
 
   // sync the tensorTable
   tensorTable.syncIndicesHAndDData(device);
@@ -1934,9 +1934,9 @@ void test_updateTensorDataValues2Gpu()
   values_new_ptr->syncHAndDData(device);
 
   // Test update
-  TensorDataGpuPrimitiveT<float, 3> values_old(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  TensorDataGpuClassT<TensorArrayGpu8, char, 3> values_old(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   values_old.setData();
-  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> values_old_ptr = std::make_shared<TensorDataGpuPrimitiveT<float, 3>>(values_old);
+  std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 3>> values_old_ptr = std::make_shared<TensorDataGpuClassT<TensorArrayGpu8, char, 3>>(values_old);
   values_old_ptr->syncHAndDData(device);
   tensorTable.updateTensorDataValues(values_new_ptr->getDataPointer(), values_old_ptr->getDataPointer(), device);
   values_old_ptr->syncHAndDData(device);
@@ -1953,8 +1953,8 @@ void test_updateTensorDataValues2Gpu()
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {
       for (int i = 0; i < nlabels; ++i) {
-        assert(values_old_ptr->getData()(i, j, k) == float(iter));
-        assert(tensorTable.getData()(i, j, k) == 100);
+        assert(values_old_ptr->getData()(i, j, k) == TensorArrayGpu8<char>(std::to_string(iter)));
+        assert(tensorTable.getData()(i, j, k) == TensorArrayGpu8<char>(std::to_string(100)));
         ++iter;
       }
     }
@@ -1997,7 +1997,7 @@ void test_updateTensorDataValues2Gpu()
   tensorTable.syncHAndDData(device);
 
   // Test update
-  values_old_ptr = std::make_shared<TensorDataGpuPrimitiveT<float, 3>>(values_old);
+  values_old_ptr = std::make_shared<TensorDataGpuClassT<TensorArrayGpu8, char, 3>>(values_old);
   values_old_ptr->syncHAndDData(device);
   tensorTable.updateTensorDataValues(values_new_ptr->getDataPointer(), values_old_ptr->getDataPointer(), device);
   values_old_ptr->syncHAndDData(device);
@@ -2017,8 +2017,8 @@ void test_updateTensorDataValues2Gpu()
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {
       for (int i = 0; i < nlabels; ++i) {
-        assert(values_old_ptr->getData()(i, j, k) == float(iter)); // FIXME
-        assert(tensorTable.getData()(i, j, k) == 100);
+        assert(values_old_ptr->getData()(i, j, k) == TensorArrayGpu8<char>(std::to_string(iter)));
+        assert(tensorTable.getData()(i, j, k) == TensorArrayGpu8<char>(std::to_string(100)));
         ++iter;
       }
     }
@@ -2040,7 +2040,7 @@ void test_updateTensorDataValues2Gpu()
 void test_makeAppendIndicesGpu()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
@@ -2085,7 +2085,7 @@ void test_makeAppendIndicesGpu()
 void test_appendToIndicesGpu()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
@@ -2161,7 +2161,7 @@ void test_appendToIndicesGpu()
 void test_appendToAxisGpu()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
@@ -2188,12 +2188,12 @@ void test_appendToAxisGpu()
   tensorTable.setAxes();
 
   // setup the tensor data
-  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  Eigen::Tensor<TensorArrayGpu8<char>, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   int iter = 0;
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {
       for (int i = 0; i < nlabels; ++i) {
-        tensor_values(i, j, k) = float(iter);
+        tensor_values(i, j, k).setTensorArray(std::to_string(iter));
         ++iter;
       }
     }
@@ -2201,15 +2201,15 @@ void test_appendToAxisGpu()
   tensorTable.setData(tensor_values);
 
   // setup the new tensor data
-  Eigen::Tensor<float, 3> update_values(Eigen::array<Eigen::Index, 3>({ 1, nlabels, nlabels }));
+  Eigen::Tensor<TensorArrayGpu8<char>, 3> update_values(Eigen::array<Eigen::Index, 3>({ 1, nlabels, nlabels }));
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
-      update_values(0, i, j) = i;
+      update_values(0, i, j).setTensorArray(std::to_string(i));
     }
   }
-  TensorDataGpuPrimitiveT<float, 3> values_new(Eigen::array<Eigen::Index, 3>({ 1, nlabels, nlabels }));
+  TensorDataGpuClassT<TensorArrayGpu8, char, 3> values_new(Eigen::array<Eigen::Index, 3>({ 1, nlabels, nlabels }));
   values_new.setData(update_values);
-  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> values_new_ptr = std::make_shared<TensorDataGpuPrimitiveT<float, 3>>(values_new);
+  std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 3>> values_new_ptr = std::make_shared<TensorDataGpuClassT<TensorArrayGpu8, char, 3>>(values_new);
 
   // setup the new axis labels
   Eigen::Tensor<int, 2> labels_values(Eigen::array<Eigen::Index, 2>({ 1, 1 }));
@@ -2318,7 +2318,7 @@ void test_appendToAxisGpu()
 void test_makeIndicesViewSelectFromIndicesGpu()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
@@ -2384,7 +2384,7 @@ void test_makeIndicesViewSelectFromIndicesGpu()
 void test_deleteFromIndicesGpu()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
@@ -2459,7 +2459,7 @@ void test_deleteFromIndicesGpu()
 void test_makeSelectIndicesFromIndicesGpu()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
@@ -2522,7 +2522,7 @@ void test_makeSelectIndicesFromIndicesGpu()
 void test_deleteFromAxisGpu()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
@@ -2549,15 +2549,15 @@ void test_deleteFromAxisGpu()
   tensorTable.setAxes();
 
   // setup the tensor data
-  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
-  Eigen::Tensor<float, 3> new_values(Eigen::array<Eigen::Index, 3>({ nlabels - 1, nlabels, nlabels }));
+  Eigen::Tensor<TensorArrayGpu8<char>, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  Eigen::Tensor<TensorArrayGpu8<char>, 3> new_values(Eigen::array<Eigen::Index, 3>({ nlabels - 1, nlabels, nlabels }));
   int iter = 0;
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
-        tensor_values(i, j, k) = i + j * nlabels + k * nlabels*nlabels;
+        tensor_values(i, j, k).setTensorArray(std::to_string(i + j * nlabels + k * nlabels*nlabels));
         if (i != 1) {
-          new_values(iter, j, k) = i + j * nlabels + k * nlabels*nlabels;
+          new_values(iter, j, k).setTensorArray(std::to_string(i + j * nlabels + k * nlabels*nlabels));
         }
       }
     }
@@ -2584,9 +2584,9 @@ void test_deleteFromAxisGpu()
   indices_to_select_ptr->syncHAndDData(device);
 
   // test deleteFromAxis
-  TensorDataGpuPrimitiveT<float, 3> values(Eigen::array<Eigen::Index, 3>({ 1, nlabels, nlabels }));
+  TensorDataGpuClassT<TensorArrayGpu8, char, 3> values(Eigen::array<Eigen::Index, 3>({ 1, nlabels, nlabels }));
   values.setData();
-  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> values_ptr = std::make_shared<TensorDataGpuPrimitiveT<float, 3>>(values);
+  std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 3>> values_ptr = std::make_shared<TensorDataGpuClassT<TensorArrayGpu8, char, 3>>(values);
   values_ptr->syncHAndDData(device);
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>> labels_ptr;
   tensorTable.deleteFromAxis("1", indices_to_select_ptr, labels_ptr, values_ptr->getDataPointer(), device);
@@ -2652,7 +2652,7 @@ void test_deleteFromAxisGpu()
 void test_makeIndicesFromIndicesViewGpu()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
@@ -2700,7 +2700,7 @@ void test_makeIndicesFromIndicesViewGpu()
 void test_insertIntoAxisGpu()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
@@ -2727,26 +2727,26 @@ void test_insertIntoAxisGpu()
   tensorTable.setAxes();
 
   // setup the tensor data
-  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  Eigen::Tensor<TensorArrayGpu8<char>, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {
       for (int i = 0; i < nlabels; ++i) {
-        tensor_values(i, j, k) = i + j * nlabels + k * nlabels*nlabels;
+        tensor_values(i, j, k).setTensorArray(std::to_string(i + j * nlabels + k * nlabels*nlabels));
       }
     }
   }
   tensorTable.setData(tensor_values);
 
   // setup the new tensor data
-  Eigen::Tensor<float, 3> update_values(Eigen::array<Eigen::Index, 3>({ 1, nlabels, nlabels }));
+  Eigen::Tensor<TensorArrayGpu8<char>, 3> update_values(Eigen::array<Eigen::Index, 3>({ 1, nlabels, nlabels }));
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
-      update_values(0, i, j) = 100;
+      update_values(0, i, j).setTensorArray(std::to_string(100));
     }
   }
-  TensorDataGpuPrimitiveT<float, 3> values_new(Eigen::array<Eigen::Index, 3>({ 1, nlabels, nlabels }));
+  TensorDataGpuClassT<TensorArrayGpu8, char, 3> values_new(Eigen::array<Eigen::Index, 3>({ 1, nlabels, nlabels }));
   values_new.setData(update_values);
-  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> values_new_ptr = std::make_shared<TensorDataGpuPrimitiveT<float, 3>>(values_new);
+  std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 3>> values_new_ptr = std::make_shared<TensorDataGpuClassT<TensorArrayGpu8, char, 3>>(values_new);
 
   // setup the new axis labels
   Eigen::Tensor<int, 2> labels_values(Eigen::array<Eigen::Index, 2>({ 1, 1 }));
@@ -2818,7 +2818,7 @@ void test_insertIntoAxisGpu()
       for (int k = 0; k < nlabels; ++k) {
         // check the tensor data
         if (i == 2)
-          assert(tensorTable.getData()(i, j, k) == 100);
+          assert(tensorTable.getData()(i, j, k) == TensorArrayGpu8<char>(std::to_string(100)));
         else
           assert(tensorTable.getData()(i, j, k) == tensor_values(iter, j, k));
       }
@@ -2831,7 +2831,7 @@ void test_insertIntoAxisGpu()
 void test_makeSparseAxisLabelsFromIndicesViewGpu()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
@@ -2918,24 +2918,24 @@ void test_makeSparseTensorTableGpu()
 
   // setup the expected data
   int nlabels = 3;
-  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  Eigen::Tensor<TensorArrayGpu8<char>, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {
       for (int i = 0; i < nlabels; ++i) {
-        tensor_values(i, j, k) = i + j * nlabels + k * nlabels*nlabels;
+        tensor_values(i, j, k).setTensorArray(std::to_string(i + j * nlabels + k * nlabels*nlabels));
       }
     }
   }
-  TensorDataGpuPrimitiveT<float, 3> sparse_data(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  TensorDataGpuClassT<TensorArrayGpu8, char, 3> sparse_data(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   sparse_data.setData(tensor_values);
-  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> sparse_data_ptr = std::make_shared<TensorDataGpuPrimitiveT<float, 3>>(sparse_data);
+  std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 3>> sparse_data_ptr = std::make_shared<TensorDataGpuClassT<TensorArrayGpu8, char, 3>>(sparse_data);
 
   // Test
-  std::shared_ptr<TensorTable<float, Eigen::GpuDevice, 2>> sparse_table_ptr;
+  std::shared_ptr<TensorTable<TensorArrayGpu8<char>, Eigen::GpuDevice, 2>> sparse_table_ptr;
   sparse_labels_ptr->syncHAndDData(device);
   sparse_data_ptr->syncHAndDData(device);
   sparse_labels_ptr->syncHAndDData(device);
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
   tensorTable.makeSparseTensorTable(dimensions1, sparse_labels_ptr, sparse_data_ptr, sparse_table_ptr, device);
   sparse_labels_ptr->syncHAndDData(device);
   sparse_data_ptr->syncHAndDData(device);
@@ -3015,7 +3015,7 @@ void test_makeSparseTensorTableGpu()
 void test_getSelectTensorDataAsSparseTensorTableGpu()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
@@ -3042,11 +3042,11 @@ void test_getSelectTensorDataAsSparseTensorTableGpu()
   tensorTable.setAxes();
 
   // setup the tensor data
-  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  Eigen::Tensor<TensorArrayGpu8<char>, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {
       for (int i = 0; i < nlabels; ++i) {
-        tensor_values(i, j, k) = i + j * nlabels + k * nlabels*nlabels;
+        tensor_values(i, j, k).setTensorArray(std::to_string(i + j * nlabels + k * nlabels*nlabels));
       }
     }
   }
@@ -3071,7 +3071,7 @@ void test_getSelectTensorDataAsSparseTensorTableGpu()
   tensorTable.syncHAndDData(device);
 
   // Test
-  std::shared_ptr<TensorTable<float, Eigen::GpuDevice, 2>> sparse_table_ptr;
+  std::shared_ptr<TensorTable<TensorArrayGpu8<char>, Eigen::GpuDevice, 2>> sparse_table_ptr;
   tensorTable.getSelectTensorDataAsSparseTensorTable(sparse_table_ptr, device);
   sparse_table_ptr->syncIndicesHAndDData(device);
   sparse_table_ptr->syncIndicesViewHAndDData(device);
@@ -3234,7 +3234,7 @@ void test_getSelectTensorDataAsSparseTensorTableGpu()
 void test_updateTensorDataConstantGpu()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
@@ -3261,21 +3261,21 @@ void test_updateTensorDataConstantGpu()
   tensorTable.setAxes();
 
   // setup the tensor data
-  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  Eigen::Tensor<TensorArrayGpu8<char>, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {
       for (int i = 0; i < nlabels; ++i) {
-        tensor_values(i, j, k) = i + j * nlabels + k * nlabels*nlabels;
+        tensor_values(i, j, k).setTensorArray(std::to_string(i + j * nlabels + k * nlabels*nlabels));
       }
     }
   }
   tensorTable.setData(tensor_values);
 
   // setup the update values
-  TensorDataGpuPrimitiveT<float, 1> values_new(Eigen::array<Eigen::Index, 1>({ 1 }));
+  TensorDataGpuClassT<TensorArrayGpu8, char, 1> values_new(Eigen::array<Eigen::Index, 1>({ 1 }));
   values_new.setData();
-  values_new.getData()(0) = 100;
-  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 1>> values_new_ptr = std::make_shared<TensorDataGpuPrimitiveT<float, 1>>(values_new);
+  values_new.getData()(0).setTensorArray(std::to_string(100));
+  std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 1>> values_new_ptr = std::make_shared<TensorDataGpuClassT<TensorArrayGpu8, char, 1>>(values_new);
 
   // sync the tensorTable
   tensorTable.syncIndicesHAndDData(device);
@@ -3289,7 +3289,7 @@ void test_updateTensorDataConstantGpu()
   values_new_ptr->syncHAndDData(device);
 
   // Test update
-  std::shared_ptr<TensorTable<float, Eigen::GpuDevice, 2>> values_old_ptr;
+  std::shared_ptr<TensorTable<TensorArrayGpu8<char>, Eigen::GpuDevice, 2>> values_old_ptr;
   tensorTable.updateTensorDataConstant(values_new_ptr, values_old_ptr, device);
   tensorTable.syncIndicesHAndDData(device);
   tensorTable.syncIndicesViewHAndDData(device);
@@ -3307,7 +3307,7 @@ void test_updateTensorDataConstantGpu()
     for (int j = 0; j < nlabels; ++j) {
       for (int i = 0; i < nlabels; ++i) {
         assert(values_old_ptr->getData()(i + j * nlabels + k * nlabels*nlabels) == tensor_values(i, j, k));
-        assert(tensorTable.getData()(i, j, k) == 100);
+        assert(tensorTable.getData()(i, j, k) == TensorArrayGpu8(std::to_string(100)));
       }
     }
   }
@@ -3407,7 +3407,7 @@ void test_updateTensorDataConstantGpu()
     for (int j = 0; j < nlabels; ++j) {
       for (int i = 0; i < nlabels; ++i) {
         assert(values_old_ptr->getData()(i + j * nlabels + k * nlabels*nlabels) == tensor_values(i, j, k));
-        assert(tensorTable.getData()(i, j, k) == 100);
+        assert(tensorTable.getData()(i, j, k) == TensorArrayGpu8<char>(std::to_string(100)));
       }
     }
   }
@@ -3465,7 +3465,7 @@ void test_updateTensorDataConstantGpu()
 void test_makeShardIndicesFromShardIDsGpu()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
@@ -3539,7 +3539,7 @@ void test_makeShardIndicesFromShardIDsGpu()
 void test_makeModifiedShardIDTensorGpu()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
@@ -3661,7 +3661,7 @@ void test_makeModifiedShardIDTensorGpu()
 void test_makeNotInMemoryShardIDTensorGpu()
 {
   // setup the table
-  TensorTableGpu<float, 3> tensorTable;
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
 
   // Initialize the device
   cudaStream_t stream;
