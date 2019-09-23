@@ -754,12 +754,9 @@ namespace TensorBase
     unique->syncHAndDData(device); // d to h
     num_runs->syncHAndDData(device); // d to h
 
-    // TODO: Move to device-specific code
-#if COMPILE_WITH_CUDA
     if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
       assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
     }
-#endif
 
     if (num_runs->getData()(0) == 1 && unique->getData()(0) == 0) {
       unique->setDimensions(Eigen::array<Eigen::Index, 1>({ 0 }));
@@ -793,11 +790,9 @@ namespace TensorBase
     syncHAndDData(device); // D to H
     // TODO: Move to device-specific code
     // Synchronize the Device and Host data for reading from disk
-#if COMPILE_WITH_CUDA
     if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
       assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
     }
-#endif
     for (const auto slice_index : slice_indices) {
       const std::string filename = makeTensorTableShardFilename(dir, getName(), slice_index.first);
       Eigen::Tensor<TensorT, TDim> shard_data(slice_index.second.second);
@@ -835,11 +830,9 @@ namespace TensorBase
     syncHAndDData(device); // D to H
     // TODO: Move to device-specific code
     // Synchronize the Device and Host data for writing to disk
-#if COMPILE_WITH_CUDA
     if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
       assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
     }
-#endif
     for (const auto slice_index : slice_indices) {
       const std::string filename = makeTensorTableShardFilename(dir, getName(), slice_index.first);
       Eigen::Tensor<TensorT, TDim> shard_data = getData().slice(slice_index.second.first, slice_index.second.second);
