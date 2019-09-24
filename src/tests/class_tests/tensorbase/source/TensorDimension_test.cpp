@@ -28,10 +28,9 @@ BOOST_AUTO_TEST_CASE(destructorDefaultDevice)
 
 BOOST_AUTO_TEST_CASE(constructorNameDefaultDevice)
 {
-  TensorDimensionDefaultDevice<std::string> tensordimension("1", "dir");
+  TensorDimensionDefaultDevice<std::string> tensordimension("1");
   BOOST_CHECK_EQUAL(tensordimension.getId(), -1);
   BOOST_CHECK_EQUAL(tensordimension.getName(), "1");
-  BOOST_CHECK_EQUAL(tensordimension.getDir(), "dir");
   BOOST_CHECK_EQUAL(tensordimension.getNLabels(), 0);
 }
 
@@ -39,9 +38,8 @@ BOOST_AUTO_TEST_CASE(constructorNameAndLabelsDefaultDevice)
 {
   Eigen::Tensor<int, 1> labels(5);
   labels.setConstant(1);
-  TensorDimensionDefaultDevice<int> tensordimension("1", "dir", labels);
+  TensorDimensionDefaultDevice<int> tensordimension("1", labels);
   BOOST_CHECK_EQUAL(tensordimension.getName(), "1");
-  BOOST_CHECK_EQUAL(tensordimension.getDir(), "dir");
   BOOST_CHECK_EQUAL(tensordimension.getNLabels(), 5);
   BOOST_CHECK_EQUAL(tensordimension.getLabels()(0), 1);
   BOOST_CHECK_EQUAL(tensordimension.getLabels()(4), 1);
@@ -53,20 +51,17 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   // Check defaults
   BOOST_CHECK_EQUAL(tensordimension.getId(), -1);
   BOOST_CHECK_EQUAL(tensordimension.getName(), "");
-  BOOST_CHECK_EQUAL(tensordimension.getDir(), "");
   BOOST_CHECK_EQUAL(tensordimension.getNLabels(), 0);
 
   // Check getters/setters
   tensordimension.setId(1);
   tensordimension.setName("1");
-  tensordimension.setDir("dir");
   Eigen::Tensor<int, 1> labels(5);
   labels.setConstant(1);
   tensordimension.setLabels(labels);
 
   BOOST_CHECK_EQUAL(tensordimension.getId(), 1);
   BOOST_CHECK_EQUAL(tensordimension.getName(), "1");
-  BOOST_CHECK_EQUAL(tensordimension.getDir(), "dir");
   BOOST_CHECK_EQUAL(tensordimension.getNLabels(), 5);
   BOOST_CHECK_EQUAL(tensordimension.getLabels()(0), 1);
   BOOST_CHECK_EQUAL(tensordimension.getLabels()(4), 1);
@@ -74,19 +69,20 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
 
 BOOST_AUTO_TEST_CASE(loadAndStoreLabelsDefaultDevice)
 {
+  // initialize the dimensions
   Eigen::Tensor<int, 1> labels(5);
   labels.setConstant(1);
-  TensorDimensionDefaultDevice<int> tensordimension_io("1", "", labels);
+  TensorDimensionDefaultDevice<int> tensordimension_io("1", labels);
 
+  // write the dimension labels to disk
   Eigen::DefaultDevice device;
+  tensordimension_io.storeLabelsBinary("Dimensions_test.bin", device);
 
-  tensordimension_io.storeLabelsBinary("", device);
-
-  TensorDimensionDefaultDevice<int> tensordimension("1", "", 5);
-  tensordimension.loadLabelsBinary("", device);
+  // read the dimension labels from disk
+  TensorDimensionDefaultDevice<int> tensordimension("1", 5);
+  tensordimension.loadLabelsBinary("Dimensions_test.bin", device);
 
   BOOST_CHECK_EQUAL(tensordimension.getName(), "1");
-  BOOST_CHECK_EQUAL(tensordimension.getDir(), "dir");
   BOOST_CHECK_EQUAL(tensordimension.getNLabels(), 5);
   BOOST_CHECK_EQUAL(tensordimension.getLabels()(0), 1);
   BOOST_CHECK_EQUAL(tensordimension.getLabels()(4), 1);
@@ -111,10 +107,9 @@ BOOST_AUTO_TEST_CASE(destructorCpu)
 
 BOOST_AUTO_TEST_CASE(constructorNameCpu)
 {
-  TensorDimensionCpu<std::string> tensordimension("1", "dir");
+  TensorDimensionCpu<std::string> tensordimension("1");
   BOOST_CHECK_EQUAL(tensordimension.getId(), -1);
   BOOST_CHECK_EQUAL(tensordimension.getName(), "1");
-  BOOST_CHECK_EQUAL(tensordimension.getDir(), "dir");
   BOOST_CHECK_EQUAL(tensordimension.getNLabels(), 0);
 }
 
@@ -122,9 +117,8 @@ BOOST_AUTO_TEST_CASE(constructorNameAndLabelsCpu)
 {
   Eigen::Tensor<int, 1> labels(5);
   labels.setConstant(1);
-  TensorDimensionCpu<int> tensordimension("1", "dir", labels);
+  TensorDimensionCpu<int> tensordimension("1", labels);
   BOOST_CHECK_EQUAL(tensordimension.getName(), "1");
-  BOOST_CHECK_EQUAL(tensordimension.getDir(), "dir");
   BOOST_CHECK_EQUAL(tensordimension.getNLabels(), 5);
   BOOST_CHECK_EQUAL(tensordimension.getLabels()(0), 1);
   BOOST_CHECK_EQUAL(tensordimension.getLabels()(4), 1);
@@ -136,20 +130,39 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersCpu)
   // Check defaults
   BOOST_CHECK_EQUAL(tensordimension.getId(), -1);
   BOOST_CHECK_EQUAL(tensordimension.getName(), "");
-  BOOST_CHECK_EQUAL(tensordimension.getDir(), "");
   BOOST_CHECK_EQUAL(tensordimension.getNLabels(), 0);
 
   // Check getters/setters
   tensordimension.setId(1);
   tensordimension.setName("1");
-  tensordimension.setDir("dir");
   Eigen::Tensor<int, 1> labels(5);
   labels.setConstant(1);
   tensordimension.setLabels(labels);
 
   BOOST_CHECK_EQUAL(tensordimension.getId(), 1);
   BOOST_CHECK_EQUAL(tensordimension.getName(), "1");
-  BOOST_CHECK_EQUAL(tensordimension.getDir(), "dir");
+  BOOST_CHECK_EQUAL(tensordimension.getNLabels(), 5);
+  BOOST_CHECK_EQUAL(tensordimension.getLabels()(0), 1);
+  BOOST_CHECK_EQUAL(tensordimension.getLabels()(4), 1);
+}
+
+BOOST_AUTO_TEST_CASE(loadAndStoreLabelsCpu)
+{
+  // initialize the dimensions
+  Eigen::Tensor<int, 1> labels(5);
+  labels.setConstant(1);
+  TensorDimensionCpu<int> tensordimension_io("1", labels);
+
+  // write the dimension labels to disk
+  Eigen::ThreadPool pool(1);
+  Eigen::ThreadPoolDevice device(&pool, 1);
+  tensordimension_io.storeLabelsBinary("Dimensions_test.bin", device);
+
+  // read the dimension labels from disk
+  TensorDimensionCpu<int> tensordimension("1", 5);
+  tensordimension.loadLabelsBinary("Dimensions_test.bin", device);
+
+  BOOST_CHECK_EQUAL(tensordimension.getName(), "1");
   BOOST_CHECK_EQUAL(tensordimension.getNLabels(), 5);
   BOOST_CHECK_EQUAL(tensordimension.getLabels()(0), 1);
   BOOST_CHECK_EQUAL(tensordimension.getLabels()(4), 1);
