@@ -26,13 +26,20 @@ namespace TensorBase
   public:
     TensorDimensionGpuPrimitiveT() = default;  ///< Default constructor
     TensorDimensionGpuPrimitiveT(const std::string& name, const std::string& dir) : TensorDimension(name, dir) {};
-    TensorDimensionGpuPrimitiveT(const std::string& name, const std::string& dir, const Eigen::Tensor<TensorT, 1>& labels) : TensorDimension(name, dir) { setLabels(labels); };
+    TensorDimensionGpuPrimitiveT(const std::string& name, const std::string& dir, const size_t& n_labels) : TensorDimension(name, dir, n_labels) {};
+    TensorDimensionGpuPrimitiveT(const std::string& name, const std::string& dir, const Eigen::Tensor<TensorT, 1>& labels) : TensorDimension(name, dir, labels) {};
     ~TensorDimensionGpuPrimitiveT() = default; ///< Default destructor
     void setLabels(const Eigen::Tensor<TensorT, 1>& labels) override {
       Eigen::array<Eigen::Index, 1> dimensions = labels.dimensions();
       this->labels_.reset(new TensorDataGpuPrimitiveT<TensorT, 1>(dimensions));
       this->labels_->setData(labels);
       this->setNLabels(labels.size());
+    };
+    void setLabels() override {
+      Eigen::array<Eigen::Index, 1> dimensions;
+      dimensions.at(0) = this->n_labels_;
+      this->labels_.reset(new TensorDataGpuPrimitiveT<TensorT, 1>(dimensions));
+      this->labels_->setData();
     };
     bool loadLabelsBinary(const std::string& dir, Eigen::GpuDevice& device) override {
       this->syncHAndDData(device); // D to H
@@ -58,13 +65,20 @@ namespace TensorBase
   public:
     TensorDimensionGpuClassT() = default;  ///< Default constructor
     TensorDimensionGpuClassT(const std::string& name, const std::string& dir) : TensorDimension(name, dir) {};
-    TensorDimensionGpuClassT(const std::string& name, const std::string& dir, const Eigen::Tensor<ArrayT<TensorT>, 1>& labels) : TensorDimension(name, dir) { setLabels(labels); };
+    TensorDimensionGpuClassT(const std::string& name, const std::string& dir, const size_t& n_labels) : TensorDimension(name, dir, n_labels) {};
+    TensorDimensionGpuClassT(const std::string& name, const std::string& dir, const Eigen::Tensor<ArrayT<TensorT>, 1>& labels) : TensorDimension(name, dir, labels) {};
     ~TensorDimensionGpuClassT() = default; ///< Default destructor
     void setLabels(const Eigen::Tensor<ArrayT<TensorT>, 1>& labels) override {
       Eigen::array<Eigen::Index, 1> dimensions = labels.dimensions();
       this->labels_.reset(new TensorDataGpuClassT<ArrayT, TensorT, 1>(dimensions));
       this->labels_->setData(labels);
       this->setNLabels(labels.size());
+    };
+    void setLabels() override {
+      Eigen::array<Eigen::Index, 1> dimensions;
+      dimensions.at(0) = this->n_labels_;
+      this->labels_.reset(new TensorDataGpuClassT<ArrayT, TensorT, 1>(dimensions));
+      this->labels_->setData();
     };
     bool loadLabelsBinary(const std::string& dir, Eigen::GpuDevice& device) override {
       this->syncHAndDData(device); // D to H

@@ -72,6 +72,26 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   BOOST_CHECK_EQUAL(tensordimension.getLabels()(4), 1);
 }
 
+BOOST_AUTO_TEST_CASE(loadAndStoreLabelsDefaultDevice)
+{
+  Eigen::Tensor<int, 1> labels(5);
+  labels.setConstant(1);
+  TensorDimensionDefaultDevice<int> tensordimension_io("1", "", labels);
+
+  Eigen::DefaultDevice device;
+
+  tensordimension_io.storeLabelsBinary("", device);
+
+  TensorDimensionDefaultDevice<int> tensordimension("1", "", 5);
+  tensordimension.loadLabelsBinary("", device);
+
+  BOOST_CHECK_EQUAL(tensordimension.getName(), "1");
+  BOOST_CHECK_EQUAL(tensordimension.getDir(), "dir");
+  BOOST_CHECK_EQUAL(tensordimension.getNLabels(), 5);
+  BOOST_CHECK_EQUAL(tensordimension.getLabels()(0), 1);
+  BOOST_CHECK_EQUAL(tensordimension.getLabels()(4), 1);
+}
+
 /*TensorDimensionCpu Tests*/
 BOOST_AUTO_TEST_CASE(constructorCpu)
 {

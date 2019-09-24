@@ -25,6 +25,7 @@ namespace TensorBase
   public:
     TensorDimension() = default;  ///< Default constructor
     TensorDimension(const std::string& name, const std::string& dir) : name_(name), dir_(dir){};
+    TensorDimension(const std::string& name, const std::string& dir, const size_t& n_labels) : name_(name), dir_(dir), n_labels_(n_labels) { setLabels(); };
     TensorDimension(const std::string& name, const std::string& dir, const Eigen::Tensor<TensorT, 1>& labels) : name_(name), dir_(dir) { setLabels(labels); };
     virtual ~TensorDimension() = default; ///< Default destructor
 
@@ -40,6 +41,7 @@ namespace TensorBase
     size_t getNLabels() const { return n_labels_; }; ///< n_labels getter
 
     virtual void setLabels(const Eigen::Tensor<TensorT, 1>& labels) = 0; ///< labels setter
+    virtual void setLabels() = 0; ///< labels setter
     Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> getLabels() { return labels_->getData(); };  ///< labels getter
 
     bool syncHAndDData(DeviceT& device) { return labels_->syncHAndDData(device); };  ///< Sync the host and device labels data
@@ -89,13 +91,20 @@ namespace TensorBase
   public:
     TensorDimensionDefaultDevice() = default;  ///< Default constructor
     TensorDimensionDefaultDevice(const std::string& name, const std::string& dir): TensorDimension(name, dir) {};
-    TensorDimensionDefaultDevice(const std::string& name, const std::string& dir, const Eigen::Tensor<TensorT, 1>& labels): TensorDimension(name, dir) { setLabels(labels); };
+    TensorDimensionDefaultDevice(const std::string& name, const std::string& dir, const size_t& n_labels) : TensorDimension(name, dir, n_labels) {};
+    TensorDimensionDefaultDevice(const std::string& name, const std::string& dir, const Eigen::Tensor<TensorT, 1>& labels): TensorDimension(name, dir, labels) {};
     ~TensorDimensionDefaultDevice() = default; ///< Default destructor
     void setLabels(const Eigen::Tensor<TensorT, 1>& labels) override {
       Eigen::array<Eigen::Index, 1> dimensions = labels.dimensions();
       this->labels_.reset(new TensorDataDefaultDevice<TensorT, 1>(dimensions));
       this->labels_->setData(labels);
       this->setNLabels(labels.size());
+    };
+    void setLabels() override {
+      Eigen::array<Eigen::Index, 1> dimensions;
+      dimensions.at(0) = this->n_labels_;
+      this->labels_.reset(new TensorDataDefaultDevice<TensorT, 1>(dimensions));
+      this->labels_->setData();
     };
     bool loadLabelsBinary(const std::string& dir, Eigen::DefaultDevice& device) override {
       this->syncHAndDData(device); // D to H
@@ -121,13 +130,20 @@ namespace TensorBase
   public:
     TensorDimensionCpu() = default;  ///< Default constructor
     TensorDimensionCpu(const std::string& name, const std::string& dir) : TensorDimension(name, dir) {};
-    TensorDimensionCpu(const std::string& name, const std::string& dir, const Eigen::Tensor<TensorT, 1>& labels) : TensorDimension(name, dir) { setLabels(labels); };
+    TensorDimensionCpu(const std::string& name, const std::string& dir, const size_t& n_labels) : TensorDimension(name, dir, n_labels) {};
+    TensorDimensionCpu(const std::string& name, const std::string& dir, const Eigen::Tensor<TensorT, 1>& labels) : TensorDimension(name, dir, labels) {};
     ~TensorDimensionCpu() = default; ///< Default destructor
     void setLabels(const Eigen::Tensor<TensorT, 1>& labels) override {
       Eigen::array<Eigen::Index, 1> dimensions = labels.dimensions();
       this->labels_.reset(new TensorDataCpu<TensorT, 1>(dimensions));
       this->labels_->setData(labels);
       this->setNLabels(labels.size());
+    };
+    void setLabels() override {
+      Eigen::array<Eigen::Index, 1> dimensions;
+      dimensions.at(0) = this->n_labels_;
+      this->labels_.reset(new TensorDataCpu<TensorT, 1>(dimensions));
+      this->labels_->setData();
     };
     bool loadLabelsBinary(const std::string& dir, Eigen::ThreadPoolDevice& device) override {
       this->syncHAndDData(device); // D to H
