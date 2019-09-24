@@ -8,7 +8,7 @@
 #define EIGEN_USE_GPU
 #include <cuda.h>
 #include <cuda_runtime.h>
-#include <TensorBase/ml/TensorAxisGpu.h>
+#include <TensorBase/ml/TensorAxisGpu.h> // NOTE: this MUST be declared in a seperate file
 
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/ml/TensorAxisConcept.h>
