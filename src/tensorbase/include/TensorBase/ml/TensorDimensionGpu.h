@@ -25,14 +25,24 @@ namespace TensorBase
   {
   public:
     TensorDimensionGpuPrimitiveT() = default;  ///< Default constructor
-    TensorDimensionGpuPrimitiveT(const std::string& name) { setName(name); };
-    TensorDimensionGpuPrimitiveT(const std::string& name, const Eigen::Tensor<TensorT, 1>& labels) { setName(name); setLabels(labels); };
+    TensorDimensionGpuPrimitiveT(const std::string& name, const std::string& dir) : TensorDimension(name, dir) {};
+    TensorDimensionGpuPrimitiveT(const std::string& name, const std::string& dir, const Eigen::Tensor<TensorT, 1>& labels) : TensorDimension(name, dir) { setLabels(labels); };
     ~TensorDimensionGpuPrimitiveT() = default; ///< Default destructor
     void setLabels(const Eigen::Tensor<TensorT, 1>& labels) override {
       Eigen::array<Eigen::Index, 1> dimensions = labels.dimensions();
       this->labels_.reset(new TensorDataGpuPrimitiveT<TensorT, 1>(dimensions));
       this->labels_->setData(labels);
       this->setNLabels(labels.size());
+    };
+    bool loadLabelsBinary(const std::string& dir, Eigen::GpuDevice& device) override {
+      this->syncHAndDData(device); // D to H
+      DataFile::loadDataBinary<TensorT, 1>(filename, this->getLabels());
+      this->syncHAndDData(device); // H to D
+    };
+    bool storeLabelsBinary(const std::string& dir, Eigen::GpuDevice& device) override {
+      this->syncHAndDData(device); // D to H
+      DataFile::loadDataBinary<TensorT, 1>(filename, this->getLabels());
+      this->setDataStatus(false, true);
     };
   private:
     friend class cereal::access;
@@ -47,14 +57,24 @@ namespace TensorBase
   {
   public:
     TensorDimensionGpuClassT() = default;  ///< Default constructor
-    TensorDimensionGpuClassT(const std::string& name) { setName(name); };
-    TensorDimensionGpuClassT(const std::string& name, const Eigen::Tensor<ArrayT<TensorT>, 1>& labels) { setName(name); setLabels(labels); };
+    TensorDimensionGpuClassT(const std::string& name, const std::string& dir) : TensorDimension(name, dir) {};
+    TensorDimensionGpuClassT(const std::string& name, const std::string& dir, const Eigen::Tensor<ArrayT<TensorT>, 1>& labels) : TensorDimension(name, dir) { setLabels(labels); };
     ~TensorDimensionGpuClassT() = default; ///< Default destructor
     void setLabels(const Eigen::Tensor<ArrayT<TensorT>, 1>& labels) override {
       Eigen::array<Eigen::Index, 1> dimensions = labels.dimensions();
       this->labels_.reset(new TensorDataGpuClassT<ArrayT, TensorT, 1>(dimensions));
       this->labels_->setData(labels);
       this->setNLabels(labels.size());
+    };
+    bool loadLabelsBinary(const std::string& dir, Eigen::GpuDevice& device) override {
+      this->syncHAndDData(device); // D to H
+      DataFile::loadDataBinary<< ArrayT<TensorT>, 1>(filename, this->getLabels());
+      this->syncHAndDData(device); // H to D
+    };
+    bool storeLabelsBinary(const std::string& dir, Eigen::GpuDevice& device) override {
+      this->syncHAndDData(device); // D to H
+      DataFile::loadDataBinary<< ArrayT<TensorT>, 1>(filename, this->getLabels());
+      this->setDataStatus(false, true);
     };
   private:
     friend class cereal::access;

@@ -5,6 +5,7 @@
 
 #include <TensorBase/ml/TensorData.h>
 #include <TensorBase/ml/TensorArray.h>
+#include <TensorBase/io/DataFile.h>
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <string>
 
@@ -23,8 +24,8 @@ namespace TensorBase
   {
   public:
     TensorDimension() = default;  ///< Default constructor
-    TensorDimension(const std::string& name) : name_(name) {};
-    TensorDimension(const std::string& name, const Eigen::Tensor<TensorT, 1>& labels) : name_(name) { setLabels(labels); };
+    TensorDimension(const std::string& name, const std::string& dir) : name_(name), dir_(dir){};
+    TensorDimension(const std::string& name, const std::string& dir, const Eigen::Tensor<TensorT, 1>& labels) : name_(name), dir_(dir) { setLabels(labels); };
     virtual ~TensorDimension() = default; ///< Default destructor
 
     void setId(const int& id) { id_ = id; }; ///< id setter
@@ -33,16 +34,44 @@ namespace TensorBase
     void setName(const std::string& name) { name_ = name; }; ///< name setter
     std::string getName() const { return name_; }; ///< name getter
 
+    void setDir(const std::string& dir) { dir_ = dir; }; ///< dir setter
+    std::string getDir() const { return dir_; }; ///< dir getter
+
     size_t getNLabels() const { return n_labels_; }; ///< n_labels getter
 
     virtual void setLabels(const Eigen::Tensor<TensorT, 1>& labels) = 0; ///< labels setter
     Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> getLabels() { return labels_->getData(); };  ///< labels getter
+
+    bool syncHAndDData(DeviceT& device) { return labels_->syncHAndDData(device); };  ///< Sync the host and device labels data
+    void setDataStatus(const bool& h_data_updated, const bool& d_data_updated) { labels_->setDataStatus(h_data_updated, d_data_updated); } ///< Set the status of the host and device data
+    std::pair<bool, bool> getDataStatus() { return labels_->getDataStatus(); };   ///< Get the status of the host and device labels data
+
+    /**
+      @brief Load labels from file
+
+      @param[in] filename The name of the data file
+      @param[in] device
+
+      @returns Status True on success, False if not
+    */
+    virtual bool loadLabelsBinary(const std::string& dir, DeviceT& device) = 0;
+
+    /**
+      @brief Write labels to file
+
+      @param[in] filename The name of the data file
+      @param[in] device
+
+      @returns Status True on success, False if not
+    */
+    virtual bool storeLabelsBinary(const std::string& dir, DeviceT& device) = 0;
 
   protected:
     void setNLabels(const size_t& n_labels) { n_labels_ = n_labels; }; ///< n_labels setter
 
     int id_ = -1;
     std::string name_ = "";
+    std::string dir_ = "";
     size_t n_labels_ = 0;
     std::shared_ptr<TensorData<TensorT, DeviceT, 1>> labels_; ///< The actual tensor data
 
@@ -50,7 +79,7 @@ namespace TensorBase
     friend class cereal::access;
     template<class Archive>
     void serialize(Archive& archive) {
-    	archive(id_, name_, n_labels_);
+    	archive(id_, name_, dir_, n_labels_);
     }
   };
 
@@ -59,14 +88,24 @@ namespace TensorBase
   {
   public:
     TensorDimensionDefaultDevice() = default;  ///< Default constructor
-    TensorDimensionDefaultDevice(const std::string& name) { setName(name); };
-    TensorDimensionDefaultDevice(const std::string& name, const Eigen::Tensor<TensorT, 1>& labels) { setName(name); setLabels(labels); };
+    TensorDimensionDefaultDevice(const std::string& name, const std::string& dir): TensorDimension(name, dir) {};
+    TensorDimensionDefaultDevice(const std::string& name, const std::string& dir, const Eigen::Tensor<TensorT, 1>& labels): TensorDimension(name, dir) { setLabels(labels); };
     ~TensorDimensionDefaultDevice() = default; ///< Default destructor
-    void setLabels(const Eigen::Tensor<TensorT, 1>& labels) {
+    void setLabels(const Eigen::Tensor<TensorT, 1>& labels) override {
       Eigen::array<Eigen::Index, 1> dimensions = labels.dimensions();
       this->labels_.reset(new TensorDataDefaultDevice<TensorT, 1>(dimensions));
       this->labels_->setData(labels);
       this->setNLabels(labels.size());
+    };
+    bool loadLabelsBinary(const std::string& dir, Eigen::DefaultDevice& device) override {
+      this->syncHAndDData(device); // D to H
+      DataFile::loadDataBinary<TensorT, 1>(filename, this->getLabels());
+      this->syncHAndDData(device); // H to D
+    };
+    bool storeLabelsBinary(const std::string& dir, Eigen::DefaultDevice& device) override {
+      this->syncHAndDData(device); // D to H
+      DataFile::loadDataBinary<TensorT, 1>(filename, this->getLabels());
+      this->setDataStatus(false, true);
     };
   private:
     friend class cereal::access;
@@ -81,14 +120,24 @@ namespace TensorBase
   {
   public:
     TensorDimensionCpu() = default;  ///< Default constructor
-    TensorDimensionCpu(const std::string& name) { setName(name); };
-    TensorDimensionCpu(const std::string& name, const Eigen::Tensor<TensorT, 1>& labels) { setName(name); setLabels(labels); };
+    TensorDimensionCpu(const std::string& name, const std::string& dir) : TensorDimension(name, dir) {};
+    TensorDimensionCpu(const std::string& name, const std::string& dir, const Eigen::Tensor<TensorT, 1>& labels) : TensorDimension(name, dir) { setLabels(labels); };
     ~TensorDimensionCpu() = default; ///< Default destructor
-    void setLabels(const Eigen::Tensor<TensorT, 1>& labels) {
+    void setLabels(const Eigen::Tensor<TensorT, 1>& labels) override {
       Eigen::array<Eigen::Index, 1> dimensions = labels.dimensions();
       this->labels_.reset(new TensorDataCpu<TensorT, 1>(dimensions));
       this->labels_->setData(labels);
       this->setNLabels(labels.size());
+    };
+    bool loadLabelsBinary(const std::string& dir, Eigen::ThreadPoolDevice& device) override {
+      this->syncHAndDData(device); // D to H
+      DataFile::loadDataBinary<TensorT, 1>(filename, this->getLabels());
+      this->syncHAndDData(device); // H to D
+    };
+    bool storeLabelsBinary(const std::string& dir, Eigen::ThreadPoolDevice& device) override {
+      this->syncHAndDData(device); // D to H
+      DataFile::loadDataBinary<TensorT, 1>(filename, this->getLabels());
+      this->setDataStatus(false, true);
     };
   private:
     friend class cereal::access;

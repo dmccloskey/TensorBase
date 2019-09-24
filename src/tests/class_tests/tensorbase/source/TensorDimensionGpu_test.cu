@@ -26,9 +26,10 @@ void test_destructorGpuPrimitiveT()
 
 void test_constructorNameGpuPrimitiveT()
 {
-  TensorDimensionGpuPrimitiveT<int> tensordimension("1");
+  TensorDimensionGpuPrimitiveT<int> tensordimension("1", "dir");
   assert(tensordimension.getId() == -1);
   assert(tensordimension.getName() == "1");
+  assert(tensordimension.getDir() == "dir");
   assert(tensordimension.getNLabels() == 0);
 }
 
@@ -36,8 +37,9 @@ void test_constructorNameAndLabelsGpuPrimitiveT()
 {
   Eigen::Tensor<int, 1> labels(5);
   labels.setConstant(1);
-  TensorDimensionGpuPrimitiveT<int> tensordimension("1", labels);
+  TensorDimensionGpuPrimitiveT<int> tensordimension("1", "dir", labels);
   assert(tensordimension.getName() == "1");
+  assert(tensordimension.getDir() == "dir");
   assert(tensordimension.getNLabels() == 5);
   assert(tensordimension.getLabels()(0) == 1);
   assert(tensordimension.getLabels()(4) == 1);
@@ -49,17 +51,20 @@ void test_gettersAndSettersGpuPrimitiveT()
   // Check defaults
   assert(tensordimension.getId() == -1);
   assert(tensordimension.getName() == "");
+  assert(tensordimension.getDir() == "");
   assert(tensordimension.getNLabels() == 0);
 
   // Check getters/setters
   tensordimension.setId(1);
   tensordimension.setName("1");
+  tensordimension.setDir("dir");
   Eigen::Tensor<int, 1> labels(5);
   labels.setConstant(1);
   tensordimension.setLabels(labels);
 
   assert(tensordimension.getId() == 1);
   assert(tensordimension.getName() == "1");
+  assert(tensordimension.getDir() == "dir");
   assert(tensordimension.getNLabels() == 5);
   assert(tensordimension.getLabels()(0) == 1);
   assert(tensordimension.getLabels()(4) == 1);
@@ -84,9 +89,10 @@ void test_destructorGpuClassT()
 
 void test_constructorNameGpuClassT()
 {
-  TensorDimensionGpuClassT<TensorArrayGpu8, int> tensordimension("1");
+  TensorDimensionGpuClassT<TensorArrayGpu8, int> tensordimension("1", "dir");
   assert(tensordimension.getId() == -1);
   assert(tensordimension.getName() == "1");
+  assert(tensordimension.getDir() == "dir");
   assert(tensordimension.getNLabels() == 0);
 }
 
@@ -94,8 +100,9 @@ void test_constructorNameAndLabelsGpuClassT()
 {
   Eigen::Tensor<TensorArrayGpu8<int>, 1> labels(5);
   labels.setConstant(TensorArrayGpu8<int>({1, 1, 1, 1, 1, 1, 1, 1}));
-  TensorDimensionGpuClassT<TensorArrayGpu8, int> tensordimension("1", labels);
+  TensorDimensionGpuClassT<TensorArrayGpu8, int> tensordimension("1", "dir", labels);
   assert(tensordimension.getName() == "1");
+  assert(tensordimension.getDir() == "dir");
   assert(tensordimension.getNLabels() == 5);
   assert(tensordimension.getLabels()(0).getTensorArray()(0) == 1);
   assert(tensordimension.getLabels()(4).getTensorArray()(0) == 1);
@@ -107,17 +114,20 @@ void test_gettersAndSettersGpuClassT()
   // Check defaults
   assert(tensordimension.getId() == -1);
   assert(tensordimension.getName() == "");
+  assert(tensordimension.getDir() == "");
   assert(tensordimension.getNLabels() == 0);
 
   // Check getters/setters
   tensordimension.setId(1);
   tensordimension.setName("1");
+  tensordimension.setDir("dir");
   Eigen::Tensor<TensorArrayGpu8<int>, 1> labels(5);
   labels.setConstant(TensorArrayGpu8<int>({ 1, 1, 1, 1, 1, 1, 1, 1 }));
   tensordimension.setLabels(labels);
 
   assert(tensordimension.getId() == 1);
   assert(tensordimension.getName() == "1");
+  assert(tensordimension.getDir() == "dir");
   assert(tensordimension.getNLabels() == 5);
   assert(tensordimension.getLabels()(0).getTensorArray()(0) == 1);
   assert(tensordimension.getLabels()(4).getTensorArray()(0) == 1);
