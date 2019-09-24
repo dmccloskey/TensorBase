@@ -17,6 +17,6 @@ CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisGpuPrim
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisGpuPrimitiveT<float>, Eigen::GpuDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisGpuPrimitiveT<double>, Eigen::GpuDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisGpuPrimitiveT<char>, Eigen::GpuDevice>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisGpuClassT<TensorBase::TensorArrayGpu8, char, Eigen::GpuDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisGpuClassT<TensorBase::TensorArrayGpu8, char>, Eigen::GpuDevice>);
 #endif
 #endif //TENSORBASE_TENSORAXISCONCEPTGPU_H
