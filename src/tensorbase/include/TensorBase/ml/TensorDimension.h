@@ -105,14 +105,14 @@ namespace TensorBase
     bool loadLabelsBinary(const std::string& filename, Eigen::DefaultDevice& device) override {
       this->setDataStatus(true, false);
       Eigen::Tensor<TensorT, 1> data((int)this->n_labels_);
-      DataFile::loadDataBinary<TensorT, 1>(filename, data);
+      DataFile::loadDataBinary<TensorT, 1>(filename + ".td", data);
       this->getLabels() = data;
       this->syncHAndDData(device); // H to D
       return true;
     };
     bool storeLabelsBinary(const std::string& filename, Eigen::DefaultDevice& device) override {
       this->syncHAndDData(device); // D to H
-      DataFile::storeDataBinary<TensorT, 1>(filename, this->getLabels());
+      DataFile::storeDataBinary<TensorT, 1>(filename + ".td", this->getLabels());
       this->setDataStatus(false, true);
       return true;
     };
@@ -148,14 +148,14 @@ namespace TensorBase
     bool loadLabelsBinary(const std::string& filename, Eigen::ThreadPoolDevice& device) override {
       this->setDataStatus(true, false);
       Eigen::Tensor<TensorT, 1> data((int)this->n_labels_);
-      DataFile::loadDataBinary<TensorT, 1>(filename, data);
+      DataFile::loadDataBinary<TensorT, 1>(filename + ".td", data);
       this->getLabels() = data;
       this->syncHAndDData(device); // H to D
       return true;
     };
     bool storeLabelsBinary(const std::string& filename, Eigen::ThreadPoolDevice& device) override {
       this->syncHAndDData(device); // D to H
-      DataFile::storeDataBinary<TensorT, 1>(filename, this->getLabels());
+      DataFile::storeDataBinary<TensorT, 1>(filename + ".td", this->getLabels());
       this->setDataStatus(false, true);
       return true;
     };

@@ -44,7 +44,7 @@ namespace TensorBase
     bool loadLabelsBinary(const std::string& filename, Eigen::GpuDevice& device) override {
       this->setDataStatus(true, false);
       Eigen::Tensor<TensorT, 1> data((int)this->n_labels_);
-      DataFile::loadDataBinary<TensorT, 1>(filename, data);
+      DataFile::loadDataBinary<TensorT, 1>(filename + ".td", data);
       this->getLabels() = data;
       this->syncHAndDData(device); // H to D
       return true;
@@ -52,7 +52,7 @@ namespace TensorBase
     bool storeLabelsBinary(const std::string& filename, Eigen::GpuDevice& device) override {
       this->syncHAndDData(device); // D to H
       assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
-      DataFile::storeDataBinary<TensorT, 1>(filename, this->getLabels());
+      DataFile::storeDataBinary<TensorT, 1>(filename + ".td", this->getLabels());
       this->setDataStatus(false, true);
       return true;
     };
@@ -88,7 +88,7 @@ namespace TensorBase
     bool loadLabelsBinary(const std::string& filename, Eigen::GpuDevice& device) override {
       this->setDataStatus(true, false);
       Eigen::Tensor<ArrayT<TensorT>, 1> data((int)this->n_labels_);
-      DataFile::loadDataBinary<ArrayT<TensorT>, 1>(filename, data);
+      DataFile::loadDataBinary<ArrayT<TensorT>, 1>(filename + ".td", data);
       this->getLabels() = data;
       this->syncHAndDData(device); // H to D
       return true;
@@ -96,7 +96,7 @@ namespace TensorBase
     bool storeLabelsBinary(const std::string& filename, Eigen::GpuDevice& device) override {
       this->syncHAndDData(device); // D to H
       assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
-      DataFile::storeDataBinary<ArrayT<TensorT>, 1>(filename, this->getLabels());
+      DataFile::storeDataBinary<ArrayT<TensorT>, 1>(filename + ".td", this->getLabels());
       this->setDataStatus(false, true);
       return true;
     };
