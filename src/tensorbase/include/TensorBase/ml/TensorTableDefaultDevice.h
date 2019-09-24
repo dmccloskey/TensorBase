@@ -180,8 +180,7 @@ namespace TensorBase
     // allocate memory for the selected tensor
     TensorDataDefaultDevice<TensorT, TDim> tensor_select_tmp(tensor_select_dimensions);
     Eigen::Tensor<TensorT, TDim> tensor_select_data(tensor_select_dimensions);
-    tensor_select_data.setZero();
-    tensor_select_tmp.setData(tensor_select_data);
+    tensor_select_tmp.setData();
 
     // move over the results
     tensor_select = std::make_shared<TensorDataDefaultDevice<TensorT, TDim>>(tensor_select_tmp);
