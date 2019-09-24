@@ -2,49 +2,50 @@
 
 #if COMPILE_WITH_CUDA
 #include <TensorBase/ml/TensorDimensionGpu.h>
+#include <TensorBase/ml/TensorArrayGpu.h>
 
 using namespace TensorBase;
 using namespace std;
 
-/*TensorDimensionGpu Tests*/
-void test_constructorGpu()
+/*TensorDimensionGpuPrimitiveT Tests*/
+void test_constructorGpuPrimitiveT()
 {
-  TensorDimensionGpu<int>* ptr = nullptr;
-  TensorDimensionGpu<int>* nullPointer = nullptr;
-  ptr = new TensorDimensionGpu<int>();
+  TensorDimensionGpuPrimitiveT<int>* ptr = nullptr;
+  TensorDimensionGpuPrimitiveT<int>* nullPointer = nullptr;
+  ptr = new TensorDimensionGpuPrimitiveT<int>();
   assert(ptr != nullPointer);
   delete ptr;
 }
 
-void test_destructorGpu()
+void test_destructorGpuPrimitiveT()
 {
-  TensorDimensionGpu<int>* ptr = nullptr;
-  ptr = new TensorDimensionGpu<int>();
+  TensorDimensionGpuPrimitiveT<int>* ptr = nullptr;
+  ptr = new TensorDimensionGpuPrimitiveT<int>();
   delete ptr;
 }
 
-void test_constructorNameGpu()
+void test_constructorNameGpuPrimitiveT()
 {
-  TensorDimensionGpu<int> tensordimension("1");
+  TensorDimensionGpuPrimitiveT<int> tensordimension("1");
   assert(tensordimension.getId() == -1);
   assert(tensordimension.getName() == "1");
   assert(tensordimension.getNLabels() == 0);
 }
 
-void test_constructorNameAndLabelsGpu()
+void test_constructorNameAndLabelsGpuPrimitiveT()
 {
   Eigen::Tensor<int, 1> labels(5);
   labels.setConstant(1);
-  TensorDimensionGpu<int> tensordimension("1", labels);
+  TensorDimensionGpuPrimitiveT<int> tensordimension("1", labels);
   assert(tensordimension.getName() == "1");
   assert(tensordimension.getNLabels() == 5);
   assert(tensordimension.getLabels()(0) == 1);
   assert(tensordimension.getLabels()(4) == 1);
 }
 
-void test_gettersAndSettersGpu()
+void test_gettersAndSettersGpuPrimitiveT()
 {
-  TensorDimensionGpu<int> tensordimension;
+  TensorDimensionGpuPrimitiveT<int> tensordimension;
   // Check defaults
   assert(tensordimension.getId() == -1);
   assert(tensordimension.getName() == "");
@@ -64,13 +65,77 @@ void test_gettersAndSettersGpu()
   assert(tensordimension.getLabels()(4) == 1);
 }
 
+/*TensorDimensionGpuClassT Tests*/
+void test_constructorGpuClassT()
+{
+  TensorDimensionGpuClassT<TensorArrayGpu8, int>* ptr = nullptr;
+  TensorDimensionGpuClassT<TensorArrayGpu8, int>* nullPointer = nullptr;
+  ptr = new TensorDimensionGpuClassT<TensorArrayGpu8, int>();
+  assert(ptr != nullPointer);
+  delete ptr;
+}
+
+void test_destructorGpuClassT()
+{
+  TensorDimensionGpuClassT<TensorArrayGpu8, int>* ptr = nullptr;
+  ptr = new TensorDimensionGpuClassT<TensorArrayGpu8, int>();
+  delete ptr;
+}
+
+void test_constructorNameGpuClassT()
+{
+  TensorDimensionGpuClassT<TensorArrayGpu8, int> tensordimension("1");
+  assert(tensordimension.getId() == -1);
+  assert(tensordimension.getName() == "1");
+  assert(tensordimension.getNLabels() == 0);
+}
+
+void test_constructorNameAndLabelsGpuClassT()
+{
+  Eigen::Tensor<TensorArrayGpu8<int>, 1> labels(5);
+  labels.setConstant(TensorArrayGpu8<int>({1, 1, 1, 1, 1, 1, 1, 1}));
+  TensorDimensionGpuClassT<TensorArrayGpu8, int> tensordimension("1", labels);
+  assert(tensordimension.getName() == "1");
+  assert(tensordimension.getNLabels() == 5);
+  assert(tensordimension.getLabels()(0).getTensorArray()(0) == 1);
+  assert(tensordimension.getLabels()(4).getTensorArray()(0) == 1);
+}
+
+void test_gettersAndSettersGpuClassT()
+{
+  TensorDimensionGpuClassT<TensorArrayGpu8, int> tensordimension;
+  // Check defaults
+  assert(tensordimension.getId() == -1);
+  assert(tensordimension.getName() == "");
+  assert(tensordimension.getNLabels() == 0);
+
+  // Check getters/setters
+  tensordimension.setId(1);
+  tensordimension.setName("1");
+  Eigen::Tensor<TensorArrayGpu8<int>, 1> labels(5);
+  labels.setConstant(TensorArrayGpu8<int>({ 1, 1, 1, 1, 1, 1, 1, 1 }));
+  tensordimension.setLabels(labels);
+
+  assert(tensordimension.getId() == 1);
+  assert(tensordimension.getName() == "1");
+  assert(tensordimension.getNLabels() == 5);
+  assert(tensordimension.getLabels()(0).getTensorArray()(0) == 1);
+  assert(tensordimension.getLabels()(4).getTensorArray()(0) == 1);
+}
+
 int main(int argc, char** argv)
 {
-  test_constructorGpu();
-  test_destructorGpu();
-  test_constructorNameGpu();
-  test_constructorNameAndLabelsGpu();
-  test_gettersAndSettersGpu();
+  test_constructorGpuPrimitiveT();
+  test_destructorGpuPrimitiveT();
+  test_constructorNameGpuPrimitiveT();
+  test_constructorNameAndLabelsGpuPrimitiveT();
+  test_gettersAndSettersGpuPrimitiveT();
+
+  test_constructorGpuClassT();
+  test_destructorGpuClassT();
+  test_constructorNameGpuClassT();
+  test_constructorNameAndLabelsGpuClassT();
+  test_gettersAndSettersGpuClassT();
   return 0;
 }
 #endif

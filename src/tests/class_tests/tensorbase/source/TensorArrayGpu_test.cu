@@ -4,8 +4,6 @@
 #if COMPILE_WITH_CUDA
 #include <TensorBase/ml/TensorArrayGpu.h>
 #include <thrust/sort.h>
-#include <thrust/host_vector.h>
-#include <thrust/device_vector.h>
 #include <thrust/device_ptr.h>
 #include <thrust/execution_policy.h>
 
@@ -23,7 +21,7 @@ void test_constructorGpu()
 
 void test_destructorGpu()
 {
-	TensorArrayGpu8<float>* ptr = nullptr;
+  TensorArrayGpu8<float>* ptr = nullptr;
 	ptr = new TensorArrayGpu8<float>();
   delete ptr;
 }
@@ -33,7 +31,7 @@ void test_gettersAndSettersGpu()
   // Check same and equal length float
   Eigen::Tensor<float, 1> same_equal_float_1(8);
   same_equal_float_1.setValues({ 1,2,3,4,5,6,7,8 });
-  TensorArray8<float> tensorArrayFloat1(same_equal_float_1);
+  TensorArrayGpu8<float> tensorArrayFloat1(same_equal_float_1);
   assert(tensorArrayFloat1.getArraySize() == 8);
   assert(tensorArrayFloat1.getTensorArray()(0) == 1);
   assert(tensorArrayFloat1.getTensorArray()(1) == 2);
@@ -51,6 +49,74 @@ void test_gettersAndSettersGpu()
   assert(tensorArrayFloat1.at(5) == 6);
   assert(tensorArrayFloat1.at(6) == 7);
   assert(tensorArrayFloat1.at(7) == 8);
+
+  // Check same and equal length char
+  TensorArrayGpu8<char> tensorArrayChar1({ '1','2','3','4','5','6','7','8' });
+  assert(tensorArrayChar1.getArraySize() == 8);
+  assert(tensorArrayChar1.getTensorArray()(0) == '1');
+  assert(tensorArrayChar1.getTensorArray()(1) == '2');
+  assert(tensorArrayChar1.getTensorArray()(2) == '3');
+  assert(tensorArrayChar1.getTensorArray()(3) == '4');
+  assert(tensorArrayChar1.getTensorArray()(4) == '5');
+  assert(tensorArrayChar1.getTensorArray()(5) == '6');
+  assert(tensorArrayChar1.getTensorArray()(6) == '7');
+  assert(tensorArrayChar1.getTensorArray()(7) == '8');
+  assert(tensorArrayChar1.at(0) == '1');
+  assert(tensorArrayChar1.at(1) == '2');
+  assert(tensorArrayChar1.at(2) == '3');
+  assert(tensorArrayChar1.at(3) == '4');
+  assert(tensorArrayChar1.at(4) == '5');
+  assert(tensorArrayChar1.at(5) == '6');
+  assert(tensorArrayChar1.at(6) == '7');
+  assert(tensorArrayChar1.at(7) == '8');
+
+  TensorArrayGpu8<char> tensorArrayChar2({ '1','2','3','4','5','6' });
+  assert(tensorArrayChar2.getArraySize() == 8);
+  assert(tensorArrayChar2.getTensorArray()(0) == '1');
+  assert(tensorArrayChar2.getTensorArray()(1) == '2');
+  assert(tensorArrayChar2.getTensorArray()(2) == '3');
+  assert(tensorArrayChar2.getTensorArray()(3) == '4');
+  assert(tensorArrayChar2.getTensorArray()(4) == '5');
+  assert(tensorArrayChar2.getTensorArray()(5) == '6');
+  assert(tensorArrayChar2.getTensorArray()(6) == '\0');
+  assert(tensorArrayChar2.getTensorArray()(7) == '\0');
+  assert(tensorArrayChar2.at(0) == '1');
+  assert(tensorArrayChar2.at(1) == '2');
+  assert(tensorArrayChar2.at(2) == '3');
+  assert(tensorArrayChar2.at(3) == '4');
+  assert(tensorArrayChar2.at(4) == '5');
+  assert(tensorArrayChar2.at(5) == '6');
+  assert(tensorArrayChar2.at(6) == '\0');
+  assert(tensorArrayChar2.at(7) == '\0');
+
+  // Check same and equal length char
+  TensorArrayGpu8<char> tensorArrayString1("12345678");
+  assert(tensorArrayString1.getArraySize() == 8);
+  assert(tensorArrayString1.getTensorArray()(0) == '1');
+  assert(tensorArrayString1.getTensorArray()(1) == '2');
+  assert(tensorArrayString1.getTensorArray()(2) == '3');
+  assert(tensorArrayString1.getTensorArray()(3) == '4');
+  assert(tensorArrayString1.getTensorArray()(4) == '5');
+  assert(tensorArrayString1.getTensorArray()(5) == '6');
+  assert(tensorArrayString1.getTensorArray()(6) == '7');
+  assert(tensorArrayString1.getTensorArray()(7) == '8');
+  assert(tensorArrayString1.at(0) == '1');
+  assert(tensorArrayString1.at(1) == '2');
+  assert(tensorArrayString1.at(2) == '3');
+  assert(tensorArrayString1.at(3) == '4');
+  assert(tensorArrayString1.at(4) == '5');
+  assert(tensorArrayString1.at(5) == '6');
+  assert(tensorArrayString1.at(6) == '7');
+  assert(tensorArrayString1.at(7) == '8');
+}
+
+void test_coutGpu()
+{
+  // Check same and equal length float
+  Eigen::Tensor<float, 1> same_equal_float_1(8);
+  same_equal_float_1.setValues({ 1,2,3,4,5,6,7,8 });
+  TensorArrayGpu8<float> tensorArrayFloat1(same_equal_float_1);
+  std::cout << "TEST COUT: " << tensorArrayFloat1 << std::endl;
 }
 
 void test_comparisonGpu()
@@ -58,10 +124,10 @@ void test_comparisonGpu()
   // Check same and equal length float
   Eigen::Tensor<float, 1> same_equal_float_1(8);
   same_equal_float_1.setValues({ 1,2,3,4,5,6,7,8 });
-  TensorArray8<float> tensorArrayFloat1(same_equal_float_1);
+  TensorArrayGpu8<float> tensorArrayFloat1(same_equal_float_1);
   Eigen::Tensor<float, 1> same_equal_float_2(8);
   same_equal_float_2.setValues({ 1,2,3,4,5,6,7,8 });
-  TensorArray8<float> tensorArrayFloat2(same_equal_float_2);
+  TensorArrayGpu8<float> tensorArrayFloat2(same_equal_float_2);
   assert(tensorArrayFloat1 == tensorArrayFloat2);
   assert(!(tensorArrayFloat1 != tensorArrayFloat2));
   assert(!(tensorArrayFloat1 < tensorArrayFloat2));
@@ -72,7 +138,7 @@ void test_comparisonGpu()
   // Check different and equal length float
   Eigen::Tensor<float, 1> same_equal_float_3(8);
   same_equal_float_3.setValues({ 1,2,0,4,5,6,7,8 });
-  TensorArray8<float> tensorArrayFloat3(same_equal_float_3);
+  TensorArrayGpu8<float> tensorArrayFloat3(same_equal_float_3);
   assert(!(tensorArrayFloat1 == tensorArrayFloat3));
   assert(tensorArrayFloat1 != tensorArrayFloat3);
   assert(!(tensorArrayFloat1 < tensorArrayFloat3));
@@ -83,10 +149,10 @@ void test_comparisonGpu()
   // Check same and equal length char
   Eigen::Tensor<char, 1> same_equal_char_1(8);
   same_equal_char_1.setValues({ 'a', 'b', 'c', 'd', 'e', 'f', 'g', '\0' });
-  TensorArray8<char> tensorArrayChar1(same_equal_char_1);
+  TensorArrayGpu8<char> tensorArrayChar1(same_equal_char_1);
   Eigen::Tensor<char, 1> same_equal_char_2(8);
   same_equal_char_2.setValues({ 'a', 'b', 'c', 'd', 'e', 'f', 'g', '\0' });
-  TensorArray8<char> tensorArrayChar2(same_equal_char_2);
+  TensorArrayGpu8<char> tensorArrayChar2(same_equal_char_2);
   assert(tensorArrayChar1 == tensorArrayChar2);
   assert(!(tensorArrayChar1 != tensorArrayChar2));
   assert(!(tensorArrayChar1 < tensorArrayChar2));
@@ -97,7 +163,7 @@ void test_comparisonGpu()
   // Check different and equal length char
   Eigen::Tensor<char, 1> same_equal_char_3(8);
   same_equal_char_3.setValues({ 'a', 'b', 'a', 'd', 'e', 'f', 'g', '\0' });
-  TensorArray8<char> tensorArrayChar3(same_equal_char_3);
+  TensorArrayGpu8<char> tensorArrayChar3(same_equal_char_3);
   assert(!(tensorArrayChar1 == tensorArrayChar3));
   assert(tensorArrayChar1 != tensorArrayChar3);
   assert(!(tensorArrayChar1 < tensorArrayChar3));
@@ -298,6 +364,7 @@ int main(int argc, char** argv)
   test_constructorGpu();
   test_destructorGpu();
   test_gettersAndSettersGpu();
+  test_coutGpu();
   test_comparisonGpu();
   test_tensorAssignmentGpu();
   test_tensorComparisonGpu();

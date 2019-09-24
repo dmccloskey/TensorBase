@@ -5,6 +5,7 @@
 
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/ml/TensorData.h>
+#include <TensorBase/ml/TensorArray.h>
 #include <string>
 
 #include <cereal/access.hpp>  // serialiation of private members
@@ -423,9 +424,11 @@ CEREAL_REGISTER_TYPE(TensorBase::TensorAxisDefaultDevice<int>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisDefaultDevice<float>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisDefaultDevice<double>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisDefaultDevice<char>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisDefaultDevice<TensorBase::TensorArray8<char>>);
 
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisCpu<int>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisCpu<float>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisCpu<double>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisCpu<char>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisCpu<TensorBase::TensorArray8<char>>);
 #endif //TENSORBASE_TENSORAXIS_H

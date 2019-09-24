@@ -22,7 +22,8 @@ set(sources_list_h
 	TensorTableConceptGpu.h
 	TensorTableCpu.h
 	TensorTableDefaultDevice.h
-	TensorTableGpu.h
+	TensorTableGpuClassT.h
+	TensorTableGpuPrimitiveT.h
 	TensorType.h
 	TransactionManager.h
 )

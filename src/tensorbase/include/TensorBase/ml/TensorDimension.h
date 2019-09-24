@@ -4,6 +4,7 @@
 #define TENSORBASE_TENSORDIMENSION_H
 
 #include <TensorBase/ml/TensorData.h>
+#include <TensorBase/ml/TensorArray.h>
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <string>
 
@@ -103,10 +104,12 @@ CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionDefaultDevice<int>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionDefaultDevice<float>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionDefaultDevice<double>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionDefaultDevice<char>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionDefaultDevice<TensorBase::TensorArray8<char>>);
 
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionCpu<int>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionCpu<float>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionCpu<double>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionCpu<char>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionCpu<TensorBase::TensorArray8<char>>);
 
 #endif //TENSORBASE_TENSORDIMENSION_H
