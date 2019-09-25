@@ -47,6 +47,7 @@ namespace TensorBase
     virtual size_t getNLabels() const = 0;
     virtual size_t getNDimensions() const = 0;
     virtual Eigen::TensorMap<Eigen::Tensor<std::string, 1>> getDimensions() = 0;
+    virtual void setLabels() = 0;
 
     // All TensorT combos of `getLabelsDatapointer`
     virtual void getLabelsDataPointer(std::shared_ptr<int>& data_copy) = 0;
@@ -115,6 +116,7 @@ namespace TensorBase
     size_t getNLabels() const { return tensor_axis_->getNLabels(); };
     size_t getNDimensions() const { return tensor_axis_->getNDimensions(); };
     Eigen::TensorMap<Eigen::Tensor<std::string, 1>> getDimensions() { return tensor_axis_->getDimensions(); };
+    void setLabels() { tensor_axis_->setLabels(); }
 
     void getLabelsDataPointer(std::shared_ptr<int>& data_copy) {
       tensor_axis_->getLabelsDataPointer(data_copy);

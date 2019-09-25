@@ -33,7 +33,7 @@ namespace TensorBase
     template<typename DeviceTOther>
     inline bool operator==(const TensorTableConcept<DeviceTOther>& other) const
     {
-      bool meta_equal = (this->getId() == other.getId() && this->getName() == other.getName());
+      bool meta_equal = (this->getId() == other.getId() && this->getName() == other.getName() && this->getDir() == other.getDir());
       auto compare_maps = [](auto lhs, auto rhs) {return *(lhs.second.get()) == *(rhs.second.get()); };
       auto axes = this->getAxes();
       if (axes.size() != other.getAxes().size()) return false;
@@ -64,6 +64,7 @@ namespace TensorBase
 
     virtual int getId() const = 0;
     virtual std::string getName() const = 0;
+    virtual std::string getDir() const = 0;
     virtual std::map<std::string, std::shared_ptr<TensorAxisConcept<DeviceT>>>& getAxes() = 0;
     virtual std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIndices() = 0;
     virtual std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIndicesView() = 0;
@@ -81,6 +82,18 @@ namespace TensorBase
     virtual void resetIndicesView(const std::string& axis_name, DeviceT& device) = 0;
     virtual void makeIndicesFromIndicesView(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) = 0;
     virtual int getDimFromAxisName(const std::string& axis_name) = 0;
+    virtual void setAxes() = 0;
+    virtual void setData() = 0;
+
+    // All TensorT combos of `getLabelsDatapointer`
+    virtual void getDataPointer(std::shared_ptr<int>& data_copy) = 0;
+    virtual void getDataPointer(std::shared_ptr<float>& data_copy) = 0;
+    virtual void getDataPointer(std::shared_ptr<double>& data_copy) = 0;
+    virtual void getDataPointer(std::shared_ptr<char>& data_copy) = 0;
+    virtual void getDataPointer(std::shared_ptr<TensorArray8<char>>& data_copy) = 0;
+#if COMPILE_WITH_CUDA
+    virtual void getDataPointer(std::shared_ptr<TensorArrayGpu8<char>>& data_copy) = 0;
+#endif
 
     /*
     All LabelT and DeviceT combos of `selectIndicesView`
@@ -352,6 +365,14 @@ namespace TensorBase
     virtual void updateTensorDataFromSparseTensorTable(const std::shared_ptr<TensorTable<TensorArrayGpu8<char>, DeviceT, 2>>& values_old, DeviceT& device) = 0;
 #endif
 
+    /*
+    All DeviceT combos of load/store methods
+    */
+    virtual bool storeTensorTableBinary(const std::string& dir, DeviceT& device) = 0;
+    virtual bool loadTensorTableBinary(const std::string& dir, DeviceT& device) = 0;
+    virtual bool storeTensorTableAxesBinary(const std::string& dir, DeviceT& device) = 0;
+    virtual bool loadTensorTableAxesBinary(const std::string& dir, DeviceT& device) = 0;
+
   private:
     friend class cereal::access;
     template<class Archive>
@@ -368,6 +389,7 @@ namespace TensorBase
     ~TensorTableWrapper() = default;
     int getId() const { return tensor_table_->getId(); }
     std::string getName() const { return tensor_table_->getName(); };
+    std::string getDir() const { return tensor_table_->getDir(); };
     std::map<std::string, std::shared_ptr<TensorAxisConcept<DeviceT>>>& getAxes() { return tensor_table_->getAxes(); };
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIndices() { return tensor_table_->getIndices(); };
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& getIndicesView() { return tensor_table_->getIndicesView(); };
@@ -387,6 +409,29 @@ namespace TensorBase
       tensor_table_->makeIndicesFromIndicesView(axis_name, indices, device);
     };
     int getDimFromAxisName(const std::string& axis_name) { return tensor_table_->getDimFromAxisName(axis_name); };
+    void setAxes() { tensor_table_->setAxes(); }
+    void setData() { tensor_table_->setData(); }
+
+    void getDataPointer(std::shared_ptr<int>& data_copy) {
+      tensor_table_->getDataPointer(data_copy);
+    };
+    void getDataPointer(std::shared_ptr<float>& data_copy) {
+      tensor_table_->getDataPointer(data_copy);
+    };
+    void getDataPointer(std::shared_ptr<double>& data_copy) {
+      tensor_table_->getDataPointer(data_copy);
+    };
+    void getDataPointer(std::shared_ptr<char>& data_copy) {
+      tensor_table_->getDataPointer(data_copy);
+    };
+    void getDataPointer(std::shared_ptr<TensorArray8<char>>& data_copy) {
+      tensor_table_->getDataPointer(data_copy);
+    };
+#if COMPILE_WITH_CUDA
+    void getDataPointer(std::shared_ptr<TensorArrayGpu8<char>>& data_copy) {
+      tensor_table_->getDataPointer(data_copy);
+    };
+#endif
 
     void selectIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<int, DeviceT, 1>>& select_labels, DeviceT& device) {
       tensor_table_->selectIndicesView(axis_name, dimension_index, select_labels, device);
@@ -943,6 +988,19 @@ namespace TensorBase
       tensor_table_->updateTensorDataFromSparseTensorTableConcept(values_old, device);
     };
 #endif
+
+    bool storeTensorTableBinary(const std::string& dir, DeviceT& device) {
+      return tensor_table_->storeTensorTableBinary(dir, device);
+    };
+    bool loadTensorTableBinary(const std::string& dir, DeviceT& device) {
+      return tensor_table_->loadTensorTableBinary(dir, device);
+    };
+    bool storeTensorTableAxesBinary(const std::string& dir, DeviceT& device) {
+      return tensor_table_->storeTensorTableAxesBinary(dir, device);
+    };
+    bool loadTensorTableAxesBinary(const std::string& dir, DeviceT& device) {
+      return tensor_table_->loadTensorTableAxesBinary(dir, device);
+    };
 
   private:
     friend class cereal::access;

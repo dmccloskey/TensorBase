@@ -151,6 +151,9 @@ namespace TensorBase
     void setDataStatus(const bool& h_data_updated, const bool& d_data_updated) { data_->setDataStatus(h_data_updated, d_data_updated); } ///< Set the status of the host and device tensor data
     std::pair<bool, bool> getDataStatus() { return data_->getDataStatus(); };   ///< Get the status of the host and device tensor data
 
+    template<typename T>
+    void getDataPointer(std::shared_ptr<T>& data_copy); ///< TensorTableConcept data getter
+
     void setShardSpans(const std::map<std::string, int>& shard_spans) { shard_spans_ = shard_spans; }; ///< shard_span setter
     std::map<std::string, int> getShardSpans() const { return shard_spans_; }; ///< shard_span getter
 
@@ -663,13 +666,34 @@ namespace TensorBase
     @param[in] device
     */
     void makeNotInMemoryShardIDTensor(std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, DeviceT& device) const;
-    
-    void storeTensorTableAxesBinary(const std::string& dir, DeviceT& device); ///< Write tensor axes to disk
-    void loadTensorTableAxesBinary(const std::string& dir, DeviceT& device); ///< Read tensor axes from disk
 
-    // NOTE: IO methods for TensorTable indices components may not be needed
-    //virtual void storeTensorTableIndicesBinary(const std::string& dir, DeviceT& device) = 0; ///< Write tensor indices to disk
-    //virtual void loadTensorTableIndicesBinary(const std::string& dir, DeviceT& device) = 0; ///< Read tensor indices from disk
+    /**
+      @brief Write Axes labels to file
+
+      TODO: add a check to store only modified axes labels
+
+      @param[in] dir The name of the directory
+      @param[in] device
+
+      @returns Status True on success, False if not
+    */
+    bool storeTensorTableAxesBinary(const std::string& dir, DeviceT& device);
+
+    /**
+      @brief Load Axes labels from file
+
+      TODO: add a check to load only modified axes labels
+
+      @param[in] dir The name of the directory
+      @param[in] device
+
+      @returns Status True on success, False if not
+    */
+    bool loadTensorTableAxesBinary(const std::string& dir, DeviceT& device);
+
+    // NOTE: IO methods for TensorTable indices components may not be needed because the call to setAxes remakes all of the indices on the fly
+    //virtual bool storeTensorTableIndicesBinary(const std::string& dir, DeviceT& device) = 0; ///< Write tensor indices to disk
+    //virtual bool loadTensorTableIndicesBinary(const std::string& dir, DeviceT& device) = 0; ///< Read tensor indices from disk
 
   protected:
     int id_ = -1;
@@ -976,6 +1000,14 @@ namespace TensorBase
         shard_indices_values.slice(offset, span).device(device) = indices_values.slice(Eigen::array<Eigen::Index, 1>({0}), span);
       }
     }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  template<typename T>
+  inline void TensorTable<TensorT, DeviceT, TDim>::getDataPointer(std::shared_ptr<T>& data_copy)
+  {
+    if (std::is_same<T, TensorT>::value)
+      data_copy = std::reinterpret_pointer_cast<T>(data_->getDataPointer()); // required for compilation: no conversion should be done
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
@@ -1949,20 +1981,22 @@ namespace TensorBase
     makeShardIDTensor(modified_shard_ids, unique, num_runs, device);
   }
   template<typename TensorT, typename DeviceT, int TDim>
-  inline void TensorTable<TensorT, DeviceT, TDim>::storeTensorTableAxesBinary(const std::string & dir, DeviceT & device)
+  inline bool TensorTable<TensorT, DeviceT, TDim>::storeTensorTableAxesBinary(const std::string & dir, DeviceT & device)
   {
     for (auto& axis_map : axes_) {
       std::string filename =  dir + name_ + "_axis_" + axis_map.first;
       axis_map.second->storeLabelsBinary(filename, device);
     }
+    return true;
   }
   template<typename TensorT, typename DeviceT, int TDim>
-  inline void TensorTable<TensorT, DeviceT, TDim>::loadTensorTableAxesBinary(const std::string & dir, DeviceT & device)
+  inline bool TensorTable<TensorT, DeviceT, TDim>::loadTensorTableAxesBinary(const std::string & dir, DeviceT & device)
   {
     for (auto& axis_map : axes_) {
       std::string filename = dir + name_ + "_axis_" + axis_map.first;
       axis_map.second->loadLabelsBinary(filename, device);
     }
+    return true;
   }
 };
 #endif //TENSORBASE_TENSORTABLE_H
