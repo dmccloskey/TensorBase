@@ -11,6 +11,7 @@
 
 #include <cereal/access.hpp>  // serialiation of private members
 #include <cereal/types/vector.hpp>
+#include <cereal/types/memory.hpp>
 #undef min // clashes with std::limit on windows in polymorphic.hpp
 #undef max // clashes with std::limit on windows in polymorphic.hpp
 #include <cereal/types/polymorphic.hpp>
@@ -150,7 +151,7 @@ namespace TensorBase
     friend class cereal::access;
     template<class Archive>
     void serialize(Archive& archive) {
-    	archive(id_, name_, n_dimensions_, n_labels_, tensor_dimension_names_);
+    	archive(id_, name_, n_dimensions_, n_labels_, tensor_dimension_names_, tensor_dimension_labels_);
     }
   };
 
