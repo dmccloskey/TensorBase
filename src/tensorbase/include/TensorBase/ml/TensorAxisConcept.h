@@ -33,7 +33,8 @@ namespace TensorBase
     {
       bool meta_equal = (this->getId() == other.getId() && this->getName() == other.getName() &&
         this->getNLabels() == other.getNLabels(), this->getNDimensions() == other.getNDimensions());
-      return meta_equal;
+      // bool dimension_names_equal = (this->getDimensions() == other.getDimensions()); TODO: constant correctness
+      return meta_equal; // && dimension_names_equal;
     }
 
     inline bool operator!=(const TensorAxisConcept& other) const
