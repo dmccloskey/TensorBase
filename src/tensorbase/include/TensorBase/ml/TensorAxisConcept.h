@@ -88,6 +88,12 @@ namespace TensorBase
     // All DeviceT combos of `sortLabels`
     virtual void sortLabels(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) = 0;
 
+    // All DeviceT combos of `loadLabelsBinary`
+    virtual bool loadLabelsBinary(const std::string& filename, DeviceT& device) = 0;
+
+    // All DeviceT combos of `storeLabelsBinary`
+    virtual bool storeLabelsBinary(const std::string& filename, DeviceT& device) = 0;
+
   private:
     friend class cereal::access;
     template<class Archive>
@@ -183,6 +189,14 @@ namespace TensorBase
     void sortLabels(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) {
       tensor_axis_->sortLabels(indices, device);
     };
+
+    bool loadLabelsBinary(const std::string& filename, DeviceT& device) {
+      return tensor_axis_->loadLabelsBinary(filename, device);
+    }
+
+    bool storeLabelsBinary(const std::string& filename, DeviceT& device) {
+      return tensor_axis_->storeLabelsBinary(filename, device);
+    }
 
   private:
     friend class cereal::access;
