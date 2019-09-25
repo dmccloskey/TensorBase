@@ -10,6 +10,7 @@
 #include <string>
 
 #include <cereal/access.hpp>  // serialiation of private members
+#include <cereal/types/vector.hpp>
 #undef min // clashes with std::limit on windows in polymorphic.hpp
 #undef max // clashes with std::limit on windows in polymorphic.hpp
 #include <cereal/types/polymorphic.hpp>
@@ -36,14 +37,14 @@ namespace TensorBase
         name_, 
         n_labels_,
         n_dimensions_,
-        //tensor_dimension_names_, // cannot compare Eigen::Tensor
+        tensor_dimension_names_,
         *tensor_dimension_labels_.get() // compares pointers instead of the underlying classes
       ) == std::tie(
         other.id_,
         other.name_,
         other.n_labels_,
         other.n_dimensions_,
-        //other.tensor_dimension_names_,
+        other.tensor_dimension_names_,
         *other.tensor_dimension_labels_.get()
       );
     }
@@ -62,10 +63,12 @@ namespace TensorBase
     size_t getNLabels() const { return n_labels_; }; ///< n_labels getter
     size_t getNDimensions() const { return n_dimensions_; }; ///< n_labels getter
 
-    virtual void setDimensionsAndLabels(const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) = 0; ///< dimensions and labels setter
-    virtual void setDimensionsAndLabels() = 0; ///< dimensions and labels setter
+    void setDimensionsAndLabels(const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels); ///< dimensions and labels setter
+    void setDimensions(const Eigen::Tensor<std::string, 1>& dimensions); ///< dimensions setter
+    virtual void setLabels(const Eigen::Tensor<TensorT, 2>& labels) = 0; ///< dimensions and labels setter
+    virtual void setLabels() = 0; ///< labels setter
     Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> getLabels() { return tensor_dimension_labels_->getData(); };  ///< labels getter
-    Eigen::Tensor<std::string, 1>& getDimensions() { return tensor_dimension_names_; };  ///< dimensions getter
+    Eigen::TensorMap<Eigen::Tensor<std::string, 1>> getDimensions() { Eigen::TensorMap<Eigen::Tensor<std::string, 1>> data(tensor_dimension_names_.data(), (int)this->n_dimensions_); return data; } ///< dimensions getter
 
     bool syncHAndDData(DeviceT& device) { return tensor_dimension_labels_->syncHAndDData(device); };  ///< Sync the host and device labels data
     void setDataStatus(const bool& h_data_updated, const bool& d_data_updated) { tensor_dimension_labels_->setDataStatus(h_data_updated, d_data_updated); } ///< Set the status of the host and device data
@@ -140,17 +143,34 @@ namespace TensorBase
     std::string name_ = "";
     size_t n_dimensions_ = 0;  ///< the number of "primary keys" or dimensions that compose the axis
     size_t n_labels_ = 0;  ///< The size or length of the axis
-    Eigen::Tensor<std::string, 1> tensor_dimension_names_;  ///< array of TensorDimension names
+    std::vector<std::string> tensor_dimension_names_;  ///< array of TensorDimension names
     std::shared_ptr<TensorData<TensorT, DeviceT, 2>> tensor_dimension_labels_; ///< dim=0: tensor_dimension_name; dim=1 tensor_dimension_labels
 
   private:
     friend class cereal::access;
     template<class Archive>
     void serialize(Archive& archive) {
-    	//archive(id_, name_, n_dimensions_, n_labels_, tensor_dimension_names_);
-      archive(id_, name_, n_dimensions_, n_labels_);
+    	archive(id_, name_, n_dimensions_, n_labels_, tensor_dimension_names_);
     }
   };
+
+  template<typename TensorT, typename DeviceT>
+  inline void TensorAxis<TensorT, DeviceT>::setDimensionsAndLabels(const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels)
+  {
+    assert(labels.dimension(0) == dimensions.dimension(0));
+    setDimensions(dimensions);
+    setLabels(labels);
+  }
+
+  template<typename TensorT, typename DeviceT>
+  inline void TensorAxis<TensorT, DeviceT>::setDimensions(const Eigen::Tensor<std::string, 1>& dimensions)
+  {
+    setNDimensions(dimensions.size());
+    this->tensor_dimension_names_.resize(dimensions.size());
+    // copy the tensor
+    Eigen::TensorMap<Eigen::Tensor<std::string, 1>> data_copy(this->tensor_dimension_names_.data(), (int)this->n_dimensions_);
+    data_copy = dimensions;
+  }
 
   template<typename TensorT, typename DeviceT>
   inline void TensorAxis<TensorT, DeviceT>::deleteFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device)
@@ -206,11 +226,11 @@ namespace TensorBase
   {
   public:
     TensorAxisDefaultDevice() = default;  ///< Default constructor
-    TensorAxisDefaultDevice(const std::string& name, const size_t& n_dimensions, const size_t& n_labels) : TensorAxis(name, n_dimensions, n_labels) { this->setDimensionsAndLabels(); };
+    TensorAxisDefaultDevice(const std::string& name, const size_t& n_dimensions, const size_t& n_labels) : TensorAxis(name, n_dimensions, n_labels) { this->setLabels(); };
     TensorAxisDefaultDevice(const std::string& name, const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) : TensorAxis(name) { this->setDimensionsAndLabels(dimensions, labels); };
     ~TensorAxisDefaultDevice() = default; ///< Default destructor
-    void setDimensionsAndLabels(const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) override;
-    void setDimensionsAndLabels() override;
+    void setLabels(const Eigen::Tensor<TensorT, 2>& labels) override;
+    void setLabels() override;
     void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& labels, Eigen::DefaultDevice & device) override;
     void makeSortIndices(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& indices_sort, Eigen::DefaultDevice& device) override;
     void selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& labels_select, Eigen::DefaultDevice& device) override;
@@ -224,17 +244,14 @@ namespace TensorBase
     }
   };
   template<typename TensorT>
-  void TensorAxisDefaultDevice<TensorT>::setDimensionsAndLabels(const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) {
-    assert(labels.dimension(0) == dimensions.dimension(0));
+  void TensorAxisDefaultDevice<TensorT>::setLabels(const Eigen::Tensor<TensorT, 2>& labels) {
     Eigen::array<Eigen::Index, 2> labels_dims = labels.dimensions();
     this->tensor_dimension_labels_.reset(new TensorDataDefaultDevice<TensorT, 2>(labels_dims));
     this->tensor_dimension_labels_->setData(labels);
-    this->tensor_dimension_names_ = dimensions;
-    this->setNDimensions(labels.dimension(0));
     this->setNLabels(labels.dimension(1));
   }
   template<typename TensorT>
-  inline void TensorAxisDefaultDevice<TensorT>::setDimensionsAndLabels()
+  inline void TensorAxisDefaultDevice<TensorT>::setLabels()
   {
     Eigen::array<Eigen::Index, 2> labels_dims;
     labels_dims.at(0) = this->n_dimensions_;
@@ -350,11 +367,11 @@ namespace TensorBase
   {
   public:
     TensorAxisCpu() = default;  ///< Default constructor
-    TensorAxisCpu(const std::string& name, const size_t& n_dimensions, const size_t& n_labels) : TensorAxis(name, n_dimensions, n_labels) { this->setDimensionsAndLabels(); };
+    TensorAxisCpu(const std::string& name, const size_t& n_dimensions, const size_t& n_labels) : TensorAxis(name, n_dimensions, n_labels) { this->setLabels(); };
     TensorAxisCpu(const std::string& name, const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) : TensorAxis(name) { this->setDimensionsAndLabels(dimensions, labels); };
     ~TensorAxisCpu() = default; ///< Default destructor
-    void setDimensionsAndLabels(const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) override;
-    void setDimensionsAndLabels() override;
+    void setLabels(const Eigen::Tensor<TensorT, 2>& labels) override;
+    void setLabels() override;
     void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>>& labels, Eigen::ThreadPoolDevice & device) override;
     void makeSortIndices(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>>& indices_sort, Eigen::ThreadPoolDevice& device) override;
     void selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>>& labels_select, Eigen::ThreadPoolDevice& device) override;
@@ -368,17 +385,14 @@ namespace TensorBase
     }
   };
   template<typename TensorT>
-  void TensorAxisCpu<TensorT>::setDimensionsAndLabels(const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) {
-    assert(labels.dimension(0) == dimensions.dimension(0));
+  void TensorAxisCpu<TensorT>::setLabels(const Eigen::Tensor<TensorT, 2>& labels) {
     Eigen::array<Eigen::Index, 2> labels_dims = labels.dimensions();
     this->tensor_dimension_labels_.reset(new TensorDataCpu<TensorT, 2>(labels_dims));
     this->tensor_dimension_labels_->setData(labels);
-    this->tensor_dimension_names_ = dimensions;
-    this->setNDimensions(labels.dimension(0));
     this->setNLabels(labels.dimension(1));
   }
   template<typename TensorT>
-  inline void TensorAxisCpu<TensorT>::setDimensionsAndLabels()
+  inline void TensorAxisCpu<TensorT>::setLabels()
   {
     Eigen::array<Eigen::Index, 2> labels_dims;
     labels_dims.at(0) = this->n_dimensions_;
@@ -471,12 +485,22 @@ namespace TensorBase
   template<typename TensorT>
   inline bool TensorAxisCpu<TensorT>::loadLabelsBinary(const std::string & filename, Eigen::ThreadPoolDevice & device)
   {
-    return false;
+    // Read in the the labels
+    this->setDataStatus(true, false);
+    Eigen::Tensor<TensorT, 2> labels_data((int)this->n_dimensions_, (int)this->n_labels_);
+    DataFile::loadDataBinary<TensorT, 2>(filename + ".ta", labels_data);
+    this->getLabels() = labels_data;
+    this->syncHAndDData(device); // H to D
+    return true;
   }
   template<typename TensorT>
   inline bool TensorAxisCpu<TensorT>::storeLabelsBinary(const std::string & filename, Eigen::ThreadPoolDevice & device)
   {
-    return false;
+    // Store the labels
+    this->syncHAndDData(device); // D to H
+    DataFile::storeDataBinary<TensorT, 2>(filename + ".ta", this->getLabels());
+    this->setDataStatus(false, true);
+    return true;
   }
 };
 

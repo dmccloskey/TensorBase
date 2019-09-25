@@ -47,6 +47,33 @@ BOOST_AUTO_TEST_CASE(constructor1DefaultDevice)
   BOOST_CHECK_EQUAL(tensoraxis.getLabels()(2, 4), 1);
 }
 
+BOOST_AUTO_TEST_CASE(constructor2DefaultDevice)
+{
+  Eigen::Tensor<std::string, 1> dimensions(3);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  dimensions(2) = "TensorDimension3";
+  Eigen::Tensor<int, 2> labels(3, 5);
+  labels.setConstant(1);
+  TensorAxisDefaultDevice<int> tensoraxis("1", 1, 1);
+
+  BOOST_CHECK_EQUAL(tensoraxis.getId(), -1);
+  BOOST_CHECK_EQUAL(tensoraxis.getName(), "1");
+  BOOST_CHECK_EQUAL(tensoraxis.getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(tensoraxis.getNLabels(), 1);
+
+  tensoraxis.setDimensions(dimensions);
+  tensoraxis.setLabels(labels);
+
+  BOOST_CHECK_EQUAL(tensoraxis.getNDimensions(), 3);
+  BOOST_CHECK_EQUAL(tensoraxis.getNLabels(), 5);
+  BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(0), "TensorDimension1");
+  BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(1), "TensorDimension2");
+  BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(2), "TensorDimension3");
+  BOOST_CHECK_EQUAL(tensoraxis.getLabels()(0, 0), 1);
+  BOOST_CHECK_EQUAL(tensoraxis.getLabels()(2, 4), 1);
+}
+
 BOOST_AUTO_TEST_CASE(comparatorDefaultDevice)
 {
   Eigen::Tensor<std::string, 1> dimensions(3);
@@ -342,7 +369,7 @@ BOOST_AUTO_TEST_CASE(sortLabelsDefaultDevice)
   }
 }
 
-BOOST_AUTO_TEST_CASE(storeAndLoadDefaultDevice)
+BOOST_AUTO_TEST_CASE(storeAndLoadLabelsDefaultDevice)
 {
   // Setup the axis
   Eigen::Tensor<std::string, 1> dimensions(3);
@@ -365,9 +392,9 @@ BOOST_AUTO_TEST_CASE(storeAndLoadDefaultDevice)
   BOOST_CHECK_EQUAL(tensoraxis.getName(), "1");
   BOOST_CHECK_EQUAL(tensoraxis.getNDimensions(), 3);
   BOOST_CHECK_EQUAL(tensoraxis.getNLabels(), 5);
-  //BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(0), "TensorDimension1");
-  //BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(1), "TensorDimension2");
-  //BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(2), "TensorDimension3");
+  //BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(0), "TensorDimension1"); // Not loaded
+  //BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(1), "TensorDimension2"); // Not loaded
+  //BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(2), "TensorDimension3"); // Not loaded
   BOOST_CHECK_EQUAL(tensoraxis.getLabels()(0, 0), 1);
   BOOST_CHECK_EQUAL(tensoraxis.getLabels()(2, 4), 1);
 }
@@ -401,6 +428,33 @@ BOOST_AUTO_TEST_CASE(constructor1Cpu)
 
   BOOST_CHECK_EQUAL(tensoraxis.getId(), -1);
   BOOST_CHECK_EQUAL(tensoraxis.getName(), "1");
+  BOOST_CHECK_EQUAL(tensoraxis.getNDimensions(), 3);
+  BOOST_CHECK_EQUAL(tensoraxis.getNLabels(), 5);
+  BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(0), "TensorDimension1");
+  BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(1), "TensorDimension2");
+  BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(2), "TensorDimension3");
+  BOOST_CHECK_EQUAL(tensoraxis.getLabels()(0, 0), 1);
+  BOOST_CHECK_EQUAL(tensoraxis.getLabels()(2, 4), 1);
+}
+
+BOOST_AUTO_TEST_CASE(constructor2Cpu)
+{
+  Eigen::Tensor<std::string, 1> dimensions(3);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  dimensions(2) = "TensorDimension3";
+  Eigen::Tensor<int, 2> labels(3, 5);
+  labels.setConstant(1);
+  TensorAxisCpu<int> tensoraxis("1", 1, 1);
+
+  BOOST_CHECK_EQUAL(tensoraxis.getId(), -1);
+  BOOST_CHECK_EQUAL(tensoraxis.getName(), "1");
+  BOOST_CHECK_EQUAL(tensoraxis.getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(tensoraxis.getNLabels(), 1);
+
+  tensoraxis.setDimensions(dimensions);
+  tensoraxis.setLabels(labels);
+
   BOOST_CHECK_EQUAL(tensoraxis.getNDimensions(), 3);
   BOOST_CHECK_EQUAL(tensoraxis.getNLabels(), 5);
   BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(0), "TensorDimension1");
@@ -668,6 +722,37 @@ BOOST_AUTO_TEST_CASE(sortLabelsCpu)
       BOOST_CHECK_EQUAL(tensoraxis.getLabels()(i, j), labels_sort_test(i, j));
     }
   }
+}
+
+BOOST_AUTO_TEST_CASE(storeAndLoadLabelsCpu)
+{
+  // Setup the axis
+  Eigen::Tensor<std::string, 1> dimensions(3);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  dimensions(2) = "TensorDimension3";
+  Eigen::Tensor<int, 2> labels(3, 5);
+  labels.setConstant(1);
+  TensorAxisCpu<int> tensoraxis_io("1", dimensions, labels);
+
+  // Store the axis data
+  Eigen::ThreadPool pool(1);
+  Eigen::ThreadPoolDevice device(&pool, 1);
+  tensoraxis_io.storeLabelsBinary("axis", device);
+
+  // Load the axis data
+  TensorAxisCpu<int> tensoraxis("1", 3, 5);
+  tensoraxis.loadLabelsBinary("axis", device);
+
+  BOOST_CHECK_EQUAL(tensoraxis.getId(), -1);
+  BOOST_CHECK_EQUAL(tensoraxis.getName(), "1");
+  BOOST_CHECK_EQUAL(tensoraxis.getNDimensions(), 3);
+  BOOST_CHECK_EQUAL(tensoraxis.getNLabels(), 5);
+  //BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(0), "TensorDimension1"); // Not loaded
+  //BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(1), "TensorDimension2"); // Not loaded
+  //BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(2), "TensorDimension3"); // Not loaded
+  BOOST_CHECK_EQUAL(tensoraxis.getLabels()(0, 0), 1);
+  BOOST_CHECK_EQUAL(tensoraxis.getLabels()(2, 4), 1);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

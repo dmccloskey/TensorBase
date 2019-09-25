@@ -43,6 +43,35 @@ void test_constructor1GpuPrimitiveT()
   assert(tensoraxis.getLabels()(2, 4) == 1);
 }
 
+void test_constructor2GpuPrimitiveT()
+{
+  Eigen::Tensor<std::string, 1> dimensions(3);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  dimensions(2) = "TensorDimension3";
+  Eigen::Tensor<int, 2> labels(3, 5);
+  labels.setConstant(1);
+  TensorAxisGpuPrimitiveT<int> tensoraxis("1", 1, 1);
+
+  assert(tensoraxis.getId() == -1);
+  assert(tensoraxis.getName() == "1");
+  assert(tensoraxis.getNDimensions() == 1);
+  assert(tensoraxis.getNLabels() == 1);
+
+  tensoraxis.setDimensions(dimensions);
+  tensoraxis.setLabels(labels);
+
+  assert(tensoraxis.getId() == -1);
+  assert(tensoraxis.getName() == "1");
+  assert(tensoraxis.getNDimensions() == 3);
+  assert(tensoraxis.getNLabels() == 5);
+  assert(tensoraxis.getDimensions()(0) == "TensorDimension1");
+  assert(tensoraxis.getDimensions()(1) == "TensorDimension2");
+  assert(tensoraxis.getDimensions()(2) == "TensorDimension3");
+  assert(tensoraxis.getLabels()(0, 0) == 1);
+  assert(tensoraxis.getLabels()(2, 4) == 1);
+}
+
 void test_gettersAndSettersGpuPrimitiveT()
 {
   TensorAxisGpuPrimitiveT<int> tensoraxis;
@@ -322,6 +351,41 @@ void test_sortLabelsGpuPrimitiveT()
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
 
+void test_storeAndLoadLabelsGpuPrimitiveT()
+{
+  // Setup the axis
+  Eigen::Tensor<std::string, 1> dimensions(3);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  dimensions(2) = "TensorDimension3";
+  Eigen::Tensor<int, 2> labels(3, 5);
+  labels.setConstant(1);
+  TensorAxisGpuPrimitiveT<int> tensoraxis_io("1", dimensions, labels);
+
+  // Store the axis data
+  cudaStream_t stream;
+  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  Eigen::GpuStreamDevice stream_device(&stream, 0);
+  Eigen::GpuDevice device(&stream_device);
+  tensoraxis_io.storeLabelsBinary("axis", device);
+
+  // Load the axis data
+  TensorAxisGpuPrimitiveT<int> tensoraxis("1", 3, 5);
+  tensoraxis.loadLabelsBinary("axis", device);
+
+  assert(tensoraxis.getId() == -1);
+  assert(tensoraxis.getName() == "1");
+  assert(tensoraxis.getNDimensions() == 3);
+  assert(tensoraxis.getNLabels() == 5);
+  //assert(tensoraxis.getDimensions()(0) == "TensorDimension1"); // Not loaded
+  //assert(tensoraxis.getDimensions()(1) == "TensorDimension2"); // Not loaded
+  //assert(tensoraxis.getDimensions()(2) == "TensorDimension3"); // Not loaded
+  assert(tensoraxis.getLabels()(0, 0) == 1);
+  assert(tensoraxis.getLabels()(2, 4) == 1);
+
+  assert(cudaStreamDestroy(stream) == cudaSuccess);
+}
+
 void test_constructorGpuClassT()
 {
   TensorAxisGpuClassT<TensorArrayGpu8, int>* ptr = nullptr;
@@ -347,6 +411,35 @@ void test_constructor1GpuClassT()
   Eigen::Tensor<TensorArrayGpu8<int>, 2> labels(3, 5);
   labels.setConstant(TensorArrayGpu8<int>({1, 1, 1, 1, 1, 1, 1, 1 }));
   TensorAxisGpuClassT<TensorArrayGpu8, int> tensoraxis("1", dimensions, labels);
+
+  assert(tensoraxis.getId() == -1);
+  assert(tensoraxis.getName() == "1");
+  assert(tensoraxis.getNDimensions() == 3);
+  assert(tensoraxis.getNLabels() == 5);
+  assert(tensoraxis.getDimensions()(0) == "TensorDimension1");
+  assert(tensoraxis.getDimensions()(1) == "TensorDimension2");
+  assert(tensoraxis.getDimensions()(2) == "TensorDimension3");
+  assert(tensoraxis.getLabels()(0, 0).getTensorArray()(0) == 1);
+  assert(tensoraxis.getLabels()(2, 4).getTensorArray()(0) == 1);
+}
+
+void test_constructor2GpuClassT()
+{
+  Eigen::Tensor<std::string, 1> dimensions(3);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  dimensions(2) = "TensorDimension3";
+  Eigen::Tensor<TensorArrayGpu8<int>, 2> labels(3, 5);
+  labels.setConstant(TensorArrayGpu8<int>({ 1, 1, 1, 1, 1, 1, 1, 1 }));
+  TensorAxisGpuClassT<TensorArrayGpu8, int> tensoraxis("1", 1, 1);
+
+  assert(tensoraxis.getId() == -1);
+  assert(tensoraxis.getName() == "1");
+  assert(tensoraxis.getNDimensions() == 1);
+  assert(tensoraxis.getNLabels() == 1);
+
+  tensoraxis.setDimensions(dimensions);
+  tensoraxis.setLabels(labels);
 
   assert(tensoraxis.getId() == -1);
   assert(tensoraxis.getName() == "1");
@@ -638,27 +731,66 @@ void test_sortLabelsGpuClassT()
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
 
+void test_storeAndLoadLabelsGpuClassT()
+{
+  // Setup the axis
+  Eigen::Tensor<std::string, 1> dimensions(3);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  dimensions(2) = "TensorDimension3";
+  Eigen::Tensor<TensorArrayGpu8<int>, 2> labels(3, 5);
+  labels.setConstant(TensorArrayGpu8<int>({ 1, 1, 1, 1, 1, 1, 1, 1 }));
+  TensorAxisGpuClassT<TensorArrayGpu8, int> tensoraxis_io("1", dimensions, labels);
+
+  // Store the axis data
+  cudaStream_t stream;
+  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  Eigen::GpuStreamDevice stream_device(&stream, 0);
+  Eigen::GpuDevice device(&stream_device);
+  tensoraxis_io.storeLabelsBinary("axis", device);
+
+  // Load the axis data
+  TensorAxisGpuClassT<TensorArrayGpu8, int> tensoraxis("1", 3, 5);
+  tensoraxis.loadLabelsBinary("axis", device);
+
+  assert(tensoraxis.getId() == -1);
+  assert(tensoraxis.getName() == "1");
+  assert(tensoraxis.getNDimensions() == 3);
+  assert(tensoraxis.getNLabels() == 5);
+  //assert(tensoraxis.getDimensions()(0) == "TensorDimension1"); // Not loaded
+  //assert(tensoraxis.getDimensions()(1) == "TensorDimension2"); // Not loaded
+  //assert(tensoraxis.getDimensions()(2) == "TensorDimension3"); // Not loaded
+  assert(tensoraxis.getLabels()(0, 0).getTensorArray()(0) == 1);
+  assert(tensoraxis.getLabels()(2, 4).getTensorArray()(0) == 1);
+
+  assert(cudaStreamDestroy(stream) == cudaSuccess);
+}
+
 int main(int argc, char** argv)
 {
   test_constructorGpuPrimitiveT();
   test_destructorGpuPrimitiveT();
   test_constructor1GpuPrimitiveT();
+  test_constructor2GpuPrimitiveT();
   test_gettersAndSettersGpuPrimitiveT();
   //test_getLabelsDataPointerGpuPrimitiveT(); // Not needed?
   test_deleteFromAxisGpuPrimitiveT();
   test_appendLabelsToAxisGpuPrimitiveT();
   test_makeSortIndicesGpuPrimitiveT();
   test_sortLabelsGpuPrimitiveT();
+  test_storeAndLoadLabelsGpuPrimitiveT();
 
   test_constructorGpuClassT();
   test_destructorGpuClassT();
-  test_constructor1GpuClassT();
+  test_constructor1GpuClassT(); 
+  test_constructor2GpuClassT();
   test_gettersAndSettersGpuClassT();
   //test_getLabelsDataPointerGpuClassT(); // Not needed?
   test_deleteFromAxisGpuClassT();
   test_appendLabelsToAxisGpuClassT();
   test_makeSortIndicesGpuClassT();
   test_sortLabelsGpuClassT();
+  test_storeAndLoadLabelsGpuClassT();
   return 0;
 }
 #endif
