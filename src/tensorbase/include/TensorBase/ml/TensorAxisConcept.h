@@ -33,7 +33,8 @@ namespace TensorBase
     {
       bool meta_equal = (this->getId() == other.getId() && this->getName() == other.getName() &&
         this->getNLabels() == other.getNLabels(), this->getNDimensions() == other.getNDimensions());
-      return meta_equal;
+      // bool dimension_names_equal = (this->getDimensions() == other.getDimensions()); TODO: constant correctness
+      return meta_equal; // && dimension_names_equal;
     }
 
     inline bool operator!=(const TensorAxisConcept& other) const
@@ -45,7 +46,8 @@ namespace TensorBase
     virtual std::string getName() const = 0;
     virtual size_t getNLabels() const = 0;
     virtual size_t getNDimensions() const = 0;
-    virtual Eigen::Tensor<std::string, 1>& getDimensions() = 0;
+    virtual Eigen::TensorMap<Eigen::Tensor<std::string, 1>> getDimensions() = 0;
+    virtual void setLabels() = 0;
 
     // All TensorT combos of `getLabelsDatapointer`
     virtual void getLabelsDataPointer(std::shared_ptr<int>& data_copy) = 0;
@@ -88,6 +90,12 @@ namespace TensorBase
     // All DeviceT combos of `sortLabels`
     virtual void sortLabels(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) = 0;
 
+    // All DeviceT combos of `loadLabelsBinary`
+    virtual bool loadLabelsBinary(const std::string& filename, DeviceT& device) = 0;
+
+    // All DeviceT combos of `storeLabelsBinary`
+    virtual bool storeLabelsBinary(const std::string& filename, DeviceT& device) = 0;
+
   private:
     friend class cereal::access;
     template<class Archive>
@@ -107,7 +115,8 @@ namespace TensorBase
     std::string getName() const { return tensor_axis_->getName(); };
     size_t getNLabels() const { return tensor_axis_->getNLabels(); };
     size_t getNDimensions() const { return tensor_axis_->getNDimensions(); };
-    Eigen::Tensor<std::string, 1>& getDimensions() { return tensor_axis_->getDimensions(); };
+    Eigen::TensorMap<Eigen::Tensor<std::string, 1>> getDimensions() { return tensor_axis_->getDimensions(); };
+    void setLabels() { tensor_axis_->setLabels(); }
 
     void getLabelsDataPointer(std::shared_ptr<int>& data_copy) {
       tensor_axis_->getLabelsDataPointer(data_copy);
@@ -183,6 +192,14 @@ namespace TensorBase
     void sortLabels(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) {
       tensor_axis_->sortLabels(indices, device);
     };
+
+    bool loadLabelsBinary(const std::string& filename, DeviceT& device) {
+      return tensor_axis_->loadLabelsBinary(filename, device);
+    }
+
+    bool storeLabelsBinary(const std::string& filename, DeviceT& device) {
+      return tensor_axis_->storeLabelsBinary(filename, device);
+    }
 
   private:
     friend class cereal::access;

@@ -787,7 +787,7 @@ namespace TensorBase
     makeSliceIndicesFromShardIndices(not_in_memory_shard_ids, slice_indices, device);
 
     // read in the shards and update the TensorTable data asyncronously
-    syncHAndDData(device); // D to H
+    this->syncHAndDData(device); // D to H
     // TODO: Move to device-specific code
     // Synchronize the Device and Host data for reading from disk
     if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
@@ -809,7 +809,7 @@ namespace TensorBase
         not_in_memory_values.slice(offset, span).device(device) = not_in_memory_values.slice(offset, span).constant(0);
       }
     }
-    syncHAndDData(device); // H to D
+    this->syncHAndDData(device); // H to D
 
     return true;
   }
@@ -827,7 +827,7 @@ namespace TensorBase
     makeSliceIndicesFromShardIndices(modified_shard_ids, slice_indices, device);
 
     // write the TensorTable shards to disk asyncronously
-    syncHAndDData(device); // D to H
+    this->syncHAndDData(device); // D to H
     // TODO: Move to device-specific code
     // Synchronize the Device and Host data for writing to disk
     if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
@@ -838,7 +838,7 @@ namespace TensorBase
       Eigen::Tensor<TensorT, TDim> shard_data = getData().slice(slice_index.second.first, slice_index.second.second);
       DataFile::storeDataBinary<TensorT, TDim>(filename, shard_data);
     }
-    setDataStatus(false, true);
+    this->setDataStatus(false, true);
 
     // update the `is_modified` tensor table attribute
     for (auto& is_modified_map : is_modified_) {

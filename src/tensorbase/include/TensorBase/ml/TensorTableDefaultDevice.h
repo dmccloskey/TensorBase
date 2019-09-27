@@ -734,7 +734,7 @@ namespace TensorBase
       const std::string filename = makeTensorTableShardFilename(dir, getName(), slice_index.first);
       Eigen::Tensor<TensorT, TDim> shard_data(slice_index.second.second);
       DataFile::loadDataBinary<TensorT, TDim>(filename, shard_data);
-      getData().slice(slice_index.second.first, slice_index.second.second) = shard_data;
+      this->getData().slice(slice_index.second.first, slice_index.second.second) = shard_data;
 
       // update the `not_in_memory` tensor table attribute
       for (auto& not_in_memory_map : not_in_memory_) {

@@ -151,6 +151,9 @@ namespace TensorBase
     void setDataStatus(const bool& h_data_updated, const bool& d_data_updated) { data_->setDataStatus(h_data_updated, d_data_updated); } ///< Set the status of the host and device tensor data
     std::pair<bool, bool> getDataStatus() { return data_->getDataStatus(); };   ///< Get the status of the host and device tensor data
 
+    template<typename T>
+    void getDataPointer(std::shared_ptr<T>& data_copy); ///< TensorTableConcept data getter
+
     void setShardSpans(const std::map<std::string, int>& shard_spans) { shard_spans_ = shard_spans; }; ///< shard_span setter
     std::map<std::string, int> getShardSpans() const { return shard_spans_; }; ///< shard_span getter
 
@@ -664,6 +667,34 @@ namespace TensorBase
     */
     void makeNotInMemoryShardIDTensor(std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, DeviceT& device) const;
 
+    /**
+      @brief Write Axes labels to file
+
+      TODO: add a check to store only modified axes labels
+
+      @param[in] dir The name of the directory
+      @param[in] device
+
+      @returns Status True on success, False if not
+    */
+    bool storeTensorTableAxesBinary(const std::string& dir, DeviceT& device);
+
+    /**
+      @brief Load Axes labels from file
+
+      TODO: add a check to load only modified axes labels
+
+      @param[in] dir The name of the directory
+      @param[in] device
+
+      @returns Status True on success, False if not
+    */
+    bool loadTensorTableAxesBinary(const std::string& dir, DeviceT& device);
+
+    // NOTE: IO methods for TensorTable indices components may not be needed because the call to setAxes remakes all of the indices on the fly
+    //virtual bool storeTensorTableIndicesBinary(const std::string& dir, DeviceT& device) = 0; ///< Write tensor indices to disk
+    //virtual bool loadTensorTableIndicesBinary(const std::string& dir, DeviceT& device) = 0; ///< Read tensor indices from disk
+
   protected:
     int id_ = -1;
     std::string name_ = "";
@@ -969,6 +1000,14 @@ namespace TensorBase
         shard_indices_values.slice(offset, span).device(device) = indices_values.slice(Eigen::array<Eigen::Index, 1>({0}), span);
       }
     }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  template<typename T>
+  inline void TensorTable<TensorT, DeviceT, TDim>::getDataPointer(std::shared_ptr<T>& data_copy)
+  {
+    if (std::is_same<T, TensorT>::value)
+      data_copy = std::reinterpret_pointer_cast<T>(data_->getDataPointer()); // required for compilation: no conversion should be done
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
@@ -1531,20 +1570,6 @@ namespace TensorBase
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_sort;
     makeSortIndicesFromTensorIndicesComponent(indices_view_, indices_sort, device);
 
-//    // TODO: Move to device-specific code
-//    // Synchronize the Device and Host data for paritioning and sorting
-//#if COMPILE_WITH_CUDA
-//    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
-//      indices_sort->syncHAndDData(device); // d to h
-//      indices_partition->syncHAndDData(device); // d to h
-//      syncHAndDData(device); // d to h
-//      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
-//      indices_sort->setDataStatus(false, true);
-//      indices_partition->setDataStatus(false, true);
-//      setDataStatus(false, true);
-//    }
-//#endif
-
     // partition the indices
     indices_sort->partition(indices_partition, device);
 
@@ -1886,20 +1911,6 @@ namespace TensorBase
     indices_view_values.slice(offsets, extents).device(device) = indices_old_values;
     indices_values.slice(offsets, extents).device(device) = indices_old_values;
 
-//    // TODO: Move to device-specific code
-//    // NOTE: Required for calls to sort
-//#if COMPILE_WITH_CUDA
-//    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
-//      this->syncIndicesHAndDData(device);
-//      this->syncHAndDData(device);
-//      this->syncAxesHAndDData(device);
-//      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
-//      this->setIndicesDataStatus(false, true);
-//      this->setDataStatus(false, true);
-//      this->setAxesDataStatus(false, true);
-//    }
-//#endif
-
     // Sort the is_modified values by the indices, and then sort the indices and update the shard indices
     is_modified_.at(axis_name)->sort(indices_.at(axis_name), device);
     indices_.at(axis_name)->sort("ASC", device); // NOTE: this could fail if there are 0's in the index!
@@ -1929,16 +1940,6 @@ namespace TensorBase
     Eigen::TensorMap<Eigen::Tensor<int, TDim>> select_indices_values(select_indices->getDataPointer().get(), select_indices->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<int, TDim>> shard_indices_values(shard_indices->getDataPointer().get(), shard_indices->getDimensions());
     shard_indices_values.device(device) = (select_indices_values > select_indices_values.constant(0)).select(shard_indices_values, shard_indices_values.constant(0));
-
-//    // TODO: Move to device-specific code
-//    // Synchronize the Device and Host data for sorting and runLengthEncoding
-//#if COMPILE_WITH_CUDA
-//    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
-//      shard_indices->syncHAndDData(device); // d to h
-//      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
-//      shard_indices->setDataStatus(false, true);
-//    }
-//#endif
 
     // Sort and then RunLengthEncode
     shard_indices->sort("ASC", device);
@@ -1971,16 +1972,6 @@ namespace TensorBase
     shard_indices_values.device(device) = (select_indices_values > select_indices_values.constant(0) &&
       not_in_memory_indices_values > not_in_memory_indices_values.constant(0)).select(shard_indices_values, shard_indices_values.constant(0));
 
-    // TODO: Move to device-specific code
-    // Synchronize the Device and Host data for sorting and runLengthEncoding
-#if compile_with_cuda
-    if (typeid(device).name() == typeid(eigen::gpudevice).name()) {
-      shard_indices->synchandddata(device); // d to h
-      assert(cudastreamsynchronize(device.stream()) == cudasuccess);
-      shard_indices->setdatastatus(false, true);
-    }
-#endif
-
     // Sort and then RunLengthEncode
     shard_indices->sort("ASC", device);
     std::shared_ptr<TensorData<int, DeviceT, 1>> unique, count, num_runs;
@@ -1988,6 +1979,24 @@ namespace TensorBase
 
     // Resize the unique results and remove 0's from the unique
     makeShardIDTensor(modified_shard_ids, unique, num_runs, device);
+  }
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline bool TensorTable<TensorT, DeviceT, TDim>::storeTensorTableAxesBinary(const std::string & dir, DeviceT & device)
+  {
+    for (auto& axis_map : axes_) {
+      std::string filename =  dir + name_ + "_axis_" + axis_map.first;
+      axis_map.second->storeLabelsBinary(filename, device);
+    }
+    return true;
+  }
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline bool TensorTable<TensorT, DeviceT, TDim>::loadTensorTableAxesBinary(const std::string & dir, DeviceT & device)
+  {
+    for (auto& axis_map : axes_) {
+      std::string filename = dir + name_ + "_axis_" + axis_map.first;
+      axis_map.second->loadLabelsBinary(filename, device);
+    }
+    return true;
   }
 };
 #endif //TENSORBASE_TENSORTABLE_H

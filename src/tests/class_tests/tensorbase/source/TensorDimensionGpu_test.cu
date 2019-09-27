@@ -65,6 +65,30 @@ void test_gettersAndSettersGpuPrimitiveT()
   assert(tensordimension.getLabels()(4) == 1);
 }
 
+void test_loadAndStoreLabelsGpuPrimitiveT()
+{
+  // initialize the dimensions
+  Eigen::Tensor<int, 1> labels(5);
+  labels.setConstant(1);
+  TensorDimensionGpuPrimitiveT<int> tensordimension_io("1", labels);
+
+  // write the dimension labels to disk
+  cudaStream_t stream;
+  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  Eigen::GpuStreamDevice stream_device(&stream, 0);
+  Eigen::GpuDevice device(&stream_device);
+  tensordimension_io.storeLabelsBinary("Dimensions_test.bin", device);
+
+  // read the dimension labels from disk
+  TensorDimensionGpuPrimitiveT<int> tensordimension("1", 5);
+  tensordimension.loadLabelsBinary("Dimensions_test.bin", device);
+
+  assert(tensordimension.getName() == "1");
+  assert(tensordimension.getNLabels() == 5);
+  assert(tensordimension.getLabels()(0) == 1);
+  assert(tensordimension.getLabels()(4) == 1);
+}
+
 /*TensorDimensionGpuClassT Tests*/
 void test_constructorGpuClassT()
 {
@@ -123,6 +147,30 @@ void test_gettersAndSettersGpuClassT()
   assert(tensordimension.getLabels()(4).getTensorArray()(0) == 1);
 }
 
+void test_loadAndStoreLabelsGpuClassT()
+{
+  // initialize the dimensions
+  Eigen::Tensor<TensorArrayGpu8<int>, 1> labels(5);
+  labels.setConstant(TensorArrayGpu8<int>({ 1, 1, 1, 1, 1, 1, 1, 1 }));
+  TensorDimensionGpuClassT<TensorArrayGpu8, int> tensordimension_io("1", labels);
+
+  // write the dimension labels to disk
+  cudaStream_t stream;
+  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  Eigen::GpuStreamDevice stream_device(&stream, 0);
+  Eigen::GpuDevice device(&stream_device);
+  tensordimension_io.storeLabelsBinary("Dimensions_test.bin", device);
+
+  // read the dimension labels from disk
+  TensorDimensionGpuClassT<TensorArrayGpu8, int> tensordimension("1", 5);
+  tensordimension.loadLabelsBinary("Dimensions_test.bin", device);
+
+  assert(tensordimension.getName() == "1");
+  assert(tensordimension.getNLabels() == 5);
+  assert(tensordimension.getLabels()(0).getTensorArray()(0) == 1);
+  assert(tensordimension.getLabels()(4).getTensorArray()(0) == 1);
+}
+
 int main(int argc, char** argv)
 {
   test_constructorGpuPrimitiveT();
@@ -130,12 +178,14 @@ int main(int argc, char** argv)
   test_constructorNameGpuPrimitiveT();
   test_constructorNameAndLabelsGpuPrimitiveT();
   test_gettersAndSettersGpuPrimitiveT();
+  test_loadAndStoreLabelsGpuPrimitiveT();
 
   test_constructorGpuClassT();
   test_destructorGpuClassT();
   test_constructorNameGpuClassT();
   test_constructorNameAndLabelsGpuClassT();
   test_gettersAndSettersGpuClassT();
+  test_loadAndStoreLabelsGpuClassT();
   return 0;
 }
 #endif

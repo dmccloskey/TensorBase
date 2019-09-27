@@ -25,12 +25,16 @@ namespace TensorBase
   {
   public:
     TensorAxisGpuPrimitiveT() = default;  ///< Default constructor
-    TensorAxisGpuPrimitiveT(const std::string& name, const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels);
+    TensorAxisGpuPrimitiveT(const std::string& name, const size_t& n_dimensions, const size_t& n_labels) : TensorAxis(name, n_dimensions, n_labels) { this->setLabels(); };
+    TensorAxisGpuPrimitiveT(const std::string& name, const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) : TensorAxis(name) { this->setDimensionsAndLabels(dimensions, labels); };
     ~TensorAxisGpuPrimitiveT() = default; ///< Default destructor
-    void setDimensionsAndLabels(const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) override;
+    void setLabels(const Eigen::Tensor<TensorT, 2>& labels) override;
+    void setLabels() override;
     void selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 2>>& labels_select, Eigen::GpuDevice& device) override;
     void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 2>>& labels, Eigen::GpuDevice & device) override;
     void makeSortIndices(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>>& indices_sort, Eigen::GpuDevice& device) override;
+    bool loadLabelsBinary(const std::string& filename, Eigen::GpuDevice& device) override;
+    bool storeLabelsBinary(const std::string& filename, Eigen::GpuDevice& device) override;
   private:
     friend class cereal::access;
     template<class Archive>
@@ -39,21 +43,21 @@ namespace TensorBase
     }
   };
   template<typename TensorT>
-  TensorAxisGpuPrimitiveT<TensorT>::TensorAxisGpuPrimitiveT(const std::string& name, const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) {
-    setName(name);
-    setDimensionsAndLabels(dimensions, labels);
-  }
-  template<typename TensorT>
-  void TensorAxisGpuPrimitiveT<TensorT>::setDimensionsAndLabels(const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) {
-    assert(labels.dimension(0) == dimensions.dimension(0));
+  void TensorAxisGpuPrimitiveT<TensorT>::setLabels(const Eigen::Tensor<TensorT, 2>& labels) {
     Eigen::array<Eigen::Index, 2> labels_dims = labels.dimensions();
     this->tensor_dimension_labels_.reset(new TensorDataGpuPrimitiveT<TensorT, 2>(labels_dims));
     this->tensor_dimension_labels_->setData(labels);
-    this->tensor_dimension_names_ = dimensions;
-    this->setNDimensions(labels.dimension(0));
     this->setNLabels(labels.dimension(1));
-  };
-
+  }
+  template<typename TensorT>
+  inline void TensorAxisGpuPrimitiveT<TensorT>::setLabels()
+  {
+    Eigen::array<Eigen::Index, 2> labels_dims;
+    labels_dims.at(0) = this->n_dimensions_;
+    labels_dims.at(1) = this->n_labels_;
+    this->tensor_dimension_labels_.reset(new TensorDataGpuPrimitiveT<TensorT, 2>(labels_dims));
+    this->tensor_dimension_labels_->setData();
+  }
   template<typename TensorT>
   inline void TensorAxisGpuPrimitiveT<TensorT>::selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 2>>& labels_select, Eigen::GpuDevice & device)
   {
@@ -145,18 +149,43 @@ namespace TensorBase
     // move over the results
     indices_sort = std::make_shared<TensorDataGpuPrimitiveT<int, 2>>(indices_sort_tmp);
   }
+  template<typename TensorT>
+  inline bool TensorAxisGpuPrimitiveT<TensorT>::loadLabelsBinary(const std::string & filename, Eigen::GpuDevice & device)
+  {
+    // Read in the the labels
+    this->setDataStatus(true, false);
+    Eigen::Tensor<TensorT, 2> labels_data((int)this->n_dimensions_, (int)this->n_labels_);
+    DataFile::loadDataBinary<TensorT, 2>(filename + ".ta", labels_data);
+    this->getLabels() = labels_data;
+    this->syncHAndDData(device); // H to D
+    return true;
+  }
+  template<typename TensorT>
+  inline bool TensorAxisGpuPrimitiveT<TensorT>::storeLabelsBinary(const std::string & filename, Eigen::GpuDevice & device)
+  {
+    // Store the labels
+    this->syncHAndDData(device); // D to H
+    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+    DataFile::storeDataBinary<TensorT, 2>(filename + ".ta", this->getLabels());
+    this->setDataStatus(false, true);
+    return true;
+  }
 
   template<template<class> class ArrayT, class TensorT>
   class TensorAxisGpuClassT : public TensorAxis<ArrayT<TensorT>, Eigen::GpuDevice>
   {
   public:
     TensorAxisGpuClassT() = default;  ///< Default constructor
-    TensorAxisGpuClassT(const std::string& name, const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<ArrayT<TensorT>, 2>& labels);
+    TensorAxisGpuClassT(const std::string& name, const size_t& n_dimensions, const size_t& n_labels) : TensorAxis(name, n_dimensions, n_labels) { this->setLabels(); };
+    TensorAxisGpuClassT(const std::string& name, const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<ArrayT<TensorT>, 2>& labels) : TensorAxis(name) { this->setDimensionsAndLabels(dimensions, labels); };
     ~TensorAxisGpuClassT() = default; ///< Default destructor
-    void setDimensionsAndLabels(const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<ArrayT<TensorT>, 2>& labels) override;
+    void setLabels(const Eigen::Tensor<ArrayT<TensorT>, 2>& labels) override;
+    void setLabels() override;
     void selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, std::shared_ptr<TensorData<ArrayT<TensorT>, Eigen::GpuDevice, 2>>& labels_select, Eigen::GpuDevice& device) override;
     void appendLabelsToAxis(const std::shared_ptr<TensorData<ArrayT<TensorT>, Eigen::GpuDevice, 2>>& labels, Eigen::GpuDevice & device) override;
     void makeSortIndices(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>>& indices_sort, Eigen::GpuDevice& device) override;
+    bool loadLabelsBinary(const std::string& filename, Eigen::GpuDevice& device) override;
+    bool storeLabelsBinary(const std::string& filename, Eigen::GpuDevice& device) override;
   private:
     friend class cereal::access;
     template<class Archive>
@@ -165,21 +194,21 @@ namespace TensorBase
     }
   };
   template<template<class> class ArrayT, class TensorT>
-  TensorAxisGpuClassT<ArrayT, TensorT>::TensorAxisGpuClassT(const std::string& name, const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<ArrayT<TensorT>, 2>& labels) {
-    setName(name);
-    setDimensionsAndLabels(dimensions, labels);
-  }
-  template<template<class> class ArrayT, class TensorT>
-  void TensorAxisGpuClassT<ArrayT, TensorT>::setDimensionsAndLabels(const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<ArrayT<TensorT>, 2>& labels) {
-    assert(labels.dimension(0) == dimensions.dimension(0));
+  inline void TensorAxisGpuClassT<ArrayT, TensorT>::setLabels(const Eigen::Tensor<ArrayT<TensorT>, 2>& labels) {
     Eigen::array<Eigen::Index, 2> labels_dims = labels.dimensions();
     this->tensor_dimension_labels_.reset(new TensorDataGpuClassT<ArrayT, TensorT, 2>(labels_dims));
     this->tensor_dimension_labels_->setData(labels);
-    this->tensor_dimension_names_ = dimensions;
-    this->setNDimensions(labels.dimension(0));
     this->setNLabels(labels.dimension(1));
-  };
-
+  }
+  template<template<class> class ArrayT, class TensorT>
+  inline void TensorAxisGpuClassT<ArrayT, TensorT>::setLabels()
+  {
+    Eigen::array<Eigen::Index, 2> labels_dims;
+    labels_dims.at(0) = this->n_dimensions_;
+    labels_dims.at(1) = this->n_labels_;
+    this->tensor_dimension_labels_.reset(new TensorDataGpuClassT<ArrayT, TensorT, 2>(labels_dims));
+    this->tensor_dimension_labels_->setData();
+  }
   template<template<class> class ArrayT, class TensorT>
   inline void TensorAxisGpuClassT<ArrayT, TensorT>::selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, std::shared_ptr<TensorData<ArrayT<TensorT>, Eigen::GpuDevice, 2>>& labels_select, Eigen::GpuDevice & device)
   {
@@ -270,6 +299,27 @@ namespace TensorBase
 
     // move over the results
     indices_sort = std::make_shared<TensorDataGpuPrimitiveT<int, 2>>(indices_sort_tmp);
+  }
+  template<template<class> class ArrayT, class TensorT>
+  inline bool TensorAxisGpuClassT<ArrayT, TensorT>::loadLabelsBinary(const std::string & filename, Eigen::GpuDevice & device)
+  {
+    // Read in the the labels
+    this->setDataStatus(true, false);
+    Eigen::Tensor<ArrayT<TensorT>, 2> labels_data((int)this->n_dimensions_, (int)this->n_labels_);
+    DataFile::loadDataBinary<ArrayT<TensorT>, 2>(filename + ".ta", labels_data);
+    this->getLabels() = labels_data;
+    this->syncHAndDData(device); // H to D
+    return true;
+  }
+  template<template<class> class ArrayT, class TensorT>
+  inline bool TensorAxisGpuClassT<ArrayT, TensorT>::storeLabelsBinary(const std::string & filename, Eigen::GpuDevice & device)
+  {
+    // Store the labels
+    this->syncHAndDData(device); // D to H
+    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+    DataFile::storeDataBinary<ArrayT<TensorT>, 2>(filename + ".ta", this->getLabels());
+    this->setDataStatus(false, true);
+    return true;
   }
 };
 
