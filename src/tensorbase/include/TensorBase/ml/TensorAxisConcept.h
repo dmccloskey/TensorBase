@@ -96,6 +96,8 @@ namespace TensorBase
     // All DeviceT combos of `storeLabelsBinary`
     virtual bool storeLabelsBinary(const std::string& filename, DeviceT& device) = 0;
 
+    virtual std::vector<std::string> getLabelsAsStrings(DeviceT& device) = 0;
+
   private:
     friend class cereal::access;
     template<class Archive>
@@ -199,6 +201,10 @@ namespace TensorBase
 
     bool storeLabelsBinary(const std::string& filename, DeviceT& device) {
       return tensor_axis_->storeLabelsBinary(filename, device);
+    }
+
+    std::vector<std::string> getLabelsAsStrings(DeviceT& device) {
+      return tensor_axis_->getLabelsAsStrings(device);
     }
 
   private:

@@ -69,6 +69,16 @@ public:
       @returns Status True on success, False if not
     */
     bool storeTensorTableFromCsv(const std::string& filename, const std::string& table_name, TensorCollection<DeviceT>& tensor_collection, DeviceT& device);
+
+    /**
+      @brief Get the tensor table headers
+
+      @param table_name The name of tensor table
+      @param tensor_collection The Tensor collection to store
+
+      @returns a pair of string vectors for the non-primary and primary axis headers
+    */
+    static std::pair<std::vector<std::string>, std::vector<std::string>> getTensorTableHeaders(const std::string& table_name, TensorCollection<DeviceT>& tensor_collection, DeviceT& device);
   };
 
   template<typename DeviceT>
@@ -99,24 +109,11 @@ public:
   template<typename DeviceT>
   inline bool TensorCollectionFile<DeviceT>::loadTensorTableFromCsv(const std::string & filename, const std::string & table_name, TensorCollection<DeviceT>& tensor_collection, DeviceT & device)
   {
-    // Make the expected headers
-    std::vector<std::string> non_primary_headers, primary_headers;
-    for (const std::string& table_name : tensor_collection.user_table_names_to_tensor_table_names_.at(table_name) {
-      for (const auto& axes_map : tensor_collection.tables_.at(table_name)->getAxes()) {
-        // use the dimension names to create the non primary axis headers
-        if (tensor_collection.at(table_name)->getDimFromAxisName(axes_map.first) != 0) {
-          for (const std::string& dimension_name : axes_map.second->getDimensions()) {
-            non_primary_headers.push_back(dimension_name);
-          }
-        }
-        // use the axis labels to create the primary axis headers
-        else {
-          assert(axes_map.second->getDimensions().size() == 1);
-        }
-      }
-    }
-    // Axis 0: is split among multiple tables
-    // Axis >0: are the same
+    // Get the .csv headers
+    std::pair<std::vector<std::string>, std::vector<std::string>> headers = getTensorTableHeaders(table_name, tensor_collection, device);
+
+    // Get the .csv data
+
     return true;
   }
 
@@ -137,6 +134,34 @@ public:
       tensor_table_map.second->storeTensorTableBinary(tensor_table_map.second->getDir(), device);
     }
     return true;
+  }
+
+  template<typename DeviceT>
+  inline std::pair<std::vector<std::string>, std::vector<std::string>> TensorCollectionFile<DeviceT>::getTensorTableHeaders(const std::string & table_name, TensorCollection<DeviceT>& tensor_collection, DeviceT & device)
+  {
+    // Make the expected headers
+    std::vector<std::string> non_primary_headers, primary_headers;
+    bool is_first_table = true;
+    for (const std::string& table_name : tensor_collection.user_table_names_to_tensor_table_names_.at(table_name) {
+      for (const auto& axes_map : tensor_collection.tables_.at(table_name)->getAxes()) {
+        // use the dimension names to create the non primary axis headers
+        if (tensor_collection.at(table_name)->getDimFromAxisName(axes_map.first) != 0 && is_first_table) {
+          for (const std::string& dimension_name : axes_map.second->getDimensions()) {
+            non_primary_headers.push_back(dimension_name);
+          }
+        }
+        // use the axis labels to create the primary axis headers
+        else if (tensor_collection.at(table_name)->getDimFromAxisName(axes_map.first) == 0) {
+          assert(axes_map.second->getDimensions().size() == 1);
+            std::vector<std::string> labels = axes_map.second->getLabelsAsStrings(device);
+          for (const std::string& label : labels) {
+            primary_headers.push_back(label);
+          }
+        }
+      }
+      is_first_table = false;
+    }
+    return std::make_pair(non_primary_headers, primary_headers);
   }
 
   class TensorCollectionFileDefaultDevice : public TensorCollectionFile<Eigen::DefaultDevice> {};

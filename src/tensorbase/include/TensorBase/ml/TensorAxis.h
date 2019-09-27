@@ -207,7 +207,12 @@ namespace TensorBase
     std::vector<std::string> labels;
     for (int i = 0; i < n_dimensions_; i++) {
       for (int j = 0; j < n_labels_; j++) {
-        labels.push_back(std::to_string(getLabels()(i,j)));
+        if (std::is_same<TensorT, TensorArray8>::value) {
+
+        }
+        else {
+          labels.push_back(std::to_string(getLabels()(i, j)));
+        }
       }
     }
     //setDataStatus(false, true);
