@@ -29,7 +29,7 @@ public:
     ~TensorCollectionFile() = default; ///< Default destructor
  
     /**
-      @brief Load data from file
+      @brief Load the entire tensor collection metadata and tensor data from disk
 
       @param filename The name of the binary data file
       @param tensor_collection The Tensor collection to load
@@ -37,9 +37,20 @@ public:
       @returns Status True on success, False if not
     */ 
     bool loadTensorCollectionBinary(const std::string& filename, TensorCollection<DeviceT>& tensor_collection, DeviceT& device);
+
+    /**
+      @brief Load select tensor table tensor data from .csv file
+
+      @param filename The name of the binary data file
+      @param table_name The name of tensor table
+      @param tensor_collection The Tensor collection to load
+
+      @returns Status True on success, False if not
+    */
+    bool loadTensorTableFromCsv(const std::string& filename, const std::string& table_name, TensorCollection<DeviceT>& tensor_collection, DeviceT& device);
  
     /**
-      @brief Load data from file
+      @brief Store the entire tensor collection metadata and tensor data to disk
 
       @param filename The name of the data file
       @param data The data to load data into
@@ -47,6 +58,17 @@ public:
       @returns Status True on success, False if not
     */ 
     bool storeTensorCollectionBinary(const std::string& filename, const TensorCollection<DeviceT>& tensor_collection, DeviceT& device);
+
+    /**
+      @brief Store select tensor table tensor data as .csv file
+
+      @param filename The name of the binary data file
+      @param table_name The name of tensor table
+      @param tensor_collection The Tensor collection to store
+
+      @returns Status True on success, False if not
+    */
+    bool storeTensorTableFromCsv(const std::string& filename, const std::string& table_name, TensorCollection<DeviceT>& tensor_collection, DeviceT& device);
   };
 
   template<typename DeviceT>
@@ -71,6 +93,30 @@ public:
       tensor_table_map.second->loadTensorTableBinary(tensor_table_map.second->getDir(), device);
     }
 
+    return true;
+  }
+
+  template<typename DeviceT>
+  inline bool TensorCollectionFile<DeviceT>::loadTensorTableFromCsv(const std::string & filename, const std::string & table_name, TensorCollection<DeviceT>& tensor_collection, DeviceT & device)
+  {
+    // Make the expected headers
+    std::vector<std::string> non_primary_headers, primary_headers;
+    for (const std::string& table_name : tensor_collection.user_table_names_to_tensor_table_names_.at(table_name) {
+      for (const auto& axes_map : tensor_collection.tables_.at(table_name)->getAxes()) {
+        // use the dimension names to create the non primary axis headers
+        if (tensor_collection.at(table_name)->getDimFromAxisName(axes_map.first) != 0) {
+          for (const std::string& dimension_name : axes_map.second->getDimensions()) {
+            non_primary_headers.push_back(dimension_name);
+          }
+        }
+        // use the axis labels to create the primary axis headers
+        else {
+          assert(axes_map.second->getDimensions().size() == 1);
+        }
+      }
+    }
+    // Axis 0: is split among multiple tables
+    // Axis >0: are the same
     return true;
   }
 

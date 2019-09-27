@@ -399,6 +399,28 @@ BOOST_AUTO_TEST_CASE(storeAndLoadLabelsDefaultDevice)
   BOOST_CHECK_EQUAL(tensoraxis.getLabels()(2, 4), 1);
 }
 
+BOOST_AUTO_TEST_CASE(getLabelsAsStringsDefaultDevice)
+{
+  Eigen::Tensor<std::string, 1> dimensions(3);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  dimensions(2) = "TensorDimension3";
+  Eigen::Tensor<int, 2> labels(3, 5);
+  labels.setConstant(1);
+  TensorAxisDefaultDevice<int> tensoraxis("1", dimensions, labels);
+
+  // Test getLabelsAsString
+  Eigen::DefaultDevice device;
+  std::vector<std::string> labels_str = tensoraxis.getLabelsAsStrings(device);
+  int iter = 0;
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 5; j++) {
+      BOOST_CHECK_EQUAL(labels_str.at(iter), std::to_string(tensoraxis.getLabels()(i, j)));
+    }
+    ++iter;
+  }
+}
+
 /*TensorAxisCpu Tests*/
 BOOST_AUTO_TEST_CASE(constructorCpu)
 {

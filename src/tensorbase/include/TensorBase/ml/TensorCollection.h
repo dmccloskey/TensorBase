@@ -79,6 +79,7 @@ namespace TensorBase
     bool readShardsFromDisk();
 
     std::map<std::string, std::shared_ptr<TensorTableConcept<DeviceT>>> tables_; ///< map of Tensor tables
+    std::map<std::string, std::set<std::string>> user_table_names_to_tensor_table_names_; ///< map of user names to tensor names split based on type
 
   protected:
     int id_ = -1;

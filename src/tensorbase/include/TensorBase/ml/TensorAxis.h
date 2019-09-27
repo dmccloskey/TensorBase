@@ -69,6 +69,7 @@ namespace TensorBase
     virtual void setLabels(const Eigen::Tensor<TensorT, 2>& labels) = 0; ///< dimensions and labels setter
     virtual void setLabels() = 0; ///< labels setter
     Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> getLabels() { return tensor_dimension_labels_->getData(); };  ///< labels getter
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> getLabels() const { return tensor_dimension_labels_->getData(); };  ///< labels getter
     Eigen::TensorMap<Eigen::Tensor<std::string, 1>> getDimensions() { Eigen::TensorMap<Eigen::Tensor<std::string, 1>> data(tensor_dimension_names_.data(), (int)this->n_dimensions_); return data; } ///< dimensions getter
 
     bool syncHAndDData(DeviceT& device) { return tensor_dimension_labels_->syncHAndDData(device); };  ///< Sync the host and device labels data
@@ -136,6 +137,8 @@ namespace TensorBase
     */
     virtual bool storeLabelsBinary(const std::string& filename, DeviceT& device) = 0;
 
+    std::vector<std::string> getLabelsAsStrings(DeviceT& device) const; ///< return a string vector representation of the labels
+
   protected:
     void setNLabels(const size_t& n_labels) { n_labels_ = n_labels; }; ///< n_labels setter
     void setNDimensions(const size_t& n_dimenions) { n_dimensions_ = n_dimenions; }; ///< n_tensor_dimensions setter
@@ -192,6 +195,23 @@ namespace TensorBase
 
     // Apply the sort to the labels
     tensor_dimension_labels_->sort(indices_sort, device);
+  }
+
+  template<typename TensorT, typename DeviceT>
+  inline std::vector<std::string> TensorAxis<TensorT, DeviceT>::getLabelsAsStrings(DeviceT& device) const
+  {
+    // NOTE: the host and device should be syncronized for the primary axis
+    //       If this is not true, then this needs to be implemented for each device 
+    //       due to the need to synchronize the stream on the GPU
+    //syncHAndDData(device); // D to H
+    std::vector<std::string> labels;
+    for (int i = 0; i < n_dimensions_; i++) {
+      for (int j = 0; j < n_labels_; j++) {
+        labels.push_back(std::to_string(getLabels()(i,j)));
+      }
+    }
+    //setDataStatus(false, true);
+    return labels;
   }
 
   template<typename TensorT, typename DeviceT>
