@@ -244,7 +244,7 @@ BOOST_AUTO_TEST_CASE(getTensorTableHeadersDefaultDevice)
   labels1.setValues({ {2, 3} });
   tensorTable2.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
   tensorTable2.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
-  tensorTable1.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3)));
+  tensorTable2.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3)));
   tensorTable2.setAxes();
   std::shared_ptr<TensorTableDefaultDevice<int, 3>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<int, 3>>(tensorTable2);
 
