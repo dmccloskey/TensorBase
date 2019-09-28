@@ -269,6 +269,7 @@ namespace TensorBase
     void undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
   protected:
     std::string table_name_; // redo
+    std::string user_table_name_; // undo
     std::shared_ptr<TensorTableConcept<DeviceT>> table_; // undo
   };
   template<typename DeviceT>
@@ -276,13 +277,14 @@ namespace TensorBase
   {
     // Copy the table and then remove it from the collection
     table_ = tensor_collection->getTensorTableConcept(table_name_);
+    user_table_name_ = tensor_collection->getUserNameFromTableName(table_name_);
     tensor_collection->removeTensorTable(table_name_);
   }
   template<typename DeviceT>
   inline void TensorDropTable<DeviceT>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT & device)
   {
     // Restore the table to the collection
-    tensor_collection->addTensorTableConcept(table_);
+    tensor_collection->addTensorTableConcept(table_, user_table_name_);
   }
 };
 #endif //TENSORBASE_TENSOROPERATION_H

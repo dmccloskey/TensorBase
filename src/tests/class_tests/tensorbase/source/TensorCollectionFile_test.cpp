@@ -86,9 +86,9 @@ BOOST_AUTO_TEST_CASE(storeAndLoadBinaryDefaultDevice)
   tensorTable3_ptr->setData(tensor3_values);
 
   TensorCollectionDefaultDevice tensorCollection("1");
-  tensorCollection.addTensorTable(tensorTable1_ptr);
-  tensorCollection.addTensorTable(tensorTable2_ptr);
-  tensorCollection.addTensorTable(tensorTable3_ptr);
+  tensorCollection.addTensorTable(tensorTable1_ptr, "1");
+  tensorCollection.addTensorTable(tensorTable2_ptr, "1");
+  tensorCollection.addTensorTable(tensorTable3_ptr, "1");
 
   // Store the Tensor Collection
   Eigen::DefaultDevice device;
@@ -207,7 +207,6 @@ BOOST_AUTO_TEST_CASE(storeAndLoadBinaryDefaultDevice)
   }
 }
 
-
 BOOST_AUTO_TEST_CASE(getTensorTableHeadersDefaultDevice)
 {
   // Setup the tensor collection
@@ -217,7 +216,7 @@ BOOST_AUTO_TEST_CASE(getTensorTableHeadersDefaultDevice)
   dimensions3(0) = "z";
   int nlabels1 = 2, nlabels2 = 3, nlabels3 = 5;
   Eigen::Tensor<int, 2> labels1(1, nlabels1), labels2(1, nlabels2), labels3(1, nlabels3);
-  labels1.setConstant(1);
+  labels1.setValues({ {0, 1} });
   labels2.setConstant(2);
   labels3.setConstant(3);
 
@@ -241,7 +240,8 @@ BOOST_AUTO_TEST_CASE(getTensorTableHeadersDefaultDevice)
   tensorTable1_ptr->setData(tensor1_values);
 
   // Setup Table 2 axes
-  TensorTableDefaultDevice<int, 2> tensorTable2("2");
+  TensorTableDefaultDevice<int, 3> tensorTable2("2");
+  labels1.setValues({ {2, 3} });
   tensorTable2.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
   tensorTable2.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
   tensorTable1.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3)));
@@ -261,6 +261,7 @@ BOOST_AUTO_TEST_CASE(getTensorTableHeadersDefaultDevice)
 
   // Setup Table 3 axes
   TensorTableDefaultDevice<char, 3> tensorTable3("3");
+  labels1.setValues({ {4, 5} });
   tensorTable3.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
   tensorTable3.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
   tensorTable3.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3)));
@@ -273,12 +274,16 @@ BOOST_AUTO_TEST_CASE(getTensorTableHeadersDefaultDevice)
   tensorTable3_ptr->setData(tensor3_values);
 
   TensorCollectionDefaultDevice tensorCollection("1");
-  tensorCollection.addTensorTable(tensorTable1_ptr);
-  tensorCollection.addTensorTable(tensorTable2_ptr);
-  tensorCollection.addTensorTable(tensorTable3_ptr);
+  tensorCollection.addTensorTable(tensorTable1_ptr, "1");
+  tensorCollection.addTensorTable(tensorTable2_ptr, "1");
+  tensorCollection.addTensorTable(tensorTable3_ptr, "1");
 
-  // Store the Tensor Collection
+  // Make the output header names
   Eigen::DefaultDevice device;
   TensorCollectionFileDefaultDevice data;
+  std::pair<std::vector<std::string>, std::vector<std::string>> headers = data.getTensorTableHeaders("1", tensorCollection, device);
+  BOOST_CHECK(headers.first == std::vector<std::string>({ "y", "z" }));
+  BOOST_CHECK(headers.second == std::vector<std::string>({ "0", "1", "2", "3", "4", "5" }));
+}
 
 BOOST_AUTO_TEST_SUITE_END()

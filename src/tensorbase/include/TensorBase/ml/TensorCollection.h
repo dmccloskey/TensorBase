@@ -33,7 +33,8 @@ namespace TensorBase
       bool meta_equal = std::tie(id_, name_) == std::tie(other.id_, other.name_);
       auto compare_maps = [](auto lhs, auto rhs) {return *(lhs.second.get()) == *(rhs.second.get()); };
       bool tables_equal = std::equal(tables_.begin(), tables_.end(), other.tables_.begin(), compare_maps);
-      bool user_tables_equal = std::equal(user_table_names_to_tensor_table_names_.begin(), user_table_names_to_tensor_table_names_.end(), other.user_table_names_to_tensor_table_names_.begin(), compare_maps);
+      auto compare_sets = [](auto lhs, auto rhs) {return (lhs.first == rhs.first && lhs.second == rhs.second); };
+      bool user_tables_equal = std::equal(user_table_names_to_tensor_table_names_.begin(), user_table_names_to_tensor_table_names_.end(), other.user_table_names_to_tensor_table_names_.begin(), compare_sets);
       return meta_equal && tables_equal && user_tables_equal;
     }
 
@@ -70,6 +71,13 @@ namespace TensorBase
     @returns a set of strings with the table names
     */
     std::set<std::string> getTableNamesFromUserName(const std::string& user_table_name) const;
+
+    /*
+    @brief Find the user table name that corresponds to the table name
+
+    @returns The user table name
+    */
+    std::string getUserNameFromTableName(const std::string& table_name) const;
 
     /*
     @brief write modified table shards to disk
@@ -183,7 +191,29 @@ namespace TensorBase
   template<typename DeviceT>
   inline std::set<std::string> TensorCollection<DeviceT>::getTableNamesFromUserName(const std::string & user_table_name) const
   {
-    return user_table_names_to_tensor_table_names_.at(user_table_name);
+    try {
+      return user_table_names_to_tensor_table_names_.at(user_table_name);
+    }
+    catch (std::out_of_range& e) {
+      std::cout << "User table name " << user_table_name << " does not exist." << std::endl;
+      return std::set<std::string>();
+    }
+    catch (std::exception& e) {
+      std::cout << e.what() << std::endl;
+      return std::set<std::string>();
+    }
+  }
+
+  template<typename DeviceT>
+  inline std::string TensorCollection<DeviceT>::getUserNameFromTableName(const std::string & table_name) const
+  {
+    std::string user_table_name;
+    for (auto& user_table_names_map : user_table_names_to_tensor_table_names_) {
+      if (user_table_names_map.second.count(table_name) > 0) {
+        user_table_name = user_table_names_map.first;
+      }
+    }
+    return user_table_name;
   }
 
   class TensorCollectionDefaultDevice : public TensorCollection<Eigen::DefaultDevice>
