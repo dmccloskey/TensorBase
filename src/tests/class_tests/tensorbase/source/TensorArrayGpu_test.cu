@@ -110,13 +110,16 @@ void test_gettersAndSettersGpu()
   assert(tensorArrayString1.at(7) == '8');
 }
 
-void test_coutGpu()
+void test_getTensorArrayAsStringGpu()
 {
-  // Check same and equal length float
-  Eigen::Tensor<float, 1> same_equal_float_1(8);
-  same_equal_float_1.setValues({ 1,2,3,4,5,6,7,8 });
-  TensorArrayGpu8<float> tensorArrayFloat1(same_equal_float_1);
-  std::cout << "TEST COUT: " << tensorArrayFloat1 << std::endl;
+  TensorArrayGpu8<int> tensorArrayInt1({ 1,2,3,4,5,6,7,8 });
+  // Check << operator
+  std::ostringstream os;
+  os << tensorArrayInt1;
+  assert(std::string(os.str()) == "12345678");
+
+  // Check getter
+  assert(tensorArrayInt1.getTensorArrayAsString() == "12345678");
 }
 
 void test_comparisonGpu()
@@ -364,7 +367,7 @@ int main(int argc, char** argv)
   test_constructorGpu();
   test_destructorGpu();
   test_gettersAndSettersGpu();
-  test_coutGpu();
+  test_getTensorArrayAsStringGpu();
   test_comparisonGpu();
   test_tensorAssignmentGpu();
   test_tensorComparisonGpu();

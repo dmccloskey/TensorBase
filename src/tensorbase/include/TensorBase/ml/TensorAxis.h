@@ -137,6 +137,9 @@ namespace TensorBase
     */
     virtual bool storeLabelsBinary(const std::string& filename, DeviceT& device) = 0;
 
+    template<typename T = TensorT, std::enable_if_t<std::is_fundamental<T>::value, int> = 0>
+    std::vector<std::string> getLabelsAsStrings(DeviceT& device) const;
+    template<typename T = TensorT, std::enable_if_t<!std::is_fundamental<T>::value, int> = 0>
     std::vector<std::string> getLabelsAsStrings(DeviceT& device) const; ///< return a string vector representation of the labels
 
   protected:
@@ -198,6 +201,7 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT>
+  template<typename T, std::enable_if_t<!std::is_fundamental<T>::value, int> = 0>
   inline std::vector<std::string> TensorAxis<TensorT, DeviceT>::getLabelsAsStrings(DeviceT& device) const
   {
     // NOTE: the host and device should be syncronized for the primary axis
@@ -207,12 +211,25 @@ namespace TensorBase
     std::vector<std::string> labels;
     for (int i = 0; i < n_dimensions_; i++) {
       for (int j = 0; j < n_labels_; j++) {
-        if (std::is_same<TensorT, TensorArray8>::value) {
+        labels.push_back(getLabels()(i, j).getTensorArrayAsString());
+      }
+    }
+    //setDataStatus(false, true);
+    return labels;
+  }
 
-        }
-        else {
-          labels.push_back(std::to_string(getLabels()(i, j)));
-        }
+  template<typename TensorT, typename DeviceT>
+  template<typename T, std::enable_if_t<std::is_fundamental<T>::value, int> = 0>
+  inline std::vector<std::string> TensorAxis<TensorT, DeviceT>::getLabelsAsStrings(DeviceT& device) const
+  {
+    // NOTE: the host and device should be syncronized for the primary axis
+    //       If this is not true, then this needs to be implemented for each device 
+    //       due to the need to synchronize the stream on the GPU
+    //syncHAndDData(device); // D to H
+    std::vector<std::string> labels;
+    for (int i = 0; i < n_dimensions_; i++) {
+      for (int j = 0; j < n_labels_; j++) {
+        labels.push_back(std::to_string(getLabels()(i, j)));
       }
     }
     //setDataStatus(false, true);

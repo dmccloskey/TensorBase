@@ -419,6 +419,21 @@ BOOST_AUTO_TEST_CASE(getLabelsAsStringsDefaultDevice)
     }
     ++iter;
   }
+
+  // Use TensorArray8
+  Eigen::Tensor<TensorArray8<int>, 2> labels_array(3, 5);
+  labels_array.setConstant(TensorArray8<int>({1,2,3,4,5,6,7,8}));
+  //TensorAxisDefaultDevice<TensorArray8<int>> tensoraxis_array("1", dimensions, labels_array); // FIXME: causing a memory leak on deallocation
+
+  //// Test getLabelsAsString
+  //std::vector<std::string> labels_array_str = tensoraxis_array.getLabelsAsStrings(device);
+  //iter = 0;
+  //for (int i = 0; i < 3; i++) {
+  //  for (int j = 0; j < 5; j++) {
+  //    BOOST_CHECK_EQUAL(labels_array_str.at(iter), labels_array(i, j).getTensorArrayAsString());
+  //  }
+  //  ++iter;
+  //}
 }
 
 /*TensorAxisCpu Tests*/
