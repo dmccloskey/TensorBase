@@ -166,13 +166,16 @@ BOOST_AUTO_TEST_CASE(comparisonDefaultDevice)
   BOOST_CHECK(tensorArrayChar1 >= tensorArrayChar3);
 }
 
-BOOST_AUTO_TEST_CASE(coutDefaultDevice)
+BOOST_AUTO_TEST_CASE(getTensorArrayAsStringDefaultDevice)
 {
-  // Check same and equal length float
-  Eigen::Tensor<float, 1> same_equal_float_1(8);
-  same_equal_float_1.setValues({ 1,2,3,4,5,6,7,8 });
-  TensorArray8<float> tensorArrayFloat1(same_equal_float_1);
-  std::cout << "TEST COUT: " << tensorArrayFloat1 << std::endl;
+  TensorArray8<int> tensorArrayInt1({ 1,2,3,4,5,6,7,8 });
+  // Check << operator
+  std::ostringstream os;
+  os << tensorArrayInt1;
+  BOOST_CHECK_EQUAL(std::string(os.str()), "12345678");
+
+  // Check getter
+  BOOST_CHECK_EQUAL(tensorArrayInt1.getTensorArrayAsString(), "12345678");
 }
 
 BOOST_AUTO_TEST_CASE(selectDefaultDevice)

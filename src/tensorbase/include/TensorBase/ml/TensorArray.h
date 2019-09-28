@@ -4,6 +4,8 @@
 #define TENSORBASE_TENSORARRAY_H
 
 #include <TensorBase/ml/TensorData.h>
+#include <iostream> // `getTensorArrayAsString`
+#include <sstream> // `getTensorArrayAsString`
 
 #include <cereal/access.hpp>  // serialiation of private members
 #undef min // clashes with std::limit on windows in polymorphic.hpp
@@ -36,6 +38,7 @@ namespace TensorBase
     virtual void setTensorArray(const std::initializer_list<TensorT>& tensor_array) = 0; ///< tensor_array setter
     virtual void setTensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array) = 0; ///< tensor_array setter
     virtual Eigen::Tensor<TensorT, 1> getTensorArray() = 0; ///< tensor_array getter
+    virtual std::string getTensorArrayAsString() = 0; ///< tensor_array getter as a string
     virtual TensorT at(const int& i) const = 0; /// tensor_array accessor
 
   protected:
@@ -156,6 +159,7 @@ namespace TensorBase
     void setTensorArray(const std::initializer_list<TensorT>& tensor_array) override;
     void setTensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array) override;
     Eigen::Tensor<TensorT, 1> getTensorArray() override;
+    std::string getTensorArrayAsString() override;
     TensorT at(const int& i) const override;
 
     /// Inline << operator overload
@@ -328,6 +332,22 @@ namespace TensorBase
     tensor_array(6) = this->item_6_;
     tensor_array(7) = this->item_7_;
     return tensor_array;
+  }
+
+  template<typename TensorT>
+  inline std::string TensorArray8<TensorT>::getTensorArrayAsString()
+  {
+    std::ostringstream os;
+    os << *this;
+    //os << this->item_0_;
+    //os << this->item_1_;
+    //os << this->item_2_;
+    //os << this->item_3_;
+    //os << this->item_4_;
+    //os << this->item_5_;
+    //os << this->item_6_;
+    //os << this->item_7_;
+    return std::string(os.str());
   }
 
   template<typename TensorT>
