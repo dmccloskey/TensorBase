@@ -217,8 +217,8 @@ BOOST_AUTO_TEST_CASE(getTensorTableHeadersDefaultDevice)
   int nlabels1 = 2, nlabels2 = 3, nlabels3 = 5;
   Eigen::Tensor<int, 2> labels1(1, nlabels1), labels2(1, nlabels2), labels3(1, nlabels3);
   labels1.setValues({ {0, 1} });
-  labels2.setConstant(2);
-  labels3.setConstant(3);
+  labels2.setValues({ {0, 1, 2} });
+  labels3.setValues({ {0, 1, 2, 3, 4} });
 
   // Setup Table 1 axes
   TensorTableDefaultDevice<float, 3> tensorTable1("1");
@@ -290,6 +290,10 @@ BOOST_AUTO_TEST_CASE(getTensorTableHeadersDefaultDevice)
 
   // Test writing to disk
   data.storeTensorTableAsCsv("Table1.csv", "1", tensorCollection, device);
+
+  // Test reading from disk
+  TensorCollectionDefaultDevice tensorCollection_test("1");
+  BOOST_CHECK(tensorCollection_test == tensorCollection); // is the data and labels checked here???
 }
 
 BOOST_AUTO_TEST_SUITE_END()

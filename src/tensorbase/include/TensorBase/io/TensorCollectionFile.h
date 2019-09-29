@@ -113,49 +113,44 @@ public:
   inline bool TensorCollectionFile<DeviceT>::loadTensorTableFromCsv(const std::string & filename, const std::string & user_table_name, TensorCollection<DeviceT>& tensor_collection, DeviceT & device)
   {
     // Get the .csv headers
-    std::pair<std::map<std::string, std::vector<std::string>>, std::vector<std::string>> headers = getTensorTableHeaders(user_table_name, tensor_collection, device);
-
-    // Parse the headers
-    std::vector<std::string> header_line; //...
-    std::vector<std::string> primary_axes_labels;
-    for (const std::string& header : headers.first) {
-      auto header_line_iter = std::find(header_line.begin(), header_line.end(), header);
-      if (header_line_iter != header_line.end()) {
-        primary_axes_labels.push_back(*header_line_iter);
-      }
-    }
+    std::pair<std::map<std::string, std::vector<std::string>>, std::map<std::string, std::vector<std::string>>> headers = getTensorTableHeaders(user_table_name, tensor_collection, device);
 
     // Calculate the shard size for the non-primary axes
-    int n_cols_shard = 1;
+    int n_shard_size = 1;
     
-    // iterate through the file and insert shard by shard    
+    // iterate through the file and insert shard by shard   
+    const std::string first_table_name = *(tensor_collection.user_table_names_to_tensor_table_names_.at(user_table_name).begin());
     int n_cols = 0;
-    Eigen::Tensor<TensorT, 2> shard_data();
-    for (int i = 0; i < n_cols_shard; ++i) { // ... iterate over each row instead of each n_cols_shard
-      // Check that the end of the file has not been reached
+    //... data structures for calls to insertIntoAxis
+    for (int i = 0; i < n_shard_size; ++i) { // ... for (CSVRow& row: reader)
+      for (const std::string& table_name : tensor_collection.user_table_names_to_tensor_table_names_.at(user_table_name)) {
+        // Get the .csv data for each axis row
+        if (table_name == first_table_name) {
 
-      // Get the .csv data
-      std::map<std::string, std::vector<std::string>> axes_labels_row;
-      std::vector<std::string> data_row;
-      std::vector<std::string> row_line; //...
-
-      // Populate the non-primary axes labels
-      for (const auto& non_primary_data : headers.second) {
-        for (const std::string& header : non_primary_data.second) {
+          // Get the .csv data for the non-primary axes labels
+          for (const auto& non_primary_data : headers.first) {
+            for (const std::string& header : non_primary_data.second) {
+              //...
+            }
+          }
           //...
         }
-      }
-      //...
 
-      // Populate the data row
-      for (const std::string& header : headers.first) {
+        // Get the .csv data for the data row
+        for (const auto& primary_data : headers.second) {
+          for (const std::string& header : primary_data.second) {
+            //...
+          }
+        }
         //...
       }
-      //...
 
       // update the shard iterator
       ++n_cols;
-      if (n_cols == n_cols_shard) n_cols = 0;
+      if (n_cols == n_shard_size) {
+        // ...insertIntoAxisConcept(const std::string & axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<T>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device)
+        n_cols = 0;
+      }
     }
 
     return true;
