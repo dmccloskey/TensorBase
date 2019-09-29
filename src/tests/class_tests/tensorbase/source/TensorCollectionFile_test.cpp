@@ -281,8 +281,9 @@ BOOST_AUTO_TEST_CASE(getTensorTableHeadersDefaultDevice)
   // Make the output header names
   Eigen::DefaultDevice device;
   TensorCollectionFileDefaultDevice data;
-  std::pair<std::vector<std::string>, std::vector<std::string>> headers = data.getTensorTableHeaders("1", tensorCollection, device);
-  BOOST_CHECK(headers.first == std::vector<std::string>({ "y", "z" }));
+  std::pair<std::map<std::string, std::vector<std::string>>, std::vector<std::string>> headers = data.getTensorTableHeaders("1", tensorCollection, device);
+  BOOST_CHECK(headers.first.at("2") == std::vector<std::string>({ "y" }));
+  BOOST_CHECK(headers.first.at("3") == std::vector<std::string>({ "z" }));
   BOOST_CHECK(headers.second == std::vector<std::string>({ "0", "1", "2", "3", "4", "5" }));
 }
 
