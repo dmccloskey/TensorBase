@@ -78,6 +78,9 @@ namespace TensorBase
 
     template<typename T>
     void getLabelsDataPointer(std::shared_ptr<T>& data_copy); ///< TensorAxisConcept labels getter
+
+    template<typename T>
+    void getLabelsHDataPointer(std::shared_ptr<T>& data_copy); ///< TensorAxisConcept labels getter
     
     /*
     @brief Delete from axis based on a selection index
@@ -141,6 +144,10 @@ namespace TensorBase
     std::vector<std::string> getLabelsAsStrings(DeviceT& device) const;
     template<typename T = TensorT, std::enable_if_t<!std::is_fundamental<T>::value, int> = 0>
     std::vector<std::string> getLabelsAsStrings(DeviceT& device) const; ///< return a string vector representation of the labels
+    template<typename T = TensorT, std::enable_if_t<std::is_fundamental<T>::value, int> = 0>
+    std::vector<std::string> getLabelsAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span) const;
+    template<typename T = TensorT, std::enable_if_t<!std::is_fundamental<T>::value, int> = 0>
+    std::vector<std::string> getLabelsAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span) const;
 
   protected:
     void setNLabels(const size_t& n_labels) { n_labels_ = n_labels; }; ///< n_labels setter
@@ -237,6 +244,26 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT>
+  template<typename T, std::enable_if_t<!std::is_fundamental<T>::value, int> = 0>
+  inline std::vector<std::string> TensorAxis<TensorT, DeviceT>::getLabelsAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span) const
+  {
+    auto labels_row_t = getLabels().slice(offset, span);
+    Eigen::Tensor<std::string, 2> row = labels_row_t.unaryExpr([](TensorT& elem) { return elem.getTensorArrayAsString(); });
+    std::vector<std::string> labels(row.data(), row.data() + row.size());
+    return labels;
+  }
+
+  template<typename TensorT, typename DeviceT>
+  template<typename T, std::enable_if_t<std::is_fundamental<T>::value, int> = 0>
+  inline std::vector<std::string> TensorAxis<TensorT, DeviceT>::getLabelsAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span) const
+  {
+    auto labels_row_t = getLabels().slice(offset, span);
+    Eigen::Tensor<std::string, 2> row = labels_row_t.unaryExpr([](const TensorT& elem) { return std::to_string(elem); });
+    std::vector<std::string> labels(row.data(), row.data() + row.size());
+    return labels;
+  }
+
+  template<typename TensorT, typename DeviceT>
   template<typename T>
   void TensorAxis<TensorT, DeviceT>::getLabelsDataPointer(std::shared_ptr<T>& data_copy) {
     if (std::is_same<T, TensorT>::value)
@@ -245,8 +272,14 @@ namespace TensorBase
 
   template<typename TensorT, typename DeviceT>
   template<typename T>
-  inline void TensorAxis<TensorT, DeviceT>::appendLabelsToAxisConcept(const std::shared_ptr<TensorData<T, DeviceT, 2>>& labels, DeviceT & device)
-  {
+  inline void TensorAxis<TensorT, DeviceT>::getLabelsHDataPointer(std::shared_ptr<T>& data_copy) {
+    if (std::is_same<T, TensorT>::value)
+      data_copy = std::reinterpret_pointer_cast<T>(tensor_dimension_labels_->getHDataPointer()); // required for compilation: no conversion should be done
+  }
+
+  template<typename TensorT, typename DeviceT>
+  template<typename T>
+  inline void TensorAxis<TensorT, DeviceT>::appendLabelsToAxisConcept(const std::shared_ptr<TensorData<T, DeviceT, 2>>& labels, DeviceT & device) {
     if (std::is_same<T, TensorT>::value) {
       auto labels_copy = std::reinterpret_pointer_cast<TensorData<TensorT, DeviceT, 2>>(labels);
       appendLabelsToAxis(labels_copy, device);

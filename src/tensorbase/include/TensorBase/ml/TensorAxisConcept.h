@@ -97,6 +97,7 @@ namespace TensorBase
     virtual bool storeLabelsBinary(const std::string& filename, DeviceT& device) = 0;
 
     virtual std::vector<std::string> getLabelsAsStrings(DeviceT& device) = 0;
+    virtual std::vector<std::string> getLabelsAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span) = 0;
 
   private:
     friend class cereal::access;
@@ -205,6 +206,9 @@ namespace TensorBase
 
     std::vector<std::string> getLabelsAsStrings(DeviceT& device) {
       return tensor_axis_->getLabelsAsStrings(device);
+    }
+    std::vector<std::string> getLabelsAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span) {
+      return tensor_axis_->getLabelsAsStrings(offset, span);
     }
 
   private:

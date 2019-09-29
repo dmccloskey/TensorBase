@@ -696,7 +696,6 @@ namespace TensorBase
         row after reshaping the data to 2D
 
       NOTE: all operations are done on the CPU!
-      TODO: add a sub method that is device specific to sync the H and D data
       TODO: add a template specialization for primitive and tensorArray types
       TODO: add another template for a different DeviceT for use with multi-threading
 
@@ -711,15 +710,14 @@ namespace TensorBase
         at a specified row after reshaping the data to 2D
 
       NOTE: all operations are done on the CPU!
-      TODO: add a sub method that is device specific to sync the H and D data
       TODO: add a template specialization for primitive and tensorArray types
       TODO: add another template for a different DeviceT for use with multi-threading
 
       @param[in] row_num The row number to fetch
 
-      @returns String vector of data
+      @returns A map of string vector of data corresonding to each axis
     */
-    std::vector<std::string> getCsvAxesLabelsRow(const int& row_num);
+    std::map<std::string, std::vector<std::string>> getCsvAxesLabelsRow(const int& row_num);
 
     // NOTE: IO methods for TensorTable indices components may not be needed because the call to setAxes remakes all of the indices on the fly
     //virtual bool storeTensorTableIndicesBinary(const std::string& dir, DeviceT& device) = 0; ///< Write tensor indices to disk
@@ -2033,7 +2031,7 @@ namespace TensorBase
   {
     // Make the slice indices
     Eigen::array<Eigen::Index, 2> offset = {0, row_num};
-    Eigen::array<Eigen::Index, 2> span = { getDimensions().at(0), 1 };;
+    Eigen::array<Eigen::Index, 2> span = { getDimensions().at(0), 1 };
 
     // Make the reshape dimansions
     Eigen::array<Eigen::Index, 2> reshape_dims = {1,1};
@@ -2047,9 +2045,8 @@ namespace TensorBase
     }
 
     // Make the slice
-    // TODO: Move to device specific code to sync the D and H data!
-    // TODO: add in specialized templates for TensorArray types!
     auto row_t = getData().reshape(reshape_dims).slice(offset, span);
+    // TODO: add in specialized templates for TensorArray types!
     Eigen::Tensor<std::string, 2> row = row_t.unaryExpr([](const TensorT& elem) { return std::to_string(elem); });
 
     // Convert element to a string
@@ -2057,9 +2054,32 @@ namespace TensorBase
     return row_vec;
   }
   template<typename TensorT, typename DeviceT, int TDim>
-  inline std::vector<std::string> TensorTable<TensorT, DeviceT, TDim>::getCsvAxesLabelsRow(const int & row_num)
+  inline std::map<std::string, std::vector<std::string>> TensorTable<TensorT, DeviceT, TDim>::getCsvAxesLabelsRow(const int & row_num)
   {
-    return std::vector<std::string>();
+    std::map<std::string, std::vector<std::string>> axes_labels_row;
+
+    // get each labels for the particular row
+    int axis_0_size = this->axes_.at(this->axes_to_dims_.begin()->first)->getNLabels();
+    int axis_size_cum = axis_0_size;
+    for (const auto& axis_to_dim : this->axes_to_dims_) {
+      if (axis_to_dim.first != this->axes_to_dims_.begin()->first) {
+        // calculate the index corresponding to the 2D row number
+        int index = int(floor(float(row_num * axis_0_size) / float(axis_size_cum))) % this->axes_.at(axis_to_dim.first)->getNLabels();
+
+        // Make the slice indices
+        Eigen::array<Eigen::Index, 2> offset = { 0, index };
+        Eigen::array<Eigen::Index, 2> span = { this->axes_.at(axis_to_dim.first)->getNDimensions(), 1 };
+
+        // Slice out the labels row
+        std::vector<std::string> row_vec = this->axes_.at(axis_to_dim.first)->getLabelsAsStrings(offset, span);
+        axes_labels_row.emplace(axis_to_dim.first, row_vec);
+
+        // update the accumulative size
+        axis_size_cum *= this->axes_.at(axis_to_dim.first)->getNLabels();
+      }
+    }
+
+    return axes_labels_row;
   }
 };
 #endif //TENSORBASE_TENSORTABLE_H

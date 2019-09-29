@@ -3308,16 +3308,22 @@ BOOST_AUTO_TEST_CASE(getCsvDataRowDefaultDevice)
 
   // setup the tensor data
   Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
-  std::vector<std::string> row_0_test, row_1_test, row_2_test;
+  std::vector<std::string> row_0_test, row_1_test, row_4_test;
   int row_iter = 0;
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {
       for (int i = 0; i < nlabels; ++i) {
         float value = i + j * nlabels + k * nlabels*nlabels;
         tensor_values(i, j, k) = value;
-        if (row_iter == 0) row_0_test.push_back(std::to_string(value));
-        else if (row_iter == 1) row_1_test.push_back(std::to_string(value));
-        else if (row_iter == 2) row_2_test.push_back(std::to_string(value));
+        if (row_iter == 0) {
+          row_0_test.push_back(std::to_string(value));
+        }
+        else if (row_iter == 1) {
+          row_1_test.push_back(std::to_string(value));
+        }
+        else if (row_iter == 4) {
+          row_4_test.push_back(std::to_string(value));
+        }
       }
       ++row_iter;
     }
@@ -3327,17 +3333,36 @@ BOOST_AUTO_TEST_CASE(getCsvDataRowDefaultDevice)
   // Test getCsvDataRow
   std::vector<std::string> row_0 = tensorTable.getCsvDataRow(0);
   std::vector<std::string> row_1 = tensorTable.getCsvDataRow(1);
-  std::vector<std::string> row_2 = tensorTable.getCsvDataRow(2);
+  std::vector<std::string> row_4 = tensorTable.getCsvDataRow(4);
   BOOST_CHECK_EQUAL(row_0.size(), nlabels);
   BOOST_CHECK_EQUAL(row_1.size(), nlabels);
-  BOOST_CHECK_EQUAL(row_2.size(), nlabels);
+  BOOST_CHECK_EQUAL(row_4.size(), nlabels);
   for (int i = 0; i < nlabels; ++i) {
     BOOST_CHECK_EQUAL(row_0.at(i), row_0_test.at(i));
     BOOST_CHECK_EQUAL(row_1.at(i), row_1_test.at(i));
-    BOOST_CHECK_EQUAL(row_2.at(i), row_2_test.at(i));
+    BOOST_CHECK_EQUAL(row_4.at(i), row_4_test.at(i));
   }
 
+  // Make the expected labels row values
+  std::map<std::string, std::vector<std::string>> labels_row_0_test = { {"2", {"0"}}, {"3", {"0"}} };
+  std::map<std::string, std::vector<std::string>> labels_row_1_test = { {"2", {"1"}}, {"3", {"0"}} };
+  std::map<std::string, std::vector<std::string>> labels_row_4_test = { {"2", {"1"}}, {"3", {"1"}} };
+
   // Test getCsvAxesLabelsRow
+  std::map<std::string, std::vector<std::string>> labels_row_0 = tensorTable.getCsvAxesLabelsRow(0);
+  std::map<std::string, std::vector<std::string>> labels_row_1 = tensorTable.getCsvAxesLabelsRow(1);
+  std::map<std::string, std::vector<std::string>> labels_row_4 = tensorTable.getCsvAxesLabelsRow(4);
+  BOOST_CHECK_EQUAL(labels_row_0.size(), 2);
+  BOOST_CHECK_EQUAL(labels_row_1.size(), 2);
+  BOOST_CHECK_EQUAL(labels_row_4.size(), 2);
+  for (int i = 2; i < 4; ++i) {
+    std::string axis_name = std::to_string(i);
+    for (int j = 0; j < 1; ++j) {
+      BOOST_CHECK_EQUAL(labels_row_0.at(axis_name).at(j), labels_row_0_test.at(axis_name).at(j));
+      BOOST_CHECK_EQUAL(labels_row_1.at(axis_name).at(j), labels_row_1_test.at(axis_name).at(j));
+      BOOST_CHECK_EQUAL(labels_row_4.at(axis_name).at(j), labels_row_4_test.at(axis_name).at(j));
+    }
+  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()

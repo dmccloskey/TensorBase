@@ -138,7 +138,8 @@ namespace TensorBase
     virtual void setData() = 0; ///< data setter
 
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> getData() { std::shared_ptr<TensorT> h_data = h_data_;  Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data(h_data.get(), this->getDimensions()); return data; } ///< data copy getter
-    virtual std::shared_ptr<TensorT> getDataPointer() = 0; ///< data pointer getter
+    virtual std::shared_ptr<TensorT> getHDataPointer() = 0; ///< host data pointer getter
+    virtual std::shared_ptr<TensorT> getDataPointer() = 0; ///< device data pointer getter
     
     virtual bool syncHAndDData(DeviceT& device) = 0;  ///< Sync the host and device data
     void setDataStatus(const bool& h_data_updated, const bool& d_data_updated) { h_data_updated_ = h_data_updated; d_data_updated_ = d_data_updated; } ///< Set the status of the host and device data
@@ -202,6 +203,7 @@ namespace TensorBase
     void sort(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices, Eigen::DefaultDevice& device) override;
     void partition(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices, Eigen::DefaultDevice& device) override;
     void runLengthEncode(std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& n_runs, Eigen::DefaultDevice& device) override;
+    std::shared_ptr<TensorT> getHDataPointer() override { return h_data_; }
     std::shared_ptr<TensorT> getDataPointer() override { return h_data_; }
     void setData(const Eigen::Tensor<TensorT, TDim>& data) override; ///< data setter
     void setData() override;
@@ -396,6 +398,7 @@ namespace TensorBase
     void sort(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices, Eigen::ThreadPoolDevice& device) override;
     void partition(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices, Eigen::ThreadPoolDevice& device) override;
     void runLengthEncode(std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& n_runs, Eigen::ThreadPoolDevice& device) override;
+    std::shared_ptr<TensorT> getHDataPointer() override { return h_data_; }
     std::shared_ptr<TensorT> getDataPointer() override  { return h_data_; }
     void setData(const Eigen::Tensor<TensorT, TDim>& data) override; ///< data setter
     void setData() override;
