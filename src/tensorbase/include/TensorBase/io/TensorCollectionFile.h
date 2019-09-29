@@ -205,13 +205,14 @@ public:
     }
 
     for (int i = 0; i < n_cols; ++i) {
+      // TODO need to iterate over each table that maps to the user table!
       // Get the .csv data
       std::vector<std::string> row_data = getCsvDataRow(i);
       std::map<std::string, std::vector<std::string>> axes_row_data = getCsvAxesLabelsRow(i);
 
       // Write the data row
       std::vector<std::string> row_line;
-      for (const auto& non_primary_data : axes_row_data) {
+      for (const auto& non_primary_data : axes_row_data) { // TODO do this only for the first table!
         for (const std::string& data : non_primary_data) {
           row_line.push_back(data);
         }
