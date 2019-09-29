@@ -112,7 +112,12 @@ public:
     // Get the .csv headers
     std::pair<std::vector<std::string>, std::vector<std::string>> headers = getTensorTableHeaders(user_table_name, tensor_collection, device);
 
-    // Get the .csv data
+    // Calculate the number of columns of the .csv file
+    int n_cols = 1;
+
+    for (int i = 0; i < n_cols; ++i) {
+      // Get the .csv data
+    }
 
     return true;
   }
@@ -133,6 +138,22 @@ public:
       tensor_table_map.second->storeTensorTableAxesBinary(tensor_table_map.second->getDir(), device);
       tensor_table_map.second->storeTensorTableBinary(tensor_table_map.second->getDir(), device);
     }
+    return true;
+  }
+
+  template<typename DeviceT>
+  inline bool TensorCollectionFile<DeviceT>::storeTensorTableFromCsv(const std::string & filename, const std::string & user_table_name, TensorCollection<DeviceT>& tensor_collection, DeviceT & device)
+  {
+    // Get the .csv headers
+    std::pair<std::vector<std::string>, std::vector<std::string>> headers = getTensorTableHeaders(user_table_name, tensor_collection, device);
+
+    // Calculate the number of columns of the .csv file
+    int n_cols = 1;
+
+    for (int i = 0; i < n_cols; ++i) {
+      // Get the .csv data
+    }
+
     return true;
   }
 

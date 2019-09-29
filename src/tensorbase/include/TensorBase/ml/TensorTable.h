@@ -691,6 +691,36 @@ namespace TensorBase
     */
     bool loadTensorTableAxesBinary(const std::string& dir, DeviceT& device);
 
+    /**
+      @brief Get a string vector representation of the data at a specified
+        row after reshaping the data to 2D
+
+      NOTE: all operations are done on the CPU!
+      TODO: add a sub method that is device specific to sync the H and D data
+      TODO: add a template specialization for primitive and tensorArray types
+      TODO: add another template for a different DeviceT for use with multi-threading
+
+      @param[in] row_num The row number to fetch
+
+      @returns String vector of data
+    */
+    std::vector<std::string> getCsvDataRow(const int& row_num);
+
+    /**
+      @brief Get a string vector representation of the non-primary axis labels
+        at a specified row after reshaping the data to 2D
+
+      NOTE: all operations are done on the CPU!
+      TODO: add a sub method that is device specific to sync the H and D data
+      TODO: add a template specialization for primitive and tensorArray types
+      TODO: add another template for a different DeviceT for use with multi-threading
+
+      @param[in] row_num The row number to fetch
+
+      @returns String vector of data
+    */
+    std::vector<std::string> getCsvAxesLabelsRow(const int& row_num);
+
     // NOTE: IO methods for TensorTable indices components may not be needed because the call to setAxes remakes all of the indices on the fly
     //virtual bool storeTensorTableIndicesBinary(const std::string& dir, DeviceT& device) = 0; ///< Write tensor indices to disk
     //virtual bool loadTensorTableIndicesBinary(const std::string& dir, DeviceT& device) = 0; ///< Read tensor indices from disk
@@ -1997,6 +2027,39 @@ namespace TensorBase
       axis_map.second->loadLabelsBinary(filename, device);
     }
     return true;
+  }
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline std::vector<std::string> TensorTable<TensorT, DeviceT, TDim>::getCsvDataRow(const int & row_num)
+  {
+    // Make the slice indices
+    Eigen::array<Eigen::Index, 2> offset = {0, row_num};
+    Eigen::array<Eigen::Index, 2> span = { getDimensions().at(0), 1 };;
+
+    // Make the reshape dimansions
+    Eigen::array<Eigen::Index, 2> reshape_dims = {1,1};
+    for (int i = 0; i < TDim; ++i) {
+      if (i == 0) {
+        reshape_dims.at(0) = getDimensions().at(i);
+      }
+      else {
+        reshape_dims.at(1) *= getDimensions().at(i);
+      }
+    }
+
+    // Make the slice
+    // TODO: Move to device specific code to sync the D and H data!
+    // TODO: add in specialized templates for TensorArray types!
+    auto row_t = getData().reshape(reshape_dims).slice(offset, span);
+    Eigen::Tensor<std::string, 2> row = row_t.unaryExpr([](const TensorT& elem) { return std::to_string(elem); });
+
+    // Convert element to a string
+    std::vector<std::string> row_vec(row.data(), row.data() + row.size());
+    return row_vec;
+  }
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline std::vector<std::string> TensorTable<TensorT, DeviceT, TDim>::getCsvAxesLabelsRow(const int & row_num)
+  {
+    return std::vector<std::string>();
   }
 };
 #endif //TENSORBASE_TENSORTABLE_H
