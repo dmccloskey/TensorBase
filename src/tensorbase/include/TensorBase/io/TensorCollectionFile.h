@@ -122,13 +122,18 @@ public:
       }
     }
 
-    // Calculate the number of columns of the .csv file
-    int n_cols = 1;
+    // Calculate the shard size for the non-primary axes
+    int n_cols_shard = 1;
+    
+    // iterate through the file and insert shard by shard    
+    int n_cols = 0;
+    Eigen::Tensor<TensorT, 2> shard_data();
+    for (int i = 0; i < n_cols_shard; ++i) { // ... iterate over each row instead of each n_cols_shard
+      // Check that the end of the file has not been reached
 
-    for (int i = 0; i < n_cols; ++i) {
+      // Get the .csv data
       std::map<std::string, std::vector<std::string>> axes_labels_row;
       std::vector<std::string> data_row;
-      // Get the .csv data
       std::vector<std::string> row_line; //...
 
       // Populate the non-primary axes labels
@@ -144,6 +149,10 @@ public:
         //...
       }
       //...
+
+      // update the shard iterator
+      ++n_cols;
+      if (n_cols == n_cols_shard) n_cols = 0;
     }
 
     return true;
@@ -188,7 +197,7 @@ public:
 
     // Calculate the number of columns of the .csv file
     int n_cols = 1;
-    const std::string& table_name : tensor_collection.user_table_names_to_tensor_table_names_.at(user_table_name);
+    const std::string table_name = *(tensor_collection.user_table_names_to_tensor_table_names_.at(user_table_name).begin());
     for (int i = 0; i < tensor_collection.tables_.at(table_name)->getDimensions().size(); ++i) {
       if (i != 0) {
         n_cols *= tensor_collection.tables_.at(table_name)->getDimensions().at(i);
