@@ -68,7 +68,7 @@ public:
 
       @returns Status True on success, False if not
     */
-    bool storeTensorTableFromCsv(const std::string& filename, const std::string& user_table_name, TensorCollection<DeviceT>& tensor_collection, DeviceT& device);
+    bool storeTensorTableAsCsv(const std::string& filename, const std::string& user_table_name, TensorCollection<DeviceT>& tensor_collection, DeviceT& device);
 
     /**
       @brief Get the tensor table headers
@@ -112,11 +112,38 @@ public:
     // Get the .csv headers
     std::pair<std::map<std::string, std::vector<std::string>>, std::vector<std::string>> headers = getTensorTableHeaders(user_table_name, tensor_collection, device);
 
+    // Parse the headers
+    std::vector<std::string> header_line; //...
+    std::vector<std::string> primary_axes_labels;
+    for (const std::string& header : headers.first) {
+      auto header_line_iter = std::find(header_line.begin(), header_line.end(), header);
+      if (header_line_iter != header_line.end()) {
+        primary_axes_labels.push_back(*header_line_iter);
+      }
+    }
+
     // Calculate the number of columns of the .csv file
     int n_cols = 1;
 
     for (int i = 0; i < n_cols; ++i) {
+      std::map<std::string, std::vector<std::string>> axes_labels_row;
+      std::vector<std::string> data_row;
       // Get the .csv data
+      std::vector<std::string> row_line; //...
+
+      // Populate the non-primary axes labels
+      for (const auto& non_primary_data : headers.second) {
+        for (const std::string& header : non_primary_data.second) {
+          //...
+        }
+      }
+      //...
+
+      // Populate the data row
+      for (const std::string& header : headers.first) {
+        //...
+      }
+      //...
     }
 
     return true;
@@ -142,16 +169,48 @@ public:
   }
 
   template<typename DeviceT>
-  inline bool TensorCollectionFile<DeviceT>::storeTensorTableFromCsv(const std::string & filename, const std::string & user_table_name, TensorCollection<DeviceT>& tensor_collection, DeviceT & device)
+  inline bool TensorCollectionFile<DeviceT>::storeTensorTableAsCsv(const std::string & filename, const std::string & user_table_name, TensorCollection<DeviceT>& tensor_collection, DeviceT & device)
   {
     // Get the .csv headers
     std::pair<std::map<std::string, std::vector<std::string>>, std::vector<std::string>> headers = getTensorTableHeaders(user_table_name, tensor_collection, device);
 
+    // Write the headers
+    std::vector<std::string> headers_line;
+    for (const auto& non_primary_headers : headers.first) {
+      for (const std::string& header : non_primary_headers.second) {
+        headers_line.push_back(header);
+      }
+    }
+    for (const std::string& header : headers.second) {
+      headers_line.push_back(header);
+    }
+    // ...
+
     // Calculate the number of columns of the .csv file
     int n_cols = 1;
+    const std::string& table_name : tensor_collection.user_table_names_to_tensor_table_names_.at(user_table_name);
+    for (int i = 0; i < tensor_collection.tables_.at(table_name)->getDimensions().size(); ++i) {
+      if (i != 0) {
+        n_cols *= tensor_collection.tables_.at(table_name)->getDimensions().at(i);
+      }
+    }
 
     for (int i = 0; i < n_cols; ++i) {
       // Get the .csv data
+      std::vector<std::string> row_data = getCsvDataRow(i);
+      std::map<std::string, std::vector<std::string>> axes_row_data = getCsvAxesLabelsRow(i);
+
+      // Write the data row
+      std::vector<std::string> row_line;
+      for (const auto& non_primary_data : axes_row_data) {
+        for (const std::string& data : non_primary_data) {
+          row_line.push_back(data);
+        }
+      }
+      for (const std::string& data : row_data) {
+        row_line.push_back(data);
+      }
+      // ...
     }
 
     return true;

@@ -111,6 +111,7 @@ namespace TensorBase
     void clear();  ///< clears the axes and all associated data
 
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> getData() { return data_->getData(); } ///< data_->getData() wrapper
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> getData() const { return data_->getData(); } ///< data_->getData() wrapper
     Eigen::array<Eigen::Index, TDim> getDataDimensions() const { return data_->getDimensions(); } ///< data_->getDimensions() wrapper
     size_t getDataTensorBytes() const { return data_->getTensorBytes(); } ///< data_->getTensorBytes() wrapper
     size_t getDataTensorSize() const { return data_->getTensorSize(); } ///< data_->getTensorSize() wrapper
@@ -696,7 +697,6 @@ namespace TensorBase
         row after reshaping the data to 2D
 
       NOTE: all operations are done on the CPU!
-      TODO: add a template specialization for primitive and tensorArray types
       TODO: add another template for a different DeviceT for use with multi-threading
 
       @param[in] row_num The row number to fetch
@@ -704,13 +704,16 @@ namespace TensorBase
       @returns String vector of data
     */
     std::vector<std::string> getCsvDataRow(const int& row_num);
+    template<typename T = TensorT, std::enable_if_t<std::is_fundamental<T>::value, int> = 0>
+    std::vector<std::string> getCsvDataRowAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span, const Eigen::array<Eigen::Index, 2>& reshape) const;
+    template<typename T = TensorT, std::enable_if_t<!std::is_fundamental<T>::value, int> = 0>
+    std::vector<std::string> getCsvDataRowAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span, const Eigen::array<Eigen::Index, 2>& reshape) const;
 
     /**
       @brief Get a string vector representation of the non-primary axis labels
         at a specified row after reshaping the data to 2D
 
       NOTE: all operations are done on the CPU!
-      TODO: add a template specialization for primitive and tensorArray types
       TODO: add another template for a different DeviceT for use with multi-threading
 
       @param[in] row_num The row number to fetch
@@ -2044,15 +2047,36 @@ namespace TensorBase
       }
     }
 
+    // Return the row as a string
+    return getCsvDataRowAsStrings(offset, span, reshape_dims);
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  template<typename T, std::enable_if_t<std::is_fundamental<T>::value, int> = 0>
+  inline std::vector<std::string> TensorTable<TensorT, DeviceT, TDim>::getCsvDataRowAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span, const Eigen::array<Eigen::Index, 2>& reshape) const
+  {
     // Make the slice
-    auto row_t = getData().reshape(reshape_dims).slice(offset, span);
-    // TODO: add in specialized templates for TensorArray types!
+    auto row_t = this->getData().reshape(reshape).slice(offset, span);
     Eigen::Tensor<std::string, 2> row = row_t.unaryExpr([](const TensorT& elem) { return std::to_string(elem); });
 
     // Convert element to a string
     std::vector<std::string> row_vec(row.data(), row.data() + row.size());
     return row_vec;
   }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  template<typename T, std::enable_if_t<!std::is_fundamental<T>::value, int> = 0>
+  inline std::vector<std::string> TensorTable<TensorT, DeviceT, TDim>::getCsvDataRowAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span, const Eigen::array<Eigen::Index, 2>& reshape) const
+  {
+    // Make the slice
+    auto row_t = this->getData().reshape(reshape).slice(offset, span);
+    Eigen::Tensor<std::string, 2> row = row_t.unaryExpr([](const TensorT& elem) { return elem.getTensorArrayAsString(); });
+
+    // Convert element to a string
+    std::vector<std::string> row_vec(row.data(), row.data() + row.size());
+    return row_vec;
+  }
+
   template<typename TensorT, typename DeviceT, int TDim>
   inline std::map<std::string, std::vector<std::string>> TensorTable<TensorT, DeviceT, TDim>::getCsvAxesLabelsRow(const int & row_num)
   {

@@ -38,7 +38,7 @@ namespace TensorBase
     virtual void setTensorArray(const std::initializer_list<TensorT>& tensor_array) = 0; ///< tensor_array setter
     virtual void setTensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array) = 0; ///< tensor_array setter
     virtual Eigen::Tensor<TensorT, 1> getTensorArray() = 0; ///< tensor_array getter
-    virtual std::string getTensorArrayAsString() = 0; ///< tensor_array getter as a string
+    virtual std::string getTensorArrayAsString() const = 0; ///< tensor_array getter as a string
     virtual TensorT at(const int& i) const = 0; /// tensor_array accessor
 
   protected:
@@ -159,7 +159,7 @@ namespace TensorBase
     void setTensorArray(const std::initializer_list<TensorT>& tensor_array) override;
     void setTensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array) override;
     Eigen::Tensor<TensorT, 1> getTensorArray() override;
-    std::string getTensorArrayAsString() override;
+    std::string getTensorArrayAsString() const override;
     TensorT at(const int& i) const override;
 
     /// Inline << operator overload
@@ -335,7 +335,7 @@ namespace TensorBase
   }
 
   template<typename TensorT>
-  inline std::string TensorArray8<TensorT>::getTensorArrayAsString()
+  inline std::string TensorArray8<TensorT>::getTensorArrayAsString() const
   {
     std::ostringstream os;
     os << *this;
