@@ -278,13 +278,18 @@ BOOST_AUTO_TEST_CASE(getTensorTableHeadersDefaultDevice)
   tensorCollection.addTensorTable(tensorTable2_ptr, "1");
   tensorCollection.addTensorTable(tensorTable3_ptr, "1");
 
-  // Make the output header names
+  // Test making the output header names
   Eigen::DefaultDevice device;
   TensorCollectionFileDefaultDevice data;
-  std::pair<std::map<std::string, std::vector<std::string>>, std::vector<std::string>> headers = data.getTensorTableHeaders("1", tensorCollection, device);
+  std::pair<std::map<std::string, std::vector<std::string>>, std::map<std::string, std::vector<std::string>>> headers = data.getTensorTableHeaders("1", tensorCollection, device);
   BOOST_CHECK(headers.first.at("2") == std::vector<std::string>({ "y" }));
   BOOST_CHECK(headers.first.at("3") == std::vector<std::string>({ "z" }));
-  BOOST_CHECK(headers.second == std::vector<std::string>({ "0", "1", "2", "3", "4", "5" }));
+  BOOST_CHECK(headers.second.at("1") == std::vector<std::string>({ "0", "1" }));
+  BOOST_CHECK(headers.second.at("2") == std::vector<std::string>({ "2", "3" }));
+  BOOST_CHECK(headers.second.at("3") == std::vector<std::string>({ "4", "5" }));
+
+  // Test writing to disk
+  data.storeTensorTableAsCsv("Table1.csv", "1", tensorCollection, device);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

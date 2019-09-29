@@ -709,6 +709,8 @@ namespace TensorBase
     template<typename T = TensorT, std::enable_if_t<!std::is_fundamental<T>::value, int> = 0>
     std::vector<std::string> getCsvDataRowAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span, const Eigen::array<Eigen::Index, 2>& reshape) const;
 
+    Eigen::array<Eigen::Index, 2> getCsvDataDimensions(); ///< get the dimensions of the .csv data where dim 0 = axis 0 and dim 1 = axis 1 * axis 2 * ...
+
     /**
       @brief Get a string vector representation of the non-primary axis labels
         at a specified row after reshaping the data to 2D
@@ -2037,7 +2039,16 @@ namespace TensorBase
     Eigen::array<Eigen::Index, 2> span = { getDimensions().at(0), 1 };
 
     // Make the reshape dimansions
-    Eigen::array<Eigen::Index, 2> reshape_dims = {1,1};
+    Eigen::array<Eigen::Index, 2> reshape_dims = getCsvDataDimensions();
+
+    // Return the row as a string
+    return getCsvDataRowAsStrings(offset, span, reshape_dims);
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline Eigen::array<Eigen::Index, 2> TensorTable<TensorT, DeviceT, TDim>::getCsvDataDimensions()
+  {
+    Eigen::array<Eigen::Index, 2> reshape_dims = { 1,1 };
     for (int i = 0; i < TDim; ++i) {
       if (i == 0) {
         reshape_dims.at(0) = getDimensions().at(i);
@@ -2046,9 +2057,7 @@ namespace TensorBase
         reshape_dims.at(1) *= getDimensions().at(i);
       }
     }
-
-    // Return the row as a string
-    return getCsvDataRowAsStrings(offset, span, reshape_dims);
+    return reshape_dims;
   }
 
   template<typename TensorT, typename DeviceT, int TDim>

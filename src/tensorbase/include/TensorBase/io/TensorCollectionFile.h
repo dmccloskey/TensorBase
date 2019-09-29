@@ -11,6 +11,7 @@
 #include <cereal/archives/binary.hpp>
 
 #include <TensorBase/ml/TensorCollection.h>
+#include <TensorBase/io/CSVWriter.h>
 
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <iostream>
@@ -76,9 +77,11 @@ public:
       @param table_name The name of tensor table
       @param tensor_collection The Tensor collection to store
 
-      @returns a pair of string vectors for the non-primary and primary axis headers
+      @returns a pair of maps for the non-primary (first) and primary headers (second) where
+        the first is a key/value pair of axis name and a string vectors of dimension names
+        and the second is a key/value pair of tables_names and a string vectors of axis labels
     */
-    static std::pair<std::map<std::string, std::vector<std::string>>, std::vector<std::string>> getTensorTableHeaders(const std::string& table_name, TensorCollection<DeviceT>& tensor_collection, DeviceT& device);
+    static std::pair<std::map<std::string, std::vector<std::string>>, std::map<std::string, std::vector<std::string>>> getTensorTableHeaders(const std::string& table_name, TensorCollection<DeviceT>& tensor_collection, DeviceT& device);
   };
 
   template<typename DeviceT>
@@ -180,8 +183,10 @@ public:
   template<typename DeviceT>
   inline bool TensorCollectionFile<DeviceT>::storeTensorTableAsCsv(const std::string & filename, const std::string & user_table_name, TensorCollection<DeviceT>& tensor_collection, DeviceT & device)
   {
+    CSVWriter csvwriter(filename);
+
     // Get the .csv headers
-    std::pair<std::map<std::string, std::vector<std::string>>, std::vector<std::string>> headers = getTensorTableHeaders(user_table_name, tensor_collection, device);
+    std::pair<std::map<std::string, std::vector<std::string>>, std::map<std::string, std::vector<std::string>>> headers = getTensorTableHeaders(user_table_name, tensor_collection, device);
 
     // Write the headers
     std::vector<std::string> headers_line;
@@ -190,48 +195,48 @@ public:
         headers_line.push_back(header);
       }
     }
-    for (const std::string& header : headers.second) {
-      headers_line.push_back(header);
-    }
-    // ...
-
-    // Calculate the number of columns of the .csv file
-    int n_cols = 1;
-    const std::string table_name = *(tensor_collection.user_table_names_to_tensor_table_names_.at(user_table_name).begin());
-    for (int i = 0; i < tensor_collection.tables_.at(table_name)->getDimensions().size(); ++i) {
-      if (i != 0) {
-        n_cols *= tensor_collection.tables_.at(table_name)->getDimensions().at(i);
+    for (const auto& primary_headers : headers.second) {
+      for (const std::string& header : primary_headers.second) {
+        headers_line.push_back(header);
       }
     }
+    csvwriter.writeDataInRow(headers_line.begin(), headers_line.end());
 
-    for (int i = 0; i < n_cols; ++i) {
-      // TODO need to iterate over each table that maps to the user table!
-      // Get the .csv data
-      std::vector<std::string> row_data = getCsvDataRow(i);
-      std::map<std::string, std::vector<std::string>> axes_row_data = getCsvAxesLabelsRow(i);
+    // Calculate the number of columns of the .csv file
+    const std::string first_table_name = *(tensor_collection.user_table_names_to_tensor_table_names_.at(user_table_name).begin());
+    Eigen::array<Eigen::Index, 2> data_dimensions = tensor_collection.tables_.at(first_table_name)->getCsvDataDimensions();
 
-      // Write the data row
+    // Write the rows
+    for (int i = 0; i < data_dimensions.at(1); ++i) {
       std::vector<std::string> row_line;
-      for (const auto& non_primary_data : axes_row_data) { // TODO do this only for the first table!
-        for (const std::string& data : non_primary_data) {
+      for (const std::string& table_name : tensor_collection.user_table_names_to_tensor_table_names_.at(user_table_name)) {
+        // Get the .csv data for each axis row
+        if (table_name == first_table_name) {
+          std::map<std::string, std::vector<std::string>> axes_row_data = tensor_collection.tables_.at(table_name)->getCsvAxesLabelsRow(i);
+          for (const auto& non_primary_data : axes_row_data) {
+            for (const std::string& data : non_primary_data.second) {
+              row_line.push_back(data);
+            }
+          }
+        }
+
+        // Get the .csv data for each table
+        std::vector<std::string> row_data = tensor_collection.tables_.at(table_name)->getCsvDataRow(i);
+        for (const std::string& data : row_data) {
           row_line.push_back(data);
         }
       }
-      for (const std::string& data : row_data) {
-        row_line.push_back(data);
-      }
-      // ...
+      csvwriter.writeDataInRow(row_line.begin(), row_line.end());
     }
 
     return true;
   }
 
   template<typename DeviceT>
-  inline std::pair<std::map<std::string, std::vector<std::string>>, std::vector<std::string>> TensorCollectionFile<DeviceT>::getTensorTableHeaders(const std::string & user_table_name, TensorCollection<DeviceT>& tensor_collection, DeviceT & device)
+  inline std::pair<std::map<std::string, std::vector<std::string>>, std::map<std::string, std::vector<std::string>>> TensorCollectionFile<DeviceT>::getTensorTableHeaders(const std::string & user_table_name, TensorCollection<DeviceT>& tensor_collection, DeviceT & device)
   {
     // Make the expected headers
-    std::vector<std::string> primary_headers;
-    std::map<std::string, std::vector<std::string>> non_primary_headers;
+    std::map<std::string, std::vector<std::string>> non_primary_headers, primary_headers;
     bool is_first_table = true;
     for (const std::string& table_name : tensor_collection.user_table_names_to_tensor_table_names_.at(user_table_name)) {
       for (const auto& axes_map : tensor_collection.tables_.at(table_name)->getAxes()) {
@@ -245,9 +250,7 @@ public:
         else if (tensor_collection.tables_.at(table_name)->getDimFromAxisName(axes_map.first) == 0) {
           assert(axes_map.second->getDimensions().size() == 1);
           std::vector<std::string> labels = axes_map.second->getLabelsAsStrings(device);
-          for (const std::string& label : labels) {
-            primary_headers.push_back(label);
-          }
+          primary_headers.emplace(table_name, labels);
         }
       }
       is_first_table = false;
