@@ -149,13 +149,14 @@ public:
             if (!found.second) data_new.at(header).push_back(cell);
           }
         }
-        //...
       }
 
       // update the shard iterator
       ++n_cols;
       if (n_cols == n_shard_size) {
         // ...insertIntoAxisConcept(const std::string & axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<T>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device)
+        labels_new.clear();
+        data_new.clear();
         n_cols = 0;
       }
     }
