@@ -710,6 +710,7 @@ namespace TensorBase
     std::vector<std::string> getCsvDataRowAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span, const Eigen::array<Eigen::Index, 2>& reshape) const;
 
     Eigen::array<Eigen::Index, 2> getCsvDataDimensions(); ///< get the dimensions of the .csv data where dim 0 = axis 0 and dim 1 = axis 1 * axis 2 * ...
+    //Eigen::array<Eigen::Index, 2> getCsvShardSpans(); ///< get the shard spans of the .csv data where dim 0 = axis 0 and dim 1 = axis 1 * axis 2 * ...
 
     /**
       @brief Get a string vector representation of the non-primary axis labels

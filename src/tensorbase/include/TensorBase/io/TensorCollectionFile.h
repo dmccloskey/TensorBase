@@ -116,30 +116,37 @@ public:
     std::pair<std::map<std::string, std::vector<std::string>>, std::map<std::string, std::vector<std::string>>> headers = getTensorTableHeaders(user_table_name, tensor_collection, device);
 
     // Calculate the shard size for the non-primary axes
-    int n_shard_size = 1;
+    int n_shard_size = 1; // ... 
+
+    // Prepare the data structures for calls to insertIntoTableFromCsv
+    std::map<std::string, std::vector<std::string>> data_new;
+    std::map<std::string, std::vector<std::string>> labels_new;
     
     // iterate through the file and insert shard by shard   
     const std::string first_table_name = *(tensor_collection.user_table_names_to_tensor_table_names_.at(user_table_name).begin());
     int n_cols = 0;
-    //... data structures for calls to insertIntoAxis
     for (int i = 0; i < n_shard_size; ++i) { // ... for (CSVRow& row: reader)
       for (const std::string& table_name : tensor_collection.user_table_names_to_tensor_table_names_.at(user_table_name)) {
         // Get the .csv data for each axis row
         if (table_name == first_table_name) {
-
           // Get the .csv data for the non-primary axes labels
           for (const auto& non_primary_data : headers.first) {
             for (const std::string& header : non_primary_data.second) {
-              //...
+              std::string label; //...
+              std::vector<std::string> labels_vec = { label };
+              auto found = labels_new.emplace(header, labels_vec);
+              if (!found.second) labels_new.at(header).push_back(label);
             }
           }
-          //...
         }
 
         // Get the .csv data for the data row
         for (const auto& primary_data : headers.second) {
           for (const std::string& header : primary_data.second) {
-            //...
+            std::string cell; //...
+            std::vector<std::string> cells_vec = { cell };
+            auto found = data_new.emplace(header, cells_vec);
+            if (!found.second) data_new.at(header).push_back(cell);
           }
         }
         //...
@@ -151,6 +158,11 @@ public:
         // ...insertIntoAxisConcept(const std::string & axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<T>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device)
         n_cols = 0;
       }
+    }
+
+    // Insert the remaining rows
+    if (n_cols != 0) { // i.e., n_cols has not been reset back to 0 after reaching the shard size
+        // ...insertIntoAxisConcept(const std::string & axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<T>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device)
     }
 
     return true;
