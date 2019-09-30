@@ -394,69 +394,6 @@ BOOST_AUTO_TEST_CASE(syncHAndDDefaultDevice)
   BOOST_CHECK(tensordata.getDataStatus().second);
 }
 
-BOOST_AUTO_TEST_CASE(typeCompatibilityDefaultDevice)
-{
-  { // float
-    TensorDataDefaultDevice<float, 3> tensordata(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
-    Eigen::Tensor<float, 3> data(2, 3, 4);
-    data.setConstant(0.5);
-    tensordata.setData(data);
-  }
-  
-  { // int
-    TensorDataDefaultDevice<int, 3> tensordata(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
-    Eigen::Tensor<int, 3> data(2, 3, 4);
-    data.setConstant(1);
-    tensordata.setData(data);
-  }
-
-  { // bool
-    TensorDataDefaultDevice<bool, 3> tensordata(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
-    Eigen::Tensor<bool, 3> data(2, 3, 4);
-    data.setConstant(0.5);
-    tensordata.setData(data);
-  }
-  
-  { // char
-    TensorDataDefaultDevice<char, 3> tensordata(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
-    Eigen::Tensor<char, 3> data(2, 3, 4);
-    data.setConstant('a');
-    tensordata.setData(data);
-  }
-
-  { // char*
-    typedef char* varchar;
-    varchar abc = new char[128];
-    abc[0] = 'a'; abc[1] = 'b'; abc[2] = 'c';
-    TensorDataDefaultDevice<varchar, 3> tensordata(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
-    Eigen::Tensor<varchar, 3> data(2, 3, 4);
-    data.setConstant(abc);
-    tensordata.setData(data);
-    delete[] abc;
-  }
-  
-  // Compiler error due to operators for < and > not being defined for `sortIndices` method
-  //{ // struct
-  //  struct estruct { int e; };
-  //  TensorDataDefaultDevice<estruct, 3> tensordata(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
-  //  Eigen::Tensor<estruct, 3> data(2, 3, 4);
-  //  estruct e; e.e = 1;
-  //  data.setConstant(e);
-  //  tensordata.setData(data);
-  //}
-
-  //{ // struct char[]
-  //  struct charstruct { char c[128]; };
-  //  TensorDataDefaultDevice<charstruct, 3> tensordata(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
-  //  Eigen::Tensor<charstruct, 3> data(2, 3, 4);
-  //  charstruct abcd; abcd.c[0] = 'a'; abcd.c[1] = 'b'; abcd.c[2] = 'c'; abcd.c[3] = 'd';
-  //  data.setConstant(abcd);
-  //  tensordata.setData(data);
-  //}
-
-  // Known failures: std::string
-}
-
 /* TensorDataCpu Tests
 */
 BOOST_AUTO_TEST_CASE(constructorCpu)
@@ -803,28 +740,5 @@ BOOST_AUTO_TEST_CASE(syncHAndDCpu)
   BOOST_CHECK(tensordata.getDataStatus().first);
   BOOST_CHECK(tensordata.getDataStatus().second);
 }
-
-// NOT NEEDED
-//BOOST_AUTO_TEST_CASE(castTypeCpu)
-//{
-//  Eigen::Tensor<float, 3> ones(2, 3, 4);
-//  ones.setConstant(1);
-//
-//  // different cast types
-//  TensorDataCpu<float, 3> td_cpu_float_test(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
-//  td_cpu_float_test.setData(ones);
-//
-//  TensorDataCpu<float, 3> td_cpu_float = td_cpu_float_test;
-//  BOOST_CHECK(td_cpu_float == td_cpu_float_test);
-//  BOOST_CHECK_EQUAL(td_cpu_float.getData()(0, 0, 0), td_cpu_float_test.getData()(0, 0, 0));
-//
-//  TensorDataDefaultDevice<float, 3> td_dd_float(td_cpu_float_test);
-//  BOOST_CHECK_NE(td_dd_float.getDeviceName(), td_cpu_float_test.getDeviceName());
-//  BOOST_CHECK_EQUAL(td_dd_float.getData()(0, 0, 0), td_cpu_float_test.getData()(0, 0, 0));
-//
-//  TensorDataCpu<int, 3> td_cpu_int = td_cpu_float_test;
-//  BOOST_CHECK(td_cpu_float == td_cpu_float_test);
-//  BOOST_CHECK_NE(td_cpu_int.getData()(0, 0, 0), td_cpu_float_test.getData()(0, 0, 0));
-//}
 
 BOOST_AUTO_TEST_SUITE_END()

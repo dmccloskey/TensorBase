@@ -291,9 +291,54 @@ BOOST_AUTO_TEST_CASE(getTensorTableHeadersDefaultDevice)
   // Test writing to disk
   data.storeTensorTableAsCsv("Table1.csv", "1", tensorCollection, device);
 
+  // Make the minimal tensorCollection for reading from .csv
+  std::map<std::string, int> shard_span = {
+    {"1", 2}, {"2", 2}, {"3", 2} };
+
+  // Setup Table 1 axes
+  TensorTableDefaultDevice<float, 3> tensorTable1_min("1");
+  tensorTable1_min.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
+  auto axis2_min_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", 1, 1));
+  axis2_min_ptr->setDimensions(dimensions2);
+  tensorTable1_min.addTensorAxis(axis2_min_ptr);
+  auto axis3_min_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", 1, 1));
+  axis3_min_ptr->setDimensions(dimensions3);
+  tensorTable1_min.addTensorAxis(axis3_min_ptr);
+  tensorTable1_min.setAxes();
+  std::shared_ptr<TensorTableDefaultDevice<float, 3>> tensorTable1_min_ptr = std::make_shared<TensorTableDefaultDevice<float, 3>>(tensorTable1_min);
+  tensorTable1_min_ptr->setData();
+  tensorTable1_min_ptr->setShardSpans(shard_span);
+
+  // Setup Table 2 axes
+  TensorTableDefaultDevice<int, 3> tensorTable2_min("2");
+  labels1.setValues({ {2, 3} });
+  tensorTable2_min.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
+  tensorTable2_min.addTensorAxis(axis2_min_ptr);
+  tensorTable2_min.addTensorAxis(axis3_min_ptr);
+  tensorTable2_min.setAxes();
+  std::shared_ptr<TensorTableDefaultDevice<int, 3>> tensorTable2_min_ptr = std::make_shared<TensorTableDefaultDevice<int, 3>>(tensorTable2_min);
+  tensorTable2_min_ptr->setData();
+  tensorTable2_min_ptr->setShardSpans(shard_span);
+
+  // Setup Table 3 axes
+  TensorTableDefaultDevice<char, 3> tensorTable3_min("3");
+  labels1.setValues({ {4, 5} });
+  tensorTable3_min.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
+  tensorTable3_min.addTensorAxis(axis2_min_ptr);
+  tensorTable3_min.addTensorAxis(axis3_min_ptr);
+  tensorTable3_min.setAxes();
+  std::shared_ptr<TensorTableDefaultDevice<char, 3>> tensorTable3_min_ptr = std::make_shared<TensorTableDefaultDevice<char, 3>>(tensorTable3_min);
+  tensorTable3_min_ptr->setData();
+  tensorTable3_min_ptr->setShardSpans(shard_span);
+
+  TensorCollectionDefaultDevice tensorCollection_min("1");
+  tensorCollection_min.addTensorTable(tensorTable1_min_ptr, "1");
+  tensorCollection_min.addTensorTable(tensorTable2_min_ptr, "1");
+  tensorCollection_min.addTensorTable(tensorTable3_min_ptr, "1");
+
   // Test reading from disk
-  TensorCollectionDefaultDevice tensorCollection_test("1");
-  BOOST_CHECK(tensorCollection_test == tensorCollection); // is the data and labels checked here???
+  data.loadTensorTableFromCsv("Table1.csv", "1", tensorCollection_min, device);
+  BOOST_CHECK(tensorCollection_min == tensorCollection); // is the data and labels checked here???
 }
 
 BOOST_AUTO_TEST_SUITE_END()

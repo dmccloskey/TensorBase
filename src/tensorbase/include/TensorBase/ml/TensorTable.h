@@ -710,7 +710,7 @@ namespace TensorBase
     std::vector<std::string> getCsvDataRowAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span, const Eigen::array<Eigen::Index, 2>& reshape) const;
 
     Eigen::array<Eigen::Index, 2> getCsvDataDimensions(); ///< get the dimensions of the .csv data where dim 0 = axis 0 and dim 1 = axis 1 * axis 2 * ...
-    //Eigen::array<Eigen::Index, 2> getCsvShardSpans(); ///< get the shard spans of the .csv data where dim 0 = axis 0 and dim 1 = axis 1 * axis 2 * ...
+    Eigen::array<Eigen::Index, 2> getCsvShardSpans(); ///< get the shard spans of the .csv data where dim 0 = axis 0 and dim 1 = axis 1 * axis 2 * ...
 
     /**
       @brief Get a string vector representation of the non-primary axis labels
@@ -724,6 +724,9 @@ namespace TensorBase
       @returns A map of string vector of data corresonding to each axis
     */
     std::map<std::string, std::vector<std::string>> getCsvAxesLabelsRow(const int& row_num);
+
+    template<typename CpuDeviceT>
+    void insertIntoTableFromCsv(const std::map<std::string, std::vector<std::string>>& labels_new, const std::vector<std::string>& data_new, DeviceT& device, CpuDeviceT& cpu_device);
 
     // NOTE: IO methods for TensorTable indices components may not be needed because the call to setAxes remakes all of the indices on the fly
     //virtual bool storeTensorTableIndicesBinary(const std::string& dir, DeviceT& device) = 0; ///< Write tensor indices to disk
@@ -2062,6 +2065,21 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
+  inline Eigen::array<Eigen::Index, 2> TensorTable<TensorT, DeviceT, TDim>::getCsvShardSpans()
+  {
+    Eigen::array<Eigen::Index, 2> shard_dims = { 1,1 };
+    for (auto axis_to_dim: axes_to_dims_) {
+      if (axis_to_dim.second == 0) {
+        shard_dims.at(0) = shard_spans_.at(axis_to_dim.first);
+      }
+      else {
+        shard_dims.at(1) *= shard_spans_.at(axis_to_dim.first);
+      }
+    }
+    return shard_dims;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
   template<typename T, std::enable_if_t<std::is_fundamental<T>::value, int> = 0>
   inline std::vector<std::string> TensorTable<TensorT, DeviceT, TDim>::getCsvDataRowAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span, const Eigen::array<Eigen::Index, 2>& reshape) const
   {
@@ -2114,6 +2132,68 @@ namespace TensorBase
     }
 
     return axes_labels_row;
+  }
+  template<typename TensorT, typename DeviceT, int TDim>
+  template<typename CpuDeviceT>
+  inline void TensorTable<TensorT, DeviceT, TDim>::insertIntoTableFromCsv(const std::map<std::string, std::vector<std::string>>& labels_new, const std::vector<std::string>& data_new, DeviceT & device, CpuDeviceT& cpu_device)
+  {
+    // add in the new labels
+    for (auto& axis_map : axes_) {
+      // TODO:  axis_map.second->appendLabelsToAxisFromCsv(labels_new.at(axis_map.first));
+    }
+    setAxes();
+
+    // TODO: does it make sense to move this over to `setAxes()` ?
+    // Sync all of the axes and reShard
+    syncIndicesHAndDData(device);
+    syncIndicesViewHAndDData(device);
+    syncIsModifiedHAndDData(device);
+    syncNotInMemoryHAndDData(device);
+    syncShardIdHAndDData(device);
+    syncShardIndicesHAndDData(device);
+    reShardIndices(device);
+    syncAxesHAndDData(device);
+
+    // Select the new axis labels
+
+    // Reformat into a SparseTensorTable
+    //Eigen::Tensor<TensorT, 1> data_converted = convertStringVecToTensorTVec(data_new, cpu_device); // convert the data from string to TensorT
+
+    // Update from the SparseTensorTable
+    // NOTE: alignment of axes is not enforced in SparseTensorTable so a pre-sort maybe needed...
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  template<typename T = TensorT, typename CpuDeviceT, std::enable_if_t<std::is_fundamental<T>::value, int> = 0>
+  inline Eigen::Tensor<TensorT, 1> TensorTable<TensorT, DeviceT, TDim>::convertStringVecToTensorTVec(const std::vector<std::string>& data_new, CpuDeviceT & device)
+  {
+    // convert the data from string to TensorT
+    Eigen::TensorMap<Eigen::Tensor<std::string, 1>> data_new_values(data_new.data(), (int)data_new.size());
+    Eigen::Tensor<TensorT, 1> data_converted((int)data_new.size());
+    if (std::is_same<TensorT, int>::value) {
+      data_converted.device(device) = data_new_values.unaryExpr([](const TensorT& elem) { return std::stoi(elem); });
+    }
+    else if (std::is_same<TensorT, float>::value) {
+      data_converted.device(device) = data_new_values.unaryExpr([](const TensorT& elem) { return std::stof(elem); });
+    }
+    else if (std::is_same<TensorT, double>::value) {
+      data_converted.device(device) = data_new_values.unaryExpr([](const TensorT& elem) { return std::stod(elem); });
+    }
+    else if (std::is_same<TensorT, char>::value) {
+      data_converted.device(device) = data_new_values.unaryExpr([](const TensorT& elem) { return elem.c_str()[0]; });
+    }
+  }
+  template<typename TensorT, typename DeviceT, int TDim>
+  template<typename T = TensorT, typename CpuDeviceT, std::enable_if_t<!std::is_fundamental<T>::value, int> = 0>
+  inline Eigen::Tensor<TensorT, 1> TensorTable<TensorT, DeviceT, TDim>::convertStringVecToTensorTVec(const std::vector<std::string>& data_new, CpuDeviceT & device)
+  {
+    // convert the data from string to TensorT
+    Eigen::TensorMap<Eigen::Tensor<std::string, 1>> data_new_values(data_new.data(), (int)data_new.size());
+    Eigen::Tensor<TensorT, 1> data_converted((int)data_new.size());
+    if (std::is_same<TensorT, TensorArray8<char>>::value) {
+      data_converted.device(device) = data_new_values.unaryExpr([](const TensorT& elem) { return TensorArray8<char>(elem); });
+    }
+    return data_converted;
   }
 };
 #endif //TENSORBASE_TENSORTABLE_H

@@ -193,6 +193,14 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   size_t test = 2 * 3 * 5 * sizeof(float);
   BOOST_CHECK_EQUAL(tensorTable.getDataTensorBytes(), test);
 
+  // Test expected CSV shard shape dimensions
+  BOOST_CHECK_EQUAL(tensorTable.getCsvShardSpans().at(0), 2);
+  BOOST_CHECK_EQUAL(tensorTable.getCsvShardSpans().at(1), 15);
+
+  // Test expected CSV data dimensions
+  BOOST_CHECK_EQUAL(tensorTable.getCsvDataDimensions().at(0), 2);
+  BOOST_CHECK_EQUAL(tensorTable.getCsvDataDimensions().at(1), 15);
+
   // Test setting the data
   Eigen::Tensor<float, 3> tensor_data(Eigen::array<Eigen::Index, 3>({ nlabels1, nlabels2, nlabels3 }));
   for (int i = 0; i < nlabels1; ++i) {

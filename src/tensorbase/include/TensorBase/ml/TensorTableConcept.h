@@ -378,6 +378,7 @@ namespace TensorBase
     */
     virtual std::vector<std::string> getCsvDataRow(const int& row_num) = 0;
     virtual Eigen::array<Eigen::Index, 2> getCsvDataDimensions() = 0;
+    virtual Eigen::array<Eigen::Index, 2> getCsvShardSpans() = 0;
     virtual std::map<std::string, std::vector<std::string>> getCsvAxesLabelsRow(const int& row_num) = 0;
 
   private:
@@ -1011,6 +1012,7 @@ namespace TensorBase
 
     std::vector<std::string> getCsvDataRow(const int& row_num) { return tensor_table_->getCsvDataRow(row_num); }
     Eigen::array<Eigen::Index, 2> getCsvDataDimensions() { return tensor_table_->getCsvDataDimensions(); }
+    Eigen::array<Eigen::Index, 2> getCsvShardSpans() { return tensor_table_->getCsvShardSpans(); }
     std::map<std::string, std::vector<std::string>> getCsvAxesLabelsRow(const int& row_num) { return tensor_table_->getCsvAxesLabelsRow(row_num); }
 
   private:

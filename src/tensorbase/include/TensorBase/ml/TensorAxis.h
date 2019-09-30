@@ -149,6 +149,16 @@ namespace TensorBase
     template<typename T = TensorT, std::enable_if_t<!std::is_fundamental<T>::value, int> = 0>
     std::vector<std::string> getLabelsAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span) const;
 
+    /*
+    @brief Append labels to the axis that are derived from a .csv file
+      where the labels are in the form of an array of strings
+      and the labels maybe reduntant
+
+    @param[in] labels The new labels to insert
+    @param[in] device
+    */
+    void appendLabelsToAxisFromCsv(const std::vector<std::string> &labels, DeviceT& device);
+
   protected:
     void setNLabels(const size_t& n_labels) { n_labels_ = n_labels; }; ///< n_labels setter
     void setNDimensions(const size_t& n_dimenions) { n_dimensions_ = n_dimenions; }; ///< n_tensor_dimensions setter
@@ -205,6 +215,33 @@ namespace TensorBase
 
     // Apply the sort to the labels
     tensor_dimension_labels_->sort(indices_sort, device);
+  }
+
+  template<typename TensorT, typename DeviceT>
+  inline void TensorAxis<TensorT, DeviceT>::appendLabelsToAxisFromCsv(const std::vector<std::string>& labels, DeviceT & device)
+  {
+    std::set<std::string> labels_no_duplicates(labels.begin(), labels.end()); // remove duplicates
+
+    // Convert to TensorT
+    TensorDataDefaultDevice<TensorT, 2> labels_converted(n_dimensions_, labels_no_duplicates.size());
+    Eigen::DefaultDevice device; // cpu for now...
+    //labels_converted.convertFromStringToTensorT(std::vector<std::string>(labels_no_duplicates.begin(), labels_no_duplicates.end()), device);
+
+    // Determine the new labels to add to the axis 
+    // Broadcast along the labels along the dimensions and new labels
+    // Select and multiple along the dimensions
+    // Select and add along the labels
+    // Sum and invert selection along the new labels
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> labels_values(tensor_dimension_labels_.get(), 1, 1, n_dimensions_, n_labels_);
+    auto labels_values_bcast = labels_values.broadcast(Eigen::array<Eigen::Index, 2>({ (int)labels_converted.getTensorSize(), 1}));
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> labels_new_values(labels_converted.getDataPointer().get(), (int)labels_converted.getTensorSize(), 1, 1, 1);
+    auto labels_new_values_bcast = labels_new_values.broadcast(Eigen::array<Eigen::Index, 2>({ 1, n_labels_*n_dimensions_ }));
+    auto labels_selected = (labels_values_bcast == labels_new_values_bcast).select(labels_values_bcast.constant(1), labels_values_bcast.constant(0)).sum(Eigen::array<Eigen::Index, 1>({1})); // common > 1, unique = 0
+    auto labels_unique = (labels_selected > labels_selected.constant(0)).select(labels_selected.constant(0), labels_selected.constant(1)); // unique = 1, non-unique = 0
+
+    // 
+    TensorDataDefaultDevice<TensorT, 1>
+
   }
 
   template<typename TensorT, typename DeviceT>

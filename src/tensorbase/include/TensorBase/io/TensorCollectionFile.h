@@ -12,6 +12,7 @@
 
 #include <TensorBase/ml/TensorCollection.h>
 #include <TensorBase/io/CSVWriter.h>
+#include <TensorBase/io/csv.h>
 
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <iostream>
@@ -113,29 +114,36 @@ public:
   inline bool TensorCollectionFile<DeviceT>::loadTensorTableFromCsv(const std::string & filename, const std::string & user_table_name, TensorCollection<DeviceT>& tensor_collection, DeviceT & device)
   {
     // Get the .csv headers
+    const std::string first_table_name = *(tensor_collection.user_table_names_to_tensor_table_names_.at(user_table_name).begin());
     std::pair<std::map<std::string, std::vector<std::string>>, std::map<std::string, std::vector<std::string>>> headers = getTensorTableHeaders(user_table_name, tensor_collection, device);
 
     // Calculate the shard size for the non-primary axes
-    int n_shard_size = 1; // ... 
+    int n_shard_size = tensor_collection.tables_.at(first_table_name)->getCsvShardSpans().at(1);
 
     // Prepare the data structures for calls to insertIntoTableFromCsv
     std::map<std::string, std::vector<std::string>> data_new;
-    std::map<std::string, std::vector<std::string>> labels_new;
+    for (const auto& primary_data : headers.second) {
+      data_new.emplace(primary_data.first, empty);
+    }
+    std::map<std::string, std::vector<std::vector<std::string>>> labels_new;
+    for (const auto& non_primary_data : headers.first) {
+      std::vector<std::vector<std::string>> empty;
+      empty.resize(n_shard_size);
+      labels_new.emplace(non_primary_data.first, empty);
+    }
     
     // iterate through the file and insert shard by shard   
-    const std::string first_table_name = *(tensor_collection.user_table_names_to_tensor_table_names_.at(user_table_name).begin());
     int n_cols = 0;
-    for (int i = 0; i < n_shard_size; ++i) { // ... for (CSVRow& row: reader)
+    csv::CSVReader reader(filename);
+    for (csv::CSVRow& row: reader) {
       for (const std::string& table_name : tensor_collection.user_table_names_to_tensor_table_names_.at(user_table_name)) {
         // Get the .csv data for each axis row
         if (table_name == first_table_name) {
           // Get the .csv data for the non-primary axes labels
           for (const auto& non_primary_data : headers.first) {
             for (const std::string& header : non_primary_data.second) {
-              std::string label; //...
-              std::vector<std::string> labels_vec = { label };
-              auto found = labels_new.emplace(header, labels_vec);
-              if (!found.second) labels_new.at(header).push_back(label);
+              std::string label = row[header].get<>();
+              labels_new.at(non_primary_data.first).at(n_cols).push_back(label);
             }
           }
         }
@@ -143,10 +151,8 @@ public:
         // Get the .csv data for the data row
         for (const auto& primary_data : headers.second) {
           for (const std::string& header : primary_data.second) {
-            std::string cell; //...
-            std::vector<std::string> cells_vec = { cell };
-            auto found = data_new.emplace(header, cells_vec);
-            if (!found.second) data_new.at(header).push_back(cell);
+            std::string cell = row[header].get<>();
+            data_new.at(primary_data.first).push_back(cell);
           }
         }
       }
