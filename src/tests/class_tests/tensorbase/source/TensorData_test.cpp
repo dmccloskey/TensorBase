@@ -394,6 +394,48 @@ BOOST_AUTO_TEST_CASE(syncHAndDDefaultDevice)
   BOOST_CHECK(tensordata.getDataStatus().second);
 }
 
+BOOST_AUTO_TEST_CASE(convertFromStringToTensorTDefaultDevice)
+{
+  Eigen::Tensor<std::string, 3> tensor_string(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+  tensor_string.setConstant("1.001");
+  Eigen::DefaultDevice device;
+
+  // Test float
+  TensorDataDefaultDevice<float, 3> tensordata_f(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+  tensordata_f.setData();
+  tensordata_f.convertFromStringToTensorT(tensor_string, device);
+  BOOST_CHECK_CLOSE(tensordata_f.getData()(0, 0, 0), 1.001, 1e-3);
+  BOOST_CHECK_CLOSE(tensordata_f.getData()(1, 2, 3), 1.001, 1e-3);
+
+  // Test double
+  TensorDataDefaultDevice<double, 3> tensordata_d(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+  tensordata_d.setData();
+  tensordata_d.convertFromStringToTensorT(tensor_string, device);
+  BOOST_CHECK_CLOSE(tensordata_d.getData()(0, 0, 0), 1.001, 1e-3);
+  BOOST_CHECK_CLOSE(tensordata_d.getData()(1, 2, 3), 1.001, 1e-3);
+
+  // Test int
+  TensorDataDefaultDevice<int, 3> tensordata_i(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+  tensordata_i.setData();
+  tensordata_i.convertFromStringToTensorT(tensor_string, device);
+  BOOST_CHECK_EQUAL(tensordata_i.getData()(0, 0, 0), 1);
+  BOOST_CHECK_EQUAL(tensordata_i.getData()(1, 2, 3), 1);
+
+  // Test int
+  TensorDataDefaultDevice<char, 3> tensordata_c(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+  tensordata_c.setData();
+  tensordata_c.convertFromStringToTensorT(tensor_string, device);
+  BOOST_CHECK_EQUAL(tensordata_c.getData()(0, 0, 0), '1');
+  BOOST_CHECK_EQUAL(tensordata_c.getData()(1, 2, 3), '1');
+
+  //// Test array  // FIXME: causing a memory leak on deallocation
+  //TensorDataDefaultDevice<TensorArray8<char>, 3> tensordata_a8(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+  //tensordata_a8.setData();
+  //tensordata_a8.convertFromStringToTensorT(tensor_string, device);
+  //BOOST_CHECK_EQUAL(tensordata_a8.getData()(0, 0, 0), TensorArray8<char>("1.001"));
+  //BOOST_CHECK_EQUAL(tensordata_a8.getData()(1, 2, 3), TensorArray8<char>("1.001"));
+}
+
 /* TensorDataCpu Tests
 */
 BOOST_AUTO_TEST_CASE(constructorCpu)

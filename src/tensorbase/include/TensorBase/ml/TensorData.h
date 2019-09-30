@@ -400,6 +400,7 @@ namespace TensorBase
   template<typename T, std::enable_if_t<std::is_same<T, int>::value, int> = 0>
   inline void TensorDataDefaultDevice<TensorT, TDim>::convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice & device)
   {
+    assert(data_new.dimensions() == this->getDimensions());
     // convert the data from string to TensorT
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_converted(getDataPointer().get(), dimensions_);
     data_converted.device(device) = data_new.unaryExpr([](const std::string& elem) { return std::stoi(elem); });
@@ -408,6 +409,7 @@ namespace TensorBase
   template<typename T, std::enable_if_t<std::is_same<T, float>::value, int> = 0>
   inline void TensorDataDefaultDevice<TensorT, TDim>::convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice & device)
   {
+    assert(data_new.dimensions() == this->getDimensions());
     // convert the data from string to TensorT
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_converted(getDataPointer().get(), dimensions_);
     data_converted.device(device) = data_new.unaryExpr([](const std::string& elem) { return std::stof(elem); });
@@ -416,6 +418,7 @@ namespace TensorBase
   template<typename T, std::enable_if_t<std::is_same<T, double>::value, int> = 0>
   inline void TensorDataDefaultDevice<TensorT, TDim>::convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice & device)
   {
+    assert(data_new.dimensions() == this->getDimensions());
     // convert the data from string to TensorT
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_converted(getDataPointer().get(), dimensions_);
     data_converted.device(device) = data_new.unaryExpr([](const std::string& elem) { return std::stod(elem); });
@@ -424,6 +427,7 @@ namespace TensorBase
   template<typename T, std::enable_if_t<std::is_same<T, char>::value, int> = 0>
   inline void TensorDataDefaultDevice<TensorT, TDim>::convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice & device)
   {
+    assert(data_new.dimensions() == this->getDimensions());
     // convert the data from string to TensorT
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_converted(getDataPointer().get(), dimensions_);
     data_converted.device(device) = data_new.unaryExpr([](const std::string& elem) { return elem.c_str()[0]; });
@@ -432,6 +436,7 @@ namespace TensorBase
   template<typename T, std::enable_if_t<std::is_same<T, bool>::value, int> = 0>
   inline void TensorDataDefaultDevice<TensorT, TDim>::convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice & device)
   {
+    assert(data_new.dimensions() == this->getDimensions());
     // convert the data from string to TensorT
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_converted(getDataPointer().get(), dimensions_);
     data_converted.device(device) = data_new.unaryExpr([](const std::string& elem) { return elem == "1"; });
@@ -440,9 +445,14 @@ namespace TensorBase
   template<typename T, std::enable_if_t<std::is_same<T, TensorArray8<char>>::value, int> = 0>
   inline void TensorDataDefaultDevice<TensorT, TDim>::convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice & device)
   {
+    assert(data_new.dimensions() == this->getDimensions());
     // convert the data from string to TensorT
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_converted(getDataPointer().get(), dimensions_);
-    data_converted.device(device) = data_converted.unaryExpr([](const std::string& elem) { return TensorArray8<char>(elem); });
+    for (int i = 0; i < data_converted.size(); ++i) {
+      data_converted.data()[i] = TensorArray8<char>(data_new.data()[i]);
+    }
+    // NOTE: unaryExpr operator does not appear to work with TensorArray8<char>!
+    //data_converted.device(device) = data_converted.unaryExpr([](const std::string& elem) { return TensorArray8<char>(elem); });
   }
 
   /**
