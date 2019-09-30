@@ -123,11 +123,11 @@ public:
     // Prepare the data structures for calls to insertIntoTableFromCsv
     std::map<std::string, std::vector<std::string>> data_new;
     for (const auto& primary_data : headers.second) {
+      std::vector<std::string> empty;
       data_new.emplace(primary_data.first, empty);
     }
-    std::map<std::string, std::vector<std::vector<std::string>>> labels_new;
+    std::map<std::string, std::vector<std::string>> labels_new;
     for (const auto& non_primary_data : headers.first) {
-      std::vector<std::vector<std::string>> empty;
       empty.resize(n_shard_size);
       labels_new.emplace(non_primary_data.first, empty);
     }
@@ -143,7 +143,7 @@ public:
           for (const auto& non_primary_data : headers.first) {
             for (const std::string& header : non_primary_data.second) {
               std::string label = row[header].get<>();
-              labels_new.at(non_primary_data.first).at(n_cols).push_back(label);
+              labels_new.at(non_primary_data.first).push_back(label);
             }
           }
         }
