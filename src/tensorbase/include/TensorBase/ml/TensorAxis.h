@@ -220,11 +220,14 @@ namespace TensorBase
   template<typename TensorT, typename DeviceT>
   inline void TensorAxis<TensorT, DeviceT>::appendLabelsToAxisFromCsv(const std::vector<std::string>& labels, DeviceT & device)
   {
+    // MOVE BELOW TO DEVICE-SPECIFIC METHOD #1
+
     // Convert to TensorT
     Eigen::TensorMap<Eigen::Tensor<std::string, 2>> labels_str(labels.data(), n_dimensions_, (int)labels.size()/2);
     TensorDataDefaultDevice<TensorT, 2> labels_converted(Eigen::array<Eigen::Index, 2>({ n_dimensions_, (int)labels.size()/2 }));
-    Eigen::DefaultDevice default_device; // cpu for now...
-    labels_converted.convertFromStringToTensorT(labels_str, default_device);
+    labels_converted.convertFromStringToTensorT(labels_str, device);
+
+    // MOVE BELOW TO DEVICE-SPECIFIC METHOD #2
 
     // Determine the new labels to add to the axis 
     // Broadcast along the labels along the dimensions and new labels
@@ -240,9 +243,36 @@ namespace TensorBase
     // Broadcast back to n_dimensions x labels
     auto labels_unique_bcast = labels_unique.broadcast(Eigen::array<Eigen::Index, 2>({ n_dimensions_, 1 }));
 
-    // 
-    TensorDataDefaultDevice<TensorT, 1>
+    // Store the selection indices
+    // TODO: change to specific device
+    TensorDataDefaultDevice<int, 2> indices_select(Eigen::array<Eigen::Index, 2>({ n_dimensions_, (int)labels.size() / 2 }));
+    indices_select.setData();
+    indices_select.syncHAndDData(device);
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_select_values(indices_select.getDataPointer().get(), n_dimensions_, (int)labels.size() / 2);
+    indices_select_values.device(device) = labels_unique_bcast;
+    std::shared_ptr<TensorData<int, DeviceT, 2>> indices_select_ptr = std::make_shared<TensorDataDefaultDevice<int, 2>>(indices_select);
 
+    // Determine the number of new labels
+    // TODO: change to specific device
+    TensorDataDefaultDevice<int, 1> n_labels_new(Eigen::array<Eigen::Index, 1>({ 1 }));
+    n_labels_new.setData();
+    n_labels_new.syncHAndDData(device);
+    Eigen::TensorMap<Eigen::Tensor<int, 0>> n_labels_new_values(n_labels_new.getDataPointer().get());
+    n_labels_new_values.device(device) = indices_select_values.sum() / n_labels_new_values.constant(2);
+    n_labels_new.syncHAndDData(device);
+
+    // Allocate memory for the new labels
+    // TODO: change to the specific device
+    TensorDataDefaultDevice<TensorT, 2> labels_select(Eigen::array<Eigen::Index, 2>({ n_dimensions_, n_labels_new.getData()(0) }));
+    labels_select.setData();
+    labels_select.syncHAndDData(device);
+    std::shared_ptr<TensorData<TensorT, DeviceT, 2>> labels_select_ptr = std::make_shared<TensorDataDefaultDevice<TensorT, 2>>(labels_select);
+
+    // Select the labels
+    labels_converted->select(labels_select_ptr, indices_select_ptr, device);
+
+    // Append the selected labels to the axis
+    this->appendLabelsToAxis(labels_select_ptr, device);
   }
 
   template<typename TensorT, typename DeviceT>

@@ -2162,38 +2162,5 @@ namespace TensorBase
     // Update from the SparseTensorTable
     // NOTE: alignment of axes is not enforced in SparseTensorTable so a pre-sort maybe needed...
   }
-
-  template<typename TensorT, typename DeviceT, int TDim>
-  template<typename T = TensorT, typename CpuDeviceT, std::enable_if_t<std::is_fundamental<T>::value, int> = 0>
-  inline Eigen::Tensor<TensorT, 1> TensorTable<TensorT, DeviceT, TDim>::convertStringVecToTensorTVec(const std::vector<std::string>& data_new, CpuDeviceT & device)
-  {
-    // convert the data from string to TensorT
-    Eigen::TensorMap<Eigen::Tensor<std::string, 1>> data_new_values(data_new.data(), (int)data_new.size());
-    Eigen::Tensor<TensorT, 1> data_converted((int)data_new.size());
-    if (std::is_same<TensorT, int>::value) {
-      data_converted.device(device) = data_new_values.unaryExpr([](const TensorT& elem) { return std::stoi(elem); });
-    }
-    else if (std::is_same<TensorT, float>::value) {
-      data_converted.device(device) = data_new_values.unaryExpr([](const TensorT& elem) { return std::stof(elem); });
-    }
-    else if (std::is_same<TensorT, double>::value) {
-      data_converted.device(device) = data_new_values.unaryExpr([](const TensorT& elem) { return std::stod(elem); });
-    }
-    else if (std::is_same<TensorT, char>::value) {
-      data_converted.device(device) = data_new_values.unaryExpr([](const TensorT& elem) { return elem.c_str()[0]; });
-    }
-  }
-  template<typename TensorT, typename DeviceT, int TDim>
-  template<typename T = TensorT, typename CpuDeviceT, std::enable_if_t<!std::is_fundamental<T>::value, int> = 0>
-  inline Eigen::Tensor<TensorT, 1> TensorTable<TensorT, DeviceT, TDim>::convertStringVecToTensorTVec(const std::vector<std::string>& data_new, CpuDeviceT & device)
-  {
-    // convert the data from string to TensorT
-    Eigen::TensorMap<Eigen::Tensor<std::string, 1>> data_new_values(data_new.data(), (int)data_new.size());
-    Eigen::Tensor<TensorT, 1> data_converted((int)data_new.size());
-    if (std::is_same<TensorT, TensorArray8<char>>::value) {
-      data_converted.device(device) = data_new_values.unaryExpr([](const TensorT& elem) { return TensorArray8<char>(elem); });
-    }
-    return data_converted;
-  }
 };
 #endif //TENSORBASE_TENSORTABLE_H
