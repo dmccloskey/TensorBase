@@ -224,6 +224,8 @@ namespace TensorBase
     void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice& device);
     template<typename T = TensorT, std::enable_if_t<std::is_same<T, TensorArray8<char>>::value, int> = 0>
     void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice& device);
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, std::string>::value, int> = 0>
+    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice& device);
   private:
     friend class cereal::access;
     template<class Archive>
@@ -453,6 +455,15 @@ namespace TensorBase
     // NOTE: unaryExpr operator does not appear to work with TensorArray8<char>!
     //Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_converted(getDataPointer().get(), dimensions_);
     //data_converted.device(device) = data_converted.unaryExpr([](const std::string& elem) { return TensorArray8<char>(elem); });
+  }
+  template<typename TensorT, int TDim>
+  template<typename T, std::enable_if_t<std::is_same<T, std::string>::value, int> = 0>
+  inline void TensorDataDefaultDevice<TensorT, TDim>::convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice & device)
+  {
+    assert(data_new.dimensions() == this->getDimensions());
+    // convert the data from string to TensorT
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_converted(getDataPointer().get(), dimensions_);
+    data_converted.device(device) = data_new;
   }
 
   /**

@@ -436,6 +436,57 @@ BOOST_AUTO_TEST_CASE(getLabelsAsStringsDefaultDevice)
   //}
 }
 
+
+BOOST_AUTO_TEST_CASE(appendLabelsToAxisFromCsvDefaultDevice)
+{
+  // Setup the axis
+  int n_dimensions = 2, n_labels = 5;
+  Eigen::Tensor<std::string, 1> dimensions(n_dimensions);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  Eigen::Tensor<int, 2> labels(n_dimensions, n_labels);
+  int iter = 0;
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      labels(i, j) = iter;
+      ++iter;
+    }
+  }
+  TensorAxisDefaultDevice<int> tensoraxis("1", dimensions, labels);
+
+  // Setup the new labels
+  int n_new_labels = 2;
+  Eigen::Tensor<std::string, 2> labels_values(Eigen::array<Eigen::Index, 2>({ n_dimensions, n_new_labels }));
+  iter = 0;
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_new_labels; ++j) {
+      labels_values(i, j) = std::to_string(iter);
+      ++iter;
+    }
+  }
+  TensorDataDefaultDevice<std::string, 2> labels_new(Eigen::array<Eigen::Index, 2>({ n_dimensions, n_new_labels }));
+  labels_new.setData(labels_values);
+  std::shared_ptr<TensorData<std::string, Eigen::DefaultDevice, 2>> labels_new_ptr = std::make_shared<TensorDataDefaultDevice<std::string, 2>>(labels_new);
+
+  // Test
+  Eigen::DefaultDevice device;
+  tensoraxis.appendLabelsToAxisFromCsv(labels_new_ptr, device);
+  BOOST_CHECK_EQUAL(tensoraxis.getNDimensions(), n_dimensions);
+  BOOST_CHECK_EQUAL(tensoraxis.getNLabels(), n_labels + n_new_labels);
+  BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(0), "TensorDimension1");
+  BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(1), "TensorDimension2");
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      BOOST_CHECK_EQUAL(tensoraxis.getLabels()(i, j), labels(i, j));
+    }
+  }
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = n_labels; j < tensoraxis.getNLabels(); ++j) {
+      BOOST_CHECK_EQUAL(tensoraxis.getLabels()(i, j), std::stoi(labels_values(i, j - n_labels)));
+    }
+  }
+}
+
 /*TensorAxisCpu Tests*/
 BOOST_AUTO_TEST_CASE(constructorCpu)
 {
