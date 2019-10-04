@@ -178,7 +178,7 @@ namespace TensorBase
 
     @param[in] axis_name
     @param[in] dimension_index
-    @param[in] select_labels_data
+    @param[in] select_labels_data A single dimensions of the axis labels
     @param[in] device
     */
     template<typename LabelsT>
@@ -187,7 +187,7 @@ namespace TensorBase
     /*
     @brief Select Tensor Axis that will be included in the view
 
-    The selection is done according to the following algorithm:
+    The selection is done according to the following algorithm: [TODO: update!]
       1. The `select_labels` are reshaped and broadcasted to a 2D tensor of labels_size x select_labels_size
       2. The `labels` for the axis are broadcasted to a 2D tensor of labels_size x select_labels_size
       3. The `indices` for the axis are broadcasted to a 2D tensor of labels_size x select_labels_size
@@ -196,11 +196,11 @@ namespace TensorBase
       6. The `indices_view` is updated by multiplication by the 1D select Tensor
 
     @param[in] axis_name
-    @param[in] select_labels_data
+    @param[in] select_labels_data The full 2D axis labels
     @param[in] device
     */
     template<typename LabelsT>
-    void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& select_labels, DeviceT& device);
+    void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels, DeviceT& device);
     
     void resetIndicesView(const std::string& axis_name, DeviceT& device); ///< copy over the indices values to the indices view
     void zeroIndicesView(const std::string& axis_name, DeviceT& device); ///< set the indices view to zero
@@ -1089,6 +1089,33 @@ namespace TensorBase
     // update the indices view based on the selection
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_name)->getDataPointer().get(), (int)axes_.at(axis_name)->getNLabels());
     indices_view.device(device) = indices_view * selected_sum;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  template<typename LabelsT>
+  inline void TensorTable<TensorT, DeviceT, TDim>::selectIndicesView(const std::string & axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels, DeviceT & device)
+  {
+    // reshape to match the axis labels shape and broadcast the length of the labels
+    Eigen::TensorMap<Eigen::Tensor<LabelsT, 4>> labels_names_selected_reshape(select_labels->getDataPointer().get(), 1, 1, select_labels->getDimensions().at(0), select_labels->getDimensions().at(1));
+    auto labels_names_selected_bcast = labels_names_selected_reshape.broadcast(Eigen::array<Eigen::Index, 4>({ (int)axes_.at(axis_name)->getNDimensions(), (int)axes_.at(axis_name)->getNLabels(), 1, 1 }));
+    
+    // broadcast the axis labels the size of the labels queried
+    std::shared_ptr<LabelsT> labels_data;
+    axes_.at(axis_name)->getLabelsDataPointer(labels_data);
+    Eigen::TensorMap<Eigen::Tensor<LabelsT, 5>> labels_reshape(labels_data.get(), (int)axes_.at(axis_name)->getNDimensions(), (int)axes_.at(axis_name)->getNLabels(), 1, 1);
+    auto labels_bcast = labels_reshape.broadcast(Eigen::array<Eigen::Index, 4>({ 1, 1, select_labels->getDimensions().at(0), select_labels->getDimensions().at(1) }));
+
+    // broadcast the tensor indices the size of the labels queried
+    Eigen::TensorMap<Eigen::Tensor<int, 4>> indices_reshape(indices_.at(axis_name)->getDataPointer().get(), 1, (int)axes_.at(axis_name)->getNLabels(), 1, 1);
+    auto indices_bcast = indices_reshape.broadcast(Eigen::array<Eigen::Index, 4>({ (int)axes_.at(axis_name)->getNDimensions(), select_labels->getDimensions().at(0), select_labels->getDimensions().at(1) }));
+
+    // select the indices and reduce back to a 1D Tensor
+    auto selected = (labels_bcast == labels_names_selected_bcast).select(indices_bcast, indices_bcast.constant(0)).sum(
+      Eigen::array<Eigen::Index, 2>({ 2, 3 })).prod(Eigen::array<Eigen::Index, 1>({ 0 })).clip(0, 1); // matched = 1, not-matched = 0;
+
+    // update the indices view based on the selection
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_name)->getDataPointer().get(), (int)axes_.at(axis_name)->getNLabels());
+    indices_view.device(device) = indices_view * selected;
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
