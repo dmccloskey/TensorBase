@@ -464,13 +464,10 @@ BOOST_AUTO_TEST_CASE(appendLabelsToAxisFromCsvDefaultDevice)
       ++iter;
     }
   }
-  TensorDataDefaultDevice<std::string, 2> labels_new(Eigen::array<Eigen::Index, 2>({ n_dimensions, n_new_labels }));
-  labels_new.setData(labels_values);
-  std::shared_ptr<TensorData<std::string, Eigen::DefaultDevice, 2>> labels_new_ptr = std::make_shared<TensorDataDefaultDevice<std::string, 2>>(labels_new);
 
   // Test
   Eigen::DefaultDevice device;
-  tensoraxis.appendLabelsToAxisFromCsv(labels_new_ptr, device);
+  tensoraxis.appendLabelsToAxisFromCsv(labels_values, device);
   BOOST_CHECK_EQUAL(tensoraxis.getNDimensions(), n_dimensions);
   BOOST_CHECK_EQUAL(tensoraxis.getNLabels(), n_labels + n_new_labels);
   BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(0), "TensorDimension1");
