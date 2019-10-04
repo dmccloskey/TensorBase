@@ -121,14 +121,14 @@ public:
     int n_shard_size = tensor_collection.tables_.at(first_table_name)->getCsvShardSpans().at(1);
 
     // Prepare the data structures for calls to insertIntoTableFromCsv
-    std::map<std::string, std::vector<std::string>> data_new;
+    std::map<std::string, Eigen::Tensor<std::string, 2>> data_new;
     for (const auto& primary_data : headers.second) {
-      std::vector<std::string> empty;
+      Eigen::Tensor<std::string, 2> empty((int)primary_data.second.size(), n_shard_size);
       data_new.emplace(primary_data.first, empty);
     }
-    std::map<std::string, std::vector<std::string>> labels_new;
+    std::map<std::string, Eigen::Tensor<std::string, 2>> labels_new;
     for (const auto& non_primary_data : headers.first) {
-      empty.resize(n_shard_size);
+      Eigen::Tensor<std::string, 2> empty((int)non_primary_data.second.size(), n_shard_size);
       labels_new.emplace(non_primary_data.first, empty);
     }
     
@@ -141,18 +141,22 @@ public:
         if (table_name == first_table_name) {
           // Get the .csv data for the non-primary axes labels
           for (const auto& non_primary_data : headers.first) {
+            int header_iter = 0;
             for (const std::string& header : non_primary_data.second) {
               std::string label = row[header].get<>();
-              labels_new.at(non_primary_data.first).push_back(label);
+              labels_new.at(non_primary_data.first)(header_iter, n_cols) = label;
+              ++header_iter;
             }
           }
         }
 
         // Get the .csv data for the data row
         for (const auto& primary_data : headers.second) {
+          int header_iter = 0;
           for (const std::string& header : primary_data.second) {
             std::string cell = row[header].get<>();
-            data_new.at(primary_data.first).push_back(cell);
+            data_new.at(primary_data.first)(header_iter, n_cols) = cell;
+            ++header_iter;
           }
         }
       }

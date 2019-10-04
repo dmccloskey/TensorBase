@@ -99,6 +99,9 @@ namespace TensorBase
     virtual std::vector<std::string> getLabelsAsStrings(DeviceT& device) = 0;
     virtual std::vector<std::string> getLabelsAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span) = 0;
 
+    // All DeviceT combos of `appendLabelsToAxisFromCsv`
+    virtual void appendLabelsToAxisFromCsv(const Eigen::Tensor<std::string, 2>& labels, DeviceT& device) = 0;
+
   private:
     friend class cereal::access;
     template<class Archive>
@@ -209,6 +212,10 @@ namespace TensorBase
     }
     std::vector<std::string> getLabelsAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span) {
       return tensor_axis_->getLabelsAsStrings(offset, span);
+    }
+
+    void appendLabelsToAxisFromCsv(const Eigen::Tensor<std::string, 2>& labels, DeviceT& device) {
+      tensor_axis_->getLabelsAsStrings(labels, device);
     }
 
   private:

@@ -183,6 +183,24 @@ namespace TensorBase
     */
     template<typename LabelsT>
     void selectIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& select_labels, DeviceT& device);
+
+    /*
+    @brief Select Tensor Axis that will be included in the view
+
+    The selection is done according to the following algorithm:
+      1. The `select_labels` are reshaped and broadcasted to a 2D tensor of labels_size x select_labels_size
+      2. The `labels` for the axis are broadcasted to a 2D tensor of labels_size x select_labels_size
+      3. The `indices` for the axis are broadcasted to a 2D tensor of labels_size x select_labels_size
+      4. The indices that correspond to matches between the `select_labels` and `labels` bcast tensors are selected
+      5. The result is reduced and normalized to a 1D Tensor of 0 or 1 of size labels_size
+      6. The `indices_view` is updated by multiplication by the 1D select Tensor
+
+    @param[in] axis_name
+    @param[in] select_labels_data
+    @param[in] device
+    */
+    template<typename LabelsT>
+    void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& select_labels, DeviceT& device);
     
     void resetIndicesView(const std::string& axis_name, DeviceT& device); ///< copy over the indices values to the indices view
     void zeroIndicesView(const std::string& axis_name, DeviceT& device); ///< set the indices view to zero
@@ -725,8 +743,7 @@ namespace TensorBase
     */
     std::map<std::string, std::vector<std::string>> getCsvAxesLabelsRow(const int& row_num);
 
-    template<typename CpuDeviceT>
-    void insertIntoTableFromCsv(const std::map<std::string, std::vector<std::string>>& labels_new, const std::vector<std::string>& data_new, DeviceT& device, CpuDeviceT& cpu_device);
+    void insertIntoTableFromCsv(const std::map<std::string, Eigen::Tensor<std::string, 2>>& labels_new, const Eigen::Tensor<std::string, 2>& data_new, DeviceT& device);
 
     // NOTE: IO methods for TensorTable indices components may not be needed because the call to setAxes remakes all of the indices on the fly
     //virtual bool storeTensorTableIndicesBinary(const std::string& dir, DeviceT& device) = 0; ///< Write tensor indices to disk
@@ -2134,12 +2151,11 @@ namespace TensorBase
     return axes_labels_row;
   }
   template<typename TensorT, typename DeviceT, int TDim>
-  template<typename CpuDeviceT>
-  inline void TensorTable<TensorT, DeviceT, TDim>::insertIntoTableFromCsv(const std::map<std::string, std::vector<std::string>>& labels_new, const std::vector<std::string>& data_new, DeviceT & device, CpuDeviceT& cpu_device)
+  inline void TensorTable<TensorT, DeviceT, TDim>::insertIntoTableFromCsv(const std::map<std::string, Eigen::Tensor<std::string, 2>>& labels_new, const Eigen::Tensor<std::string, 2>& data_new, DeviceT & device)
   {
     // add in the new labels
     for (auto& axis_map : axes_) {
-      // TODO:  axis_map.second->appendLabelsToAxisFromCsv(labels_new.at(axis_map.first));
+      axis_map.second->appendLabelsToAxisFromCsv(labels_new.at(axis_map.first));
     }
     setAxes();
 
@@ -2155,12 +2171,23 @@ namespace TensorBase
     syncAxesHAndDData(device);
 
     // Select the new axis labels
+    for (auto& axis_map : axes_) {
+      //this->selectIndicesView(axis_map.first, ); // TODO: need overload to select by "primary key"
+    }
 
     // Reformat into a SparseTensorTable
-    //Eigen::Tensor<TensorT, 1> data_converted = convertStringVecToTensorTVec(data_new, cpu_device); // convert the data from string to TensorT
+    // TODO: move to device-specific code
+    TensorDataDefaultDevice<TensorT, 1> data_new_sparse(int(data_new.dimension(0) * data_new.dimension(1)));
+    data_new_sparse.convertFromStringToTensorT(data_new, device);
+
+    // Check that the needed values are in memory
+    loadTensorTableBinary(dir_, device);
 
     // Update from the SparseTensorTable
-    // NOTE: alignment of axes is not enforced in SparseTensorTable so a pre-sort maybe needed...
+    selectTensorData(device);    
+    //sortTensorData(device); // NOTE: alignment of axes is not enforced in SparseTensorTable so a pre-sort maybe needed...
+    updateTensorDataFromSparseTensorTable(data_new_sparse, device);
+
   }
 };
 #endif //TENSORBASE_TENSORTABLE_H
