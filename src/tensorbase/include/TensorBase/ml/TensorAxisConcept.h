@@ -215,7 +215,7 @@ namespace TensorBase
     }
 
     void appendLabelsToAxisFromCsv(const Eigen::Tensor<std::string, 2>& labels, DeviceT& device) {
-      tensor_axis_->getLabelsAsStrings(labels, device);
+      tensor_axis_->appendLabelsToAxisFromCsv(labels, device);
     }
 
   private:

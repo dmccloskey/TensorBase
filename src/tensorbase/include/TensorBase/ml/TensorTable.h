@@ -1102,12 +1102,12 @@ namespace TensorBase
     // broadcast the axis labels the size of the labels queried
     std::shared_ptr<LabelsT> labels_data;
     axes_.at(axis_name)->getLabelsDataPointer(labels_data);
-    Eigen::TensorMap<Eigen::Tensor<LabelsT, 5>> labels_reshape(labels_data.get(), (int)axes_.at(axis_name)->getNDimensions(), (int)axes_.at(axis_name)->getNLabels(), 1, 1);
+    Eigen::TensorMap<Eigen::Tensor<LabelsT, 4>> labels_reshape(labels_data.get(), (int)axes_.at(axis_name)->getNDimensions(), (int)axes_.at(axis_name)->getNLabels(), 1, 1);
     auto labels_bcast = labels_reshape.broadcast(Eigen::array<Eigen::Index, 4>({ 1, 1, select_labels->getDimensions().at(0), select_labels->getDimensions().at(1) }));
 
     // broadcast the tensor indices the size of the labels queried
     Eigen::TensorMap<Eigen::Tensor<int, 4>> indices_reshape(indices_.at(axis_name)->getDataPointer().get(), 1, (int)axes_.at(axis_name)->getNLabels(), 1, 1);
-    auto indices_bcast = indices_reshape.broadcast(Eigen::array<Eigen::Index, 4>({ (int)axes_.at(axis_name)->getNDimensions(), select_labels->getDimensions().at(0), select_labels->getDimensions().at(1) }));
+    auto indices_bcast = indices_reshape.broadcast(Eigen::array<Eigen::Index, 4>({ (int)axes_.at(axis_name)->getNDimensions(), 1, select_labels->getDimensions().at(0), select_labels->getDimensions().at(1) }));
 
     // select the indices and reduce back to a 1D Tensor
     auto selected = (labels_bcast == labels_names_selected_bcast).select(indices_bcast, indices_bcast.constant(0)).sum(
