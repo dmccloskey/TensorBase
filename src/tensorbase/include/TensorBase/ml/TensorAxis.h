@@ -159,6 +159,15 @@ namespace TensorBase
     */
     virtual void appendLabelsToAxisFromCsv(const Eigen::Tensor<std::string, 2>& labels, DeviceT& device) = 0;
 
+    /*
+    @brief Match the labels that are derived from a .csv file
+
+    @param[out] select_indices A binary vector indicating the indices of the labels that matched
+    @param[in] labels The labels to match
+    @param[in] device
+    */
+    virtual void makeSelectIndicesFromCsv(std::shared_ptr<TensorData<int, DeviceT, 1>>& select_indices, const Eigen::Tensor<std::string, 2>& labels, DeviceT& device) = 0;
+
   protected:
     void setNLabels(const size_t& n_labels) { n_labels_ = n_labels; }; ///< n_labels setter
     void setNDimensions(const size_t& n_dimenions) { n_dimensions_ = n_dimenions; }; ///< n_tensor_dimensions setter
@@ -323,6 +332,7 @@ namespace TensorBase
     bool loadLabelsBinary(const std::string& filename, Eigen::DefaultDevice& device) override;
     bool storeLabelsBinary(const std::string& filename, Eigen::DefaultDevice& device) override;
     void appendLabelsToAxisFromCsv(const Eigen::Tensor<std::string, 2>& labels, Eigen::DefaultDevice& device) override;
+    void makeSelectIndicesFromCsv(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& select_indices, const Eigen::Tensor<std::string, 2>& labels, Eigen::DefaultDevice& device) override;
   private:
     friend class cereal::access;
     template<class Archive>
@@ -457,6 +467,7 @@ namespace TensorBase
     // Convert to TensorT
     TensorDataDefaultDevice<TensorT, 2> labels_converted(Eigen::array<Eigen::Index, 2>({ (int)labels.dimension(0), (int)labels.dimension(1) }));
     labels_converted.setData();
+    labels_converted.syncHAndDData(device);
     labels_converted.convertFromStringToTensorT(labels, device);
 
     // Make the indices select
@@ -509,6 +520,42 @@ namespace TensorBase
   }
 
   template<typename TensorT>
+  inline void TensorAxisDefaultDevice<TensorT>::makeSelectIndicesFromCsv(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& select_indices, const Eigen::Tensor<std::string, 2>& labels, Eigen::DefaultDevice & device)
+  {
+    assert(this->n_dimensions_ == (int)labels.dimension(0));
+
+    // Convert to TensorT
+    TensorDataDefaultDevice<TensorT, 2> select_labels(Eigen::array<Eigen::Index, 2>({ (int)labels.dimension(0), (int)labels.dimension(1) }));
+    select_labels.setData();
+    select_labels.syncHAndDData(device);
+    select_labels.convertFromStringToTensorT(labels, device);
+
+    // reshape to match the axis labels shape and broadcast the length of the labels
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 4>> labels_names_selected_reshape(select_labels.getDataPointer().get(), 1, 1, select_labels.getDimensions().at(0), select_labels.getDimensions().at(1));
+    auto labels_names_selected_bcast = labels_names_selected_reshape.broadcast(Eigen::array<Eigen::Index, 4>({ (int)this->getNDimensions(), (int)this->getNLabels(), 1, 1 }));
+
+    // broadcast the axis labels the size of the labels queried
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 4>> labels_reshape(this->tensor_dimension_labels_->getDataPointer().get(), (int)this->getNDimensions(), (int)this->getNLabels(), 1, 1);
+    auto labels_bcast = labels_reshape.broadcast(Eigen::array<Eigen::Index, 4>({ 1, 1, select_labels.getDimensions().at(0), select_labels.getDimensions().at(1) }));
+
+    // broadcast the tensor indices the size of the labels queried
+    TensorDataDefaultDevice<int, 1> select_indices_tmp(Eigen::array<Eigen::Index, 1>({ (int)this->getNLabels() }));
+    select_indices_tmp.setData();
+    select_indices_tmp.syncHAndDData(device);
+    Eigen::TensorMap<Eigen::Tensor<int, 4>> indices_reshape(select_indices_tmp.getDataPointer().get(), 1, (int)this->getNLabels(), 1, 1);
+    auto indices_bcast = indices_reshape.broadcast(Eigen::array<Eigen::Index, 4>({ (int)this->getNDimensions(), 1, select_labels.getDimensions().at(0), select_labels.getDimensions().at(1) }));
+
+    // select the indices and reduce back to a 1D Tensor
+    auto selected = (labels_bcast == labels_names_selected_bcast).select(indices_bcast.constant(1), indices_bcast.constant(0)).sum(
+      Eigen::array<Eigen::Index, 2>({ 2, 3 })).prod(Eigen::array<Eigen::Index, 1>({ 0 })).clip(0, 1); // matched = 1, not-matched = 0;
+
+    // assign the select indices
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> select_indices_values(select_indices_tmp.getDataPointer().get(), (int)this->getNLabels());
+    select_indices_values.device(device) = selected;
+    select_indices = std::make_shared<TensorDataDefaultDevice<int, 1>>(select_indices_tmp);
+  }
+
+  template<typename TensorT>
   class TensorAxisCpu : public TensorAxis<TensorT, Eigen::ThreadPoolDevice>
   {
   public:
@@ -524,6 +571,7 @@ namespace TensorBase
     bool loadLabelsBinary(const std::string& filename, Eigen::ThreadPoolDevice& device) override;
     bool storeLabelsBinary(const std::string& filename, Eigen::ThreadPoolDevice& device) override;
     void appendLabelsToAxisFromCsv(const Eigen::Tensor<std::string, 2>& labels, Eigen::ThreadPoolDevice& device) override;
+    void makeSelectIndicesFromCsv(std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& select_indices, const Eigen::Tensor<std::string, 2>& labels, Eigen::ThreadPoolDevice& device) override;
   private:
     friend class cereal::access;
     template<class Archive>
@@ -657,6 +705,7 @@ namespace TensorBase
     // Convert to TensorT
     TensorDataCpu<TensorT, 2> labels_converted(Eigen::array<Eigen::Index, 2>({ (int)labels.dimension(0), (int)labels.dimension(1) }));
     labels_converted.setData();
+    labels_converted.syncHAndDData(device);
     labels_converted.convertFromStringToTensorT(labels, device);
 
     // Make the indices select
@@ -706,6 +755,41 @@ namespace TensorBase
 
     // Append the selected labels to the axis
     this->appendLabelsToAxis(labels_select_ptr, device);
+  }
+  template<typename TensorT>
+  inline void TensorAxisCpu<TensorT>::makeSelectIndicesFromCsv(std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& select_indices, const Eigen::Tensor<std::string, 2>& labels, Eigen::ThreadPoolDevice & device)
+  {
+    assert(this->n_dimensions_ == (int)labels.dimension(0));
+
+    // Convert to TensorT
+    TensorDataCpu<TensorT, 2> select_labels(Eigen::array<Eigen::Index, 2>({ (int)labels.dimension(0), (int)labels.dimension(1) }));
+    select_labels.setData();
+    select_labels.syncHAndDData(device);
+    select_labels.convertFromStringToTensorT(labels, device);
+
+    // reshape to match the axis labels shape and broadcast the length of the labels
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 4>> labels_names_selected_reshape(select_labels.getDataPointer().get(), 1, 1, select_labels.getDimensions().at(0), select_labels.getDimensions().at(1));
+    auto labels_names_selected_bcast = labels_names_selected_reshape.broadcast(Eigen::array<Eigen::Index, 4>({ (int)this->getNDimensions(), (int)this->getNLabels(), 1, 1 }));
+
+    // broadcast the axis labels the size of the labels queried
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 4>> labels_reshape(this->tensor_dimension_labels_->getDataPointer().get(), (int)this->getNDimensions(), (int)this->getNLabels(), 1, 1);
+    auto labels_bcast = labels_reshape.broadcast(Eigen::array<Eigen::Index, 4>({ 1, 1, select_labels.getDimensions().at(0), select_labels.getDimensions().at(1) }));
+
+    // broadcast the tensor indices the size of the labels queried
+    TensorDataCpu<int, 1> select_indices_tmp(Eigen::array<Eigen::Index, 1>({ (int)this->getNLabels() }));
+    select_indices_tmp.setData();
+    select_indices_tmp.syncHAndDData(device);
+    Eigen::TensorMap<Eigen::Tensor<int, 4>> indices_reshape(select_indices_tmp.getDataPointer().get(), 1, (int)this->getNLabels(), 1, 1);
+    auto indices_bcast = indices_reshape.broadcast(Eigen::array<Eigen::Index, 4>({ (int)this->getNDimensions(), 1, select_labels.getDimensions().at(0), select_labels.getDimensions().at(1) }));
+
+    // select the indices and reduce back to a 1D Tensor
+    auto selected = (labels_bcast == labels_names_selected_bcast).select(indices_bcast.constant(1), indices_bcast.constant(0)).sum(
+      Eigen::array<Eigen::Index, 2>({ 2, 3 })).prod(Eigen::array<Eigen::Index, 1>({ 0 })).clip(0, 1); // matched = 1, not-matched = 0;
+
+    // assign the select indices
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> select_indices_values(select_indices_tmp.getDataPointer().get(), (int)this->getNLabels());
+    select_indices_values.device(device) = selected;
+    select_indices = std::make_shared<TensorDataCpu<int, 1>>(select_indices_tmp);
   }
 };
 
