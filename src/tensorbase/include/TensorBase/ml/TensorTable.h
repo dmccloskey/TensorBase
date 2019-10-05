@@ -119,6 +119,7 @@ namespace TensorBase
 
     void setData(const Eigen::Tensor<TensorT, TDim>& data); ///< data setter (NOTE: must sync the `data` AND `not_in_memory`/`is_modified` attributes!)
     void setData(); ///< data setter (NOTE: must sync the `data` AND `not_in_memory`/`is_modified` attributes!)
+    void convertDataFromStringToTensorT(const Eigen::Tensor<std::string, TDim>& data_new, DeviceT& device); ///< data setter (NOTE: must sync the `data` AND `not_in_memory`/`is_modified` attributes!)
 
     bool syncIndicesHAndDData(DeviceT& device); ///< Sync the host and device indices data
     void setIndicesDataStatus(const bool& h_data_updated, const bool& d_data_updated);///< Set the status of the host and device indices data
@@ -745,9 +746,6 @@ namespace TensorBase
 
     void insertIntoTableFromCsv(const std::map<std::string, Eigen::Tensor<std::string, 2>>& labels_new, const Eigen::Tensor<std::string, 2>& data_new, DeviceT& device);
 
-    template<typename LabelsT>
-    void selectIndicesViewFromCsv(const std::string& axis_name, const Eigen::Tensor<std::string, 2>& labels_new, DeviceT& device);
-
     void makeSparseTensorTableFromCsv(std::shared_ptr<TensorTable<TensorT, DeviceT, 2>>& sparse_table_ptr, const Eigen::Tensor<std::string, 2>& data_new, DeviceT& device);
 
     // NOTE: IO methods for TensorTable indices components may not be needed because the call to setAxes remakes all of the indices on the fly
@@ -828,6 +826,20 @@ namespace TensorBase
     }
     for (auto& is_modified_map : is_modified_) {
       is_modified_map.second->getData() = is_modified_map.second->getData().constant(0); // host
+    }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::convertDataFromStringToTensorT(const Eigen::Tensor<std::string, TDim>& data_new, DeviceT & device)
+  {
+    data_->convertFromStringToTensorT(data_new, device);
+    for (auto& in_memory_map : not_in_memory_) {
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> not_in_memory(in_memory_map.second->getDataPointer().get(), (int)in_memory_map.second->getTensorSize());
+      not_in_memory.device(device) = not_in_memory.constant(0); // device
+    }
+    for (auto& is_modified_map : is_modified_) {
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> is_modified(is_modified_map.second->getDataPointer().get(), (int)is_modified_map.second->getTensorSize());
+      is_modified.device(device) = is_modified.constant(1); // device
     }
   }
 
@@ -2204,7 +2216,14 @@ namespace TensorBase
 
     // Select the new axis labels
     for (auto& axis_map : axes_) {
-      selectIndicesViewFromCsv(axis_map.first, labels_new.at(axis_map.first), device);
+      // make the select indices
+      std::shared_ptr<TensorData<int, DeviceT, 1>> select_indices;
+      axis_map.second->makeSelectIndicesFromCsv(select_indices, labels_new.at(axis_map.first), device);
+
+      // update the indices view based on the selection
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_map.first)->getDataPointer().get(), (int)axes_.at(axis_map.first)->getNLabels());
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> selected(select_indices->getDataPointer().get(), (int)axes_.at(axis_map.first)->getNLabels());
+      indices_view.device(device) = indices_view * selected;
     }
 
     // Reformat into a SparseTensorTable
@@ -2217,33 +2236,15 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
-  template<typename LabelsT>
-  inline void TensorTable<TensorT, DeviceT, TDim>::selectIndicesViewFromCsv(const std::string & axis_name, const Eigen::Tensor<std::string, 2>& labels_new, DeviceT & device)
-  {
-    // MOVE TO DEVICE SPECIFIC CODE
-    // Convert to TensorT      
-    TensorDataDefaultDevice<LabelsT, 2> labels_converted(Eigen::array<Eigen::Index, 2>({ int(labels_new.dimension(0)), int(labels_new.dimension(1)) }));
-    labels_converted.setData();
-    labels_converted.syncHAndDData(device);
-    labels_converted.convertFromStringToTensorT(labels_new, device);
-
-    // Select the axis labels by "primary key"
-    this->selectIndicesView(axis_name, labels_converted, device); // TODO: need overload to select by "primary key"
-  }
-
-  template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorTable<TensorT, DeviceT, TDim>::makeSparseTensorTableFromCsv(std::shared_ptr<TensorTable<TensorT, DeviceT, 2>>& sparse_table_ptr, const Eigen::Tensor<std::string, 2>& data_new, DeviceT & device)
   {
     // MOVE TO DEVICE SPECIFIC CODE
-    // Convert from string to TensorT and reshape to n_data x 1
-    TensorDataDefaultDevice<TensorT, 2> data_new_sparse(Eigen::array<Eigen::Index, 2>({ int(data_new.size()), 1 }));
-    data_new_sparse.setData();
-    data_new_sparse.syncHAndDData(device);
-    data_new_sparse.convertFromStringToTensorT(data_new, device);
 
-    // Make the sparse TensorTable
+    // Convert from string to TensorT and reshape to n_data x 1
     TensorTableDefaultDevice<TensorT, 2> sparse_table(Eigen::array<Eigen::Index, 2>({ int(data_new.size()), 1 }));
-    sparse_table.data_ = data_new_sparse;
+    sparse_table.setData();
+    sparse_table.syncHAndDData(device);
+    sparse_table.convertDataFromStringToTensorT(data_new, device);
     sparse_table_ptr = std::make_shared<TensorDataDefaultDevice<TensorT, 2>>(sparse_table);
   }
 };
