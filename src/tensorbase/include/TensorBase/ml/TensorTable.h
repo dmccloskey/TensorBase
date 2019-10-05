@@ -745,6 +745,11 @@ namespace TensorBase
 
     void insertIntoTableFromCsv(const std::map<std::string, Eigen::Tensor<std::string, 2>>& labels_new, const Eigen::Tensor<std::string, 2>& data_new, DeviceT& device);
 
+    template<typename LabelsT>
+    void selectIndicesViewFromCsv(const std::string& axis_name, const Eigen::Tensor<std::string, 2>& labels_new, DeviceT& device);
+
+    void makeSparseTensorTableFromCsv(std::shared_ptr<TensorTable<TensorT, DeviceT, 2>>& sparse_table_ptr, const Eigen::Tensor<std::string, 2>& data_new, DeviceT& device);
+
     // NOTE: IO methods for TensorTable indices components may not be needed because the call to setAxes remakes all of the indices on the fly
     //virtual bool storeTensorTableIndicesBinary(const std::string& dir, DeviceT& device) = 0; ///< Write tensor indices to disk
     //virtual bool loadTensorTableIndicesBinary(const std::string& dir, DeviceT& device) = 0; ///< Read tensor indices from disk
@@ -1619,10 +1624,10 @@ namespace TensorBase
   {
     // make the partition index tensor from the indices view
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_partition;
-    makeSelectIndicesFromTensorIndicesComponent(this->indices_view_, indices_partition, device);
+    makeSelectIndicesFromTensorIndicesComponent(indices_view_, indices_partition, device);
 
     // Check that the update values are in memory
-    this->loadTensorTableBinary(this->dir_, device);
+    loadTensorTableBinary(this->dir_, device);
 
     // partition the data in place
     data_->partition(indices_partition, device);
@@ -2182,7 +2187,7 @@ namespace TensorBase
   {
     // add in the new labels
     for (auto& axis_map : axes_) {
-      axis_map.second->appendLabelsToAxisFromCsv(labels_new.at(axis_map.first));
+      axis_map.second->appendLabelsToAxisFromCsv(labels_new.at(axis_map.first), device);
     }
     setAxes();
 
@@ -2199,22 +2204,47 @@ namespace TensorBase
 
     // Select the new axis labels
     for (auto& axis_map : axes_) {
-      //this->selectIndicesView(axis_map.first, ); // TODO: need overload to select by "primary key"
+      selectIndicesViewFromCsv(axis_map.first, labels_new.at(axis_map.first), device);
     }
 
     // Reformat into a SparseTensorTable
-    // TODO: move to device-specific code
-    TensorDataDefaultDevice<TensorT, 1> data_new_sparse(int(data_new.dimension(0) * data_new.dimension(1)));
-    data_new_sparse.convertFromStringToTensorT(data_new, device);
-
-    // Check that the needed values are in memory
-    loadTensorTableBinary(dir_, device);
+    std::shared_ptr<TensorTable<TensorT, DeviceT, 2>> sparse_table_ptr;
+    makeSparseTensorTableFromCsv(sparse_table_ptr, data_new, device);
 
     // Update from the SparseTensorTable
-    selectTensorData(device);    
     //sortTensorData(device); // NOTE: alignment of axes is not enforced in SparseTensorTable so a pre-sort maybe needed...
-    updateTensorDataFromSparseTensorTable(data_new_sparse, device);
+    updateTensorDataFromSparseTensorTable(sparse_table_ptr, device);
+  }
 
+  template<typename TensorT, typename DeviceT, int TDim>
+  template<typename LabelsT>
+  inline void TensorTable<TensorT, DeviceT, TDim>::selectIndicesViewFromCsv(const std::string & axis_name, const Eigen::Tensor<std::string, 2>& labels_new, DeviceT & device)
+  {
+    // MOVE TO DEVICE SPECIFIC CODE
+    // Convert to TensorT      
+    TensorDataDefaultDevice<LabelsT, 2> labels_converted(Eigen::array<Eigen::Index, 2>({ int(labels_new.dimension(0)), int(labels_new.dimension(1)) }));
+    labels_converted.setData();
+    labels_converted.syncHAndDData(device);
+    labels_converted.convertFromStringToTensorT(labels_new, device);
+
+    // Select the axis labels by "primary key"
+    this->selectIndicesView(axis_name, labels_converted, device); // TODO: need overload to select by "primary key"
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::makeSparseTensorTableFromCsv(std::shared_ptr<TensorTable<TensorT, DeviceT, 2>>& sparse_table_ptr, const Eigen::Tensor<std::string, 2>& data_new, DeviceT & device)
+  {
+    // MOVE TO DEVICE SPECIFIC CODE
+    // Convert from string to TensorT and reshape to n_data x 1
+    TensorDataDefaultDevice<TensorT, 2> data_new_sparse(Eigen::array<Eigen::Index, 2>({ int(data_new.size()), 1 }));
+    data_new_sparse.setData();
+    data_new_sparse.syncHAndDData(device);
+    data_new_sparse.convertFromStringToTensorT(data_new, device);
+
+    // Make the sparse TensorTable
+    TensorTableDefaultDevice<TensorT, 2> sparse_table(Eigen::array<Eigen::Index, 2>({ int(data_new.size()), 1 }));
+    sparse_table.data_ = data_new_sparse;
+    sparse_table_ptr = std::make_shared<TensorDataDefaultDevice<TensorT, 2>>(sparse_table);
   }
 };
 #endif //TENSORBASE_TENSORTABLE_H

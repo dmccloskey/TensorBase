@@ -3411,4 +3411,69 @@ BOOST_AUTO_TEST_CASE(getCsvDataRowDefaultDevice)
   }
 }
 
+BOOST_AUTO_TEST_CASE(insertIntoTableFromCsvDefaultDevice)
+{
+  // setup the table
+  TensorTableDefaultDevice<float, 3> tensorTable;
+
+  // setup the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels = 3;
+  Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, 1), labels3(1, 1);
+  labels1.setValues({ {0, 1, 2} });
+  labels2.setValues({ {0} });
+  labels3.setValues({ {0} });
+  auto axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1));
+  auto axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2));
+  auto axis_3_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3));
+  tensorTable.addTensorAxis(axis_1_ptr);
+  tensorTable.addTensorAxis(axis_2_ptr);
+  tensorTable.addTensorAxis(axis_3_ptr);
+  tensorTable.setAxes();
+
+  // setup the tensor data and new tensor data from csv
+  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, 1, 1 }));
+  Eigen::Tensor<std::string, 2> new_values_str(Eigen::array<Eigen::Index, 2>({ nlabels, 4 }));
+  for (int k = 0; k < nlabels; ++k) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int i = 0; i < nlabels; ++i) {
+        if (j == 0 && k == 0) {
+          tensor_values(i, j, k) = i + j * nlabels + k * nlabels*nlabels;
+        }
+        else {
+          int index = (j - 1) + (k - 1) * (nlabels - 1);
+          new_values_str(i, index) = std::to_string(i + j * nlabels + k * nlabels*nlabels);
+        }
+      }
+    }
+  }
+  tensorTable.setData(tensor_values);
+
+  // setup the new axis labels from csv
+  std::map<std::string, Eigen::Tensor<std::string, 2>> labels_new_str;
+  Eigen::Tensor<std::string, 2> labels_str(1, 2);
+  labels_str.setValues({ {"1", "2"} });
+  labels_new_str.emplace("2", labels_str);
+  labels_new_str.emplace("3", labels_str);
+
+  // Setup the device
+  Eigen::DefaultDevice device;
+  tensorTable.insertIntoTableFromCsv(labels_new_str, new_values_str, device);
+  for (int k = 0; k < nlabels; ++k) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int i = 0; i < nlabels; ++i) {
+        BOOST_CHECK_EQUAL(tensorTable.getData()(i, j, k), i + j * nlabels + k * nlabels*nlabels);
+      }
+    }
+  }
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_EQUAL(axis_1_ptr->getLabels()(0, i), i);
+    BOOST_CHECK_EQUAL(axis_2_ptr->getLabels()(0, i), i);
+    BOOST_CHECK_EQUAL(axis_3_ptr->getLabels()(0, i), i);
+  }
+}
+
 BOOST_AUTO_TEST_SUITE_END()
