@@ -106,6 +106,7 @@ namespace TensorBase
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getShardId() const { return shard_id_; }; ///< shard_id getter
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getShardIndices() const { return shard_indices_; }; ///< shard_indicies getter
 
+    void setDimensions(const Eigen::array<Eigen::Index, TDim>& dimensions) { dimensions_ = dimensions; }; ///< dimensions setter
     Eigen::array<Eigen::Index, TDim> getDimensions() const { return dimensions_; }  ///< dimensions getter
     int getDimFromAxisName(const std::string& axis_name) const { return axes_to_dims_.at(axis_name); }
     void clear();  ///< clears the axes and all associated data
@@ -2199,7 +2200,8 @@ namespace TensorBase
   {
     // add in the new labels
     for (auto& axis_map : axes_) {
-      axis_map.second->appendLabelsToAxisFromCsv(labels_new.at(axis_map.first), device);
+      if (axis_map.first != axes_.begin()->first)
+        axis_map.second->appendLabelsToAxisFromCsv(labels_new.at(axis_map.first), device);
     }
     setAxes();
 
@@ -2216,14 +2218,16 @@ namespace TensorBase
 
     // Select the new axis labels
     for (auto& axis_map : axes_) {
-      // make the select indices
-      std::shared_ptr<TensorData<int, DeviceT, 1>> select_indices;
-      axis_map.second->makeSelectIndicesFromCsv(select_indices, labels_new.at(axis_map.first), device);
+      if (axis_map.first != axes_.begin()->first) {
+        // make the select indices
+        std::shared_ptr<TensorData<int, DeviceT, 1>> select_indices;
+        axis_map.second->makeSelectIndicesFromCsv(select_indices, labels_new.at(axis_map.first), device);
 
-      // update the indices view based on the selection
-      Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_map.first)->getDataPointer().get(), (int)axes_.at(axis_map.first)->getNLabels());
-      Eigen::TensorMap<Eigen::Tensor<int, 1>> selected(select_indices->getDataPointer().get(), (int)axes_.at(axis_map.first)->getNLabels());
-      indices_view.device(device) = indices_view * selected;
+        // update the indices view based on the selection
+        Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_map.first)->getDataPointer().get(), (int)axes_.at(axis_map.first)->getNLabels());
+        Eigen::TensorMap<Eigen::Tensor<int, 1>> selected(select_indices->getDataPointer().get(), (int)axes_.at(axis_map.first)->getNLabels());
+        indices_view.device(device) = indices_view * selected;
+      }
     }
 
     // Reformat into a SparseTensorTable
@@ -2241,11 +2245,13 @@ namespace TensorBase
     // MOVE TO DEVICE SPECIFIC CODE
 
     // Convert from string to TensorT and reshape to n_data x 1
-    TensorTableDefaultDevice<TensorT, 2> sparse_table(Eigen::array<Eigen::Index, 2>({ int(data_new.size()), 1 }));
+    TensorTableDefaultDevice<TensorT, 2> sparse_table;
+    sparse_table.setDimensions(Eigen::array<Eigen::Index, 2>({ int(data_new.size()), 1 }));
+    sparse_table.initData();
     sparse_table.setData();
     sparse_table.syncHAndDData(device);
     sparse_table.convertDataFromStringToTensorT(data_new, device);
-    sparse_table_ptr = std::make_shared<TensorDataDefaultDevice<TensorT, 2>>(sparse_table);
+    sparse_table_ptr = std::make_shared<TensorTableDefaultDevice<TensorT, 2>>(sparse_table);
   }
 };
 #endif //TENSORBASE_TENSORTABLE_H

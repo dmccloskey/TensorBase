@@ -68,6 +68,7 @@ namespace TensorBase
     this->is_modified_.clear();
     this->not_in_memory_.clear();
     this->shard_id_.clear();
+    this->shard_indices_.clear();
     this->shard_spans_.clear();
 
     // Determine the overall dimensions of the tensor

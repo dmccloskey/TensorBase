@@ -3434,9 +3434,11 @@ BOOST_AUTO_TEST_CASE(insertIntoTableFromCsvDefaultDevice)
   tensorTable.addTensorAxis(axis_3_ptr);
   tensorTable.setAxes();
 
-  // setup the tensor data and new tensor data from csv
+  // setup the tensor data, the new tensor data from csv, and the new axes labels from csv
   Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, 1, 1 }));
-  Eigen::Tensor<std::string, 2> new_values_str(Eigen::array<Eigen::Index, 2>({ nlabels, 4 }));
+  Eigen::Tensor<std::string, 2> new_values_str(Eigen::array<Eigen::Index, 2>({ nlabels, 8 }));
+  Eigen::Tensor<std::string, 2> labels_2_str(1, 8);
+  Eigen::Tensor<std::string, 2> labels_3_str(1, 8);
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {
       for (int i = 0; i < nlabels; ++i) {
@@ -3444,20 +3446,23 @@ BOOST_AUTO_TEST_CASE(insertIntoTableFromCsvDefaultDevice)
           tensor_values(i, j, k) = i + j * nlabels + k * nlabels*nlabels;
         }
         else {
-          int index = (j - 1) + (k - 1) * (nlabels - 1);
+          int index = j + k * nlabels - 1;
           new_values_str(i, index) = std::to_string(i + j * nlabels + k * nlabels*nlabels);
+          labels_2_str(0, index) = std::to_string(j);
+          labels_3_str(0, index) = std::to_string(k);
         }
       }
     }
   }
+  std::cout << "new_values_str\n" << new_values_str << std::endl;
+  std::cout << "labels_2_str\n" << labels_2_str << std::endl;
+  std::cout << "labels_3_str\n" << labels_3_str << std::endl;
   tensorTable.setData(tensor_values);
 
   // setup the new axis labels from csv
   std::map<std::string, Eigen::Tensor<std::string, 2>> labels_new_str;
-  Eigen::Tensor<std::string, 2> labels_str(1, 2);
-  labels_str.setValues({ {"1", "2"} });
-  labels_new_str.emplace("2", labels_str);
-  labels_new_str.emplace("3", labels_str);
+  labels_new_str.emplace("2", labels_2_str);
+  labels_new_str.emplace("3", labels_3_str);
 
   // Setup the device
   Eigen::DefaultDevice device;

@@ -454,13 +454,14 @@ BOOST_AUTO_TEST_CASE(appendLabelsToAxisFromCsvDefaultDevice)
   TensorAxisDefaultDevice<int> tensoraxis("1", dimensions, labels);
 
   // Setup the new labels
-  int n_new_labels = 2;
+  int n_new_labels = 4;
   Eigen::Tensor<std::string, 2> labels_values(Eigen::array<Eigen::Index, 2>({ n_dimensions, n_new_labels }));
-  iter = 0;
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = 0; j < n_new_labels; ++j) {
-      labels_values(i, j) = std::to_string(iter);
-      ++iter;
+      if (j < 2)
+        labels_values(i, j) = std::to_string(i + j * n_dimensions + iter);
+      else
+        labels_values(i, j) = std::to_string(i + (j - 2) * n_dimensions + iter); // duplicates
     }
   }
 
@@ -468,7 +469,7 @@ BOOST_AUTO_TEST_CASE(appendLabelsToAxisFromCsvDefaultDevice)
   Eigen::DefaultDevice device;
   tensoraxis.appendLabelsToAxisFromCsv(labels_values, device);
   BOOST_CHECK_EQUAL(tensoraxis.getNDimensions(), n_dimensions);
-  BOOST_CHECK_EQUAL(tensoraxis.getNLabels(), n_labels + n_new_labels);
+  BOOST_CHECK_EQUAL(tensoraxis.getNLabels(), n_labels + 2);
   BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(0), "TensorDimension1");
   BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(1), "TensorDimension2");
   for (int i = 0; i < n_dimensions; ++i) {
@@ -895,13 +896,14 @@ BOOST_AUTO_TEST_CASE(appendLabelsToAxisFromCsvCpu)
   TensorAxisCpu<int> tensoraxis("1", dimensions, labels);
 
   // Setup the new labels
-  int n_new_labels = 2;
+  int n_new_labels = 4;
   Eigen::Tensor<std::string, 2> labels_values(Eigen::array<Eigen::Index, 2>({ n_dimensions, n_new_labels }));
-  iter = 0;
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = 0; j < n_new_labels; ++j) {
-      labels_values(i, j) = std::to_string(iter);
-      ++iter;
+      if (j < 2)
+        labels_values(i, j) = std::to_string(i + j * n_dimensions + iter);
+      else
+        labels_values(i, j) = std::to_string(i + (j - 2) * n_dimensions + iter); // duplicates
     }
   }
 
@@ -910,7 +912,7 @@ BOOST_AUTO_TEST_CASE(appendLabelsToAxisFromCsvCpu)
   Eigen::ThreadPoolDevice device(&pool, 1);
   tensoraxis.appendLabelsToAxisFromCsv(labels_values, device);
   BOOST_CHECK_EQUAL(tensoraxis.getNDimensions(), n_dimensions);
-  BOOST_CHECK_EQUAL(tensoraxis.getNLabels(), n_labels + n_new_labels);
+  BOOST_CHECK_EQUAL(tensoraxis.getNLabels(), n_labels + 2);
   BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(0), "TensorDimension1");
   BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(1), "TensorDimension2");
   for (int i = 0; i < n_dimensions; ++i) {
