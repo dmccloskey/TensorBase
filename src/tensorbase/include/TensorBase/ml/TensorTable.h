@@ -2215,10 +2215,12 @@ namespace TensorBase
     // Intialize the data and initialize the new data to 0's
     setData();
     for (auto& in_memory_map : not_in_memory_) {
-      // TODO: determine the slice indices
-      Eigen::array<Eigen::Index, TDim> offset = dimensions_copy;
-      Eigen::array<Eigen::Index, TDim> span = dimensions_copy - dimensions_;
-      in_memory_map.second->getData().slice(offset, span) = in_memory_map.second->getData().slic(offset, span).constant(0); // host
+      //const int dim = getDimFromAxisName(in_memory_map.first);
+      //Eigen::array<Eigen::Index, 1> offset, span;
+      //offset.at(0) = dimensions_copy.at(dim);
+      //span.at(0) = dimensions_.at(dim) - dimensions_copy.at(dim);
+      //in_memory_map.second->getData().slice(offset, span) = in_memory_map.second->getData().slice(offset, span).constant(0); // host
+      in_memory_map.second->getData() = in_memory_map.second->getData().constant(0); // host
     }
 
     // TODO: does it make sense to move this over to `setAxes()` ?
