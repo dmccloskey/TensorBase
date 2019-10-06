@@ -2203,7 +2203,18 @@ namespace TensorBase
       if (axis_map.first != axes_.begin()->first)
         axis_map.second->appendLabelsToAxisFromCsv(labels_new.at(axis_map.first), device);
     }
-    setAxes();
+
+    // Copy the shard indices and set the axes
+    std::map<std::string, int> shard_spans_copy = shard_spans_;
+    setAxes(); // NOTE: this will clear the in-memory data
+    setData();
+    setShardSpans(shard_spans_copy); // set the shard indices back to what they were
+
+    // Intialize the data and set everything as in memory for the update operation
+    setData();
+    for (auto& in_memory_map : not_in_memory_) {
+      in_memory_map.second->getData() = in_memory_map.second->getData().constant(0); // host
+    }
 
     // TODO: does it make sense to move this over to `setAxes()` ?
     // Sync all of the axes and reShard
