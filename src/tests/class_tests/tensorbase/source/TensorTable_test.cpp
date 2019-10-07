@@ -3467,6 +3467,9 @@ BOOST_AUTO_TEST_CASE(insertIntoTableFromCsvDefaultDevice)
   // Setup the device
   Eigen::DefaultDevice device;
   tensorTable.insertIntoTableFromCsv(labels_new_str, new_values_str, device);
+
+  // Test for the tensor data
+  std::cout << "tensorTable.getData()\n" << tensorTable.getData() << std::endl;
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {
       for (int i = 0; i < nlabels; ++i) {
@@ -3474,10 +3477,29 @@ BOOST_AUTO_TEST_CASE(insertIntoTableFromCsvDefaultDevice)
       }
     }
   }
+
+  // Test for the axis labels
   for (int i = 0; i < nlabels; ++i) {
     BOOST_CHECK_EQUAL(axis_1_ptr->getLabels()(0, i), i);
     BOOST_CHECK_EQUAL(axis_2_ptr->getLabels()(0, i), i);
     BOOST_CHECK_EQUAL(axis_3_ptr->getLabels()(0, i), i);
+  }
+
+  // Test for the in_memory and is_modified attributes
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("1")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("3")->getData()(i), 0);
+    if (i == 0) {
+      BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("1")->getData()(i), 0);
+      BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("2")->getData()(i), 0);
+      BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("3")->getData()(i), 0);
+    }
+    else {
+      BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("1")->getData()(i), 0); //?
+      BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("2")->getData()(i), 1);
+      BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("3")->getData()(i), 1);
+    }
   }
 }
 

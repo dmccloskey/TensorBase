@@ -3,7 +3,6 @@
 #ifndef TENSORBASE_TENSORARRAY_H
 #define TENSORBASE_TENSORARRAY_H
 
-#include <TensorBase/ml/TensorData.h>
 #include <iostream> // `getTensorArrayAsString`
 #include <sstream> // `getTensorArrayAsString`
 

@@ -1638,6 +1638,7 @@ namespace TensorBase
     // make the partition index tensor from the indices view
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_partition;
     makeSelectIndicesFromTensorIndicesComponent(indices_view_, indices_partition, device);
+    std::cout << " indices_partition: " << indices_partition->getData() << std::endl;
 
     // Check that the update values are in memory
     loadTensorTableBinary(this->dir_, device);
@@ -2198,8 +2199,8 @@ namespace TensorBase
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorTable<TensorT, DeviceT, TDim>::insertIntoTableFromCsv(const std::map<std::string, Eigen::Tensor<std::string, 2>>& labels_new, const Eigen::Tensor<std::string, 2>& data_new, DeviceT & device)
   {
-    // Copy the old dimensions
-    Eigen::array<Eigen::Index, TDim> dimensions_copy = dimensions_;
+    // Copy the old data
+    std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> data_copy = data_->copy(device);
 
     // add in the new labels
     for (auto& axis_map : axes_) {
@@ -2212,16 +2213,19 @@ namespace TensorBase
     setAxes(); // NOTE: this will clear the in-memory data
     setShardSpans(shard_spans_copy); // set the shard indices back to what they were
 
-    // Intialize the data and initialize the new data to 0's
+    // Intialize the new data to 0's and the old data to the copy
     setData();
     for (auto& in_memory_map : not_in_memory_) {
       //const int dim = getDimFromAxisName(in_memory_map.first);
       //Eigen::array<Eigen::Index, 1> offset, span;
-      //offset.at(0) = dimensions_copy.at(dim);
-      //span.at(0) = dimensions_.at(dim) - dimensions_copy.at(dim);
+      //offset.at(0) = data_copy->getDimensions().at(dim);
+      //span.at(0) = dimensions_.at(dim) - data_copy->getDimensions().at(dim);
       //in_memory_map.second->getData().slice(offset, span) = in_memory_map.second->getData().slice(offset, span).constant(0); // host
       in_memory_map.second->getData() = in_memory_map.second->getData().constant(0); // host
     }
+    Eigen::array<Eigen::Index, TDim> offset;
+    for (int i = 0; i < TDim; ++i) offset.at(i) = 0;
+    getData().slice(offset, data_copy->getDimensions()) = data_copy->getData(); // NOTE: this could also be done on the GPU after the syncronization below
 
     // TODO: does it make sense to move this over to `setAxes()` ?
     // Sync all of the axes and reShard
@@ -2246,11 +2250,17 @@ namespace TensorBase
         Eigen::TensorMap<Eigen::Tensor<int, 1>> selected(select_indices->getDataPointer().get(), (int)axes_.at(axis_map.first)->getNLabels());
         indices_view.device(device) = indices_view * selected;
       }
+      else {
+        Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_map.first)->getDataPointer().get(), (int)axes_.at(axis_map.first)->getNLabels());
+        //indices_view.device(device) = indices_view.constant(0);
+        indices_view(0) = 0;
+      }
     }
 
     // Reformat into a SparseTensorTable
     std::shared_ptr<TensorTable<TensorT, DeviceT, 2>> sparse_table_ptr;
     makeSparseTensorTableFromCsv(sparse_table_ptr, data_new, device);
+    std::cout << " sparse_table_ptr: " << sparse_table_ptr->getData() << std::endl;
 
     // Update from the SparseTensorTable
     //sortTensorData(device); // NOTE: alignment of axes is not enforced in SparseTensorTable so a pre-sort maybe needed...

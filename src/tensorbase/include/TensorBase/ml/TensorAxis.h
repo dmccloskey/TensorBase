@@ -484,17 +484,14 @@ namespace TensorBase
     auto labels_new_v2_bcast = labels_new_v2.broadcast(Eigen::array<Eigen::Index, 5>({ 1, (int)labels.dimension(0), (int)labels.dimension(1), 1, 1 }));
     // Select the overlapping labels
     auto labels_new_v1v2_select = (labels_new_v1_bcast == labels_new_v2_bcast).select(indices_unique_values_bcast.constant(1), indices_unique_values_bcast.constant(0));
-    std::cout << "labels_new_v1v2_select\n" << labels_new_v1v2_select << std::endl; //DEBUG
     // Reduct along the axis dimensions and then cum sum along the axis labels
     auto labels_new_v1v2_prod = labels_new_v1v2_select.sum(Eigen::array<Eigen::Index, 2>({ 1, 3 })).clip(0, 1);
-    std::cout << "labels_new_v1v2_prod\n" << labels_new_v1v2_prod << std::endl; //DEBUG
     auto labels_new_v1v2_cumsum = (labels_new_v1v2_prod.cumsum(1) * labels_new_v1v2_prod).cumsum(2) * labels_new_v1v2_prod;
-    std::cout << "labels_new_v1v2_cumsum\n" << labels_new_v1v2_cumsum << std::endl; //DEBUG
     // Select the unique labels marked with a 1
     auto labels_unique_v1v2 = (labels_new_v1v2_cumsum == labels_new_v1v2_cumsum.constant(1)).select(labels_new_v1v2_cumsum.constant(1), labels_new_v1v2_cumsum.constant(0));
     // Collapse back to 1xnlabels by summing along one of the axis labels dimensions
     auto labels_unique = labels_unique_v1v2.sum(Eigen::array<Eigen::Index, 1>({ 2 })).clip(0, 1);
-    std::cout << "labels_unique\n" << labels_unique << std::endl; //DEBUG
+    //std::cout << "labels_unique\n" << labels_unique << std::endl; //DEBUG
 
     // Determine the new labels to add to the axis 
     Eigen::TensorMap<Eigen::Tensor<int, 5>> indices_select_values5(indices_select.getDataPointer().get(), 1, (int)labels.dimension(0), (int)labels.dimension(1), 1, 1);
@@ -509,13 +506,13 @@ namespace TensorBase
       Eigen::array<Eigen::Index, 2>({ 3, 4 })).prod(Eigen::array<Eigen::Index, 1>({ 1 })); // not new > 1, new = 0
     // Invert the selection
     auto labels_new = (labels_selected > labels_selected.constant(0)).select(labels_selected.constant(0), labels_selected.constant(1)); // new = 1, not new = 0
-    std::cout << "labels_new\n" << labels_new << std::endl; //DEBUG
+    //std::cout << "labels_new\n" << labels_new << std::endl; //DEBUG
 
     // Determine the new and unique labels to add to the axis
     auto labels_new_unique = labels_new * labels_unique;
     // Broadcast back to n_dimensions x labels
     auto labels_new_unique_bcast = labels_new_unique.broadcast(Eigen::array<Eigen::Index, 2>({ (int)labels.dimension(0), 1 }));
-    std::cout << "labels_new_unique_bcast\n" << labels_new_unique_bcast << std::endl; //DEBUG
+    //std::cout << "labels_new_unique_bcast\n" << labels_new_unique_bcast << std::endl; //DEBUG
 
     // Store the selection indices
     Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_select_values(indices_select.getDataPointer().get(), (int)labels.dimension(0), (int)labels.dimension(1));
@@ -529,7 +526,7 @@ namespace TensorBase
     Eigen::TensorMap<Eigen::Tensor<int, 0>> n_labels_new_values(n_labels_new.getDataPointer().get());
     n_labels_new_values.device(device) = indices_select_values.sum() / n_labels_new_values.constant((int)labels.dimension(0));
     n_labels_new.syncHAndDData(device); // NOTE: need sync for Gpu
-    std::cout << "n_labels_new.getData()\n" << n_labels_new.getData() << std::endl; //DEBUG
+    //std::cout << "n_labels_new\n" << n_labels_new.getData() << std::endl; //DEBUG
 
     // Allocate memory for the new labels
     TensorDataDefaultDevice<TensorT, 2> labels_select(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, n_labels_new.getData()(0) }));
