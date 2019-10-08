@@ -745,9 +745,21 @@ namespace TensorBase
     */
     std::map<std::string, std::vector<std::string>> getCsvAxesLabelsRow(const int& row_num);
 
+    /**
+      @brief Insert new axis labels and tensor data from csv strings
+
+      @param[in] labels_new A map of axis name and 2D tensor of axis labels formated as strings
+      @param[in] data_new Tensor data formated as a 2D tensor of strings
+    */
     void insertIntoTableFromCsv(const std::map<std::string, Eigen::Tensor<std::string, 2>>& labels_new, const Eigen::Tensor<std::string, 2>& data_new, DeviceT& device);
 
-    void makeSparseTensorTableFromCsv(std::shared_ptr<TensorTable<TensorT, DeviceT, 2>>& sparse_table_ptr, const Eigen::Tensor<std::string, 2>& data_new, DeviceT& device);
+    /**
+      @brief Make a sparse tensor table from a 2D tensor of csv strings
+
+      @param[out] sparse_table_ptr A Sparse tensor table
+      @param[in] data_new Tensor data formated as a 2D tensor of strings
+    */
+    virtual void makeSparseTensorTableFromCsv(std::shared_ptr<TensorTable<TensorT, DeviceT, 2>>& sparse_table_ptr, const Eigen::Tensor<std::string, 2>& data_new, DeviceT& device) = 0;
 
     // NOTE: IO methods for TensorTable indices components may not be needed because the call to setAxes remakes all of the indices on the fly
     //virtual bool storeTensorTableIndicesBinary(const std::string& dir, DeviceT& device) = 0; ///< Write tensor indices to disk
@@ -2275,21 +2287,6 @@ namespace TensorBase
       Eigen::TensorMap<Eigen::Tensor<int, 1>> is_modified(is_modified_.at(axis_to_dim.first)->getDataPointer().get(), (int)is_modified_.at(axis_to_dim.first)->getTensorSize());
       is_modified.device(device) = is_modified.constant(1);
     }
-  }
-
-  template<typename TensorT, typename DeviceT, int TDim>
-  inline void TensorTable<TensorT, DeviceT, TDim>::makeSparseTensorTableFromCsv(std::shared_ptr<TensorTable<TensorT, DeviceT, 2>>& sparse_table_ptr, const Eigen::Tensor<std::string, 2>& data_new, DeviceT & device)
-  {
-    // MOVE TO DEVICE SPECIFIC CODE
-
-    // Convert from string to TensorT and reshape to n_data x 1
-    TensorTableDefaultDevice<TensorT, 2> sparse_table;
-    sparse_table.setDimensions(Eigen::array<Eigen::Index, 2>({ int(data_new.size()), 1 }));
-    sparse_table.initData();
-    sparse_table.setData();
-    sparse_table.syncHAndDData(device);
-    sparse_table.convertDataFromStringToTensorT(data_new, device);
-    sparse_table_ptr = std::make_shared<TensorTableDefaultDevice<TensorT, 2>>(sparse_table);
   }
 };
 #endif //TENSORBASE_TENSORTABLE_H

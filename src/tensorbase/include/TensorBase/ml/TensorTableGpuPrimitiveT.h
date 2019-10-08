@@ -58,6 +58,8 @@ namespace TensorBase
     void makeShardIDTensor(std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& modified_shard_ids, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& num_runs, Eigen::GpuDevice & device) const override;
     bool loadTensorTableBinary(const std::string& dir, Eigen::GpuDevice& device) override;
     bool storeTensorTableBinary(const std::string& dir, Eigen::GpuDevice& device) override;
+    // CSV methods
+    void makeSparseTensorTableFromCsv(std::shared_ptr<TensorTable<TensorT, Eigen::GpuDevice, 2>>& sparse_table_ptr, const Eigen::Tensor<std::string, 2>& data_new, Eigen::GpuDevice& device) override;
   private:
     friend class cereal::access;
     template<class Archive>
@@ -848,6 +850,18 @@ namespace TensorBase
     }
 
     return true;
+  }
+  template<typename TensorT, int TDim>
+  inline void TensorTableGpuPrimitiveT<TensorT, TDim>::makeSparseTensorTableFromCsv(std::shared_ptr<TensorTable<TensorT, Eigen::GpuDevice, 2>>& sparse_table_ptr, const Eigen::Tensor<std::string, 2>& data_new, Eigen::GpuDevice & device)
+  {
+    // Convert from string to TensorT and reshape to n_data x 1
+    TensorTableGpuPrimitiveT<TensorT, 2> sparse_table;
+    sparse_table.setDimensions(Eigen::array<Eigen::Index, 2>({ int(data_new.size()), 1 }));
+    sparse_table.initData();
+    sparse_table.setData();
+    sparse_table.syncHAndDData(device);
+    sparse_table.convertDataFromStringToTensorT(data_new, device);
+    sparse_table_ptr = std::make_shared<TensorTableGpuPrimitiveT<TensorT, 2>>(sparse_table);
   }
 };
 
