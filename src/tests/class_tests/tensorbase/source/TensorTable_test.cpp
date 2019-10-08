@@ -3454,9 +3454,6 @@ BOOST_AUTO_TEST_CASE(insertIntoTableFromCsvDefaultDevice)
       }
     }
   }
-  std::cout << "new_values_str\n" << new_values_str << std::endl;
-  std::cout << "labels_2_str\n" << labels_2_str << std::endl;
-  std::cout << "labels_3_str\n" << labels_3_str << std::endl;
   tensorTable.setData(tensor_values);
 
   // setup the new axis labels from csv
@@ -3469,7 +3466,6 @@ BOOST_AUTO_TEST_CASE(insertIntoTableFromCsvDefaultDevice)
   tensorTable.insertIntoTableFromCsv(labels_new_str, new_values_str, device);
 
   // Test for the tensor data
-  std::cout << "tensorTable.getData()\n" << tensorTable.getData() << std::endl;
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {
       for (int i = 0; i < nlabels; ++i) {
@@ -3490,16 +3486,9 @@ BOOST_AUTO_TEST_CASE(insertIntoTableFromCsvDefaultDevice)
     BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("1")->getData()(i), 0);
     BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("2")->getData()(i), 0);
     BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("3")->getData()(i), 0);
-    if (i == 0) {
-      BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("1")->getData()(i), 0);
-      BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("2")->getData()(i), 0);
-      BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("3")->getData()(i), 0);
-    }
-    else {
-      BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("1")->getData()(i), 0); //?
-      BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("2")->getData()(i), 1);
-      BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("3")->getData()(i), 1);
-    }
+    BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("1")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("3")->getData()(i), 1);
   }
 }
 
