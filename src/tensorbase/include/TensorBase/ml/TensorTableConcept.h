@@ -380,6 +380,8 @@ namespace TensorBase
     virtual Eigen::array<Eigen::Index, 2> getCsvDataDimensions() = 0;
     virtual Eigen::array<Eigen::Index, 2> getCsvShardSpans() = 0;
     virtual std::map<std::string, std::vector<std::string>> getCsvAxesLabelsRow(const int& row_num) = 0;
+    virtual void insertIntoTableFromCsv(const std::map<std::string, Eigen::Tensor<std::string, 2>>& labels_new, const Eigen::Tensor<std::string, 2>& data_new, DeviceT & device) = 0;
+    virtual void insertIntoTableFromCsv(const Eigen::Tensor<std::string, 2>& data_new, DeviceT & device) = 0;
 
   private:
     friend class cereal::access;
@@ -1014,6 +1016,12 @@ namespace TensorBase
     Eigen::array<Eigen::Index, 2> getCsvDataDimensions() { return tensor_table_->getCsvDataDimensions(); }
     Eigen::array<Eigen::Index, 2> getCsvShardSpans() { return tensor_table_->getCsvShardSpans(); }
     std::map<std::string, std::vector<std::string>> getCsvAxesLabelsRow(const int& row_num) { return tensor_table_->getCsvAxesLabelsRow(row_num); }
+    void insertIntoTableFromCsv(const std::map<std::string, Eigen::Tensor<std::string, 2>>& labels_new, const Eigen::Tensor<std::string, 2>& data_new, DeviceT & device) {
+      tensor_table_->insertIntoTableFromCsv(labels_new, data_new, device);
+    }
+    void insertIntoTableFromCsv(const Eigen::Tensor<std::string, 2>& data_new, DeviceT & device) {
+      tensor_table_->insertIntoTableFromCsv(data_new, device);
+    }
 
   private:
     friend class cereal::access;

@@ -164,16 +164,47 @@ public:
       // update the shard iterator
       ++n_cols;
       if (n_cols == n_shard_size) {
-        // ...insertIntoAxisConcept(const std::string & axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<T>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device)
-        labels_new.clear();
-        data_new.clear();
+        // add in the shard to the tensor tables
+        for (const std::string& table_name : tensor_collection.user_table_names_to_tensor_table_names_.at(user_table_name)) {
+          if (table_name == first_table_name) {
+            tensor_collection.tables_.at(table_name)->insertIntoTableFromCsv(labels_new, data_new.at(table_name), device);
+          }
+          else {
+            tensor_collection.tables_.at(table_name)->insertIntoTableFromCsv(data_new.at(table_name), device);
+          }
+        }
+
+        // reset the labels and data
+        for (const auto& primary_data : headers.second) {
+          Eigen::Tensor<std::string, 2> empty((int)primary_data.second.size(), n_shard_size);
+          data_new.at(primary_data.first) = empty;
+        }
+        for (const auto& non_primary_data : headers.first) {
+          Eigen::Tensor<std::string, 2> empty((int)non_primary_data.second.size(), n_shard_size);
+          labels_new.at(non_primary_data.first) = empty;
+        }
         n_cols = 0;
       }
     }
 
     // Insert the remaining rows
     if (n_cols != 0) { // i.e., n_cols has not been reset back to 0 after reaching the shard size
-        // ...insertIntoAxisConcept(const std::string & axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<T>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device)
+      for (auto& labels_map : labels_new) {
+        Eigen::TensorMap<Eigen::Tensor<std::string, 2>> resized(labels_map.second.data(), Eigen::array<Eigen::Index, 2>({ labels_map.second.dimension(0), n_cols }));
+        Eigen::Tensor<std::string, 2> reshape = resized;
+        labels_map.second = reshape;
+      }
+      for (const std::string& table_name : tensor_collection.user_table_names_to_tensor_table_names_.at(user_table_name)) {
+        Eigen::TensorMap<Eigen::Tensor<std::string, 2>> resized(data_new.at(table_name).data(), Eigen::array<Eigen::Index, 2>({ data_new.at(table_name).dimension(0), n_cols }));
+        Eigen::Tensor<std::string, 2> reshape = resized;
+        data_new.at(table_name) = reshape;
+        if (table_name == first_table_name) {
+          tensor_collection.tables_.at(table_name)->insertIntoTableFromCsv(labels_new, data_new.at(table_name), device);
+        }
+        else {
+          tensor_collection.tables_.at(table_name)->insertIntoTableFromCsv(data_new.at(table_name), device);
+        }
+      }
     }
 
     return true;

@@ -297,6 +297,7 @@ BOOST_AUTO_TEST_CASE(getTensorTableHeadersDefaultDevice)
 
   // Setup Table 1 axes
   TensorTableDefaultDevice<float, 3> tensorTable1_min("1");
+  labels1.setValues({ {0, 1} });
   tensorTable1_min.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
   auto axis2_min_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", 1, 1));
   axis2_min_ptr->setDimensions(dimensions2);
@@ -338,7 +339,33 @@ BOOST_AUTO_TEST_CASE(getTensorTableHeadersDefaultDevice)
 
   // Test reading from disk
   data.loadTensorTableFromCsv("Table1.csv", "1", tensorCollection_min, device);
-  BOOST_CHECK(tensorCollection_min == tensorCollection); // is the data and labels checked here???
+
+  // Check the metadata
+  BOOST_CHECK(tensorCollection_min == tensorCollection);
+
+  // Check the table data
+  std::cout << "tensorTable1_min_ptr->getData()\n" << tensorTable1_min_ptr->getData() << std::endl;
+  std::cout << "tensorTable2_min_ptr->getData()\n" << tensorTable2_min_ptr->getData() << std::endl;
+  std::cout << "tensorTable3_min_ptr->getData()\n" << tensorTable3_min_ptr->getData() << std::endl;
+  for (int k = 0; k < nlabels3; ++k) {
+    for (int j = 0; j < nlabels2; ++j) {
+      for (int i = 0; i < nlabels1; ++i) {
+        BOOST_CHECK_EQUAL(tensorTable1_min_ptr->getData()(i, j, k), tensor1_values(i, j, k));
+        BOOST_CHECK_EQUAL(tensorTable2_min_ptr->getData()(i, j, k), tensor2_values(i, j, k));
+        BOOST_CHECK_EQUAL(tensorTable3_min_ptr->getData()(i, j, k), tensor3_values(i, j, k));
+      }
+    }
+  }
+
+  // Check the axes
+  std::cout << "axis2_min_ptr->getLabels()\n" << axis2_min_ptr->getLabels() << std::endl;
+  std::cout << "axis3_min_ptr->getLabels()\n" << axis3_min_ptr->getLabels() << std::endl;
+  for (int i = 0; i < nlabels2; ++i) {
+    BOOST_CHECK_EQUAL(axis2_min_ptr->getLabels()(0, i), labels2(0, i));
+  }
+  for (int i = 0; i < nlabels3; ++i) {
+    BOOST_CHECK_EQUAL(axis3_min_ptr->getLabels()(0, i), labels3(0, i));
+  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()

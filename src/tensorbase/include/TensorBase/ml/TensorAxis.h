@@ -528,17 +528,19 @@ namespace TensorBase
     n_labels_new.syncHAndDData(device); // NOTE: need sync for Gpu
     //std::cout << "n_labels_new\n" << n_labels_new.getData() << std::endl; //DEBUG
 
-    // Allocate memory for the new labels
-    TensorDataDefaultDevice<TensorT, 2> labels_select(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, n_labels_new.getData()(0) }));
-    labels_select.setData();
-    labels_select.syncHAndDData(device);
-    std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>> labels_select_ptr = std::make_shared<TensorDataDefaultDevice<TensorT, 2>>(labels_select);
+    if (n_labels_new.getData()(0) > 0) {
+      // Allocate memory for the new labels
+      TensorDataDefaultDevice<TensorT, 2> labels_select(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, n_labels_new.getData()(0) }));
+      labels_select.setData();
+      labels_select.syncHAndDData(device);
+      std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>> labels_select_ptr = std::make_shared<TensorDataDefaultDevice<TensorT, 2>>(labels_select);
 
-    // Select the labels
-    labels_converted.select(labels_select_ptr, indices_select_ptr, device);
+      // Select the labels
+      labels_converted.select(labels_select_ptr, indices_select_ptr, device);
 
-    // Append the selected labels to the axis
-    this->appendLabelsToAxis(labels_select_ptr, device);
+      // Append the selected labels to the axis
+      this->appendLabelsToAxis(labels_select_ptr, device);
+    }
   }
 
   template<typename TensorT>
