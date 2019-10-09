@@ -2222,7 +2222,6 @@ namespace TensorBase
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorTable<TensorT, DeviceT, TDim>::insertIntoTableFromCsv(const Eigen::Tensor<std::string, 2>& data_new, DeviceT & device)
   {
-
     // Copy the original data
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> data_copy = data_->copy(device);
     data_copy->syncHAndDData(device);
@@ -2278,14 +2277,12 @@ namespace TensorBase
     Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> data_new_values(sparse_table_ptr->getDataPointer().get(), (int)sparse_table_ptr->getDataTensorSize());
     Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> data_values(data_->getDataPointer().get(), (int)data_->getTensorSize());
     data_values.slice(offsets_new, extents_new).device(device) = data_new_values;
-    std::cout << "data_values\n" << data_values << std::endl;
 
     // Update the data with the original data as a 1D array
     Eigen::array<Eigen::Index, 1> offsets_old = { 0 };
     Eigen::array<Eigen::Index, 1> extents_old = { (int)data_copy->getTensorSize() };
     Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> data_old_values(data_copy->getDataPointer().get(), (int)data_copy->getTensorSize());
     data_values.slice(offsets_old, extents_old) = data_old_values;
-    std::cout << "data_values\n" << data_values << std::endl;
 
     // update the not_in_memory and is_modified attributes
     // NOTE: due to the shape, we are not able to distinguish well what was and what was not modified

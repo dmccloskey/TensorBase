@@ -98,6 +98,9 @@ namespace TensorBase
   {
     assert(labels->getDimensions().at(0) == this->n_dimensions_);
 
+    // copy the original number of labels
+    size_t n_labels_copy = this->n_labels_;
+
     // update the number of labels
     n_labels_ += labels->getDimensions().at(1);
 
@@ -111,7 +114,12 @@ namespace TensorBase
     // Concatenate the new labels to the axis
     Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> new_labels_values(labels->getDataPointer().get(), labels->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> labels_values(this->tensor_dimension_labels_->getDataPointer().get(), this->tensor_dimension_labels_->getDimensions());
-    labels_concat_values.device(device) = labels_values.concatenate(new_labels_values, 1);
+    if (n_labels_copy > 0) {
+      labels_concat_values.device(device) = labels_values.concatenate(new_labels_values, 1);
+    }
+    else {
+      labels_concat_values.device(device) = new_labels_values;
+    }
 
     // Move over the new labels
     this->tensor_dimension_labels_ = labels_concat_ptr;
@@ -249,6 +257,9 @@ namespace TensorBase
   {
     assert(labels->getDimensions().at(0) == this->n_dimensions_);
 
+    // copy the original number of labels
+    size_t n_labels_copy = this->n_labels_;
+
     // update the number of labels
     n_labels_ += labels->getDimensions().at(1);
 
@@ -262,7 +273,12 @@ namespace TensorBase
     // Concatenate the new labels to the axis
     Eigen::TensorMap<Eigen::Tensor<ArrayT<TensorT>, 2>> new_labels_values(labels->getDataPointer().get(), labels->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<ArrayT<TensorT>, 2>> labels_values(this->tensor_dimension_labels_->getDataPointer().get(), this->tensor_dimension_labels_->getDimensions());
-    labels_concat_values.device(device) = labels_values.concatenate(new_labels_values, 1);
+    if (n_labels_copy > 0) {
+      labels_concat_values.device(device) = labels_values.concatenate(new_labels_values, 1);
+    }
+    else {
+      labels_concat_values.device(device) = new_labels_values;
+    }
 
     // Move over the new labels
     this->tensor_dimension_labels_ = labels_concat_ptr;

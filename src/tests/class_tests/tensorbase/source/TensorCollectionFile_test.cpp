@@ -293,16 +293,16 @@ BOOST_AUTO_TEST_CASE(getTensorTableHeadersDefaultDevice)
 
   // Make the minimal tensorCollection for reading from .csv
   std::map<std::string, int> shard_span = {
-    {"1", 2}, {"2", 2}, {"3", 2} };
+    {"1", 2}, {"2", 3}, {"3", 5} };
 
   // Setup Table 1 axes
   TensorTableDefaultDevice<float, 3> tensorTable1_min("1");
   labels1.setValues({ {0, 1} });
   tensorTable1_min.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
-  auto axis2_min_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", 1, 1));
+  auto axis2_min_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", 1, 0));
   axis2_min_ptr->setDimensions(dimensions2);
   tensorTable1_min.addTensorAxis(axis2_min_ptr);
-  auto axis3_min_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", 1, 1));
+  auto axis3_min_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", 1, 0));
   axis3_min_ptr->setDimensions(dimensions3);
   tensorTable1_min.addTensorAxis(axis3_min_ptr);
   tensorTable1_min.setAxes();
