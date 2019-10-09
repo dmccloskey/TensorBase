@@ -43,6 +43,12 @@ public:
     /**
       @brief Load select tensor table tensor data from .csv file
 
+      TODO:
+      Currently, all of the data from .csv has to be read in and appended to the table at once
+      Commented out code is provided that would add logic to append 1 shard at a time
+      However, this would require improving the logic in TensorTable::insertIntoTableFromCsv 
+        to align the sparse tensor to the axis labels instead of just appending it to the tensor data
+
       @param filename The name of the binary data file
       @param user_table_name The name of the user tensor table
       @param tensor_collection The Tensor collection to load
