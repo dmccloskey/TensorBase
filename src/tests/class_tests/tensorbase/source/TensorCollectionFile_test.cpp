@@ -293,7 +293,7 @@ BOOST_AUTO_TEST_CASE(getTensorTableHeadersDefaultDevice)
 
   // Make the minimal tensorCollection for reading from .csv
   std::map<std::string, int> shard_span = {
-    {"1", 2}, {"2", 3}, {"3", 5} };
+    {"1", 2}, {"2", 2}, {"3", 2} };
 
   // Setup Table 1 axes
   TensorTableDefaultDevice<float, 3> tensorTable1_min("1");
@@ -344,9 +344,6 @@ BOOST_AUTO_TEST_CASE(getTensorTableHeadersDefaultDevice)
   BOOST_CHECK(tensorCollection_min == tensorCollection);
 
   // Check the table data
-  std::cout << "tensorTable1_min_ptr->getData()\n" << tensorTable1_min_ptr->getData() << std::endl;
-  std::cout << "tensorTable2_min_ptr->getData()\n" << tensorTable2_min_ptr->getData() << std::endl;
-  std::cout << "tensorTable3_min_ptr->getData()\n" << tensorTable3_min_ptr->getData() << std::endl;
   for (int k = 0; k < nlabels3; ++k) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int i = 0; i < nlabels1; ++i) {
@@ -358,8 +355,6 @@ BOOST_AUTO_TEST_CASE(getTensorTableHeadersDefaultDevice)
   }
 
   // Check the axes
-  std::cout << "axis2_min_ptr->getLabels()\n" << axis2_min_ptr->getLabels() << std::endl;
-  std::cout << "axis3_min_ptr->getLabels()\n" << axis3_min_ptr->getLabels() << std::endl;
   for (int i = 0; i < nlabels2; ++i) {
     BOOST_CHECK_EQUAL(axis2_min_ptr->getLabels()(0, i), labels2(0, i));
   }

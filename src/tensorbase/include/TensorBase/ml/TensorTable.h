@@ -724,7 +724,9 @@ namespace TensorBase
       @returns String vector of data
     */
     std::vector<std::string> getCsvDataRow(const int& row_num);
-    template<typename T = TensorT, std::enable_if_t<std::is_fundamental<T>::value, int> = 0>
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, char>::value, int> = 0>
+    std::vector<std::string> getCsvDataRowAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span, const Eigen::array<Eigen::Index, 2>& reshape) const;
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, int>::value || std::is_same<T, float>::value || std::is_same<T, double>::value || std::is_same<T, bool>::value, int> = 0>
     std::vector<std::string> getCsvDataRowAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span, const Eigen::array<Eigen::Index, 2>& reshape) const;
     template<typename T = TensorT, std::enable_if_t<!std::is_fundamental<T>::value, int> = 0>
     std::vector<std::string> getCsvDataRowAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span, const Eigen::array<Eigen::Index, 2>& reshape) const;
@@ -2155,7 +2157,20 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
-  template<typename T, std::enable_if_t<std::is_fundamental<T>::value, int> = 0>
+  template<typename T, std::enable_if_t<std::is_same<T, char>::value, int> = 0>
+  inline std::vector<std::string> TensorTable<TensorT, DeviceT, TDim>::getCsvDataRowAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span, const Eigen::array<Eigen::Index, 2>& reshape) const
+  {
+    // Make the slice
+    auto row_t = this->getData().reshape(reshape).slice(offset, span);
+    Eigen::Tensor<std::string, 2> row = row_t.unaryExpr([](const TensorT& elem) { return std::to_string(static_cast<char>(elem)); });
+
+    // Convert element to a string
+    std::vector<std::string> row_vec(row.data(), row.data() + row.size());
+    return row_vec;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  template<typename T, std::enable_if_t<std::is_same<T, int>::value || std::is_same<T, float>::value || std::is_same<T, double>::value || std::is_same<T, bool>::value, int> = 0>
   inline std::vector<std::string> TensorTable<TensorT, DeviceT, TDim>::getCsvDataRowAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span, const Eigen::array<Eigen::Index, 2>& reshape) const
   {
     // Make the slice

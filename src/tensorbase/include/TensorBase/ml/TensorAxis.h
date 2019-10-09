@@ -140,11 +140,15 @@ namespace TensorBase
     */
     virtual bool storeLabelsBinary(const std::string& filename, DeviceT& device) = 0;
 
-    template<typename T = TensorT, std::enable_if_t<std::is_fundamental<T>::value, int> = 0>
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, char>::value, int> = 0>
+    std::vector<std::string> getLabelsAsStrings(DeviceT& device) const;
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, int>::value || std::is_same<T, float>::value || std::is_same<T, double>::value || std::is_same<T, bool>::value, int> = 0>
     std::vector<std::string> getLabelsAsStrings(DeviceT& device) const;
     template<typename T = TensorT, std::enable_if_t<!std::is_fundamental<T>::value, int> = 0>
     std::vector<std::string> getLabelsAsStrings(DeviceT& device) const; ///< return a string vector representation of the labels
-    template<typename T = TensorT, std::enable_if_t<std::is_fundamental<T>::value, int> = 0>
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, char>::value, int> = 0>
+    std::vector<std::string> getLabelsAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span) const;
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, int>::value || std::is_same<T, float>::value || std::is_same<T, double>::value || std::is_same<T, bool>::value, int> = 0>
     std::vector<std::string> getLabelsAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span) const;
     template<typename T = TensorT, std::enable_if_t<!std::is_fundamental<T>::value, int> = 0>
     std::vector<std::string> getLabelsAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span) const;
@@ -279,7 +283,25 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT>
-  template<typename T, std::enable_if_t<std::is_fundamental<T>::value, int> = 0>
+  template<typename T, std::enable_if_t<std::is_same<T, char>::value, int> = 0>
+  inline std::vector<std::string> TensorAxis<TensorT, DeviceT>::getLabelsAsStrings(DeviceT& device) const
+  {
+    // NOTE: the host and device should be syncronized for the primary axis
+    //       If this is not true, then this needs to be implemented for each device 
+    //       due to the need to synchronize the stream on the GPU
+    //syncHAndDData(device); // D to H
+    std::vector<std::string> labels;
+    for (int i = 0; i < n_dimensions_; i++) {
+      for (int j = 0; j < n_labels_; j++) {
+        labels.push_back(std::to_string(static_cast<char>(getLabels()(i, j))));
+      }
+    }
+    //setDataStatus(false, true);
+    return labels;
+  }
+
+  template<typename TensorT, typename DeviceT>
+  template<typename T, std::enable_if_t<std::is_same<T, int>::value || std::is_same<T, float>::value || std::is_same<T, double>::value || std::is_same<T, bool>::value, int> = 0>
   inline std::vector<std::string> TensorAxis<TensorT, DeviceT>::getLabelsAsStrings(DeviceT& device) const
   {
     // NOTE: the host and device should be syncronized for the primary axis
@@ -307,7 +329,17 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT>
-  template<typename T, std::enable_if_t<std::is_fundamental<T>::value, int> = 0>
+  template<typename T, std::enable_if_t<std::is_same<T, char>::value, int> = 0>
+  inline std::vector<std::string> TensorAxis<TensorT, DeviceT>::getLabelsAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span) const
+  {
+    auto labels_row_t = getLabels().slice(offset, span);
+    Eigen::Tensor<std::string, 2> row = labels_row_t.unaryExpr([](const TensorT& elem) { return std::to_string(static_cast<char>(elem)); });
+    std::vector<std::string> labels(row.data(), row.data() + row.size());
+    return labels;
+  }
+
+  template<typename TensorT, typename DeviceT>
+  template<typename T, std::enable_if_t<std::is_same<T, int>::value || std::is_same<T, float>::value || std::is_same<T, double>::value || std::is_same<T, bool>::value, int> = 0>
   inline std::vector<std::string> TensorAxis<TensorT, DeviceT>::getLabelsAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span) const
   {
     auto labels_row_t = getLabels().slice(offset, span);

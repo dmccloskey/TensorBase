@@ -116,9 +116,19 @@ public:
     // Get the .csv headers
     const std::string first_table_name = *(tensor_collection.user_table_names_to_tensor_table_names_.at(user_table_name).begin());
     std::pair<std::map<std::string, std::vector<std::string>>, std::map<std::string, std::vector<std::string>>> headers = getTensorTableHeaders(user_table_name, tensor_collection, device);
+    
+    // Determine the number of rows that will be read in
+    auto count_rows = [](const std::string& filename) {
+      csv::CSVReader reader(filename);
+      csv::CSVRow row;
+      int n_shard_size = 0;
+      while (reader.read_row(row)) { ++n_shard_size; }
+      return n_shard_size;
+    };
+    int n_shard_size = count_rows(filename);
 
-    // Calculate the shard size for the non-primary axes
-    int n_shard_size = tensor_collection.tables_.at(first_table_name)->getCsvShardSpans().at(1);
+    //// Calculate the shard size for the non-primary axes
+    //int n_shard_size = tensor_collection.tables_.at(first_table_name)->getCsvShardSpans().at(1);
 
     // Prepare the data structures for calls to insertIntoTableFromCsv
     std::map<std::string, Eigen::Tensor<std::string, 2>> data_new;
@@ -163,47 +173,57 @@ public:
 
       // update the shard iterator
       ++n_cols;
-      if (n_cols == n_shard_size) {
-        // add in the shard to the tensor tables
-        for (const std::string& table_name : tensor_collection.user_table_names_to_tensor_table_names_.at(user_table_name)) {
-          if (table_name == first_table_name) {
-            tensor_collection.tables_.at(table_name)->insertIntoTableFromCsv(labels_new, data_new.at(table_name), device);
-          }
-          else {
-            tensor_collection.tables_.at(table_name)->insertIntoTableFromCsv(data_new.at(table_name), device);
-          }
-        }
+      //if (n_cols == n_shard_size) {
+      //  // add in the shard to the tensor tables
+      //  for (const std::string& table_name : tensor_collection.user_table_names_to_tensor_table_names_.at(user_table_name)) {
+      //    if (table_name == first_table_name) {
+      //      tensor_collection.tables_.at(table_name)->insertIntoTableFromCsv(labels_new, data_new.at(table_name), device);
+      //    }
+      //    else {
+      //      tensor_collection.tables_.at(table_name)->insertIntoTableFromCsv(data_new.at(table_name), device);
+      //    }
+      //  }
 
-        // reset the labels and data
-        for (const auto& primary_data : headers.second) {
-          Eigen::Tensor<std::string, 2> empty((int)primary_data.second.size(), n_shard_size);
-          data_new.at(primary_data.first) = empty;
-        }
-        for (const auto& non_primary_data : headers.first) {
-          Eigen::Tensor<std::string, 2> empty((int)non_primary_data.second.size(), n_shard_size);
-          labels_new.at(non_primary_data.first) = empty;
-        }
-        n_cols = 0;
-      }
+      //  // reset the labels and data
+      //  for (const auto& primary_data : headers.second) {
+      //    Eigen::Tensor<std::string, 2> empty((int)primary_data.second.size(), n_shard_size);
+      //    data_new.at(primary_data.first) = empty;
+      //  }
+      //  for (const auto& non_primary_data : headers.first) {
+      //    Eigen::Tensor<std::string, 2> empty((int)non_primary_data.second.size(), n_shard_size);
+      //    labels_new.at(non_primary_data.first) = empty;
+      //  }
+      //  n_cols = 0;
+      //}
     }
 
-    // Insert the remaining rows
-    if (n_cols != 0) { // i.e., n_cols has not been reset back to 0 after reaching the shard size
-      for (auto& labels_map : labels_new) {
-        Eigen::TensorMap<Eigen::Tensor<std::string, 2>> resized(labels_map.second.data(), Eigen::array<Eigen::Index, 2>({ labels_map.second.dimension(0), n_cols }));
-        Eigen::Tensor<std::string, 2> reshape = resized;
-        labels_map.second = reshape;
+    //// Insert the remaining rows
+    //if (n_cols != 0) { // i.e., n_cols has not been reset back to 0 after reaching the shard size
+    //  for (auto& labels_map : labels_new) {
+    //    Eigen::TensorMap<Eigen::Tensor<std::string, 2>> resized(labels_map.second.data(), Eigen::array<Eigen::Index, 2>({ labels_map.second.dimension(0), n_cols }));
+    //    Eigen::Tensor<std::string, 2> reshape = resized;
+    //    labels_map.second = reshape;
+    //  }
+    //  for (const std::string& table_name : tensor_collection.user_table_names_to_tensor_table_names_.at(user_table_name)) {
+    //    Eigen::TensorMap<Eigen::Tensor<std::string, 2>> resized(data_new.at(table_name).data(), Eigen::array<Eigen::Index, 2>({ data_new.at(table_name).dimension(0), n_cols }));
+    //    Eigen::Tensor<std::string, 2> reshape = resized;
+    //    data_new.at(table_name) = reshape;
+    //    if (table_name == first_table_name) {
+    //      tensor_collection.tables_.at(table_name)->insertIntoTableFromCsv(labels_new, data_new.at(table_name), device);
+    //    }
+    //    else {
+    //      tensor_collection.tables_.at(table_name)->insertIntoTableFromCsv(data_new.at(table_name), device);
+    //    }
+    //  }
+    //}
+
+    // add in the shard to the tensor tables
+    for (const std::string& table_name : tensor_collection.user_table_names_to_tensor_table_names_.at(user_table_name)) {
+      if (table_name == first_table_name) {
+        tensor_collection.tables_.at(table_name)->insertIntoTableFromCsv(labels_new, data_new.at(table_name), device);
       }
-      for (const std::string& table_name : tensor_collection.user_table_names_to_tensor_table_names_.at(user_table_name)) {
-        Eigen::TensorMap<Eigen::Tensor<std::string, 2>> resized(data_new.at(table_name).data(), Eigen::array<Eigen::Index, 2>({ data_new.at(table_name).dimension(0), n_cols }));
-        Eigen::Tensor<std::string, 2> reshape = resized;
-        data_new.at(table_name) = reshape;
-        if (table_name == first_table_name) {
-          tensor_collection.tables_.at(table_name)->insertIntoTableFromCsv(labels_new, data_new.at(table_name), device);
-        }
-        else {
-          tensor_collection.tables_.at(table_name)->insertIntoTableFromCsv(data_new.at(table_name), device);
-        }
+      else {
+        tensor_collection.tables_.at(table_name)->insertIntoTableFromCsv(data_new.at(table_name), device);
       }
     }
 

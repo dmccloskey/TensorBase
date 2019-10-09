@@ -3340,13 +3340,14 @@ BOOST_AUTO_TEST_CASE(getCsvDataRowDefaultDevice)
   dimensions2(0) = "y";
   dimensions3(0) = "z";
   int nlabels = 3;
-  Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels), labels3(1, nlabels);
+  Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels);
   labels1.setValues({ {0, 1, 2} });
   labels2.setValues({ {0, 1, 2} });
-  labels3.setValues({ {0, 1, 2} });
+  Eigen::Tensor<char, 2> labels3(1, nlabels);
+  labels3.setValues({ {'0', '1', '2'} });
   auto axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1));
   auto axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2));
-  auto axis_3_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3));
+  auto axis_3_ptr = std::make_shared<TensorAxisDefaultDevice<char>>(TensorAxisDefaultDevice<char>("3", dimensions3, labels3));
   tensorTable.addTensorAxis(axis_1_ptr);
   tensorTable.addTensorAxis(axis_2_ptr);
   tensorTable.addTensorAxis(axis_3_ptr);
@@ -3377,6 +3378,7 @@ BOOST_AUTO_TEST_CASE(getCsvDataRowDefaultDevice)
   tensorTable.setData(tensor_values);
 
   // Test getCsvDataRow
+  // TODO: also test char and tensorArray types
   std::vector<std::string> row_0 = tensorTable.getCsvDataRow(0);
   std::vector<std::string> row_1 = tensorTable.getCsvDataRow(1);
   std::vector<std::string> row_4 = tensorTable.getCsvDataRow(4);
@@ -3390,9 +3392,9 @@ BOOST_AUTO_TEST_CASE(getCsvDataRowDefaultDevice)
   }
 
   // Make the expected labels row values
-  std::map<std::string, std::vector<std::string>> labels_row_0_test = { {"2", {"0"}}, {"3", {"0"}} };
-  std::map<std::string, std::vector<std::string>> labels_row_1_test = { {"2", {"1"}}, {"3", {"0"}} };
-  std::map<std::string, std::vector<std::string>> labels_row_4_test = { {"2", {"1"}}, {"3", {"1"}} };
+  std::map<std::string, std::vector<std::string>> labels_row_0_test = { {"2", {"0"}}, {"3", {"a"}} };
+  std::map<std::string, std::vector<std::string>> labels_row_1_test = { {"2", {"1"}}, {"3", {"a"}} };
+  std::map<std::string, std::vector<std::string>> labels_row_4_test = { {"2", {"1"}}, {"3", {"b"}} };
 
   // Test getCsvAxesLabelsRow
   std::map<std::string, std::vector<std::string>> labels_row_0 = tensorTable.getCsvAxesLabelsRow(0);

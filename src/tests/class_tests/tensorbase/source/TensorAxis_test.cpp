@@ -456,6 +456,21 @@ BOOST_AUTO_TEST_CASE(getLabelsAsStringsDefaultDevice)
     ++iter;
   }
 
+  // Using Char
+  Eigen::Tensor<char, 2> labels_char(3, 5);
+  labels_char.setConstant('a');
+  TensorAxisDefaultDevice<char> tensoraxis_char("1", dimensions, labels_char);
+
+  // Test getLabelsAsString
+  std::vector<std::string> labels_char_str = tensoraxis_char.getLabelsAsStrings(device);
+  iter = 0;
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 5; j++) {
+      BOOST_CHECK_EQUAL(labels_char_str.at(iter), std::to_string(tensoraxis_char.getLabels()(i, j)));
+    }
+    ++iter;
+  }
+
   // Use TensorArray8
   Eigen::Tensor<TensorArray8<int>, 2> labels_array(3, 5);
   labels_array.setConstant(TensorArray8<int>({1,2,3,4,5,6,7,8}));
