@@ -138,9 +138,9 @@ namespace TensorBase
     virtual void setData(const Eigen::Tensor<TensorT, TDim>& data) = 0; ///< data setter
     virtual void setData() = 0; ///< data setter
 
-    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> getData() { std::shared_ptr<TensorT> h_data = h_data_;  Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data(h_data.get(), this->getDimensions()); return data; } ///< data copy getter
-    virtual std::shared_ptr<TensorT> getHDataPointer() = 0; ///< host data pointer getter
-    virtual std::shared_ptr<TensorT> getDataPointer() = 0; ///< device data pointer getter
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> getData() { Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data(h_data_.get(), this->getDimensions()); return data; } ///< data copy getter
+    virtual std::shared_ptr<TensorT[]> getHDataPointer() = 0; ///< host data pointer getter
+    virtual std::shared_ptr<TensorT[]> getDataPointer() = 0; ///< device data pointer getter
     
     virtual bool syncHAndDData(DeviceT& device) = 0;  ///< Sync the host and device data
     void setDataStatus(const bool& h_data_updated, const bool& d_data_updated) { h_data_updated_ = h_data_updated; d_data_updated_ = d_data_updated; } ///< Set the status of the host and device data
@@ -154,8 +154,8 @@ namespace TensorBase
     virtual void convertFromStringToTensorT(const Eigen::Tensor<std::string, TDim>& data_new, DeviceT& device) = 0;
 
   protected:
-    std::shared_ptr<TensorT> h_data_ = nullptr;  ///< Shared pointer implementation of the host tensor data
-    std::shared_ptr<TensorT> d_data_ = nullptr;  ///< Shared pointer implementation of the device (GPU) tensor data
+    std::shared_ptr<TensorT[]> h_data_ = nullptr;  ///< Shared pointer implementation of the host tensor data
+    std::shared_ptr<TensorT[]> d_data_ = nullptr;  ///< Shared pointer implementation of the device (GPU) tensor data
 
     bool h_data_updated_ = false;  ///< boolean indicator if the host data is up to date
     bool d_data_updated_ = false;  ///< boolean indicator if the device data is up to date
@@ -206,8 +206,8 @@ namespace TensorBase
     void sort(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices, Eigen::DefaultDevice& device) override;
     void partition(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices, Eigen::DefaultDevice& device) override;
     void runLengthEncode(std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& n_runs, Eigen::DefaultDevice& device) override;
-    std::shared_ptr<TensorT> getHDataPointer() override { return h_data_; }
-    std::shared_ptr<TensorT> getDataPointer() override { return h_data_; }
+    std::shared_ptr<TensorT[]> getHDataPointer() override { return h_data_; }
+    std::shared_ptr<TensorT[]> getDataPointer() override { return h_data_; }
     void setData(const Eigen::Tensor<TensorT, TDim>& data) override; ///< data setter
     void setData() override;
     bool syncHAndDData(Eigen::DefaultDevice& device) override { this->d_data_updated_ = true; this->h_data_updated_ = true; return true; }
@@ -472,8 +472,8 @@ namespace TensorBase
     void sort(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices, Eigen::ThreadPoolDevice& device) override;
     void partition(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices, Eigen::ThreadPoolDevice& device) override;
     void runLengthEncode(std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& n_runs, Eigen::ThreadPoolDevice& device) override;
-    std::shared_ptr<TensorT> getHDataPointer() override { return h_data_; }
-    std::shared_ptr<TensorT> getDataPointer() override  { return h_data_; }
+    std::shared_ptr<TensorT[]> getHDataPointer() override { return h_data_; }
+    std::shared_ptr<TensorT[]> getDataPointer() override  { return h_data_; }
     void setData(const Eigen::Tensor<TensorT, TDim>& data) override; ///< data setter
     void setData() override;
     bool syncHAndDData(Eigen::ThreadPoolDevice& device) override { this->d_data_updated_ = true; this->h_data_updated_ = true; return true; }

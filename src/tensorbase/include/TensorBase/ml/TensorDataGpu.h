@@ -36,8 +36,8 @@ namespace TensorBase
     void setData(const Eigen::Tensor<TensorT, TDim>& data) override; ///< data setter
     void setData() override;
     bool syncHAndDData(Eigen::GpuDevice& device) override;
-    std::shared_ptr<TensorT> getHDataPointer() override;
-    std::shared_ptr<TensorT> getDataPointer() override;
+    std::shared_ptr<TensorT[]> getHDataPointer() override;
+    std::shared_ptr<TensorT[]> getDataPointer() override;
   private:
     	friend class cereal::access;
     	template<class Archive>
@@ -98,12 +98,12 @@ namespace TensorBase
     }
   }
   template<typename TensorT, int TDim>
-  inline std::shared_ptr<TensorT> TensorDataGpu<TensorT, TDim>::getHDataPointer()
+  inline std::shared_ptr<TensorT[]> TensorDataGpu<TensorT, TDim>::getHDataPointer()
   {
     return h_data_;
   }
   template<typename TensorT, int TDim>
-  std::shared_ptr<TensorT> TensorDataGpu<TensorT, TDim>::getDataPointer() {
+  std::shared_ptr<TensorT[]> TensorDataGpu<TensorT, TDim>::getDataPointer() {
     return d_data_;
   }
 
