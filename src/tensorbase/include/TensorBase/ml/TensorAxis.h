@@ -77,10 +77,10 @@ namespace TensorBase
     std::pair<bool, bool> getDataStatus() { return tensor_dimension_labels_->getDataStatus(); };   ///< Get the status of the host and device labels data
 
     template<typename T>
-    void getLabelsDataPointer(std::shared_ptr<T>& data_copy); ///< TensorAxisConcept labels getter
+    void getLabelsDataPointer(std::shared_ptr<T[]>& data_copy); ///< TensorAxisConcept labels getter
 
     template<typename T>
-    void getLabelsHDataPointer(std::shared_ptr<T>& data_copy); ///< TensorAxisConcept labels getter
+    void getLabelsHDataPointer(std::shared_ptr<T[]>& data_copy); ///< TensorAxisConcept labels getter
     
     /*
     @brief Delete from axis based on a selection index
@@ -232,14 +232,14 @@ namespace TensorBase
 
   template<typename TensorT, typename DeviceT>
   template<typename T>
-  void TensorAxis<TensorT, DeviceT>::getLabelsDataPointer(std::shared_ptr<T>& data_copy) {
+  void TensorAxis<TensorT, DeviceT>::getLabelsDataPointer(std::shared_ptr<T[]>& data_copy) {
     if (std::is_same<T, TensorT>::value)
       data_copy = std::reinterpret_pointer_cast<T>(tensor_dimension_labels_->getDataPointer()); // required for compilation: no conversion should be done
   }
 
   template<typename TensorT, typename DeviceT>
   template<typename T>
-  inline void TensorAxis<TensorT, DeviceT>::getLabelsHDataPointer(std::shared_ptr<T>& data_copy) {
+  inline void TensorAxis<TensorT, DeviceT>::getLabelsHDataPointer(std::shared_ptr<T[]>& data_copy) {
     if (std::is_same<T, TensorT>::value)
       data_copy = std::reinterpret_pointer_cast<T>(tensor_dimension_labels_->getHDataPointer()); // required for compilation: no conversion should be done
   }

@@ -145,19 +145,19 @@ BOOST_AUTO_TEST_CASE(getLabelsDataPointerDefaultDevice)
   TensorAxisDefaultDevice<int> tensoraxis("1", dimensions, labels);
 
   // Test data copy
-  std::shared_ptr<int> data_int = nullptr;
+  std::shared_ptr<int[]> data_int = nullptr;
   tensoraxis.getLabelsDataPointer<int>(data_int);
   BOOST_CHECK_EQUAL(data_int.get()[0], 1);
   BOOST_CHECK_EQUAL(data_int.get()[14], 1);
 
   // Test that no data is reinterpreted
-  std::shared_ptr<char> data_char = nullptr;
+  std::shared_ptr<char[]> data_char = nullptr;
   tensoraxis.getLabelsDataPointer<char>(data_char);
   BOOST_CHECK_EQUAL(data_char, nullptr);
-  std::shared_ptr<float> data_float = nullptr;
+  std::shared_ptr<float[]> data_float = nullptr;
   tensoraxis.getLabelsDataPointer<float>(data_float);
   BOOST_CHECK_EQUAL(data_float, nullptr);
-  std::shared_ptr<double> data_double = nullptr;
+  std::shared_ptr<double[]> data_double = nullptr;
   tensoraxis.getLabelsDataPointer<double>(data_double);
   BOOST_CHECK_EQUAL(data_double, nullptr);
 
@@ -474,17 +474,17 @@ BOOST_AUTO_TEST_CASE(getLabelsAsStringsDefaultDevice)
   // Use TensorArray8
   Eigen::Tensor<TensorArray8<int>, 2> labels_array(3, 5);
   labels_array.setConstant(TensorArray8<int>({1,2,3,4,5,6,7,8}));
-  //TensorAxisDefaultDevice<TensorArray8<int>> tensoraxis_array("1", dimensions, labels_array); // FIXME: causing a memory leak on deallocation
+  TensorAxisDefaultDevice<TensorArray8<int>> tensoraxis_array("1", dimensions, labels_array);
 
-  //// Test getLabelsAsString
-  //std::vector<std::string> labels_array_str = tensoraxis_array.getLabelsAsStrings(device);
-  //iter = 0;
-  //for (int i = 0; i < 3; i++) {
-  //  for (int j = 0; j < 5; j++) {
-  //    BOOST_CHECK_EQUAL(labels_array_str.at(iter), labels_array(i, j).getTensorArrayAsString());
-  //  }
-  //  ++iter;
-  //}
+  // Test getLabelsAsString
+  std::vector<std::string> labels_array_str = tensoraxis_array.getLabelsAsStrings(device);
+  iter = 0;
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 5; j++) {
+      BOOST_CHECK_EQUAL(labels_array_str.at(iter), labels_array(i, j).getTensorArrayAsString());
+    }
+    ++iter;
+  }
 }
 
 BOOST_AUTO_TEST_CASE(appendLabelsToAxisFromCsv1DefaultDevice)
@@ -713,19 +713,19 @@ BOOST_AUTO_TEST_CASE(getLabelsDataPointerCpu)
   TensorAxisCpu<int> tensoraxis("1", dimensions, labels);
 
   // Test data copy
-  std::shared_ptr<int> data_int = nullptr;
+  std::shared_ptr<int[]> data_int = nullptr;
   tensoraxis.getLabelsDataPointer<int>(data_int);
   BOOST_CHECK_EQUAL(data_int.get()[0], 1);
   BOOST_CHECK_EQUAL(data_int.get()[14], 1);
 
   // Test that no data is reinterpreted
-  std::shared_ptr<char> data_char = nullptr;
+  std::shared_ptr<char[]> data_char = nullptr;
   tensoraxis.getLabelsDataPointer<char>(data_char);
   BOOST_CHECK_EQUAL(data_char, nullptr);
-  std::shared_ptr<float> data_float = nullptr;
+  std::shared_ptr<float[]> data_float = nullptr;
   tensoraxis.getLabelsDataPointer<float>(data_float);
   BOOST_CHECK_EQUAL(data_float, nullptr);
-  std::shared_ptr<double> data_double = nullptr;
+  std::shared_ptr<double[]> data_double = nullptr;
   tensoraxis.getLabelsDataPointer<double>(data_double);
   BOOST_CHECK_EQUAL(data_double, nullptr);
 }
