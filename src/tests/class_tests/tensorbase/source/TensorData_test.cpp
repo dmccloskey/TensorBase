@@ -428,12 +428,12 @@ BOOST_AUTO_TEST_CASE(convertFromStringToTensorTDefaultDevice)
   BOOST_CHECK_EQUAL(tensordata_c.getData()(0, 0, 0), '1');
   BOOST_CHECK_EQUAL(tensordata_c.getData()(1, 2, 3), '1');
 
-  //// Test array  // FIXME: causing a memory leak on deallocation
-  //TensorDataDefaultDevice<TensorArray8<char>, 3> tensordata_a8(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
-  //tensordata_a8.setData();
-  //tensordata_a8.convertFromStringToTensorT(tensor_string, device);
-  //BOOST_CHECK_EQUAL(tensordata_a8.getData()(0, 0, 0), TensorArray8<char>("1.001"));
-  //BOOST_CHECK_EQUAL(tensordata_a8.getData()(1, 2, 3), TensorArray8<char>("1.001"));
+  // Test array  // FIXME: causing a memory leak on deallocation
+  TensorDataDefaultDevice<TensorArray8<char>, 3> tensordata_a8(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+  tensordata_a8.setData();
+  tensordata_a8.convertFromStringToTensorT(tensor_string, device);
+  BOOST_CHECK_EQUAL(tensordata_a8.getData()(0, 0, 0), TensorArray8<char>("1.001"));
+  BOOST_CHECK_EQUAL(tensordata_a8.getData()(1, 2, 3), TensorArray8<char>("1.001"));
 }
 
 /* TensorDataCpu Tests
