@@ -386,6 +386,75 @@ void test_storeAndLoadLabelsGpuPrimitiveT()
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
 
+void test_getLabelsAsStringsGpuPrimitiveT()
+{
+  // Setup the device
+  cudaStream_t stream;
+  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  Eigen::GpuStreamDevice stream_device(&stream, 0);
+  Eigen::GpuDevice device(&stream_device);
+
+  // Setup the axis
+  Eigen::Tensor<std::string, 1> dimensions(3);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  dimensions(2) = "TensorDimension3";
+  Eigen::Tensor<int, 2> labels(3, 5);
+  labels.setConstant(1);
+  TensorAxisGpuPrimitiveT<int> tensoraxis("1", dimensions, labels);
+
+  // Test getLabelsAsString
+  tensoraxis.syncHAndDData(device);
+  std::vector<std::string> labels_str = tensoraxis.getLabelsAsStrings(device);
+  tensoraxis.syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  int iter = 0;
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 5; j++) {
+      assert(labels_str.at(iter) == std::to_string(tensoraxis.getLabels()(i, j)));
+    }
+    ++iter;
+  }
+
+  // Using Char
+  Eigen::Tensor<char, 2> labels_char(3, 5);
+  labels_char.setConstant('a');
+  TensorAxisGpuPrimitiveT<char> tensoraxis_char("1", dimensions, labels_char);
+
+  // Test getLabelsAsString
+  tensoraxis_char.syncHAndDData(device);
+  std::vector<std::string> labels_char_str = tensoraxis_char.getLabelsAsStrings(device);
+  tensoraxis_char.syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  iter = 0;
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 5; j++) {
+      assert(labels_char_str.at(iter) == std::to_string(tensoraxis_char.getLabels()(i, j)));
+    }
+    ++iter;
+  }
+
+  // Use TensorArray8
+  Eigen::Tensor<TensorArrayGpu8<int>, 2> labels_array(3, 5);
+  labels_array.setConstant(TensorArrayGpu8<int>({ 1,2,3,4,5,6,7,8 }));
+  TensorAxisGpuClassT<TensorArrayGpu8, int> tensoraxis_array("1", dimensions, labels_array);
+
+  // Test getLabelsAsString
+  tensoraxis_array.syncHAndDData(device);
+  std::vector<std::string> labels_array_str = tensoraxis_array.getLabelsAsStrings(device);
+  tensoraxis_array.syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  iter = 0;
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 5; j++) {
+      assert(labels_array_str.at(iter) == labels_array(i, j).getTensorArrayAsString());
+    }
+    ++iter;
+  }
+
+  assert(cudaStreamDestroy(stream) == cudaSuccess);
+}
+
 void test_appendLabelsToAxisFromCsv1GpuPrimitiveT()
 {
   // Setup the device
