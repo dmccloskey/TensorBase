@@ -86,13 +86,13 @@ namespace TensorBase
     virtual void setData() = 0;
 
     // All TensorT combos of `getLabelsDatapointer`
-    virtual void getDataPointer(std::shared_ptr<int>& data_copy) = 0;
-    virtual void getDataPointer(std::shared_ptr<float>& data_copy) = 0;
-    virtual void getDataPointer(std::shared_ptr<double>& data_copy) = 0;
-    virtual void getDataPointer(std::shared_ptr<char>& data_copy) = 0;
-    virtual void getDataPointer(std::shared_ptr<TensorArray8<char>>& data_copy) = 0;
+    virtual void getDataPointer(std::shared_ptr<int[]>& data_copy) = 0;
+    virtual void getDataPointer(std::shared_ptr<float[]>& data_copy) = 0;
+    virtual void getDataPointer(std::shared_ptr<double[]>& data_copy) = 0;
+    virtual void getDataPointer(std::shared_ptr<char[]>& data_copy) = 0;
+    virtual void getDataPointer(std::shared_ptr<TensorArray8<char>[]>& data_copy) = 0;
 #if COMPILE_WITH_CUDA
-    virtual void getDataPointer(std::shared_ptr<TensorArrayGpu8<char>>& data_copy) = 0;
+    virtual void getDataPointer(std::shared_ptr<TensorArrayGpu8<char>[]>& data_copy) = 0;
 #endif
 
     /*
@@ -422,23 +422,23 @@ namespace TensorBase
     void setAxes() { tensor_table_->setAxes(); }
     void setData() { tensor_table_->setData(); }
 
-    void getDataPointer(std::shared_ptr<int>& data_copy) {
+    void getDataPointer(std::shared_ptr<int[]>& data_copy) {
       tensor_table_->getDataPointer(data_copy);
     };
-    void getDataPointer(std::shared_ptr<float>& data_copy) {
+    void getDataPointer(std::shared_ptr<float[]>& data_copy) {
       tensor_table_->getDataPointer(data_copy);
     };
-    void getDataPointer(std::shared_ptr<double>& data_copy) {
+    void getDataPointer(std::shared_ptr<double[]>& data_copy) {
       tensor_table_->getDataPointer(data_copy);
     };
-    void getDataPointer(std::shared_ptr<char>& data_copy) {
+    void getDataPointer(std::shared_ptr<char[]>& data_copy) {
       tensor_table_->getDataPointer(data_copy);
     };
-    void getDataPointer(std::shared_ptr<TensorArray8<char>>& data_copy) {
+    void getDataPointer(std::shared_ptr<TensorArray8<char>[]>& data_copy) {
       tensor_table_->getDataPointer(data_copy);
     };
 #if COMPILE_WITH_CUDA
-    void getDataPointer(std::shared_ptr<TensorArrayGpu8<char>>& data_copy) {
+    void getDataPointer(std::shared_ptr<TensorArrayGpu8<char>[]>& data_copy) {
       tensor_table_->getDataPointer(data_copy);
     };
 #endif

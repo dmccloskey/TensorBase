@@ -2409,7 +2409,7 @@ BOOST_AUTO_TEST_CASE(makeSparseTensorTableDefaultDevice)
   BOOST_CHECK_EQUAL(sparse_table_ptr->getAxes().at("Indices")->getName(), "Indices");
   BOOST_CHECK_EQUAL(sparse_table_ptr->getAxes().at("Indices")->getNLabels(), nlabels1);
   BOOST_CHECK_EQUAL(sparse_table_ptr->getAxes().at("Indices")->getNDimensions(), 3);
-  std::shared_ptr<int> labels1_ptr;
+  std::shared_ptr<int[]> labels1_ptr;
   sparse_table_ptr->getAxes().at("Indices")->getLabelsDataPointer(labels1_ptr);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_values(labels1_ptr.get(), 3, nlabels1);
   for (int i = 0; i < 3; ++i) {
@@ -2423,7 +2423,7 @@ BOOST_AUTO_TEST_CASE(makeSparseTensorTableDefaultDevice)
   BOOST_CHECK_EQUAL(sparse_table_ptr->getAxes().at("Values")->getName(), "Values");
   BOOST_CHECK_EQUAL(sparse_table_ptr->getAxes().at("Values")->getNLabels(), 1);
   BOOST_CHECK_EQUAL(sparse_table_ptr->getAxes().at("Values")->getNDimensions(), 1);
-  std::shared_ptr<int> labels2_ptr;
+  std::shared_ptr<int[]> labels2_ptr;
   sparse_table_ptr->getAxes().at("Values")->getLabelsDataPointer(labels2_ptr);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels2_values(labels2_ptr.get(), 1, 1);
   BOOST_CHECK_EQUAL(sparse_table_ptr->getAxes().at("Values")->getDimensions()(0), "Values");
@@ -2514,7 +2514,7 @@ BOOST_AUTO_TEST_CASE(getSelectTensorDataAsSparseTensorTableDefaultDevice)
   BOOST_CHECK_EQUAL(sparse_table_ptr->getAxes().at("Indices")->getName(), "Indices");
   BOOST_CHECK_EQUAL(sparse_table_ptr->getAxes().at("Indices")->getNLabels(), nlabels1);
   BOOST_CHECK_EQUAL(sparse_table_ptr->getAxes().at("Indices")->getNDimensions(), 3);
-  std::shared_ptr<int> labels1_ptr;
+  std::shared_ptr<int[]> labels1_ptr;
   sparse_table_ptr->getAxes().at("Indices")->getLabelsDataPointer(labels1_ptr);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_values(labels1_ptr.get(), 3, nlabels1);
   for (int i = 0; i < 3; ++i) {
@@ -2528,7 +2528,7 @@ BOOST_AUTO_TEST_CASE(getSelectTensorDataAsSparseTensorTableDefaultDevice)
   BOOST_CHECK_EQUAL(sparse_table_ptr->getAxes().at("Values")->getName(), "Values");
   BOOST_CHECK_EQUAL(sparse_table_ptr->getAxes().at("Values")->getNLabels(), 1);
   BOOST_CHECK_EQUAL(sparse_table_ptr->getAxes().at("Values")->getNDimensions(), 1);
-  std::shared_ptr<int> labels2_ptr;
+  std::shared_ptr<int[]> labels2_ptr;
   sparse_table_ptr->getAxes().at("Values")->getLabelsDataPointer(labels2_ptr);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels2_values(labels2_ptr.get(), 1, 1);
   BOOST_CHECK_EQUAL(sparse_table_ptr->getAxes().at("Values")->getDimensions()(0), "Values");
@@ -3307,21 +3307,21 @@ BOOST_AUTO_TEST_CASE(storeAndLoadTensorTableAxesDefaultDevice)
   tensorTable1.loadTensorTableAxesBinary("", device);
 
   // Test for the correct axes data
-  std::shared_ptr<int> labels1_ptr;
+  std::shared_ptr<int[]> labels1_ptr;
   tensorTable1.getAxes().at("1")->getLabelsDataPointer(labels1_ptr);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels1_values(labels1_ptr.get(), 1, nlabels1);
   for (int j = 0; j < nlabels1; ++j) {
     BOOST_CHECK_EQUAL(labels1_values(0, j), labels1(0, j));
   }
 
-  std::shared_ptr<int> labels2_ptr;
+  std::shared_ptr<int[]> labels2_ptr;
   tensorTable1.getAxes().at("2")->getLabelsDataPointer(labels2_ptr);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels2_values(labels2_ptr.get(), 1, nlabels2);
   for (int j = 0; j < nlabels2; ++j) {
     BOOST_CHECK_EQUAL(labels2_values(0, j), labels2(0, j));
   }
 
-  std::shared_ptr<int> labels3_ptr;
+  std::shared_ptr<int[]> labels3_ptr;
   tensorTable1.getAxes().at("3")->getLabelsDataPointer(labels3_ptr);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels3_values(labels3_ptr.get(), 1, nlabels3);
   for (int j = 0; j < nlabels3; ++j) {

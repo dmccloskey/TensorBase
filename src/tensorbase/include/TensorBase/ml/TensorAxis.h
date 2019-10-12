@@ -528,7 +528,6 @@ namespace TensorBase
     auto labels_new_v1v2_select = (labels_new_v1_bcast == labels_new_v2_bcast).select(indices_unique_values_bcast.constant(1), indices_unique_values_bcast.constant(0));
     // Reduct along the axis dimensions and then cum sum along the axis labels
     auto labels_new_v1v2_prod = labels_new_v1v2_select.sum(Eigen::array<Eigen::Index, 2>({ 1, 3 })).clip(0, 1);
-    std::cout << "labels_new_v1v2_prod\n" << labels_new_v1v2_prod << std::endl; //DEBUG
     auto labels_new_v1v2_cumsum = (labels_new_v1v2_prod.cumsum(1) * labels_new_v1v2_prod).cumsum(2) * labels_new_v1v2_prod;
     // Select the unique labels marked with a 1
     auto labels_unique_v1v2 = (labels_new_v1v2_cumsum == labels_new_v1v2_cumsum.constant(1)).select(labels_new_v1v2_cumsum.constant(1), labels_new_v1v2_cumsum.constant(0));

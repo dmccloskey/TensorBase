@@ -54,9 +54,9 @@ namespace TensorBase
     virtual void getLabelsDataPointer(std::shared_ptr<float[]>& data_copy) = 0;
     virtual void getLabelsDataPointer(std::shared_ptr<double[]>& data_copy) = 0;
     virtual void getLabelsDataPointer(std::shared_ptr<char[]>& data_copy) = 0;
-    virtual void getLabelsDataPointer(std::shared_ptr<TensorArray8<char>>& data_copy) = 0;
+    virtual void getLabelsDataPointer(std::shared_ptr<TensorArray8<char>[]>& data_copy) = 0;
 #if COMPILE_WITH_CUDA
-    virtual void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu8<char>>& data_copy) = 0;
+    virtual void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu8<char>[]>& data_copy) = 0;
 #endif
 
     // All DeviceT combos of `deleteFromAxis`
@@ -139,11 +139,11 @@ namespace TensorBase
     void getLabelsDataPointer(std::shared_ptr<char[]>& data_copy) {
       tensor_axis_->getLabelsDataPointer(data_copy);
     };
-    void getLabelsDataPointer(std::shared_ptr<TensorArray8<char>>& data_copy) {
+    void getLabelsDataPointer(std::shared_ptr<TensorArray8<char>[]>& data_copy) {
       tensor_axis_->getLabelsDataPointer(data_copy);
     };
 #if COMPILE_WITH_CUDA
-    void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu8<char>>& data_copy) {
+    void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu8<char>[]>& data_copy) {
       tensor_axis_->getLabelsDataPointer(data_copy);
     };
 #endif

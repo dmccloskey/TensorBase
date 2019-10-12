@@ -688,7 +688,7 @@ void test_deleteFromAxisGpuClassT()
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = 0; j < n_select_labels; ++j) {
       //std::cout << "Test Labels i,j :" << i << "," << j << "; Reduced labels: " << tensoraxis.getLabels()(i, j) << "; Expected: " << labels_test(i, j) << std::endl;
-      assert(tensoraxis.getLabels()(i, j) == labels_test(i, j)); // FIXME
+      assert(tensoraxis.getLabels()(i, j) == labels_test(i, j));
     }
   }
 }
