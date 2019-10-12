@@ -418,8 +418,12 @@ namespace TensorBase
     void convertFromStringToTensorT(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::GpuDevice& device) override { convertFromStringToTensorT_(data_new, device); };
     template<template<class> typename A = ArrayT, typename T = TensorT, std::enable_if_t<std::is_same<A<T>, A<char>>::value, int> = 0>
     void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::GpuDevice& device);
+    template<template<class> typename A = ArrayT, typename T = TensorT, std::enable_if_t<std::is_same<A<T>, A<int>>::value, int> = 0>
+    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::GpuDevice& device) {/*TODO*/};
     template<template<class> typename A = ArrayT, typename T = TensorT, std::enable_if_t<std::is_same<A<T>, A<float>>::value, int> = 0>
-    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::GpuDevice& device);
+    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::GpuDevice& device) {/*TODO*/ };
+    template<template<class> typename A = ArrayT, typename T = TensorT, std::enable_if_t<std::is_same<A<T>, A<double>>::value, int> = 0>
+    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::GpuDevice& device) {/*TODO*/ };
   private:
     friend class cereal::access;
     template<class Archive>
@@ -558,12 +562,6 @@ namespace TensorBase
 
     //// convert the data from string to TensorT
     //thrust::transform(thrust::cuda::par.on(device.stream()), d_data_new, d_data_new + data_new.size(), d_data, convertStrToTensorArrayGpu<ArrayT<TensorT>>());
-  }
-  template<template<class> class ArrayT, class TensorT, int TDim>
-  template<template<class> typename A, typename T, std::enable_if_t<std::is_same<A<T>, A<float>>::value, int>>
-  inline void TensorDataGpuClassT<ArrayT, TensorT, TDim>::convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::GpuDevice & device)
-  {
-    assert(data_new.size() == this->getTensorSize());
   }
 }
 

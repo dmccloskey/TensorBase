@@ -35,6 +35,8 @@ namespace TensorBase
     void makeSortIndices(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>>& indices_sort, Eigen::GpuDevice& device) override;
     bool loadLabelsBinary(const std::string& filename, Eigen::GpuDevice& device) override;
     bool storeLabelsBinary(const std::string& filename, Eigen::GpuDevice& device) override;
+    void appendLabelsToAxisFromCsv(const Eigen::Tensor<std::string, 2>& labels, Eigen::GpuDevice& device) override;
+    void makeSelectIndicesFromCsv(std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& select_indices, const Eigen::Tensor<std::string, 2>& labels, Eigen::GpuDevice& device) override;
   private:
     friend class cereal::access;
     template<class Archive>
@@ -45,7 +47,7 @@ namespace TensorBase
   template<typename TensorT>
   void TensorAxisGpuPrimitiveT<TensorT>::setLabels(const Eigen::Tensor<TensorT, 2>& labels) {
     Eigen::array<Eigen::Index, 2> labels_dims = labels.dimensions();
-    this->tensor_dimension_labels_.reset(new TensorDataGpuPrimitiveT<TensorT, 2>(labels_dims));
+    this->tensor_dimension_labels_ = std::make_shared<TensorDataGpuPrimitiveT<TensorT, 2>>(TensorDataGpuPrimitiveT<TensorT, 2>(labels_dims));
     this->tensor_dimension_labels_->setData(labels);
     this->setNLabels(labels.dimension(1));
   }
@@ -55,7 +57,7 @@ namespace TensorBase
     Eigen::array<Eigen::Index, 2> labels_dims;
     labels_dims.at(0) = this->n_dimensions_;
     labels_dims.at(1) = this->n_labels_;
-    this->tensor_dimension_labels_.reset(new TensorDataGpuPrimitiveT<TensorT, 2>(labels_dims));
+    this->tensor_dimension_labels_ = std::make_shared<TensorDataGpuPrimitiveT<TensorT, 2>>(TensorDataGpuPrimitiveT<TensorT, 2>(labels_dims));
     this->tensor_dimension_labels_->setData();
   }
   template<typename TensorT>
@@ -178,6 +180,138 @@ namespace TensorBase
     this->setDataStatus(false, true);
     return true;
   }
+  template<typename TensorT>
+  inline void TensorAxisGpuPrimitiveT<TensorT>::appendLabelsToAxisFromCsv(const Eigen::Tensor<std::string, 2>& labels, Eigen::GpuDevice & device)
+  {
+    assert(this->n_dimensions_ == (int)labels.dimension(0));
+
+    // Convert to TensorT
+    TensorDataGpuPrimitiveT<TensorT, 2> labels_converted(Eigen::array<Eigen::Index, 2>({ (int)labels.dimension(0), (int)labels.dimension(1) }));
+    labels_converted.setData();
+    labels_converted.syncHAndDData(device);
+    labels_converted.convertFromStringToTensorT(labels, device);
+
+    // Make the labels unique
+    TensorDataGpuPrimitiveT<int, 3> labels_unique_tmp(Eigen::array<Eigen::Index, 3>({ 1, (int)labels.dimension(1), (int)labels.dimension(1) }));
+    labels_unique_tmp.setData();
+    labels_unique_tmp.syncHAndDData(device);
+    Eigen::TensorMap<Eigen::Tensor<int, 3>> labels_new_v1v2_prod(labels_unique_tmp.getDataPointer().get(), 1, (int)labels.dimension(1), (int)labels.dimension(1));
+    // Make the indices unique
+    TensorDataGpuPrimitiveT<int, 2> indices_unique(Eigen::array<Eigen::Index, 2>({ 1, (int)labels.dimension(1) }));
+    indices_unique.setData();
+    indices_unique.syncHAndDData(device);
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_unique_values(indices_unique.getDataPointer().get(), 1, (int)labels.dimension(1));
+    // Make the indices select
+    TensorDataGpuPrimitiveT<int, 2> indices_select(Eigen::array<Eigen::Index, 2>({ (int)labels.dimension(0), (int)labels.dimension(1) }));
+    indices_select.setData();
+    indices_select.syncHAndDData(device);
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_select_values(indices_select.getDataPointer().get(), (int)labels.dimension(0), (int)labels.dimension(1));
+
+    // Determine the unique input axis labels
+    Eigen::TensorMap<Eigen::Tensor<int, 5>> indices_unique_values5(indices_select.getDataPointer().get(), 1, (int)labels.dimension(0), (int)labels.dimension(1), 1, 1);
+    auto indices_unique_values_bcast = indices_unique_values5.broadcast(Eigen::array<Eigen::Index, 5>({ 1, 1, 1, (int)labels.dimension(0), (int)labels.dimension(1) }));
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 5>> labels_new_v1(labels_converted.getDataPointer().get(), 1, (int)labels.dimension(0), (int)labels.dimension(1), 1, 1);
+    auto labels_new_v1_bcast = labels_new_v1.broadcast(Eigen::array<Eigen::Index, 5>({ 1, 1, 1, (int)labels.dimension(0), (int)labels.dimension(1) }));
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 5>> labels_new_v2(labels_converted.getDataPointer().get(), 1, 1, 1, (int)labels.dimension(0), (int)labels.dimension(1));
+    auto labels_new_v2_bcast = labels_new_v2.broadcast(Eigen::array<Eigen::Index, 5>({ 1, (int)labels.dimension(0), (int)labels.dimension(1), 1, 1 }));
+    // Select the overlapping labels
+    auto labels_new_v1v2_select = (labels_new_v1_bcast == labels_new_v2_bcast).select(indices_unique_values_bcast.constant(1), indices_unique_values_bcast.constant(0));
+    // Reduct along the axis dimensions and then cum sum along the axis labels
+    labels_new_v1v2_prod.device(device) = labels_new_v1v2_select.sum(Eigen::array<Eigen::Index, 2>({ 1, 3 })).clip(0, 1);
+    auto labels_new_v1v2_cumsum = (labels_new_v1v2_prod.cumsum(1) * labels_new_v1v2_prod).cumsum(2) * labels_new_v1v2_prod;
+    // Select the unique labels marked with a 1
+    auto labels_unique_v1v2 = (labels_new_v1v2_cumsum == labels_new_v1v2_cumsum.constant(1)).select(labels_new_v1v2_cumsum.constant(1), labels_new_v1v2_cumsum.constant(0));
+    // Collapse back to 1xnlabels by summing along one of the axis labels dimensions
+    indices_unique_values.device(device) = labels_unique_v1v2.sum(Eigen::array<Eigen::Index, 1>({ 2 })).clip(0, 1);
+
+    if (this->n_labels_ > 0) {
+      // Determine the new labels to add to the axis 
+      Eigen::TensorMap<Eigen::Tensor<int, 5>> indices_select_values5(indices_select.getDataPointer().get(), 1, (int)labels.dimension(0), (int)labels.dimension(1), 1, 1);
+      auto indices_select_values_bcast = indices_select_values5.broadcast(Eigen::array<Eigen::Index, 5>({ 1, 1, 1, (int)this->n_dimensions_, (int)this->n_labels_ }));
+      // Broadcast along the labels and along the dimensions and for both the labels and the new labels
+      Eigen::TensorMap<Eigen::Tensor<TensorT, 5>> labels_values(this->tensor_dimension_labels_->getDataPointer().get(), 1, 1, 1, (int)this->n_dimensions_, (int)this->n_labels_);
+      auto labels_values_bcast = labels_values.broadcast(Eigen::array<Eigen::Index, 5>({ 1, (int)labels.dimension(0), (int)labels.dimension(1), 1, 1 }));
+      Eigen::TensorMap<Eigen::Tensor<TensorT, 5>> labels_new_values(labels_converted.getDataPointer().get(), 1, (int)labels.dimension(0), (int)labels.dimension(1), 1, 1);
+      auto labels_new_values_bcast = labels_new_values.broadcast(Eigen::array<Eigen::Index, 5>({ 1, 1, 1, (int)this->n_dimensions_, (int)this->n_labels_ }));
+      // Select and sum along the labels and multiple along the dimensions
+      auto labels_selected = (labels_values_bcast == labels_new_values_bcast).select(indices_select_values_bcast.constant(1), indices_select_values_bcast.constant(0)).sum(
+        Eigen::array<Eigen::Index, 2>({ 3, 4 })).prod(Eigen::array<Eigen::Index, 1>({ 1 })); // not new > 1, new = 0
+      // Invert the selection
+      auto labels_new = (labels_selected > labels_selected.constant(0)).select(labels_selected.constant(0), labels_selected.constant(1)); // new = 1, not new = 0
+
+      // Determine the new and unique labels to add to the axis
+      auto labels_new_unique = labels_new * indices_unique_values;
+      // Broadcast back to n_dimensions x labels
+      auto labels_new_unique_bcast = labels_new_unique.broadcast(Eigen::array<Eigen::Index, 2>({ (int)labels.dimension(0), 1 }));
+
+      // Store the selection indices
+      indices_select_values.device(device) = labels_new_unique_bcast;
+    }
+    else {
+      // Broadcast back to n_dimensions x labels
+      auto labels_new_unique_bcast = indices_unique_values.broadcast(Eigen::array<Eigen::Index, 2>({ (int)labels.dimension(0), 1 }));
+
+      // Store the selection indices
+      indices_select_values.device(device) = labels_new_unique_bcast;
+    }
+    std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>> indices_select_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 2>>(indices_select);
+
+    // Determine the number of new labels
+    TensorDataGpuPrimitiveT<int, 1> n_labels_new(Eigen::array<Eigen::Index, 1>({ 1 }));
+    n_labels_new.setData();
+    n_labels_new.syncHAndDData(device);
+    Eigen::TensorMap<Eigen::Tensor<int, 0>> n_labels_new_values(n_labels_new.getDataPointer().get());
+    n_labels_new_values.device(device) = indices_select_values.sum() / n_labels_new_values.constant((int)labels.dimension(0));
+    n_labels_new.syncHAndDData(device);
+    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+
+    // Allocate memory for the new labels
+    TensorDataGpuPrimitiveT<TensorT, 2> labels_select(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, n_labels_new.getData()(0) }));
+    labels_select.setData();
+    labels_select.syncHAndDData(device);
+    std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 2>> labels_select_ptr = std::make_shared<TensorDataGpuPrimitiveT<TensorT, 2>>(labels_select);
+
+    // Select the labels
+    labels_converted.select(labels_select_ptr, indices_select_ptr, device);
+
+    // Append the selected labels to the axis
+    this->appendLabelsToAxis(labels_select_ptr, device);
+  }
+  template<typename TensorT>
+  inline void TensorAxisGpuPrimitiveT<TensorT>::makeSelectIndicesFromCsv(std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& select_indices, const Eigen::Tensor<std::string, 2>& labels, Eigen::GpuDevice & device)
+  {
+    assert(this->n_dimensions_ == (int)labels.dimension(0));
+
+    // Convert to TensorT
+    TensorDataGpuPrimitiveT<TensorT, 2> select_labels(Eigen::array<Eigen::Index, 2>({ (int)labels.dimension(0), (int)labels.dimension(1) }));
+    select_labels.setData();
+    select_labels.syncHAndDData(device);
+    select_labels.convertFromStringToTensorT(labels, device);
+
+    // reshape to match the axis labels shape and broadcast the length of the labels
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 4>> labels_names_selected_reshape(select_labels.getDataPointer().get(), 1, 1, select_labels.getDimensions().at(0), select_labels.getDimensions().at(1));
+    auto labels_names_selected_bcast = labels_names_selected_reshape.broadcast(Eigen::array<Eigen::Index, 4>({ (int)this->getNDimensions(), (int)this->getNLabels(), 1, 1 }));
+
+    // broadcast the axis labels the size of the labels queried
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 4>> labels_reshape(this->tensor_dimension_labels_->getDataPointer().get(), (int)this->getNDimensions(), (int)this->getNLabels(), 1, 1);
+    auto labels_bcast = labels_reshape.broadcast(Eigen::array<Eigen::Index, 4>({ 1, 1, select_labels.getDimensions().at(0), select_labels.getDimensions().at(1) }));
+
+    // broadcast the tensor indices the size of the labels queried
+    TensorDataGpuPrimitiveT<int, 1> select_indices_tmp(Eigen::array<Eigen::Index, 1>({ (int)this->getNLabels() }));
+    select_indices_tmp.setData();
+    select_indices_tmp.syncHAndDData(device);
+    Eigen::TensorMap<Eigen::Tensor<int, 4>> indices_reshape(select_indices_tmp.getDataPointer().get(), 1, (int)this->getNLabels(), 1, 1);
+    auto indices_bcast = indices_reshape.broadcast(Eigen::array<Eigen::Index, 4>({ (int)this->getNDimensions(), 1, select_labels.getDimensions().at(0), select_labels.getDimensions().at(1) }));
+
+    // select the indices and reduce back to a 1D Tensor
+    auto selected = (labels_bcast == labels_names_selected_bcast).select(indices_bcast.constant(1), indices_bcast.constant(0)).sum(
+      Eigen::array<Eigen::Index, 2>({ 2, 3 })).prod(Eigen::array<Eigen::Index, 1>({ 0 })).clip(0, 1); // matched = 1, not-matched = 0;
+
+    // assign the select indices
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> select_indices_values(select_indices_tmp.getDataPointer().get(), (int)this->getNLabels());
+    select_indices_values.device(device) = selected;
+    select_indices = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(select_indices_tmp);
+  }
 
   template<template<class> class ArrayT, class TensorT>
   class TensorAxisGpuClassT : public TensorAxis<ArrayT<TensorT>, Eigen::GpuDevice>
@@ -194,6 +328,8 @@ namespace TensorBase
     void makeSortIndices(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>>& indices_sort, Eigen::GpuDevice& device) override;
     bool loadLabelsBinary(const std::string& filename, Eigen::GpuDevice& device) override;
     bool storeLabelsBinary(const std::string& filename, Eigen::GpuDevice& device) override;
+    void appendLabelsToAxisFromCsv(const Eigen::Tensor<std::string, 2>& labels, Eigen::GpuDevice& device) override;
+    void makeSelectIndicesFromCsv(std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& select_indices, const Eigen::Tensor<std::string, 2>& labels, Eigen::GpuDevice& device) override;
   private:
     friend class cereal::access;
     template<class Archive>
@@ -204,7 +340,7 @@ namespace TensorBase
   template<template<class> class ArrayT, class TensorT>
   inline void TensorAxisGpuClassT<ArrayT, TensorT>::setLabels(const Eigen::Tensor<ArrayT<TensorT>, 2>& labels) {
     Eigen::array<Eigen::Index, 2> labels_dims = labels.dimensions();
-    this->tensor_dimension_labels_.reset(new TensorDataGpuClassT<ArrayT, TensorT, 2>(labels_dims));
+    this->tensor_dimension_labels_ = std::make_shared<TensorDataGpuClassT<ArrayT, TensorT, 2>>(TensorDataGpuClassT<ArrayT, TensorT, 2>(labels_dims));
     this->tensor_dimension_labels_->setData(labels);
     this->setNLabels(labels.dimension(1));
   }
@@ -214,7 +350,7 @@ namespace TensorBase
     Eigen::array<Eigen::Index, 2> labels_dims;
     labels_dims.at(0) = this->n_dimensions_;
     labels_dims.at(1) = this->n_labels_;
-    this->tensor_dimension_labels_.reset(new TensorDataGpuClassT<ArrayT, TensorT, 2>(labels_dims));
+    this->tensor_dimension_labels_ = std::make_shared<TensorDataGpuClassT<ArrayT, TensorT, 2>>(TensorDataGpuClassT<ArrayT, TensorT, 2>(labels_dims));
     this->tensor_dimension_labels_->setData();
   }
   template<template<class> class ArrayT, class TensorT>
@@ -336,6 +472,138 @@ namespace TensorBase
     DataFile::storeDataBinary<ArrayT<TensorT>, 2>(filename + ".ta", this->getLabels());
     this->setDataStatus(false, true);
     return true;
+  }
+  template<template<class> class ArrayT, class TensorT>
+  inline void TensorAxisGpuClassT<ArrayT, TensorT>::appendLabelsToAxisFromCsv(const Eigen::Tensor<std::string, 2>& labels, Eigen::GpuDevice & device)
+  {
+    assert(this->n_dimensions_ == (int)labels.dimension(0));
+
+    // Convert to ArrayT<TensorT>
+    TensorDataGpuClassT<ArrayT, TensorT, 2> labels_converted(Eigen::array<Eigen::Index, 2>({ (int)labels.dimension(0), (int)labels.dimension(1) }));
+    labels_converted.setData();
+    labels_converted.syncHAndDData(device);
+    labels_converted.convertFromStringToTensorT(labels, device);
+
+    // Make the labels unique
+    TensorDataGpuPrimitiveT<int, 3> labels_unique_tmp(Eigen::array<Eigen::Index, 3>({ 1, (int)labels.dimension(1), (int)labels.dimension(1) }));
+    labels_unique_tmp.setData();
+    labels_unique_tmp.syncHAndDData(device);
+    Eigen::TensorMap<Eigen::Tensor<int, 3>> labels_new_v1v2_prod(labels_unique_tmp.getDataPointer().get(), 1, (int)labels.dimension(1), (int)labels.dimension(1));
+    // Make the indices unique
+    TensorDataGpuPrimitiveT<int, 2> indices_unique(Eigen::array<Eigen::Index, 2>({ 1, (int)labels.dimension(1) }));
+    indices_unique.setData();
+    indices_unique.syncHAndDData(device);
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_unique_values(indices_unique.getDataPointer().get(), 1, (int)labels.dimension(1));
+    // Make the indices select
+    TensorDataGpuPrimitiveT<int, 2> indices_select(Eigen::array<Eigen::Index, 2>({ (int)labels.dimension(0), (int)labels.dimension(1) }));
+    indices_select.setData();
+    indices_select.syncHAndDData(device);
+    Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_select_values(indices_select.getDataPointer().get(), (int)labels.dimension(0), (int)labels.dimension(1));
+
+    // Determine the unique input axis labels
+    Eigen::TensorMap<Eigen::Tensor<int, 5>> indices_unique_values5(indices_select.getDataPointer().get(), 1, (int)labels.dimension(0), (int)labels.dimension(1), 1, 1);
+    auto indices_unique_values_bcast = indices_unique_values5.broadcast(Eigen::array<Eigen::Index, 5>({ 1, 1, 1, (int)labels.dimension(0), (int)labels.dimension(1) }));
+    Eigen::TensorMap<Eigen::Tensor<ArrayT<TensorT>, 5>> labels_new_v1(labels_converted.getDataPointer().get(), 1, (int)labels.dimension(0), (int)labels.dimension(1), 1, 1);
+    auto labels_new_v1_bcast = labels_new_v1.broadcast(Eigen::array<Eigen::Index, 5>({ 1, 1, 1, (int)labels.dimension(0), (int)labels.dimension(1) }));
+    Eigen::TensorMap<Eigen::Tensor<ArrayT<TensorT>, 5>> labels_new_v2(labels_converted.getDataPointer().get(), 1, 1, 1, (int)labels.dimension(0), (int)labels.dimension(1));
+    auto labels_new_v2_bcast = labels_new_v2.broadcast(Eigen::array<Eigen::Index, 5>({ 1, (int)labels.dimension(0), (int)labels.dimension(1), 1, 1 }));
+    // Select the overlapping labels
+    auto labels_new_v1v2_select = (labels_new_v1_bcast == labels_new_v2_bcast).select(indices_unique_values_bcast.constant(1), indices_unique_values_bcast.constant(0));
+    // Reduct along the axis dimensions and then cum sum along the axis labels
+    labels_new_v1v2_prod.device(device) = labels_new_v1v2_select.sum(Eigen::array<Eigen::Index, 2>({ 1, 3 })).clip(0, 1);
+    auto labels_new_v1v2_cumsum = (labels_new_v1v2_prod.cumsum(1) * labels_new_v1v2_prod).cumsum(2) * labels_new_v1v2_prod;
+    // Select the unique labels marked with a 1
+    auto labels_unique_v1v2 = (labels_new_v1v2_cumsum == labels_new_v1v2_cumsum.constant(1)).select(labels_new_v1v2_cumsum.constant(1), labels_new_v1v2_cumsum.constant(0));
+    // Collapse back to 1xnlabels by summing along one of the axis labels dimensions
+    indices_unique_values.device(device) = labels_unique_v1v2.sum(Eigen::array<Eigen::Index, 1>({ 2 })).clip(0, 1);
+
+    if (this->n_labels_ > 0) {
+      // Determine the new labels to add to the axis 
+      Eigen::TensorMap<Eigen::Tensor<int, 5>> indices_select_values5(indices_select.getDataPointer().get(), 1, (int)labels.dimension(0), (int)labels.dimension(1), 1, 1);
+      auto indices_select_values_bcast = indices_select_values5.broadcast(Eigen::array<Eigen::Index, 5>({ 1, 1, 1, (int)this->n_dimensions_, (int)this->n_labels_ }));
+      // Broadcast along the labels and along the dimensions and for both the labels and the new labels
+      Eigen::TensorMap<Eigen::Tensor<ArrayT<TensorT>, 5>> labels_values(this->tensor_dimension_labels_->getDataPointer().get(), 1, 1, 1, (int)this->n_dimensions_, (int)this->n_labels_);
+      auto labels_values_bcast = labels_values.broadcast(Eigen::array<Eigen::Index, 5>({ 1, (int)labels.dimension(0), (int)labels.dimension(1), 1, 1 }));
+      Eigen::TensorMap<Eigen::Tensor<ArrayT<TensorT>, 5>> labels_new_values(labels_converted.getDataPointer().get(), 1, (int)labels.dimension(0), (int)labels.dimension(1), 1, 1);
+      auto labels_new_values_bcast = labels_new_values.broadcast(Eigen::array<Eigen::Index, 5>({ 1, 1, 1, (int)this->n_dimensions_, (int)this->n_labels_ }));
+      // Select and sum along the labels and multiple along the dimensions
+      auto labels_selected = (labels_values_bcast == labels_new_values_bcast).select(indices_select_values_bcast.constant(1), indices_select_values_bcast.constant(0)).sum(
+        Eigen::array<Eigen::Index, 2>({ 3, 4 })).prod(Eigen::array<Eigen::Index, 1>({ 1 })); // not new > 1, new = 0
+      // Invert the selection
+      auto labels_new = (labels_selected > labels_selected.constant(0)).select(labels_selected.constant(0), labels_selected.constant(1)); // new = 1, not new = 0
+
+      // Determine the new and unique labels to add to the axis
+      auto labels_new_unique = labels_new * indices_unique_values;
+      // Broadcast back to n_dimensions x labels
+      auto labels_new_unique_bcast = labels_new_unique.broadcast(Eigen::array<Eigen::Index, 2>({ (int)labels.dimension(0), 1 }));
+
+      // Store the selection indices
+      indices_select_values.device(device) = labels_new_unique_bcast;
+    }
+    else {
+      // Broadcast back to n_dimensions x labels
+      auto labels_new_unique_bcast = indices_unique_values.broadcast(Eigen::array<Eigen::Index, 2>({ (int)labels.dimension(0), 1 }));
+
+      // Store the selection indices
+      indices_select_values.device(device) = labels_new_unique_bcast;
+    }
+    std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>> indices_select_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 2>>(indices_select);
+
+    // Determine the number of new labels
+    TensorDataGpuPrimitiveT<int, 1> n_labels_new(Eigen::array<Eigen::Index, 1>({ 1 }));
+    n_labels_new.setData();
+    n_labels_new.syncHAndDData(device);
+    Eigen::TensorMap<Eigen::Tensor<int, 0>> n_labels_new_values(n_labels_new.getDataPointer().get());
+    n_labels_new_values.device(device) = indices_select_values.sum() / n_labels_new_values.constant((int)labels.dimension(0));
+    n_labels_new.syncHAndDData(device);
+    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+
+    // Allocate memory for the new labels
+    TensorDataGpuClassT<ArrayT, TensorT, 2> labels_select(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, n_labels_new.getData()(0) }));
+    labels_select.setData();
+    labels_select.syncHAndDData(device);
+    std::shared_ptr<TensorData<ArrayT<TensorT>, Eigen::GpuDevice, 2>> labels_select_ptr = std::make_shared<TensorDataGpuClassT<ArrayT, TensorT, 2>>(labels_select);
+
+    // Select the labels
+    labels_converted.select(labels_select_ptr, indices_select_ptr, device);
+
+    // Append the selected labels to the axis
+    this->appendLabelsToAxis(labels_select_ptr, device);
+  }
+  template<template<class> class ArrayT, class TensorT>
+  inline void TensorAxisGpuClassT<ArrayT, TensorT>::makeSelectIndicesFromCsv(std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& select_indices, const Eigen::Tensor<std::string, 2>& labels, Eigen::GpuDevice & device)
+  {
+    assert(this->n_dimensions_ == (int)labels.dimension(0));
+
+    // Convert to ArrayT<TensorT>
+    TensorDataGpuClassT<ArrayT, TensorT, 2> select_labels(Eigen::array<Eigen::Index, 2>({ (int)labels.dimension(0), (int)labels.dimension(1) }));
+    select_labels.setData();
+    select_labels.syncHAndDData(device);
+    select_labels.convertFromStringToTensorT(labels, device);
+
+    // reshape to match the axis labels shape and broadcast the length of the labels
+    Eigen::TensorMap<Eigen::Tensor<ArrayT<TensorT>, 4>> labels_names_selected_reshape(select_labels.getDataPointer().get(), 1, 1, select_labels.getDimensions().at(0), select_labels.getDimensions().at(1));
+    auto labels_names_selected_bcast = labels_names_selected_reshape.broadcast(Eigen::array<Eigen::Index, 4>({ (int)this->getNDimensions(), (int)this->getNLabels(), 1, 1 }));
+
+    // broadcast the axis labels the size of the labels queried
+    Eigen::TensorMap<Eigen::Tensor<ArrayT<TensorT>, 4>> labels_reshape(this->tensor_dimension_labels_->getDataPointer().get(), (int)this->getNDimensions(), (int)this->getNLabels(), 1, 1);
+    auto labels_bcast = labels_reshape.broadcast(Eigen::array<Eigen::Index, 4>({ 1, 1, select_labels.getDimensions().at(0), select_labels.getDimensions().at(1) }));
+
+    // broadcast the tensor indices the size of the labels queried
+    TensorDataGpuPrimitiveT<int, 1> select_indices_tmp(Eigen::array<Eigen::Index, 1>({ (int)this->getNLabels() }));
+    select_indices_tmp.setData();
+    select_indices_tmp.syncHAndDData(device);
+    Eigen::TensorMap<Eigen::Tensor<int, 4>> indices_reshape(select_indices_tmp.getDataPointer().get(), 1, (int)this->getNLabels(), 1, 1);
+    auto indices_bcast = indices_reshape.broadcast(Eigen::array<Eigen::Index, 4>({ (int)this->getNDimensions(), 1, select_labels.getDimensions().at(0), select_labels.getDimensions().at(1) }));
+
+    // select the indices and reduce back to a 1D Tensor
+    auto selected = (labels_bcast == labels_names_selected_bcast).select(indices_bcast.constant(1), indices_bcast.constant(0)).sum(
+      Eigen::array<Eigen::Index, 2>({ 2, 3 })).prod(Eigen::array<Eigen::Index, 1>({ 0 })).clip(0, 1); // matched = 1, not-matched = 0;
+
+    // assign the select indices
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> select_indices_values(select_indices_tmp.getDataPointer().get(), (int)this->getNLabels());
+    select_indices_values.device(device) = selected;
+    select_indices = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(select_indices_tmp);
   }
 };
 

@@ -224,6 +224,8 @@ namespace TensorBase
     void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice& device);
     template<typename T = TensorT, std::enable_if_t<std::is_same<T, TensorArray8<char>>::value, int> = 0>
     void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice& device);
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, TensorArray8<int>>::value, int> = 0>
+    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice& device) { /*TODO*/};
   private:
     friend class cereal::access;
     template<class Archive>

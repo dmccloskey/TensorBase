@@ -234,14 +234,14 @@ namespace TensorBase
   template<typename T>
   void TensorAxis<TensorT, DeviceT>::getLabelsDataPointer(std::shared_ptr<T[]>& data_copy) {
     if (std::is_same<T, TensorT>::value)
-      data_copy = std::reinterpret_pointer_cast<T>(tensor_dimension_labels_->getDataPointer()); // required for compilation: no conversion should be done
+      data_copy = std::reinterpret_pointer_cast<T[]>(tensor_dimension_labels_->getDataPointer()); // required for compilation: no conversion should be done
   }
 
   template<typename TensorT, typename DeviceT>
   template<typename T>
   inline void TensorAxis<TensorT, DeviceT>::getLabelsHDataPointer(std::shared_ptr<T[]>& data_copy) {
     if (std::is_same<T, TensorT>::value)
-      data_copy = std::reinterpret_pointer_cast<T>(tensor_dimension_labels_->getHDataPointer()); // required for compilation: no conversion should be done
+      data_copy = std::reinterpret_pointer_cast<T[]>(tensor_dimension_labels_->getHDataPointer()); // required for compilation: no conversion should be done
   }
 
   template<typename TensorT, typename DeviceT>
@@ -265,7 +265,7 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT>
-  template<typename T, std::enable_if_t<!std::is_fundamental<T>::value, int> = 0>
+  template<typename T, std::enable_if_t<!std::is_fundamental<T>::value, int>>
   inline std::vector<std::string> TensorAxis<TensorT, DeviceT>::getLabelsAsStrings(DeviceT& device) const
   {
     // NOTE: the host and device should be syncronized for the primary axis
@@ -283,7 +283,7 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT>
-  template<typename T, std::enable_if_t<std::is_same<T, char>::value, int> = 0>
+  template<typename T, std::enable_if_t<std::is_same<T, char>::value, int>>
   inline std::vector<std::string> TensorAxis<TensorT, DeviceT>::getLabelsAsStrings(DeviceT& device) const
   {
     // NOTE: the host and device should be syncronized for the primary axis
@@ -301,7 +301,7 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT>
-  template<typename T, std::enable_if_t<std::is_same<T, int>::value || std::is_same<T, float>::value || std::is_same<T, double>::value || std::is_same<T, bool>::value, int> = 0>
+  template<typename T, std::enable_if_t<std::is_same<T, int>::value || std::is_same<T, float>::value || std::is_same<T, double>::value || std::is_same<T, bool>::value, int>>
   inline std::vector<std::string> TensorAxis<TensorT, DeviceT>::getLabelsAsStrings(DeviceT& device) const
   {
     // NOTE: the host and device should be syncronized for the primary axis
@@ -319,7 +319,7 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT>
-  template<typename T, std::enable_if_t<!std::is_fundamental<T>::value, int> = 0>
+  template<typename T, std::enable_if_t<!std::is_fundamental<T>::value, int>>
   inline std::vector<std::string> TensorAxis<TensorT, DeviceT>::getLabelsAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span) const
   {
     auto labels_row_t = getLabels().slice(offset, span);
@@ -329,7 +329,7 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT>
-  template<typename T, std::enable_if_t<std::is_same<T, char>::value, int> = 0>
+  template<typename T, std::enable_if_t<std::is_same<T, char>::value, int>>
   inline std::vector<std::string> TensorAxis<TensorT, DeviceT>::getLabelsAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span) const
   {
     auto labels_row_t = getLabels().slice(offset, span);
@@ -339,7 +339,7 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT>
-  template<typename T, std::enable_if_t<std::is_same<T, int>::value || std::is_same<T, float>::value || std::is_same<T, double>::value || std::is_same<T, bool>::value, int> = 0>
+  template<typename T, std::enable_if_t<std::is_same<T, int>::value || std::is_same<T, float>::value || std::is_same<T, double>::value || std::is_same<T, bool>::value, int>>
   inline std::vector<std::string> TensorAxis<TensorT, DeviceT>::getLabelsAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span) const
   {
     auto labels_row_t = getLabels().slice(offset, span);
@@ -375,7 +375,7 @@ namespace TensorBase
   template<typename TensorT>
   void TensorAxisDefaultDevice<TensorT>::setLabels(const Eigen::Tensor<TensorT, 2>& labels) {
     Eigen::array<Eigen::Index, 2> labels_dims = labels.dimensions();
-    this->tensor_dimension_labels_.reset(new TensorDataDefaultDevice<TensorT, 2>(labels_dims));
+    this->tensor_dimension_labels_ = std::make_shared<TensorDataDefaultDevice<TensorT, 2>>(TensorDataDefaultDevice<TensorT, 2>(labels_dims));
     this->tensor_dimension_labels_->setData(labels);
     this->setNLabels(labels.dimension(1));
   }
@@ -385,7 +385,7 @@ namespace TensorBase
     Eigen::array<Eigen::Index, 2> labels_dims;
     labels_dims.at(0) = this->n_dimensions_;
     labels_dims.at(1) = this->n_labels_;
-    this->tensor_dimension_labels_.reset(new TensorDataDefaultDevice<TensorT, 2>(labels_dims));
+    this->tensor_dimension_labels_ = std::make_shared<TensorDataDefaultDevice<TensorT, 2>>(TensorDataDefaultDevice<TensorT, 2>(labels_dims));
     this->tensor_dimension_labels_->setData();
   }
   template<typename TensorT>
@@ -528,6 +528,7 @@ namespace TensorBase
     auto labels_new_v1v2_select = (labels_new_v1_bcast == labels_new_v2_bcast).select(indices_unique_values_bcast.constant(1), indices_unique_values_bcast.constant(0));
     // Reduct along the axis dimensions and then cum sum along the axis labels
     auto labels_new_v1v2_prod = labels_new_v1v2_select.sum(Eigen::array<Eigen::Index, 2>({ 1, 3 })).clip(0, 1);
+    std::cout << "labels_new_v1v2_prod\n" << labels_new_v1v2_prod << std::endl; //DEBUG
     auto labels_new_v1v2_cumsum = (labels_new_v1v2_prod.cumsum(1) * labels_new_v1v2_prod).cumsum(2) * labels_new_v1v2_prod;
     // Select the unique labels marked with a 1
     auto labels_unique_v1v2 = (labels_new_v1v2_cumsum == labels_new_v1v2_cumsum.constant(1)).select(labels_new_v1v2_cumsum.constant(1), labels_new_v1v2_cumsum.constant(0));
@@ -657,7 +658,7 @@ namespace TensorBase
   template<typename TensorT>
   void TensorAxisCpu<TensorT>::setLabels(const Eigen::Tensor<TensorT, 2>& labels) {
     Eigen::array<Eigen::Index, 2> labels_dims = labels.dimensions();
-    this->tensor_dimension_labels_.reset(new TensorDataCpu<TensorT, 2>(labels_dims));
+    this->tensor_dimension_labels_ = std::make_shared<TensorDataCpu<TensorT, 2>>(TensorDataCpu<TensorT, 2>(labels_dims));
     this->tensor_dimension_labels_->setData(labels);
     this->setNLabels(labels.dimension(1));
   }
@@ -667,7 +668,7 @@ namespace TensorBase
     Eigen::array<Eigen::Index, 2> labels_dims;
     labels_dims.at(0) = this->n_dimensions_;
     labels_dims.at(1) = this->n_labels_;
-    this->tensor_dimension_labels_.reset(new TensorDataCpu<TensorT, 2>(labels_dims));
+    this->tensor_dimension_labels_ = std::make_shared<TensorDataCpu<TensorT, 2>>(TensorDataCpu<TensorT, 2>(labels_dims));
     this->tensor_dimension_labels_->setData();
   }
   template<typename TensorT>
