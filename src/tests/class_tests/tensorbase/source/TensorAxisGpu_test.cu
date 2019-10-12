@@ -167,7 +167,7 @@ void test_deleteFromAxisGpuPrimitiveT()
   }
 }
 
-void test_appendLabelsToAxisGpuPrimitiveT()
+void test_appendLabelsToAxis1GpuPrimitiveT()
 {
   // Setup the axis
   int n_dimensions = 2, n_labels = 5;
@@ -226,6 +226,55 @@ void test_appendLabelsToAxisGpuPrimitiveT()
     for (int j = n_labels; j < tensoraxis.getNLabels(); ++j) {
       //std::cout << "Test Labels i,j :" << i << "," << j << "; New labels: " << tensoraxis.getLabels()(i, j) << "; Expected: " << labels_values(i, j - n_labels) << std::endl;
       assert(tensoraxis.getLabels()(i, j) == labels_values(i, j - n_labels));
+    }
+  }
+}
+
+void test_appendLabelsToAxis2GpuPrimitiveT()
+{
+  // Setup the axis
+  int n_dimensions = 2, n_labels = 5;
+  Eigen::Tensor<std::string, 1> dimensions(n_dimensions);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  TensorAxisGpuPrimitiveT<int> tensoraxis("1", n_dimensions, 0);
+  tensoraxis.setDimensions(dimensions);
+
+  // Setup the new labels
+  Eigen::Tensor<int, 2> labels(n_dimensions, n_labels);
+  int iter = 0;
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      labels(i, j) = iter;
+      ++iter;
+    }
+  }
+  TensorDataGpuPrimitiveT<int, 2> labels_new(Eigen::array<Eigen::Index, 2>({ n_dimensions, n_labels }));
+  labels_new.setData(labels);
+  std::shared_ptr<TensorDataGpuPrimitiveT<int, 2>> labels_new_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 2>>(labels_new);
+
+  // Initialize the device
+  cudaStream_t stream;
+  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  Eigen::GpuStreamDevice stream_device(&stream, 0);
+  Eigen::GpuDevice device(&stream_device);
+
+  // Test
+  labels_new_ptr->syncHAndDData(device);
+  tensoraxis.syncHAndDData(device);
+  tensoraxis.appendLabelsToAxis(labels_new_ptr, device);
+  tensoraxis.syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  assert(cudaStreamDestroy(stream) == cudaSuccess);
+
+  assert(tensoraxis.getNDimensions() == n_dimensions);
+  assert(tensoraxis.getNLabels() == n_labels);
+  assert(tensoraxis.getDimensions()(0) == "TensorDimension1");
+  assert(tensoraxis.getDimensions()(1) == "TensorDimension2");
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      //std::cout << "Test Labels i,j :" << i << "," << j << "; Original labels: " << tensoraxis.getLabels()(i, j) << "; Expected: " << labels(i, j) << std::endl;
+      assert(tensoraxis.getLabels()(i, j) == labels(i, j));
     }
   }
 }
@@ -1137,7 +1186,8 @@ int main(int argc, char** argv)
   test_gettersAndSettersGpuPrimitiveT();
   //test_getLabelsDataPointerGpuPrimitiveT(); // Not needed?
   test_deleteFromAxisGpuPrimitiveT();
-  test_appendLabelsToAxisGpuPrimitiveT();
+  test_appendLabelsToAxis1GpuPrimitiveT();
+  test_appendLabelsToAxis2GpuPrimitiveT();
   test_makeSortIndicesGpuPrimitiveT();
   test_sortLabelsGpuPrimitiveT();
   test_storeAndLoadLabelsGpuPrimitiveT();
