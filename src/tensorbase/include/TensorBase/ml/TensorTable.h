@@ -2259,6 +2259,7 @@ namespace TensorBase
     syncShardIndicesHAndDData(device);
     reShardIndices(device);
     syncAxesHAndDData(device);
+    syncHAndDData(device);
 
     // Select the new axis labels
     // NOTE: Due to the non-convex shape of the addition, we are not able to select
