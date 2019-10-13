@@ -236,18 +236,19 @@ namespace TensorBase
   class TensorAddTable : public TensorOperation<DeviceT> {
   public:
     TensorAddTable() = default;
-    TensorAddTable(const std::shared_ptr<T>& table) :
-      table_(table) {};
+    TensorAddTable(const std::shared_ptr<T>& table, const std::string& user_table_name) :
+      table_(table), user_table_name_(user_table_name){};
     void redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
     void undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
   protected:
     std::shared_ptr<T> table_; // undo/redo
+    std::string user_table_name_; // undo/redo
   };
 
   template<typename T, typename DeviceT>
   inline void TensorAddTable<T, DeviceT>::redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT & device)
   {
-    tensor_collection->addTensorTable(table_);
+    tensor_collection->addTensorTable(table_, user_table_name_);
   }
 
   template<typename T, typename DeviceT>

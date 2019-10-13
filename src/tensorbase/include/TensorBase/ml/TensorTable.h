@@ -1094,7 +1094,7 @@ namespace TensorBase
   inline void TensorTable<TensorT, DeviceT, TDim>::getDataPointer(std::shared_ptr<T[]>& data_copy)
   {
     if (std::is_same<T, TensorT>::value)
-      data_copy = std::reinterpret_pointer_cast<T>(data_->getDataPointer()); // required for compilation: no conversion should be done
+      data_copy = std::reinterpret_pointer_cast<T[]>(data_->getDataPointer()); // required for compilation: no conversion should be done
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
@@ -1501,8 +1501,8 @@ namespace TensorBase
   inline void TensorTable<TensorT, DeviceT, TDim>::updateTensorDataValuesConcept(const std::shared_ptr<T[]>& values_new, std::shared_ptr<T[]>& values_old, DeviceT & device)
   {
     if (std::is_same<T, TensorT>::value) {
-      auto values_new_copy = std::reinterpret_pointer_cast<TensorT>(values_new);
-      auto values_old_copy = std::reinterpret_pointer_cast<TensorT>(values_old);
+      auto values_new_copy = std::reinterpret_pointer_cast<TensorT[]>(values_new);
+      auto values_old_copy = std::reinterpret_pointer_cast<TensorT[]>(values_old);
       updateTensorDataValues(values_new_copy, values_old_copy, device);
     }
   }
@@ -1511,7 +1511,7 @@ namespace TensorBase
   inline void TensorTable<TensorT, DeviceT, TDim>::updateTensorDataValuesConcept(const std::shared_ptr<T[]>& values_new, DeviceT & device)
   {
     if (std::is_same<T, TensorT>::value) {
-      auto values_new_copy = std::reinterpret_pointer_cast<TensorT>(values_new);
+      auto values_new_copy = std::reinterpret_pointer_cast<TensorT[]>(values_new);
       updateTensorDataValues(values_new_copy, device);
     }
   }
@@ -1733,7 +1733,7 @@ namespace TensorBase
   inline void TensorTable<TensorT, DeviceT, TDim>::appendToAxisConcept(const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<T[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device)
   {
     if (std::is_same<T, TensorT>::value) {
-      auto values_copy = std::reinterpret_pointer_cast<TensorT>(values);
+      auto values_copy = std::reinterpret_pointer_cast<TensorT[]>(values);
       appendToAxis(axis_name, labels, values_copy, indices, device);
     }
   }
@@ -1856,7 +1856,7 @@ namespace TensorBase
   inline void TensorTable<TensorT, DeviceT, TDim>::deleteFromAxisConcept(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<T[]>& values, DeviceT & device)
   {
     if (std::is_same<T, TensorT>::value) {
-      auto values_copy = std::reinterpret_pointer_cast<TensorT>(values);
+      auto values_copy = std::reinterpret_pointer_cast<TensorT[]>(values);
       deleteFromAxis(axis_name, indices, labels, values_copy, device);
     }
   }
@@ -2003,7 +2003,7 @@ namespace TensorBase
   inline void TensorTable<TensorT, DeviceT, TDim>::insertIntoAxisConcept(const std::string & axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<T[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device)
   {
     if (std::is_same<T, TensorT>::value) {
-      auto values_copy = std::reinterpret_pointer_cast<TensorT>(values);
+      auto values_copy = std::reinterpret_pointer_cast<TensorT[]>(values);
       insertIntoAxis(axis_name, labels, values_copy, indices, device);
     }
   }
