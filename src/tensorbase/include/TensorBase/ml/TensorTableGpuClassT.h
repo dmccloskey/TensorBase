@@ -849,7 +849,7 @@ namespace TensorBase
 
     return true;
   }
-  template<class ArrayT<>, class TensorT, int TDim>
+  template<template<class> class ArrayT, class TensorT, int TDim>
   inline void TensorTableGpuClassT<ArrayT<>, TensorT, TDim>::makeSparseTensorTableFromCsv(std::shared_ptr<TensorTable<TensorT, Eigen::GpuDevice, 2>>& sparse_table_ptr, const Eigen::Tensor<std::string, 2>& data_new, Eigen::GpuDevice & device)
   {
     // Convert from string to TensorT and reshape to n_data x 1

@@ -413,7 +413,7 @@ BOOST_AUTO_TEST_CASE(zeroIndicesViewAndResetIndicesViewDefaultDevice)
   }
 }
 
-BOOST_AUTO_TEST_CASE(selectIndicesViewDefaultDevice)
+BOOST_AUTO_TEST_CASE(selectIndicesView1DefaultDevice)
 {
   // setup the table
   TensorTableDefaultDevice<float, 3> tensorTable;

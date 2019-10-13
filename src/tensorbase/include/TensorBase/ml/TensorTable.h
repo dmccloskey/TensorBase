@@ -2157,7 +2157,7 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
-  template<typename T, std::enable_if_t<std::is_same<T, char>::value, int> = 0>
+  template<typename T, std::enable_if_t<std::is_same<T, char>::value, int>>
   inline std::vector<std::string> TensorTable<TensorT, DeviceT, TDim>::getCsvDataRowAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span, const Eigen::array<Eigen::Index, 2>& reshape) const
   {
     // Make the slice
@@ -2170,7 +2170,7 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
-  template<typename T, std::enable_if_t<std::is_same<T, int>::value || std::is_same<T, float>::value || std::is_same<T, double>::value || std::is_same<T, bool>::value, int> = 0>
+  template<typename T, std::enable_if_t<std::is_same<T, int>::value || std::is_same<T, float>::value || std::is_same<T, double>::value || std::is_same<T, bool>::value, int>>
   inline std::vector<std::string> TensorTable<TensorT, DeviceT, TDim>::getCsvDataRowAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span, const Eigen::array<Eigen::Index, 2>& reshape) const
   {
     // Make the slice
@@ -2183,7 +2183,7 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
-  template<typename T, std::enable_if_t<!std::is_fundamental<T>::value, int> = 0>
+  template<typename T, std::enable_if_t<!std::is_fundamental<T>::value, int>>
   inline std::vector<std::string> TensorTable<TensorT, DeviceT, TDim>::getCsvDataRowAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span, const Eigen::array<Eigen::Index, 2>& reshape) const
   {
     // Make the slice
@@ -2210,7 +2210,7 @@ namespace TensorBase
 
         // Make the slice indices
         Eigen::array<Eigen::Index, 2> offset = { 0, index };
-        Eigen::array<Eigen::Index, 2> span = { this->axes_.at(axis_to_dim.first)->getNDimensions(), 1 };
+        Eigen::array<Eigen::Index, 2> span = { (int)this->axes_.at(axis_to_dim.first)->getNDimensions(), 1 };
 
         // Slice out the labels row
         std::vector<std::string> row_vec = this->axes_.at(axis_to_dim.first)->getLabelsAsStrings(offset, span);
@@ -2297,7 +2297,7 @@ namespace TensorBase
     Eigen::array<Eigen::Index, 1> offsets_old = { 0 };
     Eigen::array<Eigen::Index, 1> extents_old = { (int)data_copy->getTensorSize() };
     Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> data_old_values(data_copy->getDataPointer().get(), (int)data_copy->getTensorSize());
-    data_values.slice(offsets_old, extents_old) = data_old_values;
+    data_values.slice(offsets_old, extents_old).device(device) = data_old_values;
 
     // update the not_in_memory and is_modified attributes
     // NOTE: due to the shape, we are not able to distinguish well what was and what was not modified
