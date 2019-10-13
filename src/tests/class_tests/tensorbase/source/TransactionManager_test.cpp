@@ -101,9 +101,9 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
 
   // Setup the tensor collection
   TensorCollectionDefaultDevice tensorCollection;
-  tensorCollection.addTensorTable(tensorTable1_ptr);
-  tensorCollection.addTensorTable(tensorTable2_ptr);
-  tensorCollection.addTensorTable(tensorTable3_ptr);
+  tensorCollection.addTensorTable(tensorTable1_ptr, "1");
+  tensorCollection.addTensorTable(tensorTable2_ptr, "1");
+  tensorCollection.addTensorTable(tensorTable3_ptr, "1");
   std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> tensorCollection_ptr = std::make_shared<TensorCollectionDefaultDevice>(tensorCollection);
 
   // Setup the transaction manager
@@ -181,9 +181,9 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
 
   // Setup the tensor collection
   TensorCollectionDefaultDevice tensorCollection;
-  tensorCollection.addTensorTable(tensorTable1_ptr);
-  tensorCollection.addTensorTable(tensorTable2_ptr);
-  tensorCollection.addTensorTable(tensorTable3_ptr);
+  tensorCollection.addTensorTable(tensorTable1_ptr, "1");
+  tensorCollection.addTensorTable(tensorTable2_ptr, "1");
+  tensorCollection.addTensorTable(tensorTable3_ptr, "1");
   std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> tensorCollection_ptr = std::make_shared<TensorCollectionDefaultDevice>(tensorCollection);
 
   // Setup the transaction manager
@@ -506,9 +506,9 @@ BOOST_AUTO_TEST_CASE(CommitDefaultDevice)
 
   // Setup the tensor collection
   TensorCollectionDefaultDevice tensorCollection;
-  tensorCollection.addTensorTable(tensorTable1_ptr);
-  tensorCollection.addTensorTable(tensorTable2_ptr);
-  tensorCollection.addTensorTable(tensorTable3_ptr);
+  tensorCollection.addTensorTable(tensorTable1_ptr, "1");
+  tensorCollection.addTensorTable(tensorTable2_ptr, "1");
+  tensorCollection.addTensorTable(tensorTable3_ptr, "1");
   std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> tensorCollection_ptr = std::make_shared<TensorCollectionDefaultDevice>(tensorCollection);
 
   // Setup the transaction manager

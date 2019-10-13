@@ -50,6 +50,8 @@ namespace TensorBase
     void makeShardIDTensor(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& modified_shard_ids, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& num_runs, Eigen::DefaultDevice & device) const override;
     bool loadTensorTableBinary(const std::string& dir, Eigen::DefaultDevice& device) override;
     bool storeTensorTableBinary(const std::string& dir, Eigen::DefaultDevice& device) override;
+    // CSV methods
+    void makeSparseTensorTableFromCsv(std::shared_ptr<TensorTable<TensorT, Eigen::DefaultDevice, 2>>& sparse_table_ptr, const Eigen::Tensor<std::string, 2>& data_new, Eigen::DefaultDevice& device) override;
   private:
     friend class cereal::access;
     template<class Archive>
@@ -68,6 +70,7 @@ namespace TensorBase
     this->is_modified_.clear();
     this->not_in_memory_.clear();
     this->shard_id_.clear();
+    this->shard_indices_.clear();
     this->shard_spans_.clear();
 
     // Determine the overall dimensions of the tensor
@@ -779,6 +782,18 @@ namespace TensorBase
     }
 
     return true;
+  }
+  template<typename TensorT, int TDim>
+  inline void TensorTableDefaultDevice<TensorT, TDim>::makeSparseTensorTableFromCsv(std::shared_ptr<TensorTable<TensorT, Eigen::DefaultDevice, 2>>& sparse_table_ptr, const Eigen::Tensor<std::string, 2>& data_new, Eigen::DefaultDevice & device)
+  {
+    // Convert from string to TensorT and reshape to n_data x 1
+    TensorTableDefaultDevice<TensorT, 2> sparse_table;
+    sparse_table.setDimensions(Eigen::array<Eigen::Index, 2>({ int(data_new.size()), 1 }));
+    sparse_table.initData();
+    sparse_table.setData();
+    sparse_table.syncHAndDData(device);
+    sparse_table.convertDataFromStringToTensorT(data_new, device);
+    sparse_table_ptr = std::make_shared<TensorTableDefaultDevice<TensorT, 2>>(sparse_table);
   }
 };
 

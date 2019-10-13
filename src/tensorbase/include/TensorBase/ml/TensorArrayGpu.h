@@ -215,6 +215,7 @@ namespace TensorBase
     void setTensorArray(const std::initializer_list<TensorT>& tensor_array);
     void setTensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array);
     Eigen::Tensor<TensorT, 1> getTensorArray();
+    std::string getTensorArrayAsString() const; ///< tensor_array getter as a string
     __host__ __device__ TensorT at(const int& i) const;
 
     /// Inline << operator overload
@@ -458,6 +459,14 @@ namespace TensorBase
     tensor_array(6) = this->item_6_;
     tensor_array(7) = this->item_7_;
     return tensor_array;
+  }
+
+  template<typename TensorT>
+  inline std::string TensorArrayGpu8<TensorT>::getTensorArrayAsString() const
+  {
+    std::ostringstream os;
+    os << *this;
+    return std::string(os.str());
   }
 
   template<typename TensorT>

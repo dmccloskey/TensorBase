@@ -50,13 +50,13 @@ namespace TensorBase
     virtual void setLabels() = 0;
 
     // All TensorT combos of `getLabelsDatapointer`
-    virtual void getLabelsDataPointer(std::shared_ptr<int>& data_copy) = 0;
-    virtual void getLabelsDataPointer(std::shared_ptr<float>& data_copy) = 0;
-    virtual void getLabelsDataPointer(std::shared_ptr<double>& data_copy) = 0;
-    virtual void getLabelsDataPointer(std::shared_ptr<char>& data_copy) = 0;
-    virtual void getLabelsDataPointer(std::shared_ptr<TensorArray8<char>>& data_copy) = 0;
+    virtual void getLabelsDataPointer(std::shared_ptr<int[]>& data_copy) = 0;
+    virtual void getLabelsDataPointer(std::shared_ptr<float[]>& data_copy) = 0;
+    virtual void getLabelsDataPointer(std::shared_ptr<double[]>& data_copy) = 0;
+    virtual void getLabelsDataPointer(std::shared_ptr<char[]>& data_copy) = 0;
+    virtual void getLabelsDataPointer(std::shared_ptr<TensorArray8<char>[]>& data_copy) = 0;
 #if COMPILE_WITH_CUDA
-    virtual void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu8<char>>& data_copy) = 0;
+    virtual void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu8<char>[]>& data_copy) = 0;
 #endif
 
     // All DeviceT combos of `deleteFromAxis`
@@ -96,6 +96,15 @@ namespace TensorBase
     // All DeviceT combos of `storeLabelsBinary`
     virtual bool storeLabelsBinary(const std::string& filename, DeviceT& device) = 0;
 
+    virtual std::vector<std::string> getLabelsAsStrings(DeviceT& device) = 0;
+    virtual std::vector<std::string> getLabelsAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span) = 0;
+
+    // All DeviceT combos of `appendLabelsToAxisFromCsv`
+    virtual void appendLabelsToAxisFromCsv(const Eigen::Tensor<std::string, 2>& labels, DeviceT& device) = 0;
+
+    // All DeviceT combos of `makeSelectIndicesFromCsv`
+    virtual void makeSelectIndicesFromCsv(std::shared_ptr<TensorData<int, DeviceT, 1>>& select_indices, const Eigen::Tensor<std::string, 2>& labels, DeviceT& device) = 0;
+
   private:
     friend class cereal::access;
     template<class Archive>
@@ -118,23 +127,23 @@ namespace TensorBase
     Eigen::TensorMap<Eigen::Tensor<std::string, 1>> getDimensions() { return tensor_axis_->getDimensions(); };
     void setLabels() { tensor_axis_->setLabels(); }
 
-    void getLabelsDataPointer(std::shared_ptr<int>& data_copy) {
+    void getLabelsDataPointer(std::shared_ptr<int[]>& data_copy) {
       tensor_axis_->getLabelsDataPointer(data_copy);
     };
-    void getLabelsDataPointer(std::shared_ptr<float>& data_copy) {
+    void getLabelsDataPointer(std::shared_ptr<float[]>& data_copy) {
       tensor_axis_->getLabelsDataPointer(data_copy);
     };
-    void getLabelsDataPointer(std::shared_ptr<double>& data_copy) {
+    void getLabelsDataPointer(std::shared_ptr<double[]>& data_copy) {
       tensor_axis_->getLabelsDataPointer(data_copy);
     };
-    void getLabelsDataPointer(std::shared_ptr<char>& data_copy) {
+    void getLabelsDataPointer(std::shared_ptr<char[]>& data_copy) {
       tensor_axis_->getLabelsDataPointer(data_copy);
     };
-    void getLabelsDataPointer(std::shared_ptr<TensorArray8<char>>& data_copy) {
+    void getLabelsDataPointer(std::shared_ptr<TensorArray8<char>[]>& data_copy) {
       tensor_axis_->getLabelsDataPointer(data_copy);
     };
 #if COMPILE_WITH_CUDA
-    void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu8<char>>& data_copy) {
+    void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu8<char>[]>& data_copy) {
       tensor_axis_->getLabelsDataPointer(data_copy);
     };
 #endif
@@ -199,6 +208,21 @@ namespace TensorBase
 
     bool storeLabelsBinary(const std::string& filename, DeviceT& device) {
       return tensor_axis_->storeLabelsBinary(filename, device);
+    }
+
+    std::vector<std::string> getLabelsAsStrings(DeviceT& device) {
+      return tensor_axis_->getLabelsAsStrings(device);
+    }
+    std::vector<std::string> getLabelsAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span) {
+      return tensor_axis_->getLabelsAsStrings(offset, span);
+    }
+
+    void appendLabelsToAxisFromCsv(const Eigen::Tensor<std::string, 2>& labels, DeviceT& device) {
+      tensor_axis_->appendLabelsToAxisFromCsv(labels, device);
+    }
+
+    void makeSelectIndicesFromCsv(std::shared_ptr<TensorData<int, DeviceT, 1>>& select_indices, const Eigen::Tensor<std::string, 2>& labels, DeviceT& device) {
+      tensor_axis_->makeSelectIndicesFromCsv(select_indices, labels, device);
     }
 
   private:

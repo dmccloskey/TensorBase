@@ -36,7 +36,8 @@ namespace TensorBase
     void setData(const Eigen::Tensor<TensorT, TDim>& data) override; ///< data setter
     void setData() override;
     bool syncHAndDData(Eigen::GpuDevice& device) override;
-    std::shared_ptr<TensorT> getDataPointer() override;
+    std::shared_ptr<TensorT[]> getHDataPointer() override;
+    std::shared_ptr<TensorT[]> getDataPointer() override;
   private:
     	friend class cereal::access;
     	template<class Archive>
@@ -97,7 +98,12 @@ namespace TensorBase
     }
   }
   template<typename TensorT, int TDim>
-  std::shared_ptr<TensorT> TensorDataGpu<TensorT, TDim>::getDataPointer() {
+  inline std::shared_ptr<TensorT[]> TensorDataGpu<TensorT, TDim>::getHDataPointer()
+  {
+    return h_data_;
+  }
+  template<typename TensorT, int TDim>
+  std::shared_ptr<TensorT[]> TensorDataGpu<TensorT, TDim>::getDataPointer() {
     return d_data_;
   }
 
@@ -118,6 +124,18 @@ namespace TensorBase
     void sort(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice& device) override;
     void partition(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice& device) override;
     void runLengthEncode(std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& n_runs, Eigen::GpuDevice& device) override;
+    // Other
+    void convertFromStringToTensorT(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::GpuDevice& device) override { convertFromStringToTensorT_(data_new, device); };
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, int>::value, int> = 0>
+    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::GpuDevice& device);
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, float>::value, int> = 0>
+    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::GpuDevice& device);
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, double>::value, int> = 0>
+    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::GpuDevice& device);
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, char>::value, int> = 0>
+    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::GpuDevice& device);
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, bool>::value, int> = 0>
+    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::GpuDevice& device);
   private:
     friend class cereal::access;
     template<class Archive>
@@ -309,6 +327,66 @@ namespace TensorBase
 
     assert(cudaFree(d_temp_storage) == cudaSuccess);
   }
+  template<typename TensorT, int TDim>
+  template<typename T, std::enable_if_t<std::is_same<T, int>::value, int>>
+  inline void TensorDataGpuPrimitiveT<TensorT, TDim>::convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::GpuDevice & device)
+  {
+    assert(data_new.size() == this->getTensorSize());
+    Eigen::DefaultDevice default_device;
+    // convert the data from string to TensorT
+    this->setDataStatus(true, false);
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_converted(this->h_data_.get(), this->dimensions_);
+    data_converted.device(default_device) = data_new.unaryExpr([](const std::string& elem) { return std::stoi(elem); });
+    this->syncHAndDData(device);
+  }
+  template<typename TensorT, int TDim>
+  template<typename T, std::enable_if_t<std::is_same<T, float>::value, int>>
+  inline void TensorDataGpuPrimitiveT<TensorT, TDim>::convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::GpuDevice & device)
+  {
+    assert(data_new.size() == this->getTensorSize());
+    Eigen::DefaultDevice default_device;
+    // convert the data from string to TensorT
+    this->setDataStatus(true, false);
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_converted(this->h_data_.get(), this->dimensions_);
+    data_converted.device(default_device) = data_new.unaryExpr([](const std::string& elem) { return std::stof(elem); });
+    this->syncHAndDData(device);
+  }
+  template<typename TensorT, int TDim>
+  template<typename T, std::enable_if_t<std::is_same<T, double>::value, int>>
+  inline void TensorDataGpuPrimitiveT<TensorT, TDim>::convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::GpuDevice & device)
+  {
+    assert(data_new.size() == this->getTensorSize());
+    Eigen::DefaultDevice default_device;
+    // convert the data from string to TensorT
+    this->setDataStatus(true, false);
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_converted(this->h_data_.get(), this->dimensions_);
+    data_converted.device(default_device) = data_new.unaryExpr([](const std::string& elem) { return std::stod(elem); });
+    this->syncHAndDData(device);
+  }
+  template<typename TensorT, int TDim>
+  template<typename T, std::enable_if_t<std::is_same<T, char>::value, int>>
+  inline void TensorDataGpuPrimitiveT<TensorT, TDim>::convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::GpuDevice & device)
+  {
+    assert(data_new.size() == this->getTensorSize());
+    Eigen::DefaultDevice default_device;
+    // convert the data from string to TensorT
+    this->setDataStatus(true, false);
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_converted(this->h_data_.get(), this->dimensions_);
+    data_converted.device(default_device) = data_new.unaryExpr([](const std::string& elem) { return elem.c_str()[0]; });
+    this->syncHAndDData(device);
+  }
+  template<typename TensorT, int TDim>
+  template<typename T, std::enable_if_t<std::is_same<T, bool>::value, int>>
+  inline void TensorDataGpuPrimitiveT<TensorT, TDim>::convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::GpuDevice & device)
+  {
+    assert(data_new.size() == this->getTensorSize());
+    Eigen::DefaultDevice default_device;
+    // convert the data from string to TensorT
+    this->setDataStatus(true, false);
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_converted(this->h_data_.get(), this->dimensions_);
+    data_converted.device(default_device) = data_new.unaryExpr([](const std::string& elem) { return elem == "1"; });
+    this->syncHAndDData(device);
+  }
 
   struct isGreaterThanZero
   {
@@ -336,6 +414,16 @@ namespace TensorBase
     void sort(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice& device) override;
     void partition(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice& device) override;
     void runLengthEncode(std::shared_ptr<TensorData<ArrayT<TensorT>, Eigen::GpuDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& n_runs, Eigen::GpuDevice& device) override;
+    // Other
+    void convertFromStringToTensorT(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::GpuDevice& device) override { convertFromStringToTensorT_(data_new, device); };
+    template<template<class> typename A = ArrayT, typename T = TensorT, std::enable_if_t<std::is_same<A<T>, A<char>>::value, int> = 0>
+    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::GpuDevice& device);
+    template<template<class> typename A = ArrayT, typename T = TensorT, std::enable_if_t<std::is_same<A<T>, A<int>>::value, int> = 0>
+    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::GpuDevice& device) {/*TODO*/};
+    template<template<class> typename A = ArrayT, typename T = TensorT, std::enable_if_t<std::is_same<A<T>, A<float>>::value, int> = 0>
+    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::GpuDevice& device) {/*TODO*/ };
+    template<template<class> typename A = ArrayT, typename T = TensorT, std::enable_if_t<std::is_same<A<T>, A<double>>::value, int> = 0>
+    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::GpuDevice& device) {/*TODO*/ };
   private:
     friend class cereal::access;
     template<class Archive>
@@ -455,6 +543,25 @@ namespace TensorBase
     assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
     n_runs->getData()(0) = num_runs;
     n_runs->syncHAndDData(device); // H to D
+  }
+  template<template<class> class ArrayT, class TensorT, int TDim>
+  template<template<class> typename A, typename T, std::enable_if_t<std::is_same<A<T>, A<char>>::value, int>>
+  inline void TensorDataGpuClassT<ArrayT, TensorT, TDim>::convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::GpuDevice & device)
+  {
+    assert(data_new.size() == this->getTensorSize());
+
+    // convert the data from string to TensorArrayGpu<TensorT>
+    this->setDataStatus(true, false);
+    std::transform(data_new.data(), data_new.data() + data_new.size(), this->h_data_.get(),
+      [](const std::string& elem) -> ArrayT<TensorT> { return ArrayT<TensorT>(elem); });
+    this->syncHAndDData(device);
+
+    //// make thrust device pointers to the data
+    //thrust::device_ptr<ArrayT<TensorT>> d_data(this->getDataPointer().get());
+    //thrust::device_ptr<ArrayT<TensorT>> d_data_new(data_new.data());
+
+    //// convert the data from string to TensorT
+    //thrust::transform(thrust::cuda::par.on(device.stream()), d_data_new, d_data_new + data_new.size(), d_data, convertStrToTensorArrayGpu<ArrayT<TensorT>>());
   }
 }
 
