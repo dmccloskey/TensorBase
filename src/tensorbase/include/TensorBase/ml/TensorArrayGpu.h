@@ -981,6 +981,4936 @@ namespace TensorBase
   }
 
   /**
+    @brief Fixed length 128 vector class
+  */
+  template<typename TensorT>
+  class TensorArrayGpu128
+  {
+  public:
+    TensorArrayGpu128() = default;
+    ~TensorArrayGpu128() = default;
+    TensorArrayGpu128(const std::string& tensor_array) { this->setTensorArray(tensor_array); }
+    TensorArrayGpu128(const std::initializer_list<TensorT>& tensor_array) { this->setTensorArray(tensor_array); }
+    TensorArrayGpu128(const Eigen::Tensor<TensorT, 1>& tensor_array) { this->setTensorArray(tensor_array); }
+    __host__ __device__ bool operator==(const TensorArrayGpu128& other) const;
+    __host__ __device__ bool operator!=(const TensorArrayGpu128& other) const;
+    __host__ __device__ bool operator<(const TensorArrayGpu128& other) const;
+    __host__ __device__ bool operator<=(const TensorArrayGpu128& other) const;
+    __host__ __device__ bool operator>(const TensorArrayGpu128& other) const;
+    __host__ __device__ bool operator>=(const TensorArrayGpu128& other) const;
+    __host__ __device__ size_t getArraySize() const { return array_size_; } ///< array_size getter
+    void setTensorArray(const std::string& tensor_array);
+    void setTensorArray(const std::initializer_list<TensorT>& tensor_array);
+    void setTensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array);
+    Eigen::Tensor<TensorT, 1> getTensorArray();
+    std::string getTensorArrayAsString() const; ///< tensor_array getter as a string
+    __host__ __device__ TensorT at(const int& i) const;
+
+    /// Inline << operator overload
+    friend std::ostream& operator<<(std::ostream& os, const TensorArrayGpu128& data) {
+      os << data.item_0_ << data.item_1_ << data.item_2_ << data.item_3_ << data.item_4_ << data.item_5_ << data.item_6_ << data.item_7_ << data.item_8_ << data.item_9_ << data.item_10_ << data.item_11_ << data.item_12_ << data.item_13_ << data.item_14_ << data.item_15_ << data.item_16_ << data.item_17_ << data.item_18_ << data.item_19_ << data.item_20_ << data.item_21_ << data.item_22_ << data.item_23_ << data.item_24_ << data.item_25_ << data.item_26_ << data.item_27_ << data.item_28_ << data.item_29_ << data.item_30_ << data.item_31_ << data.item_32_ << data.item_33_ << data.item_34_ << data.item_35_ << data.item_36_ << data.item_37_ << data.item_38_ << data.item_39_ << data.item_40_ << data.item_41_ << data.item_42_ << data.item_43_ << data.item_44_ << data.item_45_ << data.item_46_ << data.item_47_ << data.item_48_ << data.item_49_ << data.item_50_ << data.item_51_ << data.item_52_ << data.item_53_ << data.item_54_ << data.item_55_ << data.item_56_ << data.item_57_ << data.item_58_ << data.item_59_ << data.item_60_ << data.item_61_ << data.item_62_ << data.item_63_ << data.item_64_ << data.item_65_ << data.item_66_ << data.item_67_ << data.item_68_ << data.item_69_ << data.item_70_ << data.item_71_ << data.item_72_ << data.item_73_ << data.item_74_ << data.item_75_ << data.item_76_ << data.item_77_ << data.item_78_ << data.item_79_ << data.item_80_ << data.item_81_ << data.item_82_ << data.item_83_ << data.item_84_ << data.item_85_ << data.item_86_ << data.item_87_ << data.item_88_ << data.item_89_ << data.item_90_ << data.item_91_ << data.item_92_ << data.item_93_ << data.item_94_ << data.item_95_ << data.item_96_ << data.item_97_ << data.item_98_ << data.item_99_ << data.item_100_ << data.item_101_ << data.item_102_ << data.item_103_ << data.item_104_ << data.item_105_ << data.item_106_ << data.item_107_ << data.item_108_ << data.item_109_ << data.item_110_ << data.item_111_ << data.item_112_ << data.item_113_ << data.item_114_ << data.item_115_ << data.item_116_ << data.item_117_ << data.item_118_ << data.item_119_ << data.item_120_ << data.item_121_ << data.item_122_ << data.item_123_ << data.item_124_ << data.item_125_ << data.item_126_ << data.item_127_;
+      return os;
+    }
+  protected:
+    size_t array_size_;
+    TensorT item_0_ = TensorT(0); TensorT item_1_ = TensorT(1); TensorT item_2_ = TensorT(2); TensorT item_3_ = TensorT(3); TensorT item_4_ = TensorT(4); TensorT item_5_ = TensorT(5); TensorT item_6_ = TensorT(6); TensorT item_7_ = TensorT(7); TensorT item_8_ = TensorT(8); TensorT item_9_ = TensorT(9); TensorT item_10_ = TensorT(10); TensorT item_11_ = TensorT(11); TensorT item_12_ = TensorT(12); TensorT item_13_ = TensorT(13); TensorT item_14_ = TensorT(14); TensorT item_15_ = TensorT(15); TensorT item_16_ = TensorT(16); TensorT item_17_ = TensorT(17); TensorT item_18_ = TensorT(18); TensorT item_19_ = TensorT(19); TensorT item_20_ = TensorT(20); TensorT item_21_ = TensorT(21); TensorT item_22_ = TensorT(22); TensorT item_23_ = TensorT(23); TensorT item_24_ = TensorT(24); TensorT item_25_ = TensorT(25); TensorT item_26_ = TensorT(26); TensorT item_27_ = TensorT(27); TensorT item_28_ = TensorT(28); TensorT item_29_ = TensorT(29); TensorT item_30_ = TensorT(30); TensorT item_31_ = TensorT(31); TensorT item_32_ = TensorT(32); TensorT item_33_ = TensorT(33); TensorT item_34_ = TensorT(34); TensorT item_35_ = TensorT(35); TensorT item_36_ = TensorT(36); TensorT item_37_ = TensorT(37); TensorT item_38_ = TensorT(38); TensorT item_39_ = TensorT(39); TensorT item_40_ = TensorT(40); TensorT item_41_ = TensorT(41); TensorT item_42_ = TensorT(42); TensorT item_43_ = TensorT(43); TensorT item_44_ = TensorT(44); TensorT item_45_ = TensorT(45); TensorT item_46_ = TensorT(46); TensorT item_47_ = TensorT(47); TensorT item_48_ = TensorT(48); TensorT item_49_ = TensorT(49); TensorT item_50_ = TensorT(50); TensorT item_51_ = TensorT(51); TensorT item_52_ = TensorT(52); TensorT item_53_ = TensorT(53); TensorT item_54_ = TensorT(54); TensorT item_55_ = TensorT(55); TensorT item_56_ = TensorT(56); TensorT item_57_ = TensorT(57); TensorT item_58_ = TensorT(58); TensorT item_59_ = TensorT(59); TensorT item_60_ = TensorT(60); TensorT item_61_ = TensorT(61); TensorT item_62_ = TensorT(62); TensorT item_63_ = TensorT(63); TensorT item_64_ = TensorT(64); TensorT item_65_ = TensorT(65); TensorT item_66_ = TensorT(66); TensorT item_67_ = TensorT(67); TensorT item_68_ = TensorT(68); TensorT item_69_ = TensorT(69); TensorT item_70_ = TensorT(70); TensorT item_71_ = TensorT(71); TensorT item_72_ = TensorT(72); TensorT item_73_ = TensorT(73); TensorT item_74_ = TensorT(74); TensorT item_75_ = TensorT(75); TensorT item_76_ = TensorT(76); TensorT item_77_ = TensorT(77); TensorT item_78_ = TensorT(78); TensorT item_79_ = TensorT(79); TensorT item_80_ = TensorT(80); TensorT item_81_ = TensorT(81); TensorT item_82_ = TensorT(82); TensorT item_83_ = TensorT(83); TensorT item_84_ = TensorT(84); TensorT item_85_ = TensorT(85); TensorT item_86_ = TensorT(86); TensorT item_87_ = TensorT(87); TensorT item_88_ = TensorT(88); TensorT item_89_ = TensorT(89); TensorT item_90_ = TensorT(90); TensorT item_91_ = TensorT(91); TensorT item_92_ = TensorT(92); TensorT item_93_ = TensorT(93); TensorT item_94_ = TensorT(94); TensorT item_95_ = TensorT(95); TensorT item_96_ = TensorT(96); TensorT item_97_ = TensorT(97); TensorT item_98_ = TensorT(98); TensorT item_99_ = TensorT(99); TensorT item_100_ = TensorT(100); TensorT item_101_ = TensorT(101); TensorT item_102_ = TensorT(102); TensorT item_103_ = TensorT(103); TensorT item_104_ = TensorT(104); TensorT item_105_ = TensorT(105); TensorT item_106_ = TensorT(106); TensorT item_107_ = TensorT(107); TensorT item_108_ = TensorT(108); TensorT item_109_ = TensorT(109); TensorT item_110_ = TensorT(110); TensorT item_111_ = TensorT(111); TensorT item_112_ = TensorT(112); TensorT item_113_ = TensorT(113); TensorT item_114_ = TensorT(114); TensorT item_115_ = TensorT(115); TensorT item_116_ = TensorT(116); TensorT item_117_ = TensorT(117); TensorT item_118_ = TensorT(118); TensorT item_119_ = TensorT(119); TensorT item_120_ = TensorT(120); TensorT item_121_ = TensorT(121); TensorT item_122_ = TensorT(122); TensorT item_123_ = TensorT(123); TensorT item_124_ = TensorT(124); TensorT item_125_ = TensorT(125); TensorT item_126_ = TensorT(126); TensorT item_127_ = TensorT(127);
+  private:
+    friend class cereal::access;
+    template<class Archive>
+    void serialize(Archive& archive) {
+      archive(array_size_,
+        item_0_, item_1_, item_2_, item_3_, item_4_, item_5_, item_6_, item_7_, item_8_, item_9_, item_10_, item_11_, item_12_, item_13_, item_14_, item_15_, item_16_, item_17_, item_18_, item_19_, item_20_, item_21_, item_22_, item_23_, item_24_, item_25_, item_26_, item_27_, item_28_, item_29_, item_30_, item_31_, item_32_, item_33_, item_34_, item_35_, item_36_, item_37_, item_38_, item_39_, item_40_, item_41_, item_42_, item_43_, item_44_, item_45_, item_46_, item_47_, item_48_, item_49_, item_50_, item_51_, item_52_, item_53_, item_54_, item_55_, item_56_, item_57_, item_58_, item_59_, item_60_, item_61_, item_62_, item_63_, item_64_, item_65_, item_66_, item_67_, item_68_, item_69_, item_70_, item_71_, item_72_, item_73_, item_74_, item_75_, item_76_, item_77_, item_78_, item_79_, item_80_, item_81_, item_82_, item_83_, item_84_, item_85_, item_86_, item_87_, item_88_, item_89_, item_90_, item_91_, item_92_, item_93_, item_94_, item_95_, item_96_, item_97_, item_98_, item_99_, item_100_, item_101_, item_102_, item_103_, item_104_, item_105_, item_106_, item_107_, item_108_, item_109_, item_110_, item_111_, item_112_, item_113_, item_114_, item_115_, item_116_, item_117_, item_118_, item_119_, item_120_, item_121_, item_122_, item_123_, item_124_, item_125_, item_126_, item_127_
+      );
+    }
+  };
+
+  /* Operators for Gpu classes
+  */
+  namespace TensorArrayComparisonGpu {
+    template<typename TensorT>
+    __host__ __device__ int compare(const TensorArrayGpu128<TensorT>& s1, const TensorArrayGpu128<TensorT>& s2, const int& size)
+    {
+      int i = 0;
+      for (i = 0; i < size; ++i) {
+        if (s1.at(i) != s2.at(i)) break;
+        if (i == size - 1) return 0;
+      }
+      return s1.at(i) - s2.at(i);
+    }
+
+    template<>
+    __host__ __device__ int compare<char>(const TensorArrayGpu128<char>& s1, const TensorArrayGpu128<char>& s2, const int& size)
+    {
+      int i = 0;
+      for (i = 0; i < size; ++i) {
+        if (s1.at(i) != s2.at(i) || s1.at(i) == '\0' || s2.at(i) == '\0') break;
+        if (i == size - 1) return 0;
+      }
+      return (const unsigned char)s1.at(i) - (const unsigned char)s2.at(i);
+    }
+  };
+
+  struct isEqualToGpu128 : TensorArrayFunctorsGpu {
+    using TensorArrayFunctorsGpu::TensorArrayFunctorsGpu;
+    template<typename TensorT>
+    __host__ __device__ bool operator()(const TensorArrayGpu128<TensorT>& s1, const TensorArrayGpu128<TensorT>& s2) {
+      if (TensorArrayComparisonGpu::compare(s1, s2, this->size_) == 0) return true;
+      else return false;
+    }
+  };
+
+  struct isNotEqualToGpu128 : TensorArrayFunctorsGpu {
+    using TensorArrayFunctorsGpu::TensorArrayFunctorsGpu;
+    template<typename TensorT>
+    __host__ __device__ bool operator()(const TensorArrayGpu128<TensorT>& s1, const TensorArrayGpu128<TensorT>& s2) {
+      if (TensorArrayComparisonGpu::compare(s1, s2, this->size_) != 0) return true;
+      else return false;
+    }
+  };
+
+  struct isLessThanGpu128 : TensorArrayFunctorsGpu {
+    using TensorArrayFunctorsGpu::TensorArrayFunctorsGpu;
+    template<typename TensorT>
+    __host__ __device__ bool operator()(const TensorArrayGpu128<TensorT>& s1, const TensorArrayGpu128<TensorT>& s2) {
+      if (TensorArrayComparisonGpu::compare(s1, s2, this->size_) < 0) return true;
+      else return false;
+    }
+  };
+
+  struct isGreaterThanGpu128 : TensorArrayFunctorsGpu {
+    using TensorArrayFunctorsGpu::TensorArrayFunctorsGpu;
+    template<typename TensorT>
+    __host__ __device__ bool operator()(const TensorArrayGpu128<TensorT>& s1, const TensorArrayGpu128<TensorT>& s2) {
+      if (TensorArrayComparisonGpu::compare(s1, s2, this->size_) > 0) return true;
+      else return false;
+    }
+  };
+
+  struct isLessThanOrEqualToGpu128 : TensorArrayFunctorsGpu {
+    using TensorArrayFunctorsGpu::TensorArrayFunctorsGpu;
+    template<typename TensorT>
+    __host__ __device__ bool operator()(const TensorArrayGpu128<TensorT>& s1, const TensorArrayGpu128<TensorT>& s2) {
+      if (TensorArrayComparisonGpu::compare(s1, s2, this->size_) <= 0) return true;
+      else return false;
+    }
+  };
+
+  struct isGreaterThanOrEqualToGpu128 : TensorArrayFunctorsGpu {
+    using TensorArrayFunctorsGpu::TensorArrayFunctorsGpu;
+    template<typename TensorT>
+    __host__ __device__  bool operator()(const TensorArrayGpu128<TensorT>& s1, const TensorArrayGpu128<TensorT>& s2) {
+      if (TensorArrayComparisonGpu::compare(s1, s2, this->size_) >= 0) return true;
+      else return false;
+    }
+  };
+
+  template<typename TensorT>
+  inline void TensorArrayGpu128<TensorT>::setTensorArray(const std::string & tensor_array)
+  {
+    // check the array size
+    assert(128 >= tensor_array.size());
+    this->array_size_ = 128;
+
+    // copy the data
+    auto tensor_array_iter = tensor_array.begin();
+    if (tensor_array_iter != tensor_array.end()) { this->item_0_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_0_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_1_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_1_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_2_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_2_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_3_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_3_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_4_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_4_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_5_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_5_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_6_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_6_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_7_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_7_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_8_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_8_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_9_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_9_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_10_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_10_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_11_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_11_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_12_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_12_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_13_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_13_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_14_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_14_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_15_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_15_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_16_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_16_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_17_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_17_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_18_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_18_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_19_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_19_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_20_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_20_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_21_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_21_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_22_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_22_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_23_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_23_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_24_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_24_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_25_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_25_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_26_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_26_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_27_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_27_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_28_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_28_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_29_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_29_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_30_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_30_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_31_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_31_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_32_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_32_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_33_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_33_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_34_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_34_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_35_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_35_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_36_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_36_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_37_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_37_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_38_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_38_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_39_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_39_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_40_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_40_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_41_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_41_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_42_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_42_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_43_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_43_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_44_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_44_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_45_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_45_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_46_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_46_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_47_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_47_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_48_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_48_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_49_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_49_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_50_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_50_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_51_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_51_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_52_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_52_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_53_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_53_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_54_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_54_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_55_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_55_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_56_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_56_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_57_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_57_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_58_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_58_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_59_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_59_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_60_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_60_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_61_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_61_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_62_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_62_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_63_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_63_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_64_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_64_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_65_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_65_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_66_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_66_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_67_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_67_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_68_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_68_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_69_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_69_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_70_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_70_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_71_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_71_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_72_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_72_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_73_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_73_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_74_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_74_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_75_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_75_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_76_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_76_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_77_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_77_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_78_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_78_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_79_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_79_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_80_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_80_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_81_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_81_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_82_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_82_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_83_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_83_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_84_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_84_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_85_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_85_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_86_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_86_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_87_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_87_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_88_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_88_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_89_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_89_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_90_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_90_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_91_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_91_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_92_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_92_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_93_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_93_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_94_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_94_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_95_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_95_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_96_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_96_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_97_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_97_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_98_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_98_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_99_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_99_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_100_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_100_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_101_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_101_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_102_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_102_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_103_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_103_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_104_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_104_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_105_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_105_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_106_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_106_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_107_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_107_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_108_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_108_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_109_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_109_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_110_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_110_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_111_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_111_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_112_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_112_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_113_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_113_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_114_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_114_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_115_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_115_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_116_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_116_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_117_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_117_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_118_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_118_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_119_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_119_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_120_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_120_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_121_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_121_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_122_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_122_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_123_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_123_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_124_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_124_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_125_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_125_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_126_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_126_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_127_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_127_ = TensorT(0); }
+  }
+
+  template<typename TensorT>
+  inline void TensorArrayGpu128<TensorT>::setTensorArray(const std::initializer_list<TensorT>& tensor_array)
+  {
+    // check the array size
+    assert(128 >= tensor_array.size());
+    this->array_size_ = 128;
+
+    // copy the data
+    auto tensor_array_iter = tensor_array.begin();
+    if (tensor_array_iter != tensor_array.end()) { this->item_0_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_0_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_1_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_1_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_2_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_2_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_3_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_3_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_4_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_4_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_5_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_5_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_6_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_6_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_7_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_7_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_8_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_8_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_9_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_9_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_10_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_10_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_11_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_11_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_12_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_12_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_13_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_13_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_14_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_14_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_15_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_15_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_16_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_16_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_17_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_17_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_18_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_18_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_19_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_19_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_20_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_20_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_21_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_21_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_22_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_22_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_23_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_23_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_24_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_24_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_25_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_25_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_26_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_26_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_27_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_27_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_28_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_28_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_29_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_29_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_30_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_30_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_31_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_31_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_32_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_32_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_33_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_33_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_34_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_34_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_35_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_35_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_36_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_36_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_37_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_37_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_38_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_38_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_39_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_39_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_40_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_40_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_41_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_41_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_42_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_42_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_43_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_43_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_44_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_44_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_45_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_45_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_46_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_46_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_47_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_47_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_48_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_48_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_49_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_49_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_50_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_50_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_51_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_51_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_52_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_52_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_53_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_53_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_54_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_54_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_55_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_55_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_56_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_56_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_57_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_57_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_58_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_58_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_59_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_59_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_60_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_60_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_61_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_61_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_62_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_62_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_63_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_63_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_64_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_64_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_65_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_65_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_66_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_66_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_67_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_67_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_68_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_68_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_69_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_69_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_70_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_70_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_71_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_71_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_72_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_72_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_73_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_73_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_74_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_74_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_75_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_75_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_76_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_76_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_77_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_77_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_78_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_78_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_79_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_79_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_80_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_80_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_81_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_81_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_82_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_82_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_83_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_83_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_84_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_84_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_85_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_85_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_86_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_86_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_87_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_87_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_88_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_88_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_89_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_89_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_90_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_90_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_91_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_91_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_92_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_92_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_93_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_93_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_94_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_94_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_95_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_95_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_96_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_96_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_97_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_97_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_98_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_98_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_99_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_99_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_100_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_100_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_101_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_101_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_102_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_102_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_103_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_103_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_104_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_104_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_105_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_105_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_106_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_106_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_107_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_107_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_108_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_108_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_109_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_109_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_110_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_110_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_111_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_111_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_112_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_112_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_113_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_113_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_114_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_114_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_115_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_115_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_116_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_116_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_117_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_117_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_118_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_118_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_119_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_119_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_120_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_120_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_121_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_121_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_122_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_122_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_123_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_123_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_124_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_124_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_125_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_125_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_126_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_126_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_127_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_127_ = TensorT(0); }
+  }
+
+  template<typename TensorT>
+  inline void TensorArrayGpu128<TensorT>::setTensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array)
+  {
+    // check the array size
+    assert(128 == tensor_array.dimension(0));
+    this->array_size_ = 128;
+
+    // copy the data
+    this->item_0_ = tensor_array(0);
+    this->item_1_ = tensor_array(1);
+    this->item_2_ = tensor_array(2);
+    this->item_3_ = tensor_array(3);
+    this->item_4_ = tensor_array(4);
+    this->item_5_ = tensor_array(5);
+    this->item_6_ = tensor_array(6);
+    this->item_7_ = tensor_array(7);
+    this->item_8_ = tensor_array(8);
+    this->item_9_ = tensor_array(9);
+    this->item_10_ = tensor_array(10);
+    this->item_11_ = tensor_array(11);
+    this->item_12_ = tensor_array(12);
+    this->item_13_ = tensor_array(13);
+    this->item_14_ = tensor_array(14);
+    this->item_15_ = tensor_array(15);
+    this->item_16_ = tensor_array(16);
+    this->item_17_ = tensor_array(17);
+    this->item_18_ = tensor_array(18);
+    this->item_19_ = tensor_array(19);
+    this->item_20_ = tensor_array(20);
+    this->item_21_ = tensor_array(21);
+    this->item_22_ = tensor_array(22);
+    this->item_23_ = tensor_array(23);
+    this->item_24_ = tensor_array(24);
+    this->item_25_ = tensor_array(25);
+    this->item_26_ = tensor_array(26);
+    this->item_27_ = tensor_array(27);
+    this->item_28_ = tensor_array(28);
+    this->item_29_ = tensor_array(29);
+    this->item_30_ = tensor_array(30);
+    this->item_31_ = tensor_array(31);
+    this->item_32_ = tensor_array(32);
+    this->item_33_ = tensor_array(33);
+    this->item_34_ = tensor_array(34);
+    this->item_35_ = tensor_array(35);
+    this->item_36_ = tensor_array(36);
+    this->item_37_ = tensor_array(37);
+    this->item_38_ = tensor_array(38);
+    this->item_39_ = tensor_array(39);
+    this->item_40_ = tensor_array(40);
+    this->item_41_ = tensor_array(41);
+    this->item_42_ = tensor_array(42);
+    this->item_43_ = tensor_array(43);
+    this->item_44_ = tensor_array(44);
+    this->item_45_ = tensor_array(45);
+    this->item_46_ = tensor_array(46);
+    this->item_47_ = tensor_array(47);
+    this->item_48_ = tensor_array(48);
+    this->item_49_ = tensor_array(49);
+    this->item_50_ = tensor_array(50);
+    this->item_51_ = tensor_array(51);
+    this->item_52_ = tensor_array(52);
+    this->item_53_ = tensor_array(53);
+    this->item_54_ = tensor_array(54);
+    this->item_55_ = tensor_array(55);
+    this->item_56_ = tensor_array(56);
+    this->item_57_ = tensor_array(57);
+    this->item_58_ = tensor_array(58);
+    this->item_59_ = tensor_array(59);
+    this->item_60_ = tensor_array(60);
+    this->item_61_ = tensor_array(61);
+    this->item_62_ = tensor_array(62);
+    this->item_63_ = tensor_array(63);
+    this->item_64_ = tensor_array(64);
+    this->item_65_ = tensor_array(65);
+    this->item_66_ = tensor_array(66);
+    this->item_67_ = tensor_array(67);
+    this->item_68_ = tensor_array(68);
+    this->item_69_ = tensor_array(69);
+    this->item_70_ = tensor_array(70);
+    this->item_71_ = tensor_array(71);
+    this->item_72_ = tensor_array(72);
+    this->item_73_ = tensor_array(73);
+    this->item_74_ = tensor_array(74);
+    this->item_75_ = tensor_array(75);
+    this->item_76_ = tensor_array(76);
+    this->item_77_ = tensor_array(77);
+    this->item_78_ = tensor_array(78);
+    this->item_79_ = tensor_array(79);
+    this->item_80_ = tensor_array(80);
+    this->item_81_ = tensor_array(81);
+    this->item_82_ = tensor_array(82);
+    this->item_83_ = tensor_array(83);
+    this->item_84_ = tensor_array(84);
+    this->item_85_ = tensor_array(85);
+    this->item_86_ = tensor_array(86);
+    this->item_87_ = tensor_array(87);
+    this->item_88_ = tensor_array(88);
+    this->item_89_ = tensor_array(89);
+    this->item_90_ = tensor_array(90);
+    this->item_91_ = tensor_array(91);
+    this->item_92_ = tensor_array(92);
+    this->item_93_ = tensor_array(93);
+    this->item_94_ = tensor_array(94);
+    this->item_95_ = tensor_array(95);
+    this->item_96_ = tensor_array(96);
+    this->item_97_ = tensor_array(97);
+    this->item_98_ = tensor_array(98);
+    this->item_99_ = tensor_array(99);
+    this->item_100_ = tensor_array(100);
+    this->item_101_ = tensor_array(101);
+    this->item_102_ = tensor_array(102);
+    this->item_103_ = tensor_array(103);
+    this->item_104_ = tensor_array(104);
+    this->item_105_ = tensor_array(105);
+    this->item_106_ = tensor_array(106);
+    this->item_107_ = tensor_array(107);
+    this->item_108_ = tensor_array(108);
+    this->item_109_ = tensor_array(109);
+    this->item_110_ = tensor_array(110);
+    this->item_111_ = tensor_array(111);
+    this->item_112_ = tensor_array(112);
+    this->item_113_ = tensor_array(113);
+    this->item_114_ = tensor_array(114);
+    this->item_115_ = tensor_array(115);
+    this->item_116_ = tensor_array(116);
+    this->item_117_ = tensor_array(117);
+    this->item_118_ = tensor_array(118);
+    this->item_119_ = tensor_array(119);
+    this->item_120_ = tensor_array(120);
+    this->item_121_ = tensor_array(121);
+    this->item_122_ = tensor_array(122);
+    this->item_123_ = tensor_array(123);
+    this->item_124_ = tensor_array(124);
+    this->item_125_ = tensor_array(125);
+    this->item_126_ = tensor_array(126);
+    this->item_127_ = tensor_array(127);
+  }
+
+  template<typename TensorT>
+  inline Eigen::Tensor<TensorT, 1> TensorArrayGpu128<TensorT>::getTensorArray()
+  {
+    Eigen::Tensor<TensorT, 1> tensor_array(this->array_size_);
+    tensor_array(0) = this->item_0_;
+    tensor_array(1) = this->item_1_;
+    tensor_array(2) = this->item_2_;
+    tensor_array(3) = this->item_3_;
+    tensor_array(4) = this->item_4_;
+    tensor_array(5) = this->item_5_;
+    tensor_array(6) = this->item_6_;
+    tensor_array(7) = this->item_7_;
+    tensor_array(8) = this->item_8_;
+    tensor_array(9) = this->item_9_;
+    tensor_array(10) = this->item_10_;
+    tensor_array(11) = this->item_11_;
+    tensor_array(12) = this->item_12_;
+    tensor_array(13) = this->item_13_;
+    tensor_array(14) = this->item_14_;
+    tensor_array(15) = this->item_15_;
+    tensor_array(16) = this->item_16_;
+    tensor_array(17) = this->item_17_;
+    tensor_array(18) = this->item_18_;
+    tensor_array(19) = this->item_19_;
+    tensor_array(20) = this->item_20_;
+    tensor_array(21) = this->item_21_;
+    tensor_array(22) = this->item_22_;
+    tensor_array(23) = this->item_23_;
+    tensor_array(24) = this->item_24_;
+    tensor_array(25) = this->item_25_;
+    tensor_array(26) = this->item_26_;
+    tensor_array(27) = this->item_27_;
+    tensor_array(28) = this->item_28_;
+    tensor_array(29) = this->item_29_;
+    tensor_array(30) = this->item_30_;
+    tensor_array(31) = this->item_31_;
+    tensor_array(32) = this->item_32_;
+    tensor_array(33) = this->item_33_;
+    tensor_array(34) = this->item_34_;
+    tensor_array(35) = this->item_35_;
+    tensor_array(36) = this->item_36_;
+    tensor_array(37) = this->item_37_;
+    tensor_array(38) = this->item_38_;
+    tensor_array(39) = this->item_39_;
+    tensor_array(40) = this->item_40_;
+    tensor_array(41) = this->item_41_;
+    tensor_array(42) = this->item_42_;
+    tensor_array(43) = this->item_43_;
+    tensor_array(44) = this->item_44_;
+    tensor_array(45) = this->item_45_;
+    tensor_array(46) = this->item_46_;
+    tensor_array(47) = this->item_47_;
+    tensor_array(48) = this->item_48_;
+    tensor_array(49) = this->item_49_;
+    tensor_array(50) = this->item_50_;
+    tensor_array(51) = this->item_51_;
+    tensor_array(52) = this->item_52_;
+    tensor_array(53) = this->item_53_;
+    tensor_array(54) = this->item_54_;
+    tensor_array(55) = this->item_55_;
+    tensor_array(56) = this->item_56_;
+    tensor_array(57) = this->item_57_;
+    tensor_array(58) = this->item_58_;
+    tensor_array(59) = this->item_59_;
+    tensor_array(60) = this->item_60_;
+    tensor_array(61) = this->item_61_;
+    tensor_array(62) = this->item_62_;
+    tensor_array(63) = this->item_63_;
+    tensor_array(64) = this->item_64_;
+    tensor_array(65) = this->item_65_;
+    tensor_array(66) = this->item_66_;
+    tensor_array(67) = this->item_67_;
+    tensor_array(68) = this->item_68_;
+    tensor_array(69) = this->item_69_;
+    tensor_array(70) = this->item_70_;
+    tensor_array(71) = this->item_71_;
+    tensor_array(72) = this->item_72_;
+    tensor_array(73) = this->item_73_;
+    tensor_array(74) = this->item_74_;
+    tensor_array(75) = this->item_75_;
+    tensor_array(76) = this->item_76_;
+    tensor_array(77) = this->item_77_;
+    tensor_array(78) = this->item_78_;
+    tensor_array(79) = this->item_79_;
+    tensor_array(80) = this->item_80_;
+    tensor_array(81) = this->item_81_;
+    tensor_array(82) = this->item_82_;
+    tensor_array(83) = this->item_83_;
+    tensor_array(84) = this->item_84_;
+    tensor_array(85) = this->item_85_;
+    tensor_array(86) = this->item_86_;
+    tensor_array(87) = this->item_87_;
+    tensor_array(88) = this->item_88_;
+    tensor_array(89) = this->item_89_;
+    tensor_array(90) = this->item_90_;
+    tensor_array(91) = this->item_91_;
+    tensor_array(92) = this->item_92_;
+    tensor_array(93) = this->item_93_;
+    tensor_array(94) = this->item_94_;
+    tensor_array(95) = this->item_95_;
+    tensor_array(96) = this->item_96_;
+    tensor_array(97) = this->item_97_;
+    tensor_array(98) = this->item_98_;
+    tensor_array(99) = this->item_99_;
+    tensor_array(100) = this->item_100_;
+    tensor_array(101) = this->item_101_;
+    tensor_array(102) = this->item_102_;
+    tensor_array(103) = this->item_103_;
+    tensor_array(104) = this->item_104_;
+    tensor_array(105) = this->item_105_;
+    tensor_array(106) = this->item_106_;
+    tensor_array(107) = this->item_107_;
+    tensor_array(108) = this->item_108_;
+    tensor_array(109) = this->item_109_;
+    tensor_array(110) = this->item_110_;
+    tensor_array(111) = this->item_111_;
+    tensor_array(112) = this->item_112_;
+    tensor_array(113) = this->item_113_;
+    tensor_array(114) = this->item_114_;
+    tensor_array(115) = this->item_115_;
+    tensor_array(116) = this->item_116_;
+    tensor_array(117) = this->item_117_;
+    tensor_array(118) = this->item_118_;
+    tensor_array(119) = this->item_119_;
+    tensor_array(120) = this->item_120_;
+    tensor_array(121) = this->item_121_;
+    tensor_array(122) = this->item_122_;
+    tensor_array(123) = this->item_123_;
+    tensor_array(124) = this->item_124_;
+    tensor_array(125) = this->item_125_;
+    tensor_array(126) = this->item_126_;
+    tensor_array(127) = this->item_127_;
+    return tensor_array;
+  }
+
+  template<typename TensorT>
+  inline std::string TensorArrayGpu128<TensorT>::getTensorArrayAsString() const
+  {
+    std::ostringstream os;
+    os << *this;
+    return std::string(os.str());
+  }
+
+  template<typename TensorT>
+  inline __host__ __device__ TensorT TensorArrayGpu128<TensorT>::at(const int & i) const
+  {
+    if (i == 0) return item_0_;
+    if (i == 1) return item_1_;
+    if (i == 2) return item_2_;
+    if (i == 3) return item_3_;
+    if (i == 4) return item_4_;
+    if (i == 5) return item_5_;
+    if (i == 6) return item_6_;
+    if (i == 7) return item_7_;
+    if (i == 8) return item_8_;
+    if (i == 9) return item_9_;
+    if (i == 10) return item_10_;
+    if (i == 11) return item_11_;
+    if (i == 12) return item_12_;
+    if (i == 13) return item_13_;
+    if (i == 14) return item_14_;
+    if (i == 15) return item_15_;
+    if (i == 16) return item_16_;
+    if (i == 17) return item_17_;
+    if (i == 18) return item_18_;
+    if (i == 19) return item_19_;
+    if (i == 20) return item_20_;
+    if (i == 21) return item_21_;
+    if (i == 22) return item_22_;
+    if (i == 23) return item_23_;
+    if (i == 24) return item_24_;
+    if (i == 25) return item_25_;
+    if (i == 26) return item_26_;
+    if (i == 27) return item_27_;
+    if (i == 28) return item_28_;
+    if (i == 29) return item_29_;
+    if (i == 30) return item_30_;
+    if (i == 31) return item_31_;
+    if (i == 32) return item_32_;
+    if (i == 33) return item_33_;
+    if (i == 34) return item_34_;
+    if (i == 35) return item_35_;
+    if (i == 36) return item_36_;
+    if (i == 37) return item_37_;
+    if (i == 38) return item_38_;
+    if (i == 39) return item_39_;
+    if (i == 40) return item_40_;
+    if (i == 41) return item_41_;
+    if (i == 42) return item_42_;
+    if (i == 43) return item_43_;
+    if (i == 44) return item_44_;
+    if (i == 45) return item_45_;
+    if (i == 46) return item_46_;
+    if (i == 47) return item_47_;
+    if (i == 48) return item_48_;
+    if (i == 49) return item_49_;
+    if (i == 50) return item_50_;
+    if (i == 51) return item_51_;
+    if (i == 52) return item_52_;
+    if (i == 53) return item_53_;
+    if (i == 54) return item_54_;
+    if (i == 55) return item_55_;
+    if (i == 56) return item_56_;
+    if (i == 57) return item_57_;
+    if (i == 58) return item_58_;
+    if (i == 59) return item_59_;
+    if (i == 60) return item_60_;
+    if (i == 61) return item_61_;
+    if (i == 62) return item_62_;
+    if (i == 63) return item_63_;
+    if (i == 64) return item_64_;
+    if (i == 65) return item_65_;
+    if (i == 66) return item_66_;
+    if (i == 67) return item_67_;
+    if (i == 68) return item_68_;
+    if (i == 69) return item_69_;
+    if (i == 70) return item_70_;
+    if (i == 71) return item_71_;
+    if (i == 72) return item_72_;
+    if (i == 73) return item_73_;
+    if (i == 74) return item_74_;
+    if (i == 75) return item_75_;
+    if (i == 76) return item_76_;
+    if (i == 77) return item_77_;
+    if (i == 78) return item_78_;
+    if (i == 79) return item_79_;
+    if (i == 80) return item_80_;
+    if (i == 81) return item_81_;
+    if (i == 82) return item_82_;
+    if (i == 83) return item_83_;
+    if (i == 84) return item_84_;
+    if (i == 85) return item_85_;
+    if (i == 86) return item_86_;
+    if (i == 87) return item_87_;
+    if (i == 88) return item_88_;
+    if (i == 89) return item_89_;
+    if (i == 90) return item_90_;
+    if (i == 91) return item_91_;
+    if (i == 92) return item_92_;
+    if (i == 93) return item_93_;
+    if (i == 94) return item_94_;
+    if (i == 95) return item_95_;
+    if (i == 96) return item_96_;
+    if (i == 97) return item_97_;
+    if (i == 98) return item_98_;
+    if (i == 99) return item_99_;
+    if (i == 100) return item_100_;
+    if (i == 101) return item_101_;
+    if (i == 102) return item_102_;
+    if (i == 103) return item_103_;
+    if (i == 104) return item_104_;
+    if (i == 105) return item_105_;
+    if (i == 106) return item_106_;
+    if (i == 107) return item_107_;
+    if (i == 108) return item_108_;
+    if (i == 109) return item_109_;
+    if (i == 110) return item_110_;
+    if (i == 111) return item_111_;
+    if (i == 112) return item_112_;
+    if (i == 113) return item_113_;
+    if (i == 114) return item_114_;
+    if (i == 115) return item_115_;
+    if (i == 116) return item_116_;
+    if (i == 117) return item_117_;
+    if (i == 118) return item_118_;
+    if (i == 119) return item_119_;
+    if (i == 120) return item_120_;
+    if (i == 121) return item_121_;
+    if (i == 122) return item_122_;
+    if (i == 123) return item_123_;
+    if (i == 124) return item_124_;
+    if (i == 125) return item_125_;
+    if (i == 126) return item_126_;
+    if (i == 127) return item_127_;
+    return TensorT(0);
+  }
+
+  template<typename TensorT>
+  inline __host__ __device__ bool TensorArrayGpu128<TensorT>::operator==(const TensorArrayGpu128<TensorT> & other) const
+  {
+    assert(this->array_size_ == other.getArraySize());
+    isEqualToGpu128 comp(this->array_size_);
+    return comp(*this, other);
+  }
+
+  template<typename TensorT>
+  inline __host__ __device__ bool TensorArrayGpu128<TensorT>::operator!=(const TensorArrayGpu128<TensorT> & other) const
+  {
+    assert(this->array_size_ == other.getArraySize());
+    isNotEqualToGpu128 comp(this->array_size_);
+    return comp(*this, other);
+  }
+
+  template<typename TensorT>
+  inline __host__ __device__ bool TensorArrayGpu128<TensorT>::operator<(const TensorArrayGpu128<TensorT> & other) const
+  {
+    assert(this->array_size_ == other.getArraySize());
+    isLessThanGpu128 comp(this->array_size_);
+    return comp(*this, other);
+  }
+
+  template<typename TensorT>
+  inline __host__ __device__ bool TensorArrayGpu128<TensorT>::operator<=(const TensorArrayGpu128<TensorT> & other) const
+  {
+    assert(this->array_size_ == other.getArraySize());
+    isLessThanOrEqualToGpu128 comp(this->array_size_);
+    return comp(*this, other);
+  }
+
+  template<typename TensorT>
+  inline __host__ __device__ bool TensorArrayGpu128<TensorT>::operator>(const TensorArrayGpu128<TensorT> & other) const
+  {
+    assert(this->array_size_ == other.getArraySize());
+    isGreaterThanGpu128 comp(this->array_size_);
+    return comp(*this, other);
+  }
+
+  template<typename TensorT>
+  inline __host__ __device__ bool TensorArrayGpu128<TensorT>::operator>=(const TensorArrayGpu128<TensorT>& other) const
+  {
+    assert(this->array_size_ == other.getArraySize());
+    isGreaterThanOrEqualToGpu128 comp(this->array_size_);
+    return comp(*this, other);
+  }
+
+  /**
+    @brief Fixed length 512 vector class
+  */
+  template<typename TensorT>
+  class TensorArrayGpu512
+  {
+  public:
+    TensorArrayGpu512() = default;
+    ~TensorArrayGpu512() = default;
+    TensorArrayGpu512(const std::string& tensor_array) { this->setTensorArray(tensor_array); }
+    TensorArrayGpu512(const std::initializer_list<TensorT>& tensor_array) { this->setTensorArray(tensor_array); }
+    TensorArrayGpu512(const Eigen::Tensor<TensorT, 1>& tensor_array) { this->setTensorArray(tensor_array); }
+    __host__ __device__ bool operator==(const TensorArrayGpu512& other) const;
+    __host__ __device__ bool operator!=(const TensorArrayGpu512& other) const;
+    __host__ __device__ bool operator<(const TensorArrayGpu512& other) const;
+    __host__ __device__ bool operator<=(const TensorArrayGpu512& other) const;
+    __host__ __device__ bool operator>(const TensorArrayGpu512& other) const;
+    __host__ __device__ bool operator>=(const TensorArrayGpu512& other) const;
+    __host__ __device__ size_t getArraySize() const { return array_size_; } ///< array_size getter
+    void setTensorArray(const std::string& tensor_array);
+    void setTensorArray(const std::initializer_list<TensorT>& tensor_array);
+    void setTensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array);
+    Eigen::Tensor<TensorT, 1> getTensorArray();
+    std::string getTensorArrayAsString() const; ///< tensor_array getter as a string
+    __host__ __device__ TensorT at(const int& i) const;
+
+    /// Inline << operator overload
+    friend std::ostream& operator<<(std::ostream& os, const TensorArrayGpu512& data) {
+      os << data.item_0_ << data.item_1_ << data.item_2_ << data.item_3_ << data.item_4_ << data.item_5_ << data.item_6_ << data.item_7_ << data.item_8_ << data.item_9_ << data.item_10_ << data.item_11_ << data.item_12_ << data.item_13_ << data.item_14_ << data.item_15_ << data.item_16_ << data.item_17_ << data.item_18_ << data.item_19_ << data.item_20_ << data.item_21_ << data.item_22_ << data.item_23_ << data.item_24_ << data.item_25_ << data.item_26_ << data.item_27_ << data.item_28_ << data.item_29_ << data.item_30_ << data.item_31_ << data.item_32_ << data.item_33_ << data.item_34_ << data.item_35_ << data.item_36_ << data.item_37_ << data.item_38_ << data.item_39_ << data.item_40_ << data.item_41_ << data.item_42_ << data.item_43_ << data.item_44_ << data.item_45_ << data.item_46_ << data.item_47_ << data.item_48_ << data.item_49_ << data.item_50_ << data.item_51_ << data.item_52_ << data.item_53_ << data.item_54_ << data.item_55_ << data.item_56_ << data.item_57_ << data.item_58_ << data.item_59_ << data.item_60_ << data.item_61_ << data.item_62_ << data.item_63_ << data.item_64_ << data.item_65_ << data.item_66_ << data.item_67_ << data.item_68_ << data.item_69_ << data.item_70_ << data.item_71_ << data.item_72_ << data.item_73_ << data.item_74_ << data.item_75_ << data.item_76_ << data.item_77_ << data.item_78_ << data.item_79_ << data.item_80_ << data.item_81_ << data.item_82_ << data.item_83_ << data.item_84_ << data.item_85_ << data.item_86_ << data.item_87_ << data.item_88_ << data.item_89_ << data.item_90_ << data.item_91_ << data.item_92_ << data.item_93_ << data.item_94_ << data.item_95_ << data.item_96_ << data.item_97_ << data.item_98_ << data.item_99_ << data.item_100_ << data.item_101_ << data.item_102_ << data.item_103_ << data.item_104_ << data.item_105_ << data.item_106_ << data.item_107_ << data.item_108_ << data.item_109_ << data.item_110_ << data.item_111_ << data.item_112_ << data.item_113_ << data.item_114_ << data.item_115_ << data.item_116_ << data.item_117_ << data.item_118_ << data.item_119_ << data.item_120_ << data.item_121_ << data.item_122_ << data.item_123_ << data.item_124_ << data.item_125_ << data.item_126_ << data.item_127_ << data.item_128_ << data.item_129_ << data.item_130_ << data.item_131_ << data.item_132_ << data.item_133_ << data.item_134_ << data.item_135_ << data.item_136_ << data.item_137_ << data.item_138_ << data.item_139_ << data.item_140_ << data.item_141_ << data.item_142_ << data.item_143_ << data.item_144_ << data.item_145_ << data.item_146_ << data.item_147_ << data.item_148_ << data.item_149_ << data.item_150_ << data.item_151_ << data.item_152_ << data.item_153_ << data.item_154_ << data.item_155_ << data.item_156_ << data.item_157_ << data.item_158_ << data.item_159_ << data.item_160_ << data.item_161_ << data.item_162_ << data.item_163_ << data.item_164_ << data.item_165_ << data.item_166_ << data.item_167_ << data.item_168_ << data.item_169_ << data.item_170_ << data.item_171_ << data.item_172_ << data.item_173_ << data.item_174_ << data.item_175_ << data.item_176_ << data.item_177_ << data.item_178_ << data.item_179_ << data.item_180_ << data.item_181_ << data.item_182_ << data.item_183_ << data.item_184_ << data.item_185_ << data.item_186_ << data.item_187_ << data.item_188_ << data.item_189_ << data.item_190_ << data.item_191_ << data.item_192_ << data.item_193_ << data.item_194_ << data.item_195_ << data.item_196_ << data.item_197_ << data.item_198_ << data.item_199_ << data.item_200_ << data.item_201_ << data.item_202_ << data.item_203_ << data.item_204_ << data.item_205_ << data.item_206_ << data.item_207_ << data.item_208_ << data.item_209_ << data.item_210_ << data.item_211_ << data.item_212_ << data.item_213_ << data.item_214_ << data.item_215_ << data.item_216_ << data.item_217_ << data.item_218_ << data.item_219_ << data.item_220_ << data.item_221_ << data.item_222_ << data.item_223_ << data.item_224_ << data.item_225_ << data.item_226_ << data.item_227_ << data.item_228_ << data.item_229_ << data.item_230_ << data.item_231_ << data.item_232_ << data.item_233_ << data.item_234_ << data.item_235_ << data.item_236_ << data.item_237_ << data.item_238_ << data.item_239_ << data.item_240_ << data.item_241_ << data.item_242_ << data.item_243_ << data.item_244_ << data.item_245_ << data.item_246_ << data.item_247_ << data.item_248_ << data.item_249_ << data.item_250_ << data.item_251_ << data.item_252_ << data.item_253_ << data.item_254_ << data.item_255_ << data.item_256_ << data.item_257_ << data.item_258_ << data.item_259_ << data.item_260_ << data.item_261_ << data.item_262_ << data.item_263_ << data.item_264_ << data.item_265_ << data.item_266_ << data.item_267_ << data.item_268_ << data.item_269_ << data.item_270_ << data.item_271_ << data.item_272_ << data.item_273_ << data.item_274_ << data.item_275_ << data.item_276_ << data.item_277_ << data.item_278_ << data.item_279_ << data.item_280_ << data.item_281_ << data.item_282_ << data.item_283_ << data.item_284_ << data.item_285_ << data.item_286_ << data.item_287_ << data.item_288_ << data.item_289_ << data.item_290_ << data.item_291_ << data.item_292_ << data.item_293_ << data.item_294_ << data.item_295_ << data.item_296_ << data.item_297_ << data.item_298_ << data.item_299_ << data.item_300_ << data.item_301_ << data.item_302_ << data.item_303_ << data.item_304_ << data.item_305_ << data.item_306_ << data.item_307_ << data.item_308_ << data.item_309_ << data.item_310_ << data.item_311_ << data.item_312_ << data.item_313_ << data.item_314_ << data.item_315_ << data.item_316_ << data.item_317_ << data.item_318_ << data.item_319_ << data.item_320_ << data.item_321_ << data.item_322_ << data.item_323_ << data.item_324_ << data.item_325_ << data.item_326_ << data.item_327_ << data.item_328_ << data.item_329_ << data.item_330_ << data.item_331_ << data.item_332_ << data.item_333_ << data.item_334_ << data.item_335_ << data.item_336_ << data.item_337_ << data.item_338_ << data.item_339_ << data.item_340_ << data.item_341_ << data.item_342_ << data.item_343_ << data.item_344_ << data.item_345_ << data.item_346_ << data.item_347_ << data.item_348_ << data.item_349_ << data.item_350_ << data.item_351_ << data.item_352_ << data.item_353_ << data.item_354_ << data.item_355_ << data.item_356_ << data.item_357_ << data.item_358_ << data.item_359_ << data.item_360_ << data.item_361_ << data.item_362_ << data.item_363_ << data.item_364_ << data.item_365_ << data.item_366_ << data.item_367_ << data.item_368_ << data.item_369_ << data.item_370_ << data.item_371_ << data.item_372_ << data.item_373_ << data.item_374_ << data.item_375_ << data.item_376_ << data.item_377_ << data.item_378_ << data.item_379_ << data.item_380_ << data.item_381_ << data.item_382_ << data.item_383_ << data.item_384_ << data.item_385_ << data.item_386_ << data.item_387_ << data.item_388_ << data.item_389_ << data.item_390_ << data.item_391_ << data.item_392_ << data.item_393_ << data.item_394_ << data.item_395_ << data.item_396_ << data.item_397_ << data.item_398_ << data.item_399_ << data.item_400_ << data.item_401_ << data.item_402_ << data.item_403_ << data.item_404_ << data.item_405_ << data.item_406_ << data.item_407_ << data.item_408_ << data.item_409_ << data.item_410_ << data.item_411_ << data.item_412_ << data.item_413_ << data.item_414_ << data.item_415_ << data.item_416_ << data.item_417_ << data.item_418_ << data.item_419_ << data.item_420_ << data.item_421_ << data.item_422_ << data.item_423_ << data.item_424_ << data.item_425_ << data.item_426_ << data.item_427_ << data.item_428_ << data.item_429_ << data.item_430_ << data.item_431_ << data.item_432_ << data.item_433_ << data.item_434_ << data.item_435_ << data.item_436_ << data.item_437_ << data.item_438_ << data.item_439_ << data.item_440_ << data.item_441_ << data.item_442_ << data.item_443_ << data.item_444_ << data.item_445_ << data.item_446_ << data.item_447_ << data.item_448_ << data.item_449_ << data.item_450_ << data.item_451_ << data.item_452_ << data.item_453_ << data.item_454_ << data.item_455_ << data.item_456_ << data.item_457_ << data.item_458_ << data.item_459_ << data.item_460_ << data.item_461_ << data.item_462_ << data.item_463_ << data.item_464_ << data.item_465_ << data.item_466_ << data.item_467_ << data.item_468_ << data.item_469_ << data.item_470_ << data.item_471_ << data.item_472_ << data.item_473_ << data.item_474_ << data.item_475_ << data.item_476_ << data.item_477_ << data.item_478_ << data.item_479_ << data.item_480_ << data.item_481_ << data.item_482_ << data.item_483_ << data.item_484_ << data.item_485_ << data.item_486_ << data.item_487_ << data.item_488_ << data.item_489_ << data.item_490_ << data.item_491_ << data.item_492_ << data.item_493_ << data.item_494_ << data.item_495_ << data.item_496_ << data.item_497_ << data.item_498_ << data.item_499_ << data.item_500_ << data.item_501_ << data.item_502_ << data.item_503_ << data.item_504_ << data.item_505_ << data.item_506_ << data.item_507_ << data.item_508_ << data.item_509_ << data.item_510_ << data.item_511_;
+      return os;
+    }
+  protected:
+    size_t array_size_;
+    TensorT item_0_ = TensorT(0); TensorT item_1_ = TensorT(1); TensorT item_2_ = TensorT(2); TensorT item_3_ = TensorT(3); TensorT item_4_ = TensorT(4); TensorT item_5_ = TensorT(5); TensorT item_6_ = TensorT(6); TensorT item_7_ = TensorT(7); TensorT item_8_ = TensorT(8); TensorT item_9_ = TensorT(9); TensorT item_10_ = TensorT(10); TensorT item_11_ = TensorT(11); TensorT item_12_ = TensorT(12); TensorT item_13_ = TensorT(13); TensorT item_14_ = TensorT(14); TensorT item_15_ = TensorT(15); TensorT item_16_ = TensorT(16); TensorT item_17_ = TensorT(17); TensorT item_18_ = TensorT(18); TensorT item_19_ = TensorT(19); TensorT item_20_ = TensorT(20); TensorT item_21_ = TensorT(21); TensorT item_22_ = TensorT(22); TensorT item_23_ = TensorT(23); TensorT item_24_ = TensorT(24); TensorT item_25_ = TensorT(25); TensorT item_26_ = TensorT(26); TensorT item_27_ = TensorT(27); TensorT item_28_ = TensorT(28); TensorT item_29_ = TensorT(29); TensorT item_30_ = TensorT(30); TensorT item_31_ = TensorT(31); TensorT item_32_ = TensorT(32); TensorT item_33_ = TensorT(33); TensorT item_34_ = TensorT(34); TensorT item_35_ = TensorT(35); TensorT item_36_ = TensorT(36); TensorT item_37_ = TensorT(37); TensorT item_38_ = TensorT(38); TensorT item_39_ = TensorT(39); TensorT item_40_ = TensorT(40); TensorT item_41_ = TensorT(41); TensorT item_42_ = TensorT(42); TensorT item_43_ = TensorT(43); TensorT item_44_ = TensorT(44); TensorT item_45_ = TensorT(45); TensorT item_46_ = TensorT(46); TensorT item_47_ = TensorT(47); TensorT item_48_ = TensorT(48); TensorT item_49_ = TensorT(49); TensorT item_50_ = TensorT(50); TensorT item_51_ = TensorT(51); TensorT item_52_ = TensorT(52); TensorT item_53_ = TensorT(53); TensorT item_54_ = TensorT(54); TensorT item_55_ = TensorT(55); TensorT item_56_ = TensorT(56); TensorT item_57_ = TensorT(57); TensorT item_58_ = TensorT(58); TensorT item_59_ = TensorT(59); TensorT item_60_ = TensorT(60); TensorT item_61_ = TensorT(61); TensorT item_62_ = TensorT(62); TensorT item_63_ = TensorT(63); TensorT item_64_ = TensorT(64); TensorT item_65_ = TensorT(65); TensorT item_66_ = TensorT(66); TensorT item_67_ = TensorT(67); TensorT item_68_ = TensorT(68); TensorT item_69_ = TensorT(69); TensorT item_70_ = TensorT(70); TensorT item_71_ = TensorT(71); TensorT item_72_ = TensorT(72); TensorT item_73_ = TensorT(73); TensorT item_74_ = TensorT(74); TensorT item_75_ = TensorT(75); TensorT item_76_ = TensorT(76); TensorT item_77_ = TensorT(77); TensorT item_78_ = TensorT(78); TensorT item_79_ = TensorT(79); TensorT item_80_ = TensorT(80); TensorT item_81_ = TensorT(81); TensorT item_82_ = TensorT(82); TensorT item_83_ = TensorT(83); TensorT item_84_ = TensorT(84); TensorT item_85_ = TensorT(85); TensorT item_86_ = TensorT(86); TensorT item_87_ = TensorT(87); TensorT item_88_ = TensorT(88); TensorT item_89_ = TensorT(89); TensorT item_90_ = TensorT(90); TensorT item_91_ = TensorT(91); TensorT item_92_ = TensorT(92); TensorT item_93_ = TensorT(93); TensorT item_94_ = TensorT(94); TensorT item_95_ = TensorT(95); TensorT item_96_ = TensorT(96); TensorT item_97_ = TensorT(97); TensorT item_98_ = TensorT(98); TensorT item_99_ = TensorT(99); TensorT item_100_ = TensorT(100); TensorT item_101_ = TensorT(101); TensorT item_102_ = TensorT(102); TensorT item_103_ = TensorT(103); TensorT item_104_ = TensorT(104); TensorT item_105_ = TensorT(105); TensorT item_106_ = TensorT(106); TensorT item_107_ = TensorT(107); TensorT item_108_ = TensorT(108); TensorT item_109_ = TensorT(109); TensorT item_110_ = TensorT(110); TensorT item_111_ = TensorT(111); TensorT item_112_ = TensorT(112); TensorT item_113_ = TensorT(113); TensorT item_114_ = TensorT(114); TensorT item_115_ = TensorT(115); TensorT item_116_ = TensorT(116); TensorT item_117_ = TensorT(117); TensorT item_118_ = TensorT(118); TensorT item_119_ = TensorT(119); TensorT item_120_ = TensorT(120); TensorT item_121_ = TensorT(121); TensorT item_122_ = TensorT(122); TensorT item_123_ = TensorT(123); TensorT item_124_ = TensorT(124); TensorT item_125_ = TensorT(125); TensorT item_126_ = TensorT(126); TensorT item_127_ = TensorT(127); TensorT item_128_ = TensorT(128); TensorT item_129_ = TensorT(129); TensorT item_130_ = TensorT(130); TensorT item_131_ = TensorT(131); TensorT item_132_ = TensorT(132); TensorT item_133_ = TensorT(133); TensorT item_134_ = TensorT(134); TensorT item_135_ = TensorT(135); TensorT item_136_ = TensorT(136); TensorT item_137_ = TensorT(137); TensorT item_138_ = TensorT(138); TensorT item_139_ = TensorT(139); TensorT item_140_ = TensorT(140); TensorT item_141_ = TensorT(141); TensorT item_142_ = TensorT(142); TensorT item_143_ = TensorT(143); TensorT item_144_ = TensorT(144); TensorT item_145_ = TensorT(145); TensorT item_146_ = TensorT(146); TensorT item_147_ = TensorT(147); TensorT item_148_ = TensorT(148); TensorT item_149_ = TensorT(149); TensorT item_150_ = TensorT(150); TensorT item_151_ = TensorT(151); TensorT item_152_ = TensorT(152); TensorT item_153_ = TensorT(153); TensorT item_154_ = TensorT(154); TensorT item_155_ = TensorT(155); TensorT item_156_ = TensorT(156); TensorT item_157_ = TensorT(157); TensorT item_158_ = TensorT(158); TensorT item_159_ = TensorT(159); TensorT item_160_ = TensorT(160); TensorT item_161_ = TensorT(161); TensorT item_162_ = TensorT(162); TensorT item_163_ = TensorT(163); TensorT item_164_ = TensorT(164); TensorT item_165_ = TensorT(165); TensorT item_166_ = TensorT(166); TensorT item_167_ = TensorT(167); TensorT item_168_ = TensorT(168); TensorT item_169_ = TensorT(169); TensorT item_170_ = TensorT(170); TensorT item_171_ = TensorT(171); TensorT item_172_ = TensorT(172); TensorT item_173_ = TensorT(173); TensorT item_174_ = TensorT(174); TensorT item_175_ = TensorT(175); TensorT item_176_ = TensorT(176); TensorT item_177_ = TensorT(177); TensorT item_178_ = TensorT(178); TensorT item_179_ = TensorT(179); TensorT item_180_ = TensorT(180); TensorT item_181_ = TensorT(181); TensorT item_182_ = TensorT(182); TensorT item_183_ = TensorT(183); TensorT item_184_ = TensorT(184); TensorT item_185_ = TensorT(185); TensorT item_186_ = TensorT(186); TensorT item_187_ = TensorT(187); TensorT item_188_ = TensorT(188); TensorT item_189_ = TensorT(189); TensorT item_190_ = TensorT(190); TensorT item_191_ = TensorT(191); TensorT item_192_ = TensorT(192); TensorT item_193_ = TensorT(193); TensorT item_194_ = TensorT(194); TensorT item_195_ = TensorT(195); TensorT item_196_ = TensorT(196); TensorT item_197_ = TensorT(197); TensorT item_198_ = TensorT(198); TensorT item_199_ = TensorT(199); TensorT item_200_ = TensorT(200); TensorT item_201_ = TensorT(201); TensorT item_202_ = TensorT(202); TensorT item_203_ = TensorT(203); TensorT item_204_ = TensorT(204); TensorT item_205_ = TensorT(205); TensorT item_206_ = TensorT(206); TensorT item_207_ = TensorT(207); TensorT item_208_ = TensorT(208); TensorT item_209_ = TensorT(209); TensorT item_210_ = TensorT(210); TensorT item_211_ = TensorT(211); TensorT item_212_ = TensorT(212); TensorT item_213_ = TensorT(213); TensorT item_214_ = TensorT(214); TensorT item_215_ = TensorT(215); TensorT item_216_ = TensorT(216); TensorT item_217_ = TensorT(217); TensorT item_218_ = TensorT(218); TensorT item_219_ = TensorT(219); TensorT item_220_ = TensorT(220); TensorT item_221_ = TensorT(221); TensorT item_222_ = TensorT(222); TensorT item_223_ = TensorT(223); TensorT item_224_ = TensorT(224); TensorT item_225_ = TensorT(225); TensorT item_226_ = TensorT(226); TensorT item_227_ = TensorT(227); TensorT item_228_ = TensorT(228); TensorT item_229_ = TensorT(229); TensorT item_230_ = TensorT(230); TensorT item_231_ = TensorT(231); TensorT item_232_ = TensorT(232); TensorT item_233_ = TensorT(233); TensorT item_234_ = TensorT(234); TensorT item_235_ = TensorT(235); TensorT item_236_ = TensorT(236); TensorT item_237_ = TensorT(237); TensorT item_238_ = TensorT(238); TensorT item_239_ = TensorT(239); TensorT item_240_ = TensorT(240); TensorT item_241_ = TensorT(241); TensorT item_242_ = TensorT(242); TensorT item_243_ = TensorT(243); TensorT item_244_ = TensorT(244); TensorT item_245_ = TensorT(245); TensorT item_246_ = TensorT(246); TensorT item_247_ = TensorT(247); TensorT item_248_ = TensorT(248); TensorT item_249_ = TensorT(249); TensorT item_250_ = TensorT(250); TensorT item_251_ = TensorT(251); TensorT item_252_ = TensorT(252); TensorT item_253_ = TensorT(253); TensorT item_254_ = TensorT(254); TensorT item_255_ = TensorT(255); TensorT item_256_ = TensorT(256); TensorT item_257_ = TensorT(257); TensorT item_258_ = TensorT(258); TensorT item_259_ = TensorT(259); TensorT item_260_ = TensorT(260); TensorT item_261_ = TensorT(261); TensorT item_262_ = TensorT(262); TensorT item_263_ = TensorT(263); TensorT item_264_ = TensorT(264); TensorT item_265_ = TensorT(265); TensorT item_266_ = TensorT(266); TensorT item_267_ = TensorT(267); TensorT item_268_ = TensorT(268); TensorT item_269_ = TensorT(269); TensorT item_270_ = TensorT(270); TensorT item_271_ = TensorT(271); TensorT item_272_ = TensorT(272); TensorT item_273_ = TensorT(273); TensorT item_274_ = TensorT(274); TensorT item_275_ = TensorT(275); TensorT item_276_ = TensorT(276); TensorT item_277_ = TensorT(277); TensorT item_278_ = TensorT(278); TensorT item_279_ = TensorT(279); TensorT item_280_ = TensorT(280); TensorT item_281_ = TensorT(281); TensorT item_282_ = TensorT(282); TensorT item_283_ = TensorT(283); TensorT item_284_ = TensorT(284); TensorT item_285_ = TensorT(285); TensorT item_286_ = TensorT(286); TensorT item_287_ = TensorT(287); TensorT item_288_ = TensorT(288); TensorT item_289_ = TensorT(289); TensorT item_290_ = TensorT(290); TensorT item_291_ = TensorT(291); TensorT item_292_ = TensorT(292); TensorT item_293_ = TensorT(293); TensorT item_294_ = TensorT(294); TensorT item_295_ = TensorT(295); TensorT item_296_ = TensorT(296); TensorT item_297_ = TensorT(297); TensorT item_298_ = TensorT(298); TensorT item_299_ = TensorT(299); TensorT item_300_ = TensorT(300); TensorT item_301_ = TensorT(301); TensorT item_302_ = TensorT(302); TensorT item_303_ = TensorT(303); TensorT item_304_ = TensorT(304); TensorT item_305_ = TensorT(305); TensorT item_306_ = TensorT(306); TensorT item_307_ = TensorT(307); TensorT item_308_ = TensorT(308); TensorT item_309_ = TensorT(309); TensorT item_310_ = TensorT(310); TensorT item_311_ = TensorT(311); TensorT item_312_ = TensorT(312); TensorT item_313_ = TensorT(313); TensorT item_314_ = TensorT(314); TensorT item_315_ = TensorT(315); TensorT item_316_ = TensorT(316); TensorT item_317_ = TensorT(317); TensorT item_318_ = TensorT(318); TensorT item_319_ = TensorT(319); TensorT item_320_ = TensorT(320); TensorT item_321_ = TensorT(321); TensorT item_322_ = TensorT(322); TensorT item_323_ = TensorT(323); TensorT item_324_ = TensorT(324); TensorT item_325_ = TensorT(325); TensorT item_326_ = TensorT(326); TensorT item_327_ = TensorT(327); TensorT item_328_ = TensorT(328); TensorT item_329_ = TensorT(329); TensorT item_330_ = TensorT(330); TensorT item_331_ = TensorT(331); TensorT item_332_ = TensorT(332); TensorT item_333_ = TensorT(333); TensorT item_334_ = TensorT(334); TensorT item_335_ = TensorT(335); TensorT item_336_ = TensorT(336); TensorT item_337_ = TensorT(337); TensorT item_338_ = TensorT(338); TensorT item_339_ = TensorT(339); TensorT item_340_ = TensorT(340); TensorT item_341_ = TensorT(341); TensorT item_342_ = TensorT(342); TensorT item_343_ = TensorT(343); TensorT item_344_ = TensorT(344); TensorT item_345_ = TensorT(345); TensorT item_346_ = TensorT(346); TensorT item_347_ = TensorT(347); TensorT item_348_ = TensorT(348); TensorT item_349_ = TensorT(349); TensorT item_350_ = TensorT(350); TensorT item_351_ = TensorT(351); TensorT item_352_ = TensorT(352); TensorT item_353_ = TensorT(353); TensorT item_354_ = TensorT(354); TensorT item_355_ = TensorT(355); TensorT item_356_ = TensorT(356); TensorT item_357_ = TensorT(357); TensorT item_358_ = TensorT(358); TensorT item_359_ = TensorT(359); TensorT item_360_ = TensorT(360); TensorT item_361_ = TensorT(361); TensorT item_362_ = TensorT(362); TensorT item_363_ = TensorT(363); TensorT item_364_ = TensorT(364); TensorT item_365_ = TensorT(365); TensorT item_366_ = TensorT(366); TensorT item_367_ = TensorT(367); TensorT item_368_ = TensorT(368); TensorT item_369_ = TensorT(369); TensorT item_370_ = TensorT(370); TensorT item_371_ = TensorT(371); TensorT item_372_ = TensorT(372); TensorT item_373_ = TensorT(373); TensorT item_374_ = TensorT(374); TensorT item_375_ = TensorT(375); TensorT item_376_ = TensorT(376); TensorT item_377_ = TensorT(377); TensorT item_378_ = TensorT(378); TensorT item_379_ = TensorT(379); TensorT item_380_ = TensorT(380); TensorT item_381_ = TensorT(381); TensorT item_382_ = TensorT(382); TensorT item_383_ = TensorT(383); TensorT item_384_ = TensorT(384); TensorT item_385_ = TensorT(385); TensorT item_386_ = TensorT(386); TensorT item_387_ = TensorT(387); TensorT item_388_ = TensorT(388); TensorT item_389_ = TensorT(389); TensorT item_390_ = TensorT(390); TensorT item_391_ = TensorT(391); TensorT item_392_ = TensorT(392); TensorT item_393_ = TensorT(393); TensorT item_394_ = TensorT(394); TensorT item_395_ = TensorT(395); TensorT item_396_ = TensorT(396); TensorT item_397_ = TensorT(397); TensorT item_398_ = TensorT(398); TensorT item_399_ = TensorT(399); TensorT item_400_ = TensorT(400); TensorT item_401_ = TensorT(401); TensorT item_402_ = TensorT(402); TensorT item_403_ = TensorT(403); TensorT item_404_ = TensorT(404); TensorT item_405_ = TensorT(405); TensorT item_406_ = TensorT(406); TensorT item_407_ = TensorT(407); TensorT item_408_ = TensorT(408); TensorT item_409_ = TensorT(409); TensorT item_410_ = TensorT(410); TensorT item_411_ = TensorT(411); TensorT item_412_ = TensorT(412); TensorT item_413_ = TensorT(413); TensorT item_414_ = TensorT(414); TensorT item_415_ = TensorT(415); TensorT item_416_ = TensorT(416); TensorT item_417_ = TensorT(417); TensorT item_418_ = TensorT(418); TensorT item_419_ = TensorT(419); TensorT item_420_ = TensorT(420); TensorT item_421_ = TensorT(421); TensorT item_422_ = TensorT(422); TensorT item_423_ = TensorT(423); TensorT item_424_ = TensorT(424); TensorT item_425_ = TensorT(425); TensorT item_426_ = TensorT(426); TensorT item_427_ = TensorT(427); TensorT item_428_ = TensorT(428); TensorT item_429_ = TensorT(429); TensorT item_430_ = TensorT(430); TensorT item_431_ = TensorT(431); TensorT item_432_ = TensorT(432); TensorT item_433_ = TensorT(433); TensorT item_434_ = TensorT(434); TensorT item_435_ = TensorT(435); TensorT item_436_ = TensorT(436); TensorT item_437_ = TensorT(437); TensorT item_438_ = TensorT(438); TensorT item_439_ = TensorT(439); TensorT item_440_ = TensorT(440); TensorT item_441_ = TensorT(441); TensorT item_442_ = TensorT(442); TensorT item_443_ = TensorT(443); TensorT item_444_ = TensorT(444); TensorT item_445_ = TensorT(445); TensorT item_446_ = TensorT(446); TensorT item_447_ = TensorT(447); TensorT item_448_ = TensorT(448); TensorT item_449_ = TensorT(449); TensorT item_450_ = TensorT(450); TensorT item_451_ = TensorT(451); TensorT item_452_ = TensorT(452); TensorT item_453_ = TensorT(453); TensorT item_454_ = TensorT(454); TensorT item_455_ = TensorT(455); TensorT item_456_ = TensorT(456); TensorT item_457_ = TensorT(457); TensorT item_458_ = TensorT(458); TensorT item_459_ = TensorT(459); TensorT item_460_ = TensorT(460); TensorT item_461_ = TensorT(461); TensorT item_462_ = TensorT(462); TensorT item_463_ = TensorT(463); TensorT item_464_ = TensorT(464); TensorT item_465_ = TensorT(465); TensorT item_466_ = TensorT(466); TensorT item_467_ = TensorT(467); TensorT item_468_ = TensorT(468); TensorT item_469_ = TensorT(469); TensorT item_470_ = TensorT(470); TensorT item_471_ = TensorT(471); TensorT item_472_ = TensorT(472); TensorT item_473_ = TensorT(473); TensorT item_474_ = TensorT(474); TensorT item_475_ = TensorT(475); TensorT item_476_ = TensorT(476); TensorT item_477_ = TensorT(477); TensorT item_478_ = TensorT(478); TensorT item_479_ = TensorT(479); TensorT item_480_ = TensorT(480); TensorT item_481_ = TensorT(481); TensorT item_482_ = TensorT(482); TensorT item_483_ = TensorT(483); TensorT item_484_ = TensorT(484); TensorT item_485_ = TensorT(485); TensorT item_486_ = TensorT(486); TensorT item_487_ = TensorT(487); TensorT item_488_ = TensorT(488); TensorT item_489_ = TensorT(489); TensorT item_490_ = TensorT(490); TensorT item_491_ = TensorT(491); TensorT item_492_ = TensorT(492); TensorT item_493_ = TensorT(493); TensorT item_494_ = TensorT(494); TensorT item_495_ = TensorT(495); TensorT item_496_ = TensorT(496); TensorT item_497_ = TensorT(497); TensorT item_498_ = TensorT(498); TensorT item_499_ = TensorT(499); TensorT item_500_ = TensorT(500); TensorT item_501_ = TensorT(501); TensorT item_502_ = TensorT(502); TensorT item_503_ = TensorT(503); TensorT item_504_ = TensorT(504); TensorT item_505_ = TensorT(505); TensorT item_506_ = TensorT(506); TensorT item_507_ = TensorT(507); TensorT item_508_ = TensorT(508); TensorT item_509_ = TensorT(509); TensorT item_510_ = TensorT(510); TensorT item_511_ = TensorT(511);
+  private:
+    friend class cereal::access;
+    template<class Archive>
+    void serialize(Archive& archive) {
+      archive(array_size_,
+        item_0_, item_1_, item_2_, item_3_, item_4_, item_5_, item_6_, item_7_, item_8_, item_9_, item_10_, item_11_, item_12_, item_13_, item_14_, item_15_, item_16_, item_17_, item_18_, item_19_, item_20_, item_21_, item_22_, item_23_, item_24_, item_25_, item_26_, item_27_, item_28_, item_29_, item_30_, item_31_, item_32_, item_33_, item_34_, item_35_, item_36_, item_37_, item_38_, item_39_, item_40_, item_41_, item_42_, item_43_, item_44_, item_45_, item_46_, item_47_, item_48_, item_49_, item_50_, item_51_, item_52_, item_53_, item_54_, item_55_, item_56_, item_57_, item_58_, item_59_, item_60_, item_61_, item_62_, item_63_, item_64_, item_65_, item_66_, item_67_, item_68_, item_69_, item_70_, item_71_, item_72_, item_73_, item_74_, item_75_, item_76_, item_77_, item_78_, item_79_, item_80_, item_81_, item_82_, item_83_, item_84_, item_85_, item_86_, item_87_, item_88_, item_89_, item_90_, item_91_, item_92_, item_93_, item_94_, item_95_, item_96_, item_97_, item_98_, item_99_, item_100_, item_101_, item_102_, item_103_, item_104_, item_105_, item_106_, item_107_, item_108_, item_109_, item_110_, item_111_, item_112_, item_113_, item_114_, item_115_, item_116_, item_117_, item_118_, item_119_, item_120_, item_121_, item_122_, item_123_, item_124_, item_125_, item_126_, item_127_, item_128_, item_129_, item_130_, item_131_, item_132_, item_133_, item_134_, item_135_, item_136_, item_137_, item_138_, item_139_, item_140_, item_141_, item_142_, item_143_, item_144_, item_145_, item_146_, item_147_, item_148_, item_149_, item_150_, item_151_, item_152_, item_153_, item_154_, item_155_, item_156_, item_157_, item_158_, item_159_, item_160_, item_161_, item_162_, item_163_, item_164_, item_165_, item_166_, item_167_, item_168_, item_169_, item_170_, item_171_, item_172_, item_173_, item_174_, item_175_, item_176_, item_177_, item_178_, item_179_, item_180_, item_181_, item_182_, item_183_, item_184_, item_185_, item_186_, item_187_, item_188_, item_189_, item_190_, item_191_, item_192_, item_193_, item_194_, item_195_, item_196_, item_197_, item_198_, item_199_, item_200_, item_201_, item_202_, item_203_, item_204_, item_205_, item_206_, item_207_, item_208_, item_209_, item_210_, item_211_, item_212_, item_213_, item_214_, item_215_, item_216_, item_217_, item_218_, item_219_, item_220_, item_221_, item_222_, item_223_, item_224_, item_225_, item_226_, item_227_, item_228_, item_229_, item_230_, item_231_, item_232_, item_233_, item_234_, item_235_, item_236_, item_237_, item_238_, item_239_, item_240_, item_241_, item_242_, item_243_, item_244_, item_245_, item_246_, item_247_, item_248_, item_249_, item_250_, item_251_, item_252_, item_253_, item_254_, item_255_, item_256_, item_257_, item_258_, item_259_, item_260_, item_261_, item_262_, item_263_, item_264_, item_265_, item_266_, item_267_, item_268_, item_269_, item_270_, item_271_, item_272_, item_273_, item_274_, item_275_, item_276_, item_277_, item_278_, item_279_, item_280_, item_281_, item_282_, item_283_, item_284_, item_285_, item_286_, item_287_, item_288_, item_289_, item_290_, item_291_, item_292_, item_293_, item_294_, item_295_, item_296_, item_297_, item_298_, item_299_, item_300_, item_301_, item_302_, item_303_, item_304_, item_305_, item_306_, item_307_, item_308_, item_309_, item_310_, item_311_, item_312_, item_313_, item_314_, item_315_, item_316_, item_317_, item_318_, item_319_, item_320_, item_321_, item_322_, item_323_, item_324_, item_325_, item_326_, item_327_, item_328_, item_329_, item_330_, item_331_, item_332_, item_333_, item_334_, item_335_, item_336_, item_337_, item_338_, item_339_, item_340_, item_341_, item_342_, item_343_, item_344_, item_345_, item_346_, item_347_, item_348_, item_349_, item_350_, item_351_, item_352_, item_353_, item_354_, item_355_, item_356_, item_357_, item_358_, item_359_, item_360_, item_361_, item_362_, item_363_, item_364_, item_365_, item_366_, item_367_, item_368_, item_369_, item_370_, item_371_, item_372_, item_373_, item_374_, item_375_, item_376_, item_377_, item_378_, item_379_, item_380_, item_381_, item_382_, item_383_, item_384_, item_385_, item_386_, item_387_, item_388_, item_389_, item_390_, item_391_, item_392_, item_393_, item_394_, item_395_, item_396_, item_397_, item_398_, item_399_, item_400_, item_401_, item_402_, item_403_, item_404_, item_405_, item_406_, item_407_, item_408_, item_409_, item_410_, item_411_, item_412_, item_413_, item_414_, item_415_, item_416_, item_417_, item_418_, item_419_, item_420_, item_421_, item_422_, item_423_, item_424_, item_425_, item_426_, item_427_, item_428_, item_429_, item_430_, item_431_, item_432_, item_433_, item_434_, item_435_, item_436_, item_437_, item_438_, item_439_, item_440_, item_441_, item_442_, item_443_, item_444_, item_445_, item_446_, item_447_, item_448_, item_449_, item_450_, item_451_, item_452_, item_453_, item_454_, item_455_, item_456_, item_457_, item_458_, item_459_, item_460_, item_461_, item_462_, item_463_, item_464_, item_465_, item_466_, item_467_, item_468_, item_469_, item_470_, item_471_, item_472_, item_473_, item_474_, item_475_, item_476_, item_477_, item_478_, item_479_, item_480_, item_481_, item_482_, item_483_, item_484_, item_485_, item_486_, item_487_, item_488_, item_489_, item_490_, item_491_, item_492_, item_493_, item_494_, item_495_, item_496_, item_497_, item_498_, item_499_, item_500_, item_501_, item_502_, item_503_, item_504_, item_505_, item_506_, item_507_, item_508_, item_509_, item_510_, item_511_
+      );
+    }
+  };
+
+  /* Operators for Gpu classes
+  */
+  namespace TensorArrayComparisonGpu {
+    template<typename TensorT>
+    __host__ __device__ int compare(const TensorArrayGpu512<TensorT>& s1, const TensorArrayGpu512<TensorT>& s2, const int& size)
+    {
+      int i = 0;
+      for (i = 0; i < size; ++i) {
+        if (s1.at(i) != s2.at(i)) break;
+        if (i == size - 1) return 0;
+      }
+      return s1.at(i) - s2.at(i);
+    }
+
+    template<>
+    __host__ __device__ int compare<char>(const TensorArrayGpu512<char>& s1, const TensorArrayGpu512<char>& s2, const int& size)
+    {
+      int i = 0;
+      for (i = 0; i < size; ++i) {
+        if (s1.at(i) != s2.at(i) || s1.at(i) == '\0' || s2.at(i) == '\0') break;
+        if (i == size - 1) return 0;
+      }
+      return (const unsigned char)s1.at(i) - (const unsigned char)s2.at(i);
+    }
+  };
+
+  struct isEqualToGpu512 : TensorArrayFunctorsGpu {
+    using TensorArrayFunctorsGpu::TensorArrayFunctorsGpu;
+    template<typename TensorT>
+    __host__ __device__ bool operator()(const TensorArrayGpu512<TensorT>& s1, const TensorArrayGpu512<TensorT>& s2) {
+      if (TensorArrayComparisonGpu::compare(s1, s2, this->size_) == 0) return true;
+      else return false;
+    }
+  };
+
+  struct isNotEqualToGpu512 : TensorArrayFunctorsGpu {
+    using TensorArrayFunctorsGpu::TensorArrayFunctorsGpu;
+    template<typename TensorT>
+    __host__ __device__ bool operator()(const TensorArrayGpu512<TensorT>& s1, const TensorArrayGpu512<TensorT>& s2) {
+      if (TensorArrayComparisonGpu::compare(s1, s2, this->size_) != 0) return true;
+      else return false;
+    }
+  };
+
+  struct isLessThanGpu512 : TensorArrayFunctorsGpu {
+    using TensorArrayFunctorsGpu::TensorArrayFunctorsGpu;
+    template<typename TensorT>
+    __host__ __device__ bool operator()(const TensorArrayGpu512<TensorT>& s1, const TensorArrayGpu512<TensorT>& s2) {
+      if (TensorArrayComparisonGpu::compare(s1, s2, this->size_) < 0) return true;
+      else return false;
+    }
+  };
+
+  struct isGreaterThanGpu512 : TensorArrayFunctorsGpu {
+    using TensorArrayFunctorsGpu::TensorArrayFunctorsGpu;
+    template<typename TensorT>
+    __host__ __device__ bool operator()(const TensorArrayGpu512<TensorT>& s1, const TensorArrayGpu512<TensorT>& s2) {
+      if (TensorArrayComparisonGpu::compare(s1, s2, this->size_) > 0) return true;
+      else return false;
+    }
+  };
+
+  struct isLessThanOrEqualToGpu512 : TensorArrayFunctorsGpu {
+    using TensorArrayFunctorsGpu::TensorArrayFunctorsGpu;
+    template<typename TensorT>
+    __host__ __device__ bool operator()(const TensorArrayGpu512<TensorT>& s1, const TensorArrayGpu512<TensorT>& s2) {
+      if (TensorArrayComparisonGpu::compare(s1, s2, this->size_) <= 0) return true;
+      else return false;
+    }
+  };
+
+  struct isGreaterThanOrEqualToGpu512 : TensorArrayFunctorsGpu {
+    using TensorArrayFunctorsGpu::TensorArrayFunctorsGpu;
+    template<typename TensorT>
+    __host__ __device__  bool operator()(const TensorArrayGpu512<TensorT>& s1, const TensorArrayGpu512<TensorT>& s2) {
+      if (TensorArrayComparisonGpu::compare(s1, s2, this->size_) >= 0) return true;
+      else return false;
+    }
+  };
+
+  template<typename TensorT>
+  inline void TensorArrayGpu512<TensorT>::setTensorArray(const std::string & tensor_array)
+  {
+    // check the array size
+    assert(512 >= tensor_array.size());
+    this->array_size_ = 512;
+
+    // copy the data
+    auto tensor_array_iter = tensor_array.begin();
+    if (tensor_array_iter != tensor_array.end()) { this->item_0_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_0_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_1_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_1_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_2_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_2_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_3_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_3_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_4_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_4_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_5_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_5_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_6_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_6_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_7_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_7_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_8_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_8_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_9_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_9_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_10_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_10_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_11_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_11_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_12_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_12_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_13_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_13_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_14_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_14_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_15_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_15_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_16_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_16_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_17_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_17_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_18_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_18_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_19_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_19_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_20_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_20_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_21_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_21_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_22_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_22_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_23_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_23_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_24_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_24_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_25_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_25_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_26_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_26_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_27_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_27_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_28_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_28_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_29_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_29_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_30_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_30_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_31_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_31_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_32_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_32_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_33_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_33_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_34_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_34_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_35_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_35_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_36_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_36_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_37_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_37_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_38_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_38_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_39_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_39_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_40_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_40_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_41_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_41_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_42_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_42_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_43_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_43_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_44_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_44_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_45_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_45_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_46_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_46_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_47_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_47_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_48_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_48_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_49_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_49_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_50_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_50_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_51_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_51_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_52_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_52_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_53_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_53_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_54_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_54_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_55_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_55_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_56_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_56_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_57_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_57_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_58_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_58_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_59_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_59_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_60_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_60_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_61_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_61_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_62_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_62_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_63_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_63_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_64_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_64_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_65_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_65_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_66_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_66_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_67_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_67_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_68_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_68_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_69_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_69_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_70_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_70_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_71_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_71_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_72_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_72_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_73_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_73_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_74_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_74_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_75_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_75_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_76_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_76_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_77_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_77_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_78_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_78_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_79_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_79_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_80_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_80_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_81_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_81_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_82_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_82_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_83_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_83_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_84_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_84_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_85_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_85_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_86_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_86_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_87_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_87_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_88_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_88_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_89_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_89_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_90_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_90_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_91_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_91_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_92_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_92_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_93_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_93_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_94_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_94_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_95_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_95_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_96_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_96_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_97_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_97_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_98_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_98_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_99_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_99_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_100_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_100_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_101_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_101_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_102_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_102_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_103_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_103_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_104_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_104_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_105_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_105_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_106_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_106_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_107_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_107_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_108_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_108_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_109_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_109_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_110_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_110_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_111_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_111_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_112_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_112_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_113_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_113_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_114_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_114_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_115_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_115_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_116_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_116_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_117_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_117_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_118_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_118_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_119_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_119_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_120_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_120_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_121_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_121_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_122_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_122_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_123_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_123_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_124_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_124_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_125_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_125_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_126_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_126_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_127_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_127_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_128_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_128_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_129_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_129_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_130_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_130_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_131_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_131_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_132_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_132_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_133_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_133_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_134_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_134_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_135_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_135_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_136_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_136_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_137_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_137_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_138_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_138_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_139_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_139_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_140_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_140_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_141_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_141_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_142_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_142_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_143_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_143_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_144_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_144_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_145_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_145_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_146_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_146_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_147_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_147_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_148_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_148_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_149_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_149_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_150_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_150_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_151_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_151_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_152_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_152_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_153_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_153_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_154_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_154_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_155_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_155_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_156_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_156_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_157_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_157_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_158_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_158_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_159_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_159_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_160_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_160_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_161_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_161_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_162_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_162_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_163_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_163_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_164_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_164_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_165_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_165_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_166_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_166_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_167_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_167_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_168_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_168_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_169_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_169_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_170_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_170_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_171_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_171_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_172_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_172_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_173_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_173_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_174_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_174_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_175_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_175_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_176_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_176_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_177_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_177_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_178_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_178_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_179_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_179_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_180_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_180_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_181_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_181_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_182_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_182_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_183_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_183_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_184_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_184_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_185_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_185_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_186_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_186_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_187_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_187_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_188_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_188_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_189_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_189_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_190_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_190_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_191_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_191_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_192_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_192_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_193_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_193_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_194_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_194_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_195_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_195_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_196_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_196_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_197_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_197_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_198_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_198_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_199_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_199_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_200_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_200_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_201_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_201_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_202_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_202_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_203_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_203_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_204_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_204_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_205_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_205_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_206_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_206_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_207_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_207_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_208_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_208_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_209_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_209_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_210_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_210_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_211_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_211_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_212_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_212_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_213_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_213_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_214_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_214_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_215_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_215_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_216_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_216_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_217_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_217_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_218_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_218_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_219_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_219_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_220_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_220_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_221_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_221_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_222_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_222_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_223_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_223_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_224_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_224_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_225_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_225_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_226_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_226_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_227_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_227_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_228_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_228_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_229_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_229_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_230_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_230_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_231_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_231_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_232_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_232_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_233_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_233_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_234_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_234_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_235_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_235_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_236_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_236_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_237_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_237_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_238_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_238_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_239_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_239_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_240_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_240_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_241_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_241_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_242_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_242_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_243_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_243_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_244_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_244_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_245_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_245_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_246_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_246_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_247_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_247_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_248_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_248_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_249_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_249_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_250_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_250_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_251_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_251_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_252_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_252_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_253_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_253_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_254_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_254_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_255_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_255_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_256_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_256_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_257_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_257_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_258_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_258_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_259_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_259_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_260_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_260_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_261_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_261_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_262_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_262_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_263_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_263_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_264_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_264_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_265_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_265_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_266_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_266_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_267_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_267_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_268_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_268_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_269_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_269_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_270_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_270_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_271_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_271_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_272_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_272_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_273_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_273_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_274_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_274_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_275_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_275_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_276_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_276_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_277_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_277_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_278_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_278_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_279_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_279_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_280_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_280_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_281_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_281_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_282_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_282_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_283_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_283_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_284_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_284_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_285_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_285_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_286_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_286_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_287_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_287_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_288_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_288_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_289_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_289_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_290_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_290_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_291_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_291_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_292_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_292_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_293_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_293_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_294_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_294_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_295_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_295_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_296_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_296_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_297_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_297_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_298_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_298_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_299_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_299_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_300_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_300_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_301_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_301_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_302_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_302_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_303_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_303_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_304_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_304_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_305_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_305_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_306_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_306_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_307_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_307_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_308_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_308_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_309_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_309_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_310_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_310_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_311_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_311_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_312_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_312_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_313_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_313_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_314_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_314_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_315_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_315_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_316_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_316_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_317_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_317_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_318_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_318_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_319_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_319_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_320_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_320_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_321_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_321_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_322_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_322_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_323_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_323_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_324_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_324_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_325_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_325_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_326_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_326_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_327_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_327_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_328_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_328_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_329_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_329_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_330_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_330_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_331_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_331_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_332_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_332_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_333_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_333_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_334_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_334_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_335_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_335_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_336_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_336_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_337_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_337_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_338_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_338_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_339_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_339_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_340_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_340_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_341_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_341_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_342_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_342_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_343_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_343_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_344_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_344_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_345_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_345_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_346_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_346_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_347_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_347_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_348_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_348_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_349_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_349_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_350_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_350_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_351_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_351_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_352_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_352_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_353_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_353_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_354_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_354_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_355_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_355_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_356_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_356_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_357_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_357_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_358_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_358_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_359_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_359_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_360_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_360_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_361_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_361_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_362_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_362_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_363_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_363_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_364_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_364_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_365_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_365_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_366_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_366_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_367_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_367_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_368_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_368_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_369_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_369_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_370_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_370_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_371_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_371_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_372_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_372_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_373_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_373_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_374_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_374_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_375_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_375_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_376_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_376_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_377_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_377_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_378_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_378_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_379_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_379_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_380_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_380_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_381_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_381_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_382_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_382_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_383_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_383_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_384_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_384_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_385_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_385_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_386_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_386_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_387_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_387_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_388_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_388_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_389_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_389_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_390_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_390_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_391_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_391_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_392_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_392_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_393_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_393_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_394_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_394_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_395_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_395_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_396_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_396_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_397_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_397_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_398_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_398_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_399_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_399_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_400_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_400_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_401_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_401_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_402_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_402_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_403_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_403_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_404_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_404_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_405_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_405_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_406_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_406_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_407_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_407_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_408_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_408_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_409_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_409_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_410_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_410_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_411_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_411_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_412_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_412_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_413_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_413_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_414_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_414_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_415_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_415_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_416_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_416_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_417_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_417_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_418_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_418_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_419_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_419_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_420_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_420_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_421_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_421_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_422_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_422_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_423_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_423_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_424_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_424_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_425_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_425_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_426_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_426_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_427_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_427_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_428_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_428_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_429_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_429_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_430_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_430_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_431_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_431_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_432_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_432_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_433_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_433_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_434_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_434_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_435_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_435_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_436_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_436_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_437_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_437_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_438_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_438_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_439_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_439_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_440_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_440_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_441_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_441_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_442_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_442_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_443_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_443_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_444_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_444_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_445_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_445_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_446_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_446_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_447_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_447_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_448_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_448_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_449_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_449_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_450_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_450_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_451_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_451_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_452_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_452_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_453_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_453_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_454_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_454_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_455_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_455_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_456_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_456_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_457_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_457_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_458_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_458_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_459_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_459_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_460_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_460_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_461_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_461_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_462_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_462_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_463_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_463_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_464_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_464_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_465_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_465_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_466_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_466_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_467_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_467_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_468_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_468_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_469_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_469_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_470_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_470_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_471_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_471_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_472_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_472_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_473_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_473_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_474_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_474_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_475_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_475_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_476_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_476_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_477_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_477_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_478_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_478_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_479_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_479_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_480_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_480_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_481_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_481_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_482_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_482_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_483_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_483_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_484_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_484_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_485_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_485_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_486_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_486_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_487_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_487_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_488_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_488_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_489_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_489_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_490_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_490_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_491_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_491_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_492_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_492_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_493_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_493_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_494_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_494_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_495_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_495_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_496_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_496_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_497_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_497_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_498_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_498_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_499_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_499_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_500_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_500_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_501_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_501_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_502_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_502_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_503_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_503_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_504_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_504_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_505_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_505_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_506_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_506_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_507_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_507_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_508_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_508_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_509_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_509_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_510_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_510_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_511_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
+    else { this->item_511_ = TensorT(0); }
+  }
+
+  template<typename TensorT>
+  inline void TensorArrayGpu512<TensorT>::setTensorArray(const std::initializer_list<TensorT>& tensor_array)
+  {
+    // check the array size
+    assert(512 >= tensor_array.size());
+    this->array_size_ = 512;
+
+    // copy the data
+    auto tensor_array_iter = tensor_array.begin();
+    if (tensor_array_iter != tensor_array.end()) { this->item_0_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_0_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_1_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_1_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_2_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_2_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_3_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_3_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_4_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_4_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_5_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_5_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_6_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_6_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_7_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_7_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_8_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_8_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_9_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_9_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_10_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_10_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_11_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_11_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_12_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_12_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_13_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_13_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_14_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_14_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_15_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_15_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_16_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_16_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_17_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_17_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_18_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_18_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_19_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_19_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_20_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_20_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_21_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_21_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_22_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_22_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_23_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_23_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_24_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_24_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_25_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_25_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_26_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_26_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_27_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_27_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_28_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_28_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_29_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_29_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_30_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_30_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_31_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_31_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_32_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_32_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_33_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_33_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_34_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_34_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_35_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_35_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_36_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_36_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_37_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_37_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_38_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_38_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_39_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_39_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_40_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_40_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_41_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_41_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_42_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_42_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_43_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_43_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_44_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_44_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_45_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_45_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_46_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_46_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_47_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_47_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_48_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_48_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_49_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_49_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_50_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_50_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_51_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_51_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_52_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_52_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_53_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_53_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_54_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_54_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_55_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_55_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_56_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_56_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_57_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_57_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_58_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_58_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_59_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_59_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_60_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_60_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_61_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_61_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_62_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_62_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_63_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_63_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_64_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_64_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_65_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_65_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_66_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_66_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_67_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_67_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_68_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_68_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_69_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_69_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_70_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_70_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_71_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_71_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_72_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_72_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_73_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_73_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_74_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_74_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_75_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_75_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_76_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_76_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_77_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_77_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_78_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_78_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_79_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_79_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_80_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_80_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_81_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_81_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_82_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_82_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_83_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_83_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_84_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_84_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_85_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_85_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_86_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_86_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_87_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_87_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_88_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_88_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_89_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_89_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_90_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_90_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_91_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_91_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_92_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_92_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_93_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_93_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_94_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_94_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_95_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_95_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_96_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_96_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_97_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_97_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_98_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_98_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_99_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_99_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_100_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_100_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_101_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_101_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_102_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_102_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_103_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_103_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_104_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_104_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_105_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_105_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_106_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_106_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_107_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_107_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_108_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_108_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_109_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_109_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_110_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_110_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_111_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_111_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_112_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_112_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_113_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_113_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_114_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_114_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_115_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_115_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_116_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_116_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_117_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_117_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_118_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_118_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_119_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_119_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_120_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_120_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_121_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_121_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_122_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_122_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_123_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_123_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_124_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_124_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_125_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_125_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_126_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_126_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_127_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_127_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_128_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_128_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_129_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_129_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_130_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_130_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_131_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_131_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_132_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_132_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_133_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_133_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_134_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_134_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_135_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_135_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_136_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_136_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_137_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_137_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_138_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_138_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_139_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_139_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_140_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_140_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_141_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_141_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_142_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_142_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_143_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_143_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_144_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_144_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_145_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_145_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_146_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_146_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_147_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_147_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_148_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_148_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_149_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_149_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_150_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_150_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_151_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_151_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_152_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_152_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_153_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_153_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_154_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_154_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_155_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_155_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_156_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_156_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_157_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_157_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_158_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_158_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_159_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_159_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_160_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_160_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_161_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_161_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_162_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_162_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_163_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_163_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_164_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_164_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_165_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_165_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_166_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_166_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_167_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_167_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_168_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_168_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_169_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_169_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_170_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_170_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_171_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_171_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_172_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_172_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_173_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_173_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_174_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_174_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_175_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_175_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_176_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_176_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_177_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_177_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_178_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_178_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_179_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_179_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_180_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_180_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_181_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_181_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_182_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_182_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_183_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_183_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_184_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_184_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_185_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_185_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_186_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_186_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_187_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_187_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_188_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_188_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_189_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_189_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_190_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_190_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_191_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_191_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_192_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_192_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_193_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_193_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_194_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_194_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_195_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_195_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_196_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_196_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_197_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_197_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_198_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_198_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_199_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_199_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_200_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_200_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_201_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_201_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_202_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_202_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_203_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_203_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_204_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_204_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_205_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_205_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_206_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_206_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_207_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_207_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_208_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_208_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_209_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_209_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_210_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_210_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_211_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_211_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_212_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_212_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_213_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_213_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_214_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_214_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_215_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_215_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_216_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_216_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_217_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_217_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_218_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_218_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_219_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_219_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_220_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_220_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_221_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_221_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_222_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_222_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_223_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_223_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_224_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_224_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_225_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_225_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_226_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_226_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_227_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_227_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_228_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_228_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_229_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_229_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_230_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_230_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_231_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_231_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_232_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_232_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_233_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_233_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_234_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_234_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_235_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_235_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_236_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_236_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_237_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_237_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_238_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_238_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_239_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_239_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_240_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_240_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_241_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_241_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_242_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_242_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_243_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_243_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_244_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_244_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_245_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_245_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_246_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_246_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_247_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_247_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_248_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_248_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_249_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_249_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_250_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_250_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_251_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_251_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_252_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_252_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_253_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_253_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_254_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_254_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_255_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_255_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_256_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_256_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_257_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_257_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_258_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_258_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_259_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_259_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_260_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_260_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_261_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_261_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_262_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_262_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_263_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_263_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_264_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_264_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_265_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_265_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_266_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_266_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_267_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_267_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_268_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_268_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_269_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_269_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_270_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_270_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_271_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_271_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_272_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_272_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_273_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_273_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_274_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_274_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_275_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_275_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_276_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_276_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_277_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_277_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_278_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_278_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_279_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_279_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_280_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_280_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_281_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_281_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_282_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_282_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_283_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_283_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_284_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_284_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_285_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_285_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_286_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_286_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_287_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_287_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_288_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_288_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_289_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_289_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_290_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_290_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_291_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_291_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_292_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_292_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_293_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_293_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_294_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_294_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_295_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_295_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_296_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_296_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_297_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_297_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_298_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_298_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_299_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_299_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_300_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_300_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_301_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_301_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_302_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_302_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_303_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_303_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_304_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_304_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_305_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_305_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_306_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_306_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_307_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_307_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_308_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_308_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_309_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_309_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_310_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_310_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_311_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_311_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_312_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_312_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_313_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_313_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_314_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_314_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_315_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_315_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_316_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_316_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_317_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_317_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_318_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_318_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_319_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_319_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_320_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_320_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_321_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_321_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_322_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_322_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_323_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_323_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_324_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_324_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_325_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_325_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_326_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_326_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_327_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_327_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_328_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_328_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_329_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_329_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_330_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_330_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_331_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_331_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_332_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_332_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_333_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_333_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_334_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_334_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_335_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_335_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_336_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_336_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_337_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_337_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_338_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_338_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_339_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_339_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_340_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_340_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_341_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_341_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_342_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_342_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_343_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_343_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_344_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_344_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_345_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_345_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_346_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_346_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_347_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_347_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_348_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_348_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_349_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_349_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_350_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_350_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_351_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_351_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_352_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_352_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_353_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_353_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_354_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_354_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_355_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_355_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_356_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_356_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_357_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_357_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_358_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_358_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_359_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_359_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_360_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_360_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_361_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_361_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_362_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_362_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_363_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_363_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_364_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_364_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_365_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_365_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_366_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_366_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_367_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_367_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_368_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_368_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_369_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_369_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_370_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_370_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_371_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_371_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_372_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_372_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_373_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_373_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_374_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_374_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_375_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_375_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_376_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_376_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_377_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_377_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_378_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_378_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_379_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_379_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_380_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_380_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_381_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_381_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_382_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_382_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_383_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_383_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_384_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_384_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_385_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_385_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_386_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_386_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_387_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_387_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_388_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_388_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_389_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_389_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_390_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_390_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_391_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_391_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_392_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_392_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_393_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_393_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_394_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_394_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_395_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_395_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_396_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_396_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_397_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_397_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_398_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_398_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_399_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_399_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_400_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_400_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_401_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_401_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_402_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_402_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_403_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_403_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_404_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_404_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_405_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_405_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_406_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_406_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_407_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_407_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_408_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_408_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_409_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_409_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_410_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_410_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_411_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_411_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_412_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_412_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_413_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_413_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_414_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_414_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_415_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_415_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_416_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_416_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_417_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_417_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_418_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_418_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_419_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_419_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_420_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_420_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_421_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_421_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_422_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_422_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_423_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_423_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_424_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_424_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_425_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_425_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_426_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_426_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_427_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_427_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_428_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_428_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_429_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_429_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_430_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_430_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_431_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_431_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_432_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_432_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_433_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_433_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_434_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_434_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_435_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_435_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_436_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_436_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_437_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_437_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_438_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_438_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_439_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_439_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_440_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_440_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_441_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_441_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_442_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_442_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_443_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_443_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_444_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_444_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_445_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_445_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_446_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_446_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_447_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_447_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_448_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_448_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_449_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_449_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_450_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_450_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_451_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_451_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_452_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_452_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_453_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_453_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_454_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_454_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_455_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_455_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_456_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_456_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_457_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_457_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_458_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_458_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_459_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_459_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_460_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_460_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_461_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_461_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_462_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_462_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_463_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_463_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_464_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_464_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_465_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_465_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_466_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_466_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_467_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_467_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_468_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_468_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_469_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_469_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_470_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_470_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_471_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_471_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_472_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_472_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_473_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_473_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_474_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_474_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_475_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_475_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_476_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_476_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_477_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_477_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_478_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_478_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_479_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_479_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_480_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_480_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_481_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_481_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_482_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_482_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_483_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_483_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_484_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_484_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_485_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_485_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_486_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_486_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_487_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_487_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_488_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_488_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_489_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_489_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_490_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_490_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_491_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_491_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_492_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_492_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_493_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_493_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_494_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_494_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_495_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_495_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_496_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_496_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_497_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_497_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_498_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_498_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_499_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_499_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_500_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_500_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_501_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_501_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_502_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_502_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_503_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_503_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_504_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_504_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_505_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_505_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_506_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_506_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_507_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_507_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_508_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_508_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_509_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_509_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_510_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_510_ = TensorT(0); }
+    if (tensor_array_iter != tensor_array.end()) { this->item_511_ = *tensor_array_iter; ++tensor_array_iter; }
+    else { this->item_511_ = TensorT(0); }
+  }
+
+  template<typename TensorT>
+  inline void TensorArrayGpu512<TensorT>::setTensorArray(const Eigen::Tensor<TensorT, 1>& tensor_array)
+  {
+    // check the array size
+    assert(512 == tensor_array.dimension(0));
+    this->array_size_ = 512;
+
+    // copy the data
+    this->item_0_ = tensor_array(0);
+    this->item_1_ = tensor_array(1);
+    this->item_2_ = tensor_array(2);
+    this->item_3_ = tensor_array(3);
+    this->item_4_ = tensor_array(4);
+    this->item_5_ = tensor_array(5);
+    this->item_6_ = tensor_array(6);
+    this->item_7_ = tensor_array(7);
+    this->item_8_ = tensor_array(8);
+    this->item_9_ = tensor_array(9);
+    this->item_10_ = tensor_array(10);
+    this->item_11_ = tensor_array(11);
+    this->item_12_ = tensor_array(12);
+    this->item_13_ = tensor_array(13);
+    this->item_14_ = tensor_array(14);
+    this->item_15_ = tensor_array(15);
+    this->item_16_ = tensor_array(16);
+    this->item_17_ = tensor_array(17);
+    this->item_18_ = tensor_array(18);
+    this->item_19_ = tensor_array(19);
+    this->item_20_ = tensor_array(20);
+    this->item_21_ = tensor_array(21);
+    this->item_22_ = tensor_array(22);
+    this->item_23_ = tensor_array(23);
+    this->item_24_ = tensor_array(24);
+    this->item_25_ = tensor_array(25);
+    this->item_26_ = tensor_array(26);
+    this->item_27_ = tensor_array(27);
+    this->item_28_ = tensor_array(28);
+    this->item_29_ = tensor_array(29);
+    this->item_30_ = tensor_array(30);
+    this->item_31_ = tensor_array(31);
+    this->item_32_ = tensor_array(32);
+    this->item_33_ = tensor_array(33);
+    this->item_34_ = tensor_array(34);
+    this->item_35_ = tensor_array(35);
+    this->item_36_ = tensor_array(36);
+    this->item_37_ = tensor_array(37);
+    this->item_38_ = tensor_array(38);
+    this->item_39_ = tensor_array(39);
+    this->item_40_ = tensor_array(40);
+    this->item_41_ = tensor_array(41);
+    this->item_42_ = tensor_array(42);
+    this->item_43_ = tensor_array(43);
+    this->item_44_ = tensor_array(44);
+    this->item_45_ = tensor_array(45);
+    this->item_46_ = tensor_array(46);
+    this->item_47_ = tensor_array(47);
+    this->item_48_ = tensor_array(48);
+    this->item_49_ = tensor_array(49);
+    this->item_50_ = tensor_array(50);
+    this->item_51_ = tensor_array(51);
+    this->item_52_ = tensor_array(52);
+    this->item_53_ = tensor_array(53);
+    this->item_54_ = tensor_array(54);
+    this->item_55_ = tensor_array(55);
+    this->item_56_ = tensor_array(56);
+    this->item_57_ = tensor_array(57);
+    this->item_58_ = tensor_array(58);
+    this->item_59_ = tensor_array(59);
+    this->item_60_ = tensor_array(60);
+    this->item_61_ = tensor_array(61);
+    this->item_62_ = tensor_array(62);
+    this->item_63_ = tensor_array(63);
+    this->item_64_ = tensor_array(64);
+    this->item_65_ = tensor_array(65);
+    this->item_66_ = tensor_array(66);
+    this->item_67_ = tensor_array(67);
+    this->item_68_ = tensor_array(68);
+    this->item_69_ = tensor_array(69);
+    this->item_70_ = tensor_array(70);
+    this->item_71_ = tensor_array(71);
+    this->item_72_ = tensor_array(72);
+    this->item_73_ = tensor_array(73);
+    this->item_74_ = tensor_array(74);
+    this->item_75_ = tensor_array(75);
+    this->item_76_ = tensor_array(76);
+    this->item_77_ = tensor_array(77);
+    this->item_78_ = tensor_array(78);
+    this->item_79_ = tensor_array(79);
+    this->item_80_ = tensor_array(80);
+    this->item_81_ = tensor_array(81);
+    this->item_82_ = tensor_array(82);
+    this->item_83_ = tensor_array(83);
+    this->item_84_ = tensor_array(84);
+    this->item_85_ = tensor_array(85);
+    this->item_86_ = tensor_array(86);
+    this->item_87_ = tensor_array(87);
+    this->item_88_ = tensor_array(88);
+    this->item_89_ = tensor_array(89);
+    this->item_90_ = tensor_array(90);
+    this->item_91_ = tensor_array(91);
+    this->item_92_ = tensor_array(92);
+    this->item_93_ = tensor_array(93);
+    this->item_94_ = tensor_array(94);
+    this->item_95_ = tensor_array(95);
+    this->item_96_ = tensor_array(96);
+    this->item_97_ = tensor_array(97);
+    this->item_98_ = tensor_array(98);
+    this->item_99_ = tensor_array(99);
+    this->item_100_ = tensor_array(100);
+    this->item_101_ = tensor_array(101);
+    this->item_102_ = tensor_array(102);
+    this->item_103_ = tensor_array(103);
+    this->item_104_ = tensor_array(104);
+    this->item_105_ = tensor_array(105);
+    this->item_106_ = tensor_array(106);
+    this->item_107_ = tensor_array(107);
+    this->item_108_ = tensor_array(108);
+    this->item_109_ = tensor_array(109);
+    this->item_110_ = tensor_array(110);
+    this->item_111_ = tensor_array(111);
+    this->item_112_ = tensor_array(112);
+    this->item_113_ = tensor_array(113);
+    this->item_114_ = tensor_array(114);
+    this->item_115_ = tensor_array(115);
+    this->item_116_ = tensor_array(116);
+    this->item_117_ = tensor_array(117);
+    this->item_118_ = tensor_array(118);
+    this->item_119_ = tensor_array(119);
+    this->item_120_ = tensor_array(120);
+    this->item_121_ = tensor_array(121);
+    this->item_122_ = tensor_array(122);
+    this->item_123_ = tensor_array(123);
+    this->item_124_ = tensor_array(124);
+    this->item_125_ = tensor_array(125);
+    this->item_126_ = tensor_array(126);
+    this->item_127_ = tensor_array(127);
+    this->item_128_ = tensor_array(128);
+    this->item_129_ = tensor_array(129);
+    this->item_130_ = tensor_array(130);
+    this->item_131_ = tensor_array(131);
+    this->item_132_ = tensor_array(132);
+    this->item_133_ = tensor_array(133);
+    this->item_134_ = tensor_array(134);
+    this->item_135_ = tensor_array(135);
+    this->item_136_ = tensor_array(136);
+    this->item_137_ = tensor_array(137);
+    this->item_138_ = tensor_array(138);
+    this->item_139_ = tensor_array(139);
+    this->item_140_ = tensor_array(140);
+    this->item_141_ = tensor_array(141);
+    this->item_142_ = tensor_array(142);
+    this->item_143_ = tensor_array(143);
+    this->item_144_ = tensor_array(144);
+    this->item_145_ = tensor_array(145);
+    this->item_146_ = tensor_array(146);
+    this->item_147_ = tensor_array(147);
+    this->item_148_ = tensor_array(148);
+    this->item_149_ = tensor_array(149);
+    this->item_150_ = tensor_array(150);
+    this->item_151_ = tensor_array(151);
+    this->item_152_ = tensor_array(152);
+    this->item_153_ = tensor_array(153);
+    this->item_154_ = tensor_array(154);
+    this->item_155_ = tensor_array(155);
+    this->item_156_ = tensor_array(156);
+    this->item_157_ = tensor_array(157);
+    this->item_158_ = tensor_array(158);
+    this->item_159_ = tensor_array(159);
+    this->item_160_ = tensor_array(160);
+    this->item_161_ = tensor_array(161);
+    this->item_162_ = tensor_array(162);
+    this->item_163_ = tensor_array(163);
+    this->item_164_ = tensor_array(164);
+    this->item_165_ = tensor_array(165);
+    this->item_166_ = tensor_array(166);
+    this->item_167_ = tensor_array(167);
+    this->item_168_ = tensor_array(168);
+    this->item_169_ = tensor_array(169);
+    this->item_170_ = tensor_array(170);
+    this->item_171_ = tensor_array(171);
+    this->item_172_ = tensor_array(172);
+    this->item_173_ = tensor_array(173);
+    this->item_174_ = tensor_array(174);
+    this->item_175_ = tensor_array(175);
+    this->item_176_ = tensor_array(176);
+    this->item_177_ = tensor_array(177);
+    this->item_178_ = tensor_array(178);
+    this->item_179_ = tensor_array(179);
+    this->item_180_ = tensor_array(180);
+    this->item_181_ = tensor_array(181);
+    this->item_182_ = tensor_array(182);
+    this->item_183_ = tensor_array(183);
+    this->item_184_ = tensor_array(184);
+    this->item_185_ = tensor_array(185);
+    this->item_186_ = tensor_array(186);
+    this->item_187_ = tensor_array(187);
+    this->item_188_ = tensor_array(188);
+    this->item_189_ = tensor_array(189);
+    this->item_190_ = tensor_array(190);
+    this->item_191_ = tensor_array(191);
+    this->item_192_ = tensor_array(192);
+    this->item_193_ = tensor_array(193);
+    this->item_194_ = tensor_array(194);
+    this->item_195_ = tensor_array(195);
+    this->item_196_ = tensor_array(196);
+    this->item_197_ = tensor_array(197);
+    this->item_198_ = tensor_array(198);
+    this->item_199_ = tensor_array(199);
+    this->item_200_ = tensor_array(200);
+    this->item_201_ = tensor_array(201);
+    this->item_202_ = tensor_array(202);
+    this->item_203_ = tensor_array(203);
+    this->item_204_ = tensor_array(204);
+    this->item_205_ = tensor_array(205);
+    this->item_206_ = tensor_array(206);
+    this->item_207_ = tensor_array(207);
+    this->item_208_ = tensor_array(208);
+    this->item_209_ = tensor_array(209);
+    this->item_210_ = tensor_array(210);
+    this->item_211_ = tensor_array(211);
+    this->item_212_ = tensor_array(212);
+    this->item_213_ = tensor_array(213);
+    this->item_214_ = tensor_array(214);
+    this->item_215_ = tensor_array(215);
+    this->item_216_ = tensor_array(216);
+    this->item_217_ = tensor_array(217);
+    this->item_218_ = tensor_array(218);
+    this->item_219_ = tensor_array(219);
+    this->item_220_ = tensor_array(220);
+    this->item_221_ = tensor_array(221);
+    this->item_222_ = tensor_array(222);
+    this->item_223_ = tensor_array(223);
+    this->item_224_ = tensor_array(224);
+    this->item_225_ = tensor_array(225);
+    this->item_226_ = tensor_array(226);
+    this->item_227_ = tensor_array(227);
+    this->item_228_ = tensor_array(228);
+    this->item_229_ = tensor_array(229);
+    this->item_230_ = tensor_array(230);
+    this->item_231_ = tensor_array(231);
+    this->item_232_ = tensor_array(232);
+    this->item_233_ = tensor_array(233);
+    this->item_234_ = tensor_array(234);
+    this->item_235_ = tensor_array(235);
+    this->item_236_ = tensor_array(236);
+    this->item_237_ = tensor_array(237);
+    this->item_238_ = tensor_array(238);
+    this->item_239_ = tensor_array(239);
+    this->item_240_ = tensor_array(240);
+    this->item_241_ = tensor_array(241);
+    this->item_242_ = tensor_array(242);
+    this->item_243_ = tensor_array(243);
+    this->item_244_ = tensor_array(244);
+    this->item_245_ = tensor_array(245);
+    this->item_246_ = tensor_array(246);
+    this->item_247_ = tensor_array(247);
+    this->item_248_ = tensor_array(248);
+    this->item_249_ = tensor_array(249);
+    this->item_250_ = tensor_array(250);
+    this->item_251_ = tensor_array(251);
+    this->item_252_ = tensor_array(252);
+    this->item_253_ = tensor_array(253);
+    this->item_254_ = tensor_array(254);
+    this->item_255_ = tensor_array(255);
+    this->item_256_ = tensor_array(256);
+    this->item_257_ = tensor_array(257);
+    this->item_258_ = tensor_array(258);
+    this->item_259_ = tensor_array(259);
+    this->item_260_ = tensor_array(260);
+    this->item_261_ = tensor_array(261);
+    this->item_262_ = tensor_array(262);
+    this->item_263_ = tensor_array(263);
+    this->item_264_ = tensor_array(264);
+    this->item_265_ = tensor_array(265);
+    this->item_266_ = tensor_array(266);
+    this->item_267_ = tensor_array(267);
+    this->item_268_ = tensor_array(268);
+    this->item_269_ = tensor_array(269);
+    this->item_270_ = tensor_array(270);
+    this->item_271_ = tensor_array(271);
+    this->item_272_ = tensor_array(272);
+    this->item_273_ = tensor_array(273);
+    this->item_274_ = tensor_array(274);
+    this->item_275_ = tensor_array(275);
+    this->item_276_ = tensor_array(276);
+    this->item_277_ = tensor_array(277);
+    this->item_278_ = tensor_array(278);
+    this->item_279_ = tensor_array(279);
+    this->item_280_ = tensor_array(280);
+    this->item_281_ = tensor_array(281);
+    this->item_282_ = tensor_array(282);
+    this->item_283_ = tensor_array(283);
+    this->item_284_ = tensor_array(284);
+    this->item_285_ = tensor_array(285);
+    this->item_286_ = tensor_array(286);
+    this->item_287_ = tensor_array(287);
+    this->item_288_ = tensor_array(288);
+    this->item_289_ = tensor_array(289);
+    this->item_290_ = tensor_array(290);
+    this->item_291_ = tensor_array(291);
+    this->item_292_ = tensor_array(292);
+    this->item_293_ = tensor_array(293);
+    this->item_294_ = tensor_array(294);
+    this->item_295_ = tensor_array(295);
+    this->item_296_ = tensor_array(296);
+    this->item_297_ = tensor_array(297);
+    this->item_298_ = tensor_array(298);
+    this->item_299_ = tensor_array(299);
+    this->item_300_ = tensor_array(300);
+    this->item_301_ = tensor_array(301);
+    this->item_302_ = tensor_array(302);
+    this->item_303_ = tensor_array(303);
+    this->item_304_ = tensor_array(304);
+    this->item_305_ = tensor_array(305);
+    this->item_306_ = tensor_array(306);
+    this->item_307_ = tensor_array(307);
+    this->item_308_ = tensor_array(308);
+    this->item_309_ = tensor_array(309);
+    this->item_310_ = tensor_array(310);
+    this->item_311_ = tensor_array(311);
+    this->item_312_ = tensor_array(312);
+    this->item_313_ = tensor_array(313);
+    this->item_314_ = tensor_array(314);
+    this->item_315_ = tensor_array(315);
+    this->item_316_ = tensor_array(316);
+    this->item_317_ = tensor_array(317);
+    this->item_318_ = tensor_array(318);
+    this->item_319_ = tensor_array(319);
+    this->item_320_ = tensor_array(320);
+    this->item_321_ = tensor_array(321);
+    this->item_322_ = tensor_array(322);
+    this->item_323_ = tensor_array(323);
+    this->item_324_ = tensor_array(324);
+    this->item_325_ = tensor_array(325);
+    this->item_326_ = tensor_array(326);
+    this->item_327_ = tensor_array(327);
+    this->item_328_ = tensor_array(328);
+    this->item_329_ = tensor_array(329);
+    this->item_330_ = tensor_array(330);
+    this->item_331_ = tensor_array(331);
+    this->item_332_ = tensor_array(332);
+    this->item_333_ = tensor_array(333);
+    this->item_334_ = tensor_array(334);
+    this->item_335_ = tensor_array(335);
+    this->item_336_ = tensor_array(336);
+    this->item_337_ = tensor_array(337);
+    this->item_338_ = tensor_array(338);
+    this->item_339_ = tensor_array(339);
+    this->item_340_ = tensor_array(340);
+    this->item_341_ = tensor_array(341);
+    this->item_342_ = tensor_array(342);
+    this->item_343_ = tensor_array(343);
+    this->item_344_ = tensor_array(344);
+    this->item_345_ = tensor_array(345);
+    this->item_346_ = tensor_array(346);
+    this->item_347_ = tensor_array(347);
+    this->item_348_ = tensor_array(348);
+    this->item_349_ = tensor_array(349);
+    this->item_350_ = tensor_array(350);
+    this->item_351_ = tensor_array(351);
+    this->item_352_ = tensor_array(352);
+    this->item_353_ = tensor_array(353);
+    this->item_354_ = tensor_array(354);
+    this->item_355_ = tensor_array(355);
+    this->item_356_ = tensor_array(356);
+    this->item_357_ = tensor_array(357);
+    this->item_358_ = tensor_array(358);
+    this->item_359_ = tensor_array(359);
+    this->item_360_ = tensor_array(360);
+    this->item_361_ = tensor_array(361);
+    this->item_362_ = tensor_array(362);
+    this->item_363_ = tensor_array(363);
+    this->item_364_ = tensor_array(364);
+    this->item_365_ = tensor_array(365);
+    this->item_366_ = tensor_array(366);
+    this->item_367_ = tensor_array(367);
+    this->item_368_ = tensor_array(368);
+    this->item_369_ = tensor_array(369);
+    this->item_370_ = tensor_array(370);
+    this->item_371_ = tensor_array(371);
+    this->item_372_ = tensor_array(372);
+    this->item_373_ = tensor_array(373);
+    this->item_374_ = tensor_array(374);
+    this->item_375_ = tensor_array(375);
+    this->item_376_ = tensor_array(376);
+    this->item_377_ = tensor_array(377);
+    this->item_378_ = tensor_array(378);
+    this->item_379_ = tensor_array(379);
+    this->item_380_ = tensor_array(380);
+    this->item_381_ = tensor_array(381);
+    this->item_382_ = tensor_array(382);
+    this->item_383_ = tensor_array(383);
+    this->item_384_ = tensor_array(384);
+    this->item_385_ = tensor_array(385);
+    this->item_386_ = tensor_array(386);
+    this->item_387_ = tensor_array(387);
+    this->item_388_ = tensor_array(388);
+    this->item_389_ = tensor_array(389);
+    this->item_390_ = tensor_array(390);
+    this->item_391_ = tensor_array(391);
+    this->item_392_ = tensor_array(392);
+    this->item_393_ = tensor_array(393);
+    this->item_394_ = tensor_array(394);
+    this->item_395_ = tensor_array(395);
+    this->item_396_ = tensor_array(396);
+    this->item_397_ = tensor_array(397);
+    this->item_398_ = tensor_array(398);
+    this->item_399_ = tensor_array(399);
+    this->item_400_ = tensor_array(400);
+    this->item_401_ = tensor_array(401);
+    this->item_402_ = tensor_array(402);
+    this->item_403_ = tensor_array(403);
+    this->item_404_ = tensor_array(404);
+    this->item_405_ = tensor_array(405);
+    this->item_406_ = tensor_array(406);
+    this->item_407_ = tensor_array(407);
+    this->item_408_ = tensor_array(408);
+    this->item_409_ = tensor_array(409);
+    this->item_410_ = tensor_array(410);
+    this->item_411_ = tensor_array(411);
+    this->item_412_ = tensor_array(412);
+    this->item_413_ = tensor_array(413);
+    this->item_414_ = tensor_array(414);
+    this->item_415_ = tensor_array(415);
+    this->item_416_ = tensor_array(416);
+    this->item_417_ = tensor_array(417);
+    this->item_418_ = tensor_array(418);
+    this->item_419_ = tensor_array(419);
+    this->item_420_ = tensor_array(420);
+    this->item_421_ = tensor_array(421);
+    this->item_422_ = tensor_array(422);
+    this->item_423_ = tensor_array(423);
+    this->item_424_ = tensor_array(424);
+    this->item_425_ = tensor_array(425);
+    this->item_426_ = tensor_array(426);
+    this->item_427_ = tensor_array(427);
+    this->item_428_ = tensor_array(428);
+    this->item_429_ = tensor_array(429);
+    this->item_430_ = tensor_array(430);
+    this->item_431_ = tensor_array(431);
+    this->item_432_ = tensor_array(432);
+    this->item_433_ = tensor_array(433);
+    this->item_434_ = tensor_array(434);
+    this->item_435_ = tensor_array(435);
+    this->item_436_ = tensor_array(436);
+    this->item_437_ = tensor_array(437);
+    this->item_438_ = tensor_array(438);
+    this->item_439_ = tensor_array(439);
+    this->item_440_ = tensor_array(440);
+    this->item_441_ = tensor_array(441);
+    this->item_442_ = tensor_array(442);
+    this->item_443_ = tensor_array(443);
+    this->item_444_ = tensor_array(444);
+    this->item_445_ = tensor_array(445);
+    this->item_446_ = tensor_array(446);
+    this->item_447_ = tensor_array(447);
+    this->item_448_ = tensor_array(448);
+    this->item_449_ = tensor_array(449);
+    this->item_450_ = tensor_array(450);
+    this->item_451_ = tensor_array(451);
+    this->item_452_ = tensor_array(452);
+    this->item_453_ = tensor_array(453);
+    this->item_454_ = tensor_array(454);
+    this->item_455_ = tensor_array(455);
+    this->item_456_ = tensor_array(456);
+    this->item_457_ = tensor_array(457);
+    this->item_458_ = tensor_array(458);
+    this->item_459_ = tensor_array(459);
+    this->item_460_ = tensor_array(460);
+    this->item_461_ = tensor_array(461);
+    this->item_462_ = tensor_array(462);
+    this->item_463_ = tensor_array(463);
+    this->item_464_ = tensor_array(464);
+    this->item_465_ = tensor_array(465);
+    this->item_466_ = tensor_array(466);
+    this->item_467_ = tensor_array(467);
+    this->item_468_ = tensor_array(468);
+    this->item_469_ = tensor_array(469);
+    this->item_470_ = tensor_array(470);
+    this->item_471_ = tensor_array(471);
+    this->item_472_ = tensor_array(472);
+    this->item_473_ = tensor_array(473);
+    this->item_474_ = tensor_array(474);
+    this->item_475_ = tensor_array(475);
+    this->item_476_ = tensor_array(476);
+    this->item_477_ = tensor_array(477);
+    this->item_478_ = tensor_array(478);
+    this->item_479_ = tensor_array(479);
+    this->item_480_ = tensor_array(480);
+    this->item_481_ = tensor_array(481);
+    this->item_482_ = tensor_array(482);
+    this->item_483_ = tensor_array(483);
+    this->item_484_ = tensor_array(484);
+    this->item_485_ = tensor_array(485);
+    this->item_486_ = tensor_array(486);
+    this->item_487_ = tensor_array(487);
+    this->item_488_ = tensor_array(488);
+    this->item_489_ = tensor_array(489);
+    this->item_490_ = tensor_array(490);
+    this->item_491_ = tensor_array(491);
+    this->item_492_ = tensor_array(492);
+    this->item_493_ = tensor_array(493);
+    this->item_494_ = tensor_array(494);
+    this->item_495_ = tensor_array(495);
+    this->item_496_ = tensor_array(496);
+    this->item_497_ = tensor_array(497);
+    this->item_498_ = tensor_array(498);
+    this->item_499_ = tensor_array(499);
+    this->item_500_ = tensor_array(500);
+    this->item_501_ = tensor_array(501);
+    this->item_502_ = tensor_array(502);
+    this->item_503_ = tensor_array(503);
+    this->item_504_ = tensor_array(504);
+    this->item_505_ = tensor_array(505);
+    this->item_506_ = tensor_array(506);
+    this->item_507_ = tensor_array(507);
+    this->item_508_ = tensor_array(508);
+    this->item_509_ = tensor_array(509);
+    this->item_510_ = tensor_array(510);
+    this->item_511_ = tensor_array(511);
+  }
+
+  template<typename TensorT>
+  inline Eigen::Tensor<TensorT, 1> TensorArrayGpu512<TensorT>::getTensorArray()
+  {
+    Eigen::Tensor<TensorT, 1> tensor_array(this->array_size_);
+    tensor_array(0) = this->item_0_;
+    tensor_array(1) = this->item_1_;
+    tensor_array(2) = this->item_2_;
+    tensor_array(3) = this->item_3_;
+    tensor_array(4) = this->item_4_;
+    tensor_array(5) = this->item_5_;
+    tensor_array(6) = this->item_6_;
+    tensor_array(7) = this->item_7_;
+    tensor_array(8) = this->item_8_;
+    tensor_array(9) = this->item_9_;
+    tensor_array(10) = this->item_10_;
+    tensor_array(11) = this->item_11_;
+    tensor_array(12) = this->item_12_;
+    tensor_array(13) = this->item_13_;
+    tensor_array(14) = this->item_14_;
+    tensor_array(15) = this->item_15_;
+    tensor_array(16) = this->item_16_;
+    tensor_array(17) = this->item_17_;
+    tensor_array(18) = this->item_18_;
+    tensor_array(19) = this->item_19_;
+    tensor_array(20) = this->item_20_;
+    tensor_array(21) = this->item_21_;
+    tensor_array(22) = this->item_22_;
+    tensor_array(23) = this->item_23_;
+    tensor_array(24) = this->item_24_;
+    tensor_array(25) = this->item_25_;
+    tensor_array(26) = this->item_26_;
+    tensor_array(27) = this->item_27_;
+    tensor_array(28) = this->item_28_;
+    tensor_array(29) = this->item_29_;
+    tensor_array(30) = this->item_30_;
+    tensor_array(31) = this->item_31_;
+    tensor_array(32) = this->item_32_;
+    tensor_array(33) = this->item_33_;
+    tensor_array(34) = this->item_34_;
+    tensor_array(35) = this->item_35_;
+    tensor_array(36) = this->item_36_;
+    tensor_array(37) = this->item_37_;
+    tensor_array(38) = this->item_38_;
+    tensor_array(39) = this->item_39_;
+    tensor_array(40) = this->item_40_;
+    tensor_array(41) = this->item_41_;
+    tensor_array(42) = this->item_42_;
+    tensor_array(43) = this->item_43_;
+    tensor_array(44) = this->item_44_;
+    tensor_array(45) = this->item_45_;
+    tensor_array(46) = this->item_46_;
+    tensor_array(47) = this->item_47_;
+    tensor_array(48) = this->item_48_;
+    tensor_array(49) = this->item_49_;
+    tensor_array(50) = this->item_50_;
+    tensor_array(51) = this->item_51_;
+    tensor_array(52) = this->item_52_;
+    tensor_array(53) = this->item_53_;
+    tensor_array(54) = this->item_54_;
+    tensor_array(55) = this->item_55_;
+    tensor_array(56) = this->item_56_;
+    tensor_array(57) = this->item_57_;
+    tensor_array(58) = this->item_58_;
+    tensor_array(59) = this->item_59_;
+    tensor_array(60) = this->item_60_;
+    tensor_array(61) = this->item_61_;
+    tensor_array(62) = this->item_62_;
+    tensor_array(63) = this->item_63_;
+    tensor_array(64) = this->item_64_;
+    tensor_array(65) = this->item_65_;
+    tensor_array(66) = this->item_66_;
+    tensor_array(67) = this->item_67_;
+    tensor_array(68) = this->item_68_;
+    tensor_array(69) = this->item_69_;
+    tensor_array(70) = this->item_70_;
+    tensor_array(71) = this->item_71_;
+    tensor_array(72) = this->item_72_;
+    tensor_array(73) = this->item_73_;
+    tensor_array(74) = this->item_74_;
+    tensor_array(75) = this->item_75_;
+    tensor_array(76) = this->item_76_;
+    tensor_array(77) = this->item_77_;
+    tensor_array(78) = this->item_78_;
+    tensor_array(79) = this->item_79_;
+    tensor_array(80) = this->item_80_;
+    tensor_array(81) = this->item_81_;
+    tensor_array(82) = this->item_82_;
+    tensor_array(83) = this->item_83_;
+    tensor_array(84) = this->item_84_;
+    tensor_array(85) = this->item_85_;
+    tensor_array(86) = this->item_86_;
+    tensor_array(87) = this->item_87_;
+    tensor_array(88) = this->item_88_;
+    tensor_array(89) = this->item_89_;
+    tensor_array(90) = this->item_90_;
+    tensor_array(91) = this->item_91_;
+    tensor_array(92) = this->item_92_;
+    tensor_array(93) = this->item_93_;
+    tensor_array(94) = this->item_94_;
+    tensor_array(95) = this->item_95_;
+    tensor_array(96) = this->item_96_;
+    tensor_array(97) = this->item_97_;
+    tensor_array(98) = this->item_98_;
+    tensor_array(99) = this->item_99_;
+    tensor_array(100) = this->item_100_;
+    tensor_array(101) = this->item_101_;
+    tensor_array(102) = this->item_102_;
+    tensor_array(103) = this->item_103_;
+    tensor_array(104) = this->item_104_;
+    tensor_array(105) = this->item_105_;
+    tensor_array(106) = this->item_106_;
+    tensor_array(107) = this->item_107_;
+    tensor_array(108) = this->item_108_;
+    tensor_array(109) = this->item_109_;
+    tensor_array(110) = this->item_110_;
+    tensor_array(111) = this->item_111_;
+    tensor_array(112) = this->item_112_;
+    tensor_array(113) = this->item_113_;
+    tensor_array(114) = this->item_114_;
+    tensor_array(115) = this->item_115_;
+    tensor_array(116) = this->item_116_;
+    tensor_array(117) = this->item_117_;
+    tensor_array(118) = this->item_118_;
+    tensor_array(119) = this->item_119_;
+    tensor_array(120) = this->item_120_;
+    tensor_array(121) = this->item_121_;
+    tensor_array(122) = this->item_122_;
+    tensor_array(123) = this->item_123_;
+    tensor_array(124) = this->item_124_;
+    tensor_array(125) = this->item_125_;
+    tensor_array(126) = this->item_126_;
+    tensor_array(127) = this->item_127_;
+    tensor_array(128) = this->item_128_;
+    tensor_array(129) = this->item_129_;
+    tensor_array(130) = this->item_130_;
+    tensor_array(131) = this->item_131_;
+    tensor_array(132) = this->item_132_;
+    tensor_array(133) = this->item_133_;
+    tensor_array(134) = this->item_134_;
+    tensor_array(135) = this->item_135_;
+    tensor_array(136) = this->item_136_;
+    tensor_array(137) = this->item_137_;
+    tensor_array(138) = this->item_138_;
+    tensor_array(139) = this->item_139_;
+    tensor_array(140) = this->item_140_;
+    tensor_array(141) = this->item_141_;
+    tensor_array(142) = this->item_142_;
+    tensor_array(143) = this->item_143_;
+    tensor_array(144) = this->item_144_;
+    tensor_array(145) = this->item_145_;
+    tensor_array(146) = this->item_146_;
+    tensor_array(147) = this->item_147_;
+    tensor_array(148) = this->item_148_;
+    tensor_array(149) = this->item_149_;
+    tensor_array(150) = this->item_150_;
+    tensor_array(151) = this->item_151_;
+    tensor_array(152) = this->item_152_;
+    tensor_array(153) = this->item_153_;
+    tensor_array(154) = this->item_154_;
+    tensor_array(155) = this->item_155_;
+    tensor_array(156) = this->item_156_;
+    tensor_array(157) = this->item_157_;
+    tensor_array(158) = this->item_158_;
+    tensor_array(159) = this->item_159_;
+    tensor_array(160) = this->item_160_;
+    tensor_array(161) = this->item_161_;
+    tensor_array(162) = this->item_162_;
+    tensor_array(163) = this->item_163_;
+    tensor_array(164) = this->item_164_;
+    tensor_array(165) = this->item_165_;
+    tensor_array(166) = this->item_166_;
+    tensor_array(167) = this->item_167_;
+    tensor_array(168) = this->item_168_;
+    tensor_array(169) = this->item_169_;
+    tensor_array(170) = this->item_170_;
+    tensor_array(171) = this->item_171_;
+    tensor_array(172) = this->item_172_;
+    tensor_array(173) = this->item_173_;
+    tensor_array(174) = this->item_174_;
+    tensor_array(175) = this->item_175_;
+    tensor_array(176) = this->item_176_;
+    tensor_array(177) = this->item_177_;
+    tensor_array(178) = this->item_178_;
+    tensor_array(179) = this->item_179_;
+    tensor_array(180) = this->item_180_;
+    tensor_array(181) = this->item_181_;
+    tensor_array(182) = this->item_182_;
+    tensor_array(183) = this->item_183_;
+    tensor_array(184) = this->item_184_;
+    tensor_array(185) = this->item_185_;
+    tensor_array(186) = this->item_186_;
+    tensor_array(187) = this->item_187_;
+    tensor_array(188) = this->item_188_;
+    tensor_array(189) = this->item_189_;
+    tensor_array(190) = this->item_190_;
+    tensor_array(191) = this->item_191_;
+    tensor_array(192) = this->item_192_;
+    tensor_array(193) = this->item_193_;
+    tensor_array(194) = this->item_194_;
+    tensor_array(195) = this->item_195_;
+    tensor_array(196) = this->item_196_;
+    tensor_array(197) = this->item_197_;
+    tensor_array(198) = this->item_198_;
+    tensor_array(199) = this->item_199_;
+    tensor_array(200) = this->item_200_;
+    tensor_array(201) = this->item_201_;
+    tensor_array(202) = this->item_202_;
+    tensor_array(203) = this->item_203_;
+    tensor_array(204) = this->item_204_;
+    tensor_array(205) = this->item_205_;
+    tensor_array(206) = this->item_206_;
+    tensor_array(207) = this->item_207_;
+    tensor_array(208) = this->item_208_;
+    tensor_array(209) = this->item_209_;
+    tensor_array(210) = this->item_210_;
+    tensor_array(211) = this->item_211_;
+    tensor_array(212) = this->item_212_;
+    tensor_array(213) = this->item_213_;
+    tensor_array(214) = this->item_214_;
+    tensor_array(215) = this->item_215_;
+    tensor_array(216) = this->item_216_;
+    tensor_array(217) = this->item_217_;
+    tensor_array(218) = this->item_218_;
+    tensor_array(219) = this->item_219_;
+    tensor_array(220) = this->item_220_;
+    tensor_array(221) = this->item_221_;
+    tensor_array(222) = this->item_222_;
+    tensor_array(223) = this->item_223_;
+    tensor_array(224) = this->item_224_;
+    tensor_array(225) = this->item_225_;
+    tensor_array(226) = this->item_226_;
+    tensor_array(227) = this->item_227_;
+    tensor_array(228) = this->item_228_;
+    tensor_array(229) = this->item_229_;
+    tensor_array(230) = this->item_230_;
+    tensor_array(231) = this->item_231_;
+    tensor_array(232) = this->item_232_;
+    tensor_array(233) = this->item_233_;
+    tensor_array(234) = this->item_234_;
+    tensor_array(235) = this->item_235_;
+    tensor_array(236) = this->item_236_;
+    tensor_array(237) = this->item_237_;
+    tensor_array(238) = this->item_238_;
+    tensor_array(239) = this->item_239_;
+    tensor_array(240) = this->item_240_;
+    tensor_array(241) = this->item_241_;
+    tensor_array(242) = this->item_242_;
+    tensor_array(243) = this->item_243_;
+    tensor_array(244) = this->item_244_;
+    tensor_array(245) = this->item_245_;
+    tensor_array(246) = this->item_246_;
+    tensor_array(247) = this->item_247_;
+    tensor_array(248) = this->item_248_;
+    tensor_array(249) = this->item_249_;
+    tensor_array(250) = this->item_250_;
+    tensor_array(251) = this->item_251_;
+    tensor_array(252) = this->item_252_;
+    tensor_array(253) = this->item_253_;
+    tensor_array(254) = this->item_254_;
+    tensor_array(255) = this->item_255_;
+    tensor_array(256) = this->item_256_;
+    tensor_array(257) = this->item_257_;
+    tensor_array(258) = this->item_258_;
+    tensor_array(259) = this->item_259_;
+    tensor_array(260) = this->item_260_;
+    tensor_array(261) = this->item_261_;
+    tensor_array(262) = this->item_262_;
+    tensor_array(263) = this->item_263_;
+    tensor_array(264) = this->item_264_;
+    tensor_array(265) = this->item_265_;
+    tensor_array(266) = this->item_266_;
+    tensor_array(267) = this->item_267_;
+    tensor_array(268) = this->item_268_;
+    tensor_array(269) = this->item_269_;
+    tensor_array(270) = this->item_270_;
+    tensor_array(271) = this->item_271_;
+    tensor_array(272) = this->item_272_;
+    tensor_array(273) = this->item_273_;
+    tensor_array(274) = this->item_274_;
+    tensor_array(275) = this->item_275_;
+    tensor_array(276) = this->item_276_;
+    tensor_array(277) = this->item_277_;
+    tensor_array(278) = this->item_278_;
+    tensor_array(279) = this->item_279_;
+    tensor_array(280) = this->item_280_;
+    tensor_array(281) = this->item_281_;
+    tensor_array(282) = this->item_282_;
+    tensor_array(283) = this->item_283_;
+    tensor_array(284) = this->item_284_;
+    tensor_array(285) = this->item_285_;
+    tensor_array(286) = this->item_286_;
+    tensor_array(287) = this->item_287_;
+    tensor_array(288) = this->item_288_;
+    tensor_array(289) = this->item_289_;
+    tensor_array(290) = this->item_290_;
+    tensor_array(291) = this->item_291_;
+    tensor_array(292) = this->item_292_;
+    tensor_array(293) = this->item_293_;
+    tensor_array(294) = this->item_294_;
+    tensor_array(295) = this->item_295_;
+    tensor_array(296) = this->item_296_;
+    tensor_array(297) = this->item_297_;
+    tensor_array(298) = this->item_298_;
+    tensor_array(299) = this->item_299_;
+    tensor_array(300) = this->item_300_;
+    tensor_array(301) = this->item_301_;
+    tensor_array(302) = this->item_302_;
+    tensor_array(303) = this->item_303_;
+    tensor_array(304) = this->item_304_;
+    tensor_array(305) = this->item_305_;
+    tensor_array(306) = this->item_306_;
+    tensor_array(307) = this->item_307_;
+    tensor_array(308) = this->item_308_;
+    tensor_array(309) = this->item_309_;
+    tensor_array(310) = this->item_310_;
+    tensor_array(311) = this->item_311_;
+    tensor_array(312) = this->item_312_;
+    tensor_array(313) = this->item_313_;
+    tensor_array(314) = this->item_314_;
+    tensor_array(315) = this->item_315_;
+    tensor_array(316) = this->item_316_;
+    tensor_array(317) = this->item_317_;
+    tensor_array(318) = this->item_318_;
+    tensor_array(319) = this->item_319_;
+    tensor_array(320) = this->item_320_;
+    tensor_array(321) = this->item_321_;
+    tensor_array(322) = this->item_322_;
+    tensor_array(323) = this->item_323_;
+    tensor_array(324) = this->item_324_;
+    tensor_array(325) = this->item_325_;
+    tensor_array(326) = this->item_326_;
+    tensor_array(327) = this->item_327_;
+    tensor_array(328) = this->item_328_;
+    tensor_array(329) = this->item_329_;
+    tensor_array(330) = this->item_330_;
+    tensor_array(331) = this->item_331_;
+    tensor_array(332) = this->item_332_;
+    tensor_array(333) = this->item_333_;
+    tensor_array(334) = this->item_334_;
+    tensor_array(335) = this->item_335_;
+    tensor_array(336) = this->item_336_;
+    tensor_array(337) = this->item_337_;
+    tensor_array(338) = this->item_338_;
+    tensor_array(339) = this->item_339_;
+    tensor_array(340) = this->item_340_;
+    tensor_array(341) = this->item_341_;
+    tensor_array(342) = this->item_342_;
+    tensor_array(343) = this->item_343_;
+    tensor_array(344) = this->item_344_;
+    tensor_array(345) = this->item_345_;
+    tensor_array(346) = this->item_346_;
+    tensor_array(347) = this->item_347_;
+    tensor_array(348) = this->item_348_;
+    tensor_array(349) = this->item_349_;
+    tensor_array(350) = this->item_350_;
+    tensor_array(351) = this->item_351_;
+    tensor_array(352) = this->item_352_;
+    tensor_array(353) = this->item_353_;
+    tensor_array(354) = this->item_354_;
+    tensor_array(355) = this->item_355_;
+    tensor_array(356) = this->item_356_;
+    tensor_array(357) = this->item_357_;
+    tensor_array(358) = this->item_358_;
+    tensor_array(359) = this->item_359_;
+    tensor_array(360) = this->item_360_;
+    tensor_array(361) = this->item_361_;
+    tensor_array(362) = this->item_362_;
+    tensor_array(363) = this->item_363_;
+    tensor_array(364) = this->item_364_;
+    tensor_array(365) = this->item_365_;
+    tensor_array(366) = this->item_366_;
+    tensor_array(367) = this->item_367_;
+    tensor_array(368) = this->item_368_;
+    tensor_array(369) = this->item_369_;
+    tensor_array(370) = this->item_370_;
+    tensor_array(371) = this->item_371_;
+    tensor_array(372) = this->item_372_;
+    tensor_array(373) = this->item_373_;
+    tensor_array(374) = this->item_374_;
+    tensor_array(375) = this->item_375_;
+    tensor_array(376) = this->item_376_;
+    tensor_array(377) = this->item_377_;
+    tensor_array(378) = this->item_378_;
+    tensor_array(379) = this->item_379_;
+    tensor_array(380) = this->item_380_;
+    tensor_array(381) = this->item_381_;
+    tensor_array(382) = this->item_382_;
+    tensor_array(383) = this->item_383_;
+    tensor_array(384) = this->item_384_;
+    tensor_array(385) = this->item_385_;
+    tensor_array(386) = this->item_386_;
+    tensor_array(387) = this->item_387_;
+    tensor_array(388) = this->item_388_;
+    tensor_array(389) = this->item_389_;
+    tensor_array(390) = this->item_390_;
+    tensor_array(391) = this->item_391_;
+    tensor_array(392) = this->item_392_;
+    tensor_array(393) = this->item_393_;
+    tensor_array(394) = this->item_394_;
+    tensor_array(395) = this->item_395_;
+    tensor_array(396) = this->item_396_;
+    tensor_array(397) = this->item_397_;
+    tensor_array(398) = this->item_398_;
+    tensor_array(399) = this->item_399_;
+    tensor_array(400) = this->item_400_;
+    tensor_array(401) = this->item_401_;
+    tensor_array(402) = this->item_402_;
+    tensor_array(403) = this->item_403_;
+    tensor_array(404) = this->item_404_;
+    tensor_array(405) = this->item_405_;
+    tensor_array(406) = this->item_406_;
+    tensor_array(407) = this->item_407_;
+    tensor_array(408) = this->item_408_;
+    tensor_array(409) = this->item_409_;
+    tensor_array(410) = this->item_410_;
+    tensor_array(411) = this->item_411_;
+    tensor_array(412) = this->item_412_;
+    tensor_array(413) = this->item_413_;
+    tensor_array(414) = this->item_414_;
+    tensor_array(415) = this->item_415_;
+    tensor_array(416) = this->item_416_;
+    tensor_array(417) = this->item_417_;
+    tensor_array(418) = this->item_418_;
+    tensor_array(419) = this->item_419_;
+    tensor_array(420) = this->item_420_;
+    tensor_array(421) = this->item_421_;
+    tensor_array(422) = this->item_422_;
+    tensor_array(423) = this->item_423_;
+    tensor_array(424) = this->item_424_;
+    tensor_array(425) = this->item_425_;
+    tensor_array(426) = this->item_426_;
+    tensor_array(427) = this->item_427_;
+    tensor_array(428) = this->item_428_;
+    tensor_array(429) = this->item_429_;
+    tensor_array(430) = this->item_430_;
+    tensor_array(431) = this->item_431_;
+    tensor_array(432) = this->item_432_;
+    tensor_array(433) = this->item_433_;
+    tensor_array(434) = this->item_434_;
+    tensor_array(435) = this->item_435_;
+    tensor_array(436) = this->item_436_;
+    tensor_array(437) = this->item_437_;
+    tensor_array(438) = this->item_438_;
+    tensor_array(439) = this->item_439_;
+    tensor_array(440) = this->item_440_;
+    tensor_array(441) = this->item_441_;
+    tensor_array(442) = this->item_442_;
+    tensor_array(443) = this->item_443_;
+    tensor_array(444) = this->item_444_;
+    tensor_array(445) = this->item_445_;
+    tensor_array(446) = this->item_446_;
+    tensor_array(447) = this->item_447_;
+    tensor_array(448) = this->item_448_;
+    tensor_array(449) = this->item_449_;
+    tensor_array(450) = this->item_450_;
+    tensor_array(451) = this->item_451_;
+    tensor_array(452) = this->item_452_;
+    tensor_array(453) = this->item_453_;
+    tensor_array(454) = this->item_454_;
+    tensor_array(455) = this->item_455_;
+    tensor_array(456) = this->item_456_;
+    tensor_array(457) = this->item_457_;
+    tensor_array(458) = this->item_458_;
+    tensor_array(459) = this->item_459_;
+    tensor_array(460) = this->item_460_;
+    tensor_array(461) = this->item_461_;
+    tensor_array(462) = this->item_462_;
+    tensor_array(463) = this->item_463_;
+    tensor_array(464) = this->item_464_;
+    tensor_array(465) = this->item_465_;
+    tensor_array(466) = this->item_466_;
+    tensor_array(467) = this->item_467_;
+    tensor_array(468) = this->item_468_;
+    tensor_array(469) = this->item_469_;
+    tensor_array(470) = this->item_470_;
+    tensor_array(471) = this->item_471_;
+    tensor_array(472) = this->item_472_;
+    tensor_array(473) = this->item_473_;
+    tensor_array(474) = this->item_474_;
+    tensor_array(475) = this->item_475_;
+    tensor_array(476) = this->item_476_;
+    tensor_array(477) = this->item_477_;
+    tensor_array(478) = this->item_478_;
+    tensor_array(479) = this->item_479_;
+    tensor_array(480) = this->item_480_;
+    tensor_array(481) = this->item_481_;
+    tensor_array(482) = this->item_482_;
+    tensor_array(483) = this->item_483_;
+    tensor_array(484) = this->item_484_;
+    tensor_array(485) = this->item_485_;
+    tensor_array(486) = this->item_486_;
+    tensor_array(487) = this->item_487_;
+    tensor_array(488) = this->item_488_;
+    tensor_array(489) = this->item_489_;
+    tensor_array(490) = this->item_490_;
+    tensor_array(491) = this->item_491_;
+    tensor_array(492) = this->item_492_;
+    tensor_array(493) = this->item_493_;
+    tensor_array(494) = this->item_494_;
+    tensor_array(495) = this->item_495_;
+    tensor_array(496) = this->item_496_;
+    tensor_array(497) = this->item_497_;
+    tensor_array(498) = this->item_498_;
+    tensor_array(499) = this->item_499_;
+    tensor_array(500) = this->item_500_;
+    tensor_array(501) = this->item_501_;
+    tensor_array(502) = this->item_502_;
+    tensor_array(503) = this->item_503_;
+    tensor_array(504) = this->item_504_;
+    tensor_array(505) = this->item_505_;
+    tensor_array(506) = this->item_506_;
+    tensor_array(507) = this->item_507_;
+    tensor_array(508) = this->item_508_;
+    tensor_array(509) = this->item_509_;
+    tensor_array(510) = this->item_510_;
+    tensor_array(511) = this->item_511_;
+    return tensor_array;
+  }
+
+  template<typename TensorT>
+  inline std::string TensorArrayGpu512<TensorT>::getTensorArrayAsString() const
+  {
+    std::ostringstream os;
+    os << *this;
+    return std::string(os.str());
+  }
+
+  template<typename TensorT>
+  inline __host__ __device__ TensorT TensorArrayGpu512<TensorT>::at(const int & i) const
+  {
+    if (i == 0) return item_0_;
+    if (i == 1) return item_1_;
+    if (i == 2) return item_2_;
+    if (i == 3) return item_3_;
+    if (i == 4) return item_4_;
+    if (i == 5) return item_5_;
+    if (i == 6) return item_6_;
+    if (i == 7) return item_7_;
+    if (i == 8) return item_8_;
+    if (i == 9) return item_9_;
+    if (i == 10) return item_10_;
+    if (i == 11) return item_11_;
+    if (i == 12) return item_12_;
+    if (i == 13) return item_13_;
+    if (i == 14) return item_14_;
+    if (i == 15) return item_15_;
+    if (i == 16) return item_16_;
+    if (i == 17) return item_17_;
+    if (i == 18) return item_18_;
+    if (i == 19) return item_19_;
+    if (i == 20) return item_20_;
+    if (i == 21) return item_21_;
+    if (i == 22) return item_22_;
+    if (i == 23) return item_23_;
+    if (i == 24) return item_24_;
+    if (i == 25) return item_25_;
+    if (i == 26) return item_26_;
+    if (i == 27) return item_27_;
+    if (i == 28) return item_28_;
+    if (i == 29) return item_29_;
+    if (i == 30) return item_30_;
+    if (i == 31) return item_31_;
+    if (i == 32) return item_32_;
+    if (i == 33) return item_33_;
+    if (i == 34) return item_34_;
+    if (i == 35) return item_35_;
+    if (i == 36) return item_36_;
+    if (i == 37) return item_37_;
+    if (i == 38) return item_38_;
+    if (i == 39) return item_39_;
+    if (i == 40) return item_40_;
+    if (i == 41) return item_41_;
+    if (i == 42) return item_42_;
+    if (i == 43) return item_43_;
+    if (i == 44) return item_44_;
+    if (i == 45) return item_45_;
+    if (i == 46) return item_46_;
+    if (i == 47) return item_47_;
+    if (i == 48) return item_48_;
+    if (i == 49) return item_49_;
+    if (i == 50) return item_50_;
+    if (i == 51) return item_51_;
+    if (i == 52) return item_52_;
+    if (i == 53) return item_53_;
+    if (i == 54) return item_54_;
+    if (i == 55) return item_55_;
+    if (i == 56) return item_56_;
+    if (i == 57) return item_57_;
+    if (i == 58) return item_58_;
+    if (i == 59) return item_59_;
+    if (i == 60) return item_60_;
+    if (i == 61) return item_61_;
+    if (i == 62) return item_62_;
+    if (i == 63) return item_63_;
+    if (i == 64) return item_64_;
+    if (i == 65) return item_65_;
+    if (i == 66) return item_66_;
+    if (i == 67) return item_67_;
+    if (i == 68) return item_68_;
+    if (i == 69) return item_69_;
+    if (i == 70) return item_70_;
+    if (i == 71) return item_71_;
+    if (i == 72) return item_72_;
+    if (i == 73) return item_73_;
+    if (i == 74) return item_74_;
+    if (i == 75) return item_75_;
+    if (i == 76) return item_76_;
+    if (i == 77) return item_77_;
+    if (i == 78) return item_78_;
+    if (i == 79) return item_79_;
+    if (i == 80) return item_80_;
+    if (i == 81) return item_81_;
+    if (i == 82) return item_82_;
+    if (i == 83) return item_83_;
+    if (i == 84) return item_84_;
+    if (i == 85) return item_85_;
+    if (i == 86) return item_86_;
+    if (i == 87) return item_87_;
+    if (i == 88) return item_88_;
+    if (i == 89) return item_89_;
+    if (i == 90) return item_90_;
+    if (i == 91) return item_91_;
+    if (i == 92) return item_92_;
+    if (i == 93) return item_93_;
+    if (i == 94) return item_94_;
+    if (i == 95) return item_95_;
+    if (i == 96) return item_96_;
+    if (i == 97) return item_97_;
+    if (i == 98) return item_98_;
+    if (i == 99) return item_99_;
+    if (i == 100) return item_100_;
+    if (i == 101) return item_101_;
+    if (i == 102) return item_102_;
+    if (i == 103) return item_103_;
+    if (i == 104) return item_104_;
+    if (i == 105) return item_105_;
+    if (i == 106) return item_106_;
+    if (i == 107) return item_107_;
+    if (i == 108) return item_108_;
+    if (i == 109) return item_109_;
+    if (i == 110) return item_110_;
+    if (i == 111) return item_111_;
+    if (i == 112) return item_112_;
+    if (i == 113) return item_113_;
+    if (i == 114) return item_114_;
+    if (i == 115) return item_115_;
+    if (i == 116) return item_116_;
+    if (i == 117) return item_117_;
+    if (i == 118) return item_118_;
+    if (i == 119) return item_119_;
+    if (i == 120) return item_120_;
+    if (i == 121) return item_121_;
+    if (i == 122) return item_122_;
+    if (i == 123) return item_123_;
+    if (i == 124) return item_124_;
+    if (i == 125) return item_125_;
+    if (i == 126) return item_126_;
+    if (i == 127) return item_127_;
+    if (i == 128) return item_128_;
+    if (i == 129) return item_129_;
+    if (i == 130) return item_130_;
+    if (i == 131) return item_131_;
+    if (i == 132) return item_132_;
+    if (i == 133) return item_133_;
+    if (i == 134) return item_134_;
+    if (i == 135) return item_135_;
+    if (i == 136) return item_136_;
+    if (i == 137) return item_137_;
+    if (i == 138) return item_138_;
+    if (i == 139) return item_139_;
+    if (i == 140) return item_140_;
+    if (i == 141) return item_141_;
+    if (i == 142) return item_142_;
+    if (i == 143) return item_143_;
+    if (i == 144) return item_144_;
+    if (i == 145) return item_145_;
+    if (i == 146) return item_146_;
+    if (i == 147) return item_147_;
+    if (i == 148) return item_148_;
+    if (i == 149) return item_149_;
+    if (i == 150) return item_150_;
+    if (i == 151) return item_151_;
+    if (i == 152) return item_152_;
+    if (i == 153) return item_153_;
+    if (i == 154) return item_154_;
+    if (i == 155) return item_155_;
+    if (i == 156) return item_156_;
+    if (i == 157) return item_157_;
+    if (i == 158) return item_158_;
+    if (i == 159) return item_159_;
+    if (i == 160) return item_160_;
+    if (i == 161) return item_161_;
+    if (i == 162) return item_162_;
+    if (i == 163) return item_163_;
+    if (i == 164) return item_164_;
+    if (i == 165) return item_165_;
+    if (i == 166) return item_166_;
+    if (i == 167) return item_167_;
+    if (i == 168) return item_168_;
+    if (i == 169) return item_169_;
+    if (i == 170) return item_170_;
+    if (i == 171) return item_171_;
+    if (i == 172) return item_172_;
+    if (i == 173) return item_173_;
+    if (i == 174) return item_174_;
+    if (i == 175) return item_175_;
+    if (i == 176) return item_176_;
+    if (i == 177) return item_177_;
+    if (i == 178) return item_178_;
+    if (i == 179) return item_179_;
+    if (i == 180) return item_180_;
+    if (i == 181) return item_181_;
+    if (i == 182) return item_182_;
+    if (i == 183) return item_183_;
+    if (i == 184) return item_184_;
+    if (i == 185) return item_185_;
+    if (i == 186) return item_186_;
+    if (i == 187) return item_187_;
+    if (i == 188) return item_188_;
+    if (i == 189) return item_189_;
+    if (i == 190) return item_190_;
+    if (i == 191) return item_191_;
+    if (i == 192) return item_192_;
+    if (i == 193) return item_193_;
+    if (i == 194) return item_194_;
+    if (i == 195) return item_195_;
+    if (i == 196) return item_196_;
+    if (i == 197) return item_197_;
+    if (i == 198) return item_198_;
+    if (i == 199) return item_199_;
+    if (i == 200) return item_200_;
+    if (i == 201) return item_201_;
+    if (i == 202) return item_202_;
+    if (i == 203) return item_203_;
+    if (i == 204) return item_204_;
+    if (i == 205) return item_205_;
+    if (i == 206) return item_206_;
+    if (i == 207) return item_207_;
+    if (i == 208) return item_208_;
+    if (i == 209) return item_209_;
+    if (i == 210) return item_210_;
+    if (i == 211) return item_211_;
+    if (i == 212) return item_212_;
+    if (i == 213) return item_213_;
+    if (i == 214) return item_214_;
+    if (i == 215) return item_215_;
+    if (i == 216) return item_216_;
+    if (i == 217) return item_217_;
+    if (i == 218) return item_218_;
+    if (i == 219) return item_219_;
+    if (i == 220) return item_220_;
+    if (i == 221) return item_221_;
+    if (i == 222) return item_222_;
+    if (i == 223) return item_223_;
+    if (i == 224) return item_224_;
+    if (i == 225) return item_225_;
+    if (i == 226) return item_226_;
+    if (i == 227) return item_227_;
+    if (i == 228) return item_228_;
+    if (i == 229) return item_229_;
+    if (i == 230) return item_230_;
+    if (i == 231) return item_231_;
+    if (i == 232) return item_232_;
+    if (i == 233) return item_233_;
+    if (i == 234) return item_234_;
+    if (i == 235) return item_235_;
+    if (i == 236) return item_236_;
+    if (i == 237) return item_237_;
+    if (i == 238) return item_238_;
+    if (i == 239) return item_239_;
+    if (i == 240) return item_240_;
+    if (i == 241) return item_241_;
+    if (i == 242) return item_242_;
+    if (i == 243) return item_243_;
+    if (i == 244) return item_244_;
+    if (i == 245) return item_245_;
+    if (i == 246) return item_246_;
+    if (i == 247) return item_247_;
+    if (i == 248) return item_248_;
+    if (i == 249) return item_249_;
+    if (i == 250) return item_250_;
+    if (i == 251) return item_251_;
+    if (i == 252) return item_252_;
+    if (i == 253) return item_253_;
+    if (i == 254) return item_254_;
+    if (i == 255) return item_255_;
+    if (i == 256) return item_256_;
+    if (i == 257) return item_257_;
+    if (i == 258) return item_258_;
+    if (i == 259) return item_259_;
+    if (i == 260) return item_260_;
+    if (i == 261) return item_261_;
+    if (i == 262) return item_262_;
+    if (i == 263) return item_263_;
+    if (i == 264) return item_264_;
+    if (i == 265) return item_265_;
+    if (i == 266) return item_266_;
+    if (i == 267) return item_267_;
+    if (i == 268) return item_268_;
+    if (i == 269) return item_269_;
+    if (i == 270) return item_270_;
+    if (i == 271) return item_271_;
+    if (i == 272) return item_272_;
+    if (i == 273) return item_273_;
+    if (i == 274) return item_274_;
+    if (i == 275) return item_275_;
+    if (i == 276) return item_276_;
+    if (i == 277) return item_277_;
+    if (i == 278) return item_278_;
+    if (i == 279) return item_279_;
+    if (i == 280) return item_280_;
+    if (i == 281) return item_281_;
+    if (i == 282) return item_282_;
+    if (i == 283) return item_283_;
+    if (i == 284) return item_284_;
+    if (i == 285) return item_285_;
+    if (i == 286) return item_286_;
+    if (i == 287) return item_287_;
+    if (i == 288) return item_288_;
+    if (i == 289) return item_289_;
+    if (i == 290) return item_290_;
+    if (i == 291) return item_291_;
+    if (i == 292) return item_292_;
+    if (i == 293) return item_293_;
+    if (i == 294) return item_294_;
+    if (i == 295) return item_295_;
+    if (i == 296) return item_296_;
+    if (i == 297) return item_297_;
+    if (i == 298) return item_298_;
+    if (i == 299) return item_299_;
+    if (i == 300) return item_300_;
+    if (i == 301) return item_301_;
+    if (i == 302) return item_302_;
+    if (i == 303) return item_303_;
+    if (i == 304) return item_304_;
+    if (i == 305) return item_305_;
+    if (i == 306) return item_306_;
+    if (i == 307) return item_307_;
+    if (i == 308) return item_308_;
+    if (i == 309) return item_309_;
+    if (i == 310) return item_310_;
+    if (i == 311) return item_311_;
+    if (i == 312) return item_312_;
+    if (i == 313) return item_313_;
+    if (i == 314) return item_314_;
+    if (i == 315) return item_315_;
+    if (i == 316) return item_316_;
+    if (i == 317) return item_317_;
+    if (i == 318) return item_318_;
+    if (i == 319) return item_319_;
+    if (i == 320) return item_320_;
+    if (i == 321) return item_321_;
+    if (i == 322) return item_322_;
+    if (i == 323) return item_323_;
+    if (i == 324) return item_324_;
+    if (i == 325) return item_325_;
+    if (i == 326) return item_326_;
+    if (i == 327) return item_327_;
+    if (i == 328) return item_328_;
+    if (i == 329) return item_329_;
+    if (i == 330) return item_330_;
+    if (i == 331) return item_331_;
+    if (i == 332) return item_332_;
+    if (i == 333) return item_333_;
+    if (i == 334) return item_334_;
+    if (i == 335) return item_335_;
+    if (i == 336) return item_336_;
+    if (i == 337) return item_337_;
+    if (i == 338) return item_338_;
+    if (i == 339) return item_339_;
+    if (i == 340) return item_340_;
+    if (i == 341) return item_341_;
+    if (i == 342) return item_342_;
+    if (i == 343) return item_343_;
+    if (i == 344) return item_344_;
+    if (i == 345) return item_345_;
+    if (i == 346) return item_346_;
+    if (i == 347) return item_347_;
+    if (i == 348) return item_348_;
+    if (i == 349) return item_349_;
+    if (i == 350) return item_350_;
+    if (i == 351) return item_351_;
+    if (i == 352) return item_352_;
+    if (i == 353) return item_353_;
+    if (i == 354) return item_354_;
+    if (i == 355) return item_355_;
+    if (i == 356) return item_356_;
+    if (i == 357) return item_357_;
+    if (i == 358) return item_358_;
+    if (i == 359) return item_359_;
+    if (i == 360) return item_360_;
+    if (i == 361) return item_361_;
+    if (i == 362) return item_362_;
+    if (i == 363) return item_363_;
+    if (i == 364) return item_364_;
+    if (i == 365) return item_365_;
+    if (i == 366) return item_366_;
+    if (i == 367) return item_367_;
+    if (i == 368) return item_368_;
+    if (i == 369) return item_369_;
+    if (i == 370) return item_370_;
+    if (i == 371) return item_371_;
+    if (i == 372) return item_372_;
+    if (i == 373) return item_373_;
+    if (i == 374) return item_374_;
+    if (i == 375) return item_375_;
+    if (i == 376) return item_376_;
+    if (i == 377) return item_377_;
+    if (i == 378) return item_378_;
+    if (i == 379) return item_379_;
+    if (i == 380) return item_380_;
+    if (i == 381) return item_381_;
+    if (i == 382) return item_382_;
+    if (i == 383) return item_383_;
+    if (i == 384) return item_384_;
+    if (i == 385) return item_385_;
+    if (i == 386) return item_386_;
+    if (i == 387) return item_387_;
+    if (i == 388) return item_388_;
+    if (i == 389) return item_389_;
+    if (i == 390) return item_390_;
+    if (i == 391) return item_391_;
+    if (i == 392) return item_392_;
+    if (i == 393) return item_393_;
+    if (i == 394) return item_394_;
+    if (i == 395) return item_395_;
+    if (i == 396) return item_396_;
+    if (i == 397) return item_397_;
+    if (i == 398) return item_398_;
+    if (i == 399) return item_399_;
+    if (i == 400) return item_400_;
+    if (i == 401) return item_401_;
+    if (i == 402) return item_402_;
+    if (i == 403) return item_403_;
+    if (i == 404) return item_404_;
+    if (i == 405) return item_405_;
+    if (i == 406) return item_406_;
+    if (i == 407) return item_407_;
+    if (i == 408) return item_408_;
+    if (i == 409) return item_409_;
+    if (i == 410) return item_410_;
+    if (i == 411) return item_411_;
+    if (i == 412) return item_412_;
+    if (i == 413) return item_413_;
+    if (i == 414) return item_414_;
+    if (i == 415) return item_415_;
+    if (i == 416) return item_416_;
+    if (i == 417) return item_417_;
+    if (i == 418) return item_418_;
+    if (i == 419) return item_419_;
+    if (i == 420) return item_420_;
+    if (i == 421) return item_421_;
+    if (i == 422) return item_422_;
+    if (i == 423) return item_423_;
+    if (i == 424) return item_424_;
+    if (i == 425) return item_425_;
+    if (i == 426) return item_426_;
+    if (i == 427) return item_427_;
+    if (i == 428) return item_428_;
+    if (i == 429) return item_429_;
+    if (i == 430) return item_430_;
+    if (i == 431) return item_431_;
+    if (i == 432) return item_432_;
+    if (i == 433) return item_433_;
+    if (i == 434) return item_434_;
+    if (i == 435) return item_435_;
+    if (i == 436) return item_436_;
+    if (i == 437) return item_437_;
+    if (i == 438) return item_438_;
+    if (i == 439) return item_439_;
+    if (i == 440) return item_440_;
+    if (i == 441) return item_441_;
+    if (i == 442) return item_442_;
+    if (i == 443) return item_443_;
+    if (i == 444) return item_444_;
+    if (i == 445) return item_445_;
+    if (i == 446) return item_446_;
+    if (i == 447) return item_447_;
+    if (i == 448) return item_448_;
+    if (i == 449) return item_449_;
+    if (i == 450) return item_450_;
+    if (i == 451) return item_451_;
+    if (i == 452) return item_452_;
+    if (i == 453) return item_453_;
+    if (i == 454) return item_454_;
+    if (i == 455) return item_455_;
+    if (i == 456) return item_456_;
+    if (i == 457) return item_457_;
+    if (i == 458) return item_458_;
+    if (i == 459) return item_459_;
+    if (i == 460) return item_460_;
+    if (i == 461) return item_461_;
+    if (i == 462) return item_462_;
+    if (i == 463) return item_463_;
+    if (i == 464) return item_464_;
+    if (i == 465) return item_465_;
+    if (i == 466) return item_466_;
+    if (i == 467) return item_467_;
+    if (i == 468) return item_468_;
+    if (i == 469) return item_469_;
+    if (i == 470) return item_470_;
+    if (i == 471) return item_471_;
+    if (i == 472) return item_472_;
+    if (i == 473) return item_473_;
+    if (i == 474) return item_474_;
+    if (i == 475) return item_475_;
+    if (i == 476) return item_476_;
+    if (i == 477) return item_477_;
+    if (i == 478) return item_478_;
+    if (i == 479) return item_479_;
+    if (i == 480) return item_480_;
+    if (i == 481) return item_481_;
+    if (i == 482) return item_482_;
+    if (i == 483) return item_483_;
+    if (i == 484) return item_484_;
+    if (i == 485) return item_485_;
+    if (i == 486) return item_486_;
+    if (i == 487) return item_487_;
+    if (i == 488) return item_488_;
+    if (i == 489) return item_489_;
+    if (i == 490) return item_490_;
+    if (i == 491) return item_491_;
+    if (i == 492) return item_492_;
+    if (i == 493) return item_493_;
+    if (i == 494) return item_494_;
+    if (i == 495) return item_495_;
+    if (i == 496) return item_496_;
+    if (i == 497) return item_497_;
+    if (i == 498) return item_498_;
+    if (i == 499) return item_499_;
+    if (i == 500) return item_500_;
+    if (i == 501) return item_501_;
+    if (i == 502) return item_502_;
+    if (i == 503) return item_503_;
+    if (i == 504) return item_504_;
+    if (i == 505) return item_505_;
+    if (i == 506) return item_506_;
+    if (i == 507) return item_507_;
+    if (i == 508) return item_508_;
+    if (i == 509) return item_509_;
+    if (i == 510) return item_510_;
+    if (i == 511) return item_511_;
+    return TensorT(0);
+  }
+
+  template<typename TensorT>
+  inline __host__ __device__ bool TensorArrayGpu512<TensorT>::operator==(const TensorArrayGpu512<TensorT> & other) const
+  {
+    assert(this->array_size_ == other.getArraySize());
+    isEqualToGpu512 comp(this->array_size_);
+    return comp(*this, other);
+  }
+
+  template<typename TensorT>
+  inline __host__ __device__ bool TensorArrayGpu512<TensorT>::operator!=(const TensorArrayGpu512<TensorT> & other) const
+  {
+    assert(this->array_size_ == other.getArraySize());
+    isNotEqualToGpu512 comp(this->array_size_);
+    return comp(*this, other);
+  }
+
+  template<typename TensorT>
+  inline __host__ __device__ bool TensorArrayGpu512<TensorT>::operator<(const TensorArrayGpu512<TensorT> & other) const
+  {
+    assert(this->array_size_ == other.getArraySize());
+    isLessThanGpu512 comp(this->array_size_);
+    return comp(*this, other);
+  }
+
+  template<typename TensorT>
+  inline __host__ __device__ bool TensorArrayGpu512<TensorT>::operator<=(const TensorArrayGpu512<TensorT> & other) const
+  {
+    assert(this->array_size_ == other.getArraySize());
+    isLessThanOrEqualToGpu512 comp(this->array_size_);
+    return comp(*this, other);
+  }
+
+  template<typename TensorT>
+  inline __host__ __device__ bool TensorArrayGpu512<TensorT>::operator>(const TensorArrayGpu512<TensorT> & other) const
+  {
+    assert(this->array_size_ == other.getArraySize());
+    isGreaterThanGpu512 comp(this->array_size_);
+    return comp(*this, other);
+  }
+
+  template<typename TensorT>
+  inline __host__ __device__ bool TensorArrayGpu512<TensorT>::operator>=(const TensorArrayGpu512<TensorT>& other) const
+  {
+    assert(this->array_size_ == other.getArraySize());
+    isGreaterThanOrEqualToGpu512 comp(this->array_size_);
+    return comp(*this, other);
+  }
+
+  /**
     @brief Fixed length 2048 vector class
   */
   template<typename TensorT>
