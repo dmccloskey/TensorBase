@@ -103,8 +103,16 @@ namespace TensorBase
     virtual void selectIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<double, DeviceT, 1>>& select_labels, DeviceT& device) = 0;
     virtual void selectIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<char, DeviceT, 1>>& select_labels, DeviceT& device) = 0;
     virtual void selectIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& select_labels, DeviceT& device) = 0;
+    virtual void selectIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& select_labels, DeviceT& device) = 0;
+    virtual void selectIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& select_labels, DeviceT& device) = 0;
+    virtual void selectIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& select_labels, DeviceT& device) = 0;
+    virtual void selectIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& select_labels, DeviceT& device) = 0;
 #if COMPILE_WITH_CUDA
     virtual void selectIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& select_labels, DeviceT& device) = 0;
+    virtual void selectIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& select_labels, DeviceT& device) = 0;
+    virtual void selectIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& select_labels, DeviceT& device) = 0;
+    virtual void selectIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& select_labels, DeviceT& device) = 0;
+    virtual void selectIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& select_labels, DeviceT& device) = 0;
 #endif
 
     /*
@@ -139,8 +147,89 @@ namespace TensorBase
     virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<char, DeviceT, 1>>& select_labels,
       const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
       const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<float, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<float, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<float, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<float, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<double, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<double, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<double, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<double, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
     virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<int, DeviceT, 1>>& select_labels,
       const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<char, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<float, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<double, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<int, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<char, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<float, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<double, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<int, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<char, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<float, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<double, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<int, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<char, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<float, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<double, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<int, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<char, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<float, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<double, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
       const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
     virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& select_labels,
       const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
@@ -156,11 +245,116 @@ namespace TensorBase
       const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
     virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& select_labels,
       const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
       const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
 #if COMPILE_WITH_CUDA
     virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<int, DeviceT, 1>>& select_labels,
       const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
       const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<char, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<float, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<double, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<int, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<char, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<float, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<double, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<int, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<char, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<float, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<double, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<int, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<char, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<float, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<double, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
     virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& select_labels,
       const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
       const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
@@ -175,6 +369,66 @@ namespace TensorBase
       const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
     virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& select_labels,
       const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
       const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
 #endif
 
@@ -186,8 +440,16 @@ namespace TensorBase
     virtual void sortIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<float, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT& device) = 0;
     virtual void sortIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<double, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT& device) = 0;
     virtual void sortIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT& device) = 0;
+    virtual void sortIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT& device) = 0;
+    virtual void sortIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT& device) = 0;
+    virtual void sortIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT& device) = 0;
+    virtual void sortIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT& device) = 0;
 #if COMPILE_WITH_CUDA
     virtual void sortIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT& device) = 0;
+    virtual void sortIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT& device) = 0;
+    virtual void sortIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT& device) = 0;
+    virtual void sortIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT& device) = 0;
+    virtual void sortIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT& device) = 0;
 #endif
 
     /*
@@ -208,16 +470,32 @@ namespace TensorBase
     virtual void updateTensorDataValues(const std::shared_ptr<double[]>& values_new, std::shared_ptr<double[]>& values_old, DeviceT& device) = 0;
     virtual void updateTensorDataValues(const std::shared_ptr<char[]>& values_new, std::shared_ptr<char[]>& values_old, DeviceT& device) = 0;
     virtual void updateTensorDataValues(const std::shared_ptr<TensorArray8<char>[]>& values_new, std::shared_ptr<TensorArray8<char>[]>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorDataValues(const std::shared_ptr<TensorArray32<char>[]>& values_new, std::shared_ptr<TensorArray32<char>[]>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorDataValues(const std::shared_ptr<TensorArray128<char>[]>& values_new, std::shared_ptr<TensorArray128<char>[]>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorDataValues(const std::shared_ptr<TensorArray512<char>[]>& values_new, std::shared_ptr<TensorArray512<char>[]>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorDataValues(const std::shared_ptr<TensorArray2048<char>[]>& values_new, std::shared_ptr<TensorArray2048<char>[]>& values_old, DeviceT& device) = 0;
 #if COMPILE_WITH_CUDA
     virtual void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu8<char>[]>& values_new, std::shared_ptr<TensorArrayGpu8<char>[]>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu32<char>[]>& values_new, std::shared_ptr<TensorArrayGpu32<char>[]>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu128<char>[]>& values_new, std::shared_ptr<TensorArrayGpu128<char>[]>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu512<char>[]>& values_new, std::shared_ptr<TensorArrayGpu512<char>[]>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu2048<char>[]>& values_new, std::shared_ptr<TensorArrayGpu2048<char>[]>& values_old, DeviceT& device) = 0;
 #endif
     virtual void updateTensorDataValues(const std::shared_ptr<int[]>& values_new, DeviceT& device) = 0;
     virtual void updateTensorDataValues(const std::shared_ptr<float[]>& values_new, DeviceT& device) = 0;
     virtual void updateTensorDataValues(const std::shared_ptr<double[]>& values_new, DeviceT& device) = 0;
     virtual void updateTensorDataValues(const std::shared_ptr<char[]>& values_new, DeviceT& device) = 0;
     virtual void updateTensorDataValues(const std::shared_ptr<TensorArray8<char>[]>& values_new, DeviceT& device) = 0;
+    virtual void updateTensorDataValues(const std::shared_ptr<TensorArray32<char>[]>& values_new, DeviceT& device) = 0;
+    virtual void updateTensorDataValues(const std::shared_ptr<TensorArray128<char>[]>& values_new, DeviceT& device) = 0;
+    virtual void updateTensorDataValues(const std::shared_ptr<TensorArray512<char>[]>& values_new, DeviceT& device) = 0;
+    virtual void updateTensorDataValues(const std::shared_ptr<TensorArray2048<char>[]>& values_new, DeviceT& device) = 0;
 #if COMPILE_WITH_CUDA
     virtual void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu8<char>[]>& values_new, DeviceT& device) = 0;
+    virtual void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu32<char>[]>& values_new, DeviceT& device) = 0;
+    virtual void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu128<char>[]>& values_new, DeviceT& device) = 0;
+    virtual void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu512<char>[]>& values_new, DeviceT& device) = 0;
+    virtual void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu2048<char>[]>& values_new, DeviceT& device) = 0;
 #endif
 
     /*
@@ -243,21 +521,93 @@ namespace TensorBase
     virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
     virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
     virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
     virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArray8<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
     virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArray8<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
     virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArray8<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
     virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArray8<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
     virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArray8<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArray32<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArray32<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArray32<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArray32<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArray32<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArray128<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArray128<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArray128<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArray128<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArray128<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArray512<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArray512<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArray512<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArray512<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArray512<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArray2048<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArray2048<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArray2048<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArray2048<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArray2048<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
 #if COMPILE_WITH_CUDA
     virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
     virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
     virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
     virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
     virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu8<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
     virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu8<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
     virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu8<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
     virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu8<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
     virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu8<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu32<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu32<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu32<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu32<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu32<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu128<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu128<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu128<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu128<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu128<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu512<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu512<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu512<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu512<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu512<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu2048<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu2048<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu2048<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu2048<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu2048<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
 #endif
 
     /*
@@ -284,21 +634,93 @@ namespace TensorBase
     virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, DeviceT& device) = 0;
     virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, DeviceT& device) = 0;
     virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, DeviceT& device) = 0;
     virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArray8<char>[]>& values, DeviceT& device) = 0;
     virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArray8<char>[]>& values, DeviceT& device) = 0;
     virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArray8<char>[]>& values, DeviceT& device) = 0;
     virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArray8<char>[]>& values, DeviceT& device) = 0;
     virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArray8<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArray32<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArray32<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArray32<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArray32<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArray32<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArray128<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArray128<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArray128<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArray128<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArray128<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArray512<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArray512<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArray512<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArray512<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArray512<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArray2048<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArray2048<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArray2048<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArray2048<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArray2048<char>[]>& values, DeviceT& device) = 0;
 #if COMPILE_WITH_CUDA
     virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, DeviceT& device) = 0;
     virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, DeviceT& device) = 0;
     virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, DeviceT& device) = 0;
     virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, DeviceT& device) = 0;
     virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu8<char>[]>& values, DeviceT& device) = 0;
     virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu8<char>[]>& values, DeviceT& device) = 0;
     virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu8<char>[]>& values, DeviceT& device) = 0;
     virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu8<char>[]>& values, DeviceT& device) = 0;
     virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu8<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu32<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu32<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu32<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu32<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu32<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu128<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu128<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu128<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu128<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu128<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu512<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu512<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu512<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu512<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu512<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu2048<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu2048<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu2048<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu2048<char>[]>& values, DeviceT& device) = 0;
+    virtual void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu2048<char>[]>& values, DeviceT& device) = 0;
 #endif
 
     /*
@@ -324,21 +746,93 @@ namespace TensorBase
     virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
     virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
     virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
     virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArray8<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
     virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArray8<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
     virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArray8<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
     virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArray8<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
     virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArray8<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArray32<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArray32<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArray32<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArray32<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArray32<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArray128<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArray128<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArray128<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArray128<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArray128<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArray512<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArray512<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArray512<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArray512<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArray512<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArray2048<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArray2048<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArray2048<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArray2048<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArray2048<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
 #if COMPILE_WITH_CUDA
     virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
     virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
     virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
     virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
     virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu8<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
     virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu8<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
     virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu8<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
     virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu8<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
     virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu8<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu32<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu32<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu32<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu32<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu32<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu128<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu128<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu128<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu128<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu128<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu512<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu512<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu512<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu512<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu512<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu2048<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu2048<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu2048<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu2048<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
+    virtual void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu2048<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) = 0;
 #endif
 
     /*
@@ -349,8 +843,16 @@ namespace TensorBase
     virtual void updateTensorDataConstant(const std::shared_ptr<TensorData<double, DeviceT, 1>>& values_new, std::shared_ptr<TensorTable<double, DeviceT, 2>>& values_old, DeviceT& device) = 0;
     virtual void updateTensorDataConstant(const std::shared_ptr<TensorData<char, DeviceT, 1>>& values_new, std::shared_ptr<TensorTable<char, DeviceT, 2>>& values_old, DeviceT& device) = 0;
     virtual void updateTensorDataConstant(const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& values_new, std::shared_ptr<TensorTable<TensorArray8<char>, DeviceT, 2>>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorDataConstant(const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& values_new, std::shared_ptr<TensorTable<TensorArray32<char>, DeviceT, 2>>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorDataConstant(const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& values_new, std::shared_ptr<TensorTable<TensorArray128<char>, DeviceT, 2>>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorDataConstant(const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& values_new, std::shared_ptr<TensorTable<TensorArray512<char>, DeviceT, 2>>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorDataConstant(const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& values_new, std::shared_ptr<TensorTable<TensorArray2048<char>, DeviceT, 2>>& values_old, DeviceT& device) = 0;
 #if COMPILE_WITH_CUDA
     virtual void updateTensorDataConstant(const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& values_new, std::shared_ptr<TensorTable<TensorArrayGpu8<char>, DeviceT, 2>>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorDataConstant(const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& values_new, std::shared_ptr<TensorTable<TensorArrayGpu32<char>, DeviceT, 2>>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorDataConstant(const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& values_new, std::shared_ptr<TensorTable<TensorArrayGpu128<char>, DeviceT, 2>>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorDataConstant(const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& values_new, std::shared_ptr<TensorTable<TensorArrayGpu512<char>, DeviceT, 2>>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorDataConstant(const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& values_new, std::shared_ptr<TensorTable<TensorArrayGpu2048<char>, DeviceT, 2>>& values_old, DeviceT& device) = 0;
 #endif
 
     /*
@@ -361,8 +863,16 @@ namespace TensorBase
     virtual void updateTensorDataFromSparseTensorTable(const std::shared_ptr<TensorTable<double, DeviceT, 2>>& values_old, DeviceT& device) = 0;
     virtual void updateTensorDataFromSparseTensorTable(const std::shared_ptr<TensorTable<char, DeviceT, 2>>& values_old, DeviceT& device) = 0;
     virtual void updateTensorDataFromSparseTensorTable(const std::shared_ptr<TensorTable<TensorArray8<char>, DeviceT, 2>>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorDataFromSparseTensorTable(const std::shared_ptr<TensorTable<TensorArray32<char>, DeviceT, 2>>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorDataFromSparseTensorTable(const std::shared_ptr<TensorTable<TensorArray128<char>, DeviceT, 2>>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorDataFromSparseTensorTable(const std::shared_ptr<TensorTable<TensorArray512<char>, DeviceT, 2>>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorDataFromSparseTensorTable(const std::shared_ptr<TensorTable<TensorArray2048<char>, DeviceT, 2>>& values_old, DeviceT& device) = 0;
 #if COMPILE_WITH_CUDA
     virtual void updateTensorDataFromSparseTensorTable(const std::shared_ptr<TensorTable<TensorArrayGpu8<char>, DeviceT, 2>>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorDataFromSparseTensorTable(const std::shared_ptr<TensorTable<TensorArrayGpu32<char>, DeviceT, 2>>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorDataFromSparseTensorTable(const std::shared_ptr<TensorTable<TensorArrayGpu128<char>, DeviceT, 2>>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorDataFromSparseTensorTable(const std::shared_ptr<TensorTable<TensorArrayGpu512<char>, DeviceT, 2>>& values_old, DeviceT& device) = 0;
+    virtual void updateTensorDataFromSparseTensorTable(const std::shared_ptr<TensorTable<TensorArrayGpu2048<char>, DeviceT, 2>>& values_old, DeviceT& device) = 0;
 #endif
 
     /*
@@ -458,8 +968,32 @@ namespace TensorBase
     void selectIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& select_labels, DeviceT& device) {
       tensor_table_->selectIndicesView(axis_name, dimension_index, select_labels, device);
     };
+    void selectIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& select_labels, DeviceT& device) {
+      tensor_table_->selectIndicesView(axis_name, dimension_index, select_labels, device);
+    };
+    void selectIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& select_labels, DeviceT& device) {
+      tensor_table_->selectIndicesView(axis_name, dimension_index, select_labels, device);
+    };
+    void selectIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& select_labels, DeviceT& device) {
+      tensor_table_->selectIndicesView(axis_name, dimension_index, select_labels, device);
+    };
+    void selectIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& select_labels, DeviceT& device) {
+      tensor_table_->selectIndicesView(axis_name, dimension_index, select_labels, device);
+    };
 #if COMPILE_WITH_CUDA
     void selectIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& select_labels, DeviceT& device) {
+      tensor_table_->selectIndicesView(axis_name, dimension_index, select_labels, device);
+    };
+    void selectIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& select_labels, DeviceT& device) {
+      tensor_table_->selectIndicesView(axis_name, dimension_index, select_labels, device);
+    };
+    void selectIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& select_labels, DeviceT& device) {
+      tensor_table_->selectIndicesView(axis_name, dimension_index, select_labels, device);
+    };
+    void selectIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& select_labels, DeviceT& device) {
+      tensor_table_->selectIndicesView(axis_name, dimension_index, select_labels, device);
+    };
+    void selectIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& select_labels, DeviceT& device) {
       tensor_table_->selectIndicesView(axis_name, dimension_index, select_labels, device);
     };
 #endif
@@ -506,8 +1040,143 @@ namespace TensorBase
       const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
       tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
     };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<float, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<float, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<float, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<float, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<double, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<double, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<double, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<double, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
     void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<int, DeviceT, 1>>& select_labels,
       const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<char, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<float, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<double, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<int, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<char, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<float, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<double, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<int, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<char, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<float, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<double, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<int, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<char, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<float, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<double, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<int, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<char, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<float, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<double, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
       const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
       tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
     };
@@ -536,9 +1205,204 @@ namespace TensorBase
       const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
       tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
     };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
 #if COMPILE_WITH_CUDA
     void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<int, DeviceT, 1>>& select_labels,
       const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<char, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<float, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<double, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<int, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<char, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<float, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<double, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<int, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<char, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<float, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<double, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<int, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<char, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<float, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<double, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<int, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<char, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<float, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<double, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
       const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
       tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
     };
@@ -563,6 +1427,106 @@ namespace TensorBase
       tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
     };
     void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+      tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& select_labels,
       const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
       const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
       tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
@@ -584,8 +1548,32 @@ namespace TensorBase
     void sortIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT& device) {
       tensor_table_->sortIndicesView(axis_name, dimension_index, select_labels, order_by, device);
     };
+    void sortIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT& device) {
+      tensor_table_->sortIndicesView(axis_name, dimension_index, select_labels, order_by, device);
+    };
+    void sortIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT& device) {
+      tensor_table_->sortIndicesView(axis_name, dimension_index, select_labels, order_by, device);
+    };
+    void sortIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT& device) {
+      tensor_table_->sortIndicesView(axis_name, dimension_index, select_labels, order_by, device);
+    };
+    void sortIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT& device) {
+      tensor_table_->sortIndicesView(axis_name, dimension_index, select_labels, order_by, device);
+    };
 #if COMPILE_WITH_CUDA
     void sortIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT& device) {
+      tensor_table_->sortIndicesView(axis_name, dimension_index, select_labels, order_by, device);
+    };
+    void sortIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT& device) {
+      tensor_table_->sortIndicesView(axis_name, dimension_index, select_labels, order_by, device);
+    };
+    void sortIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT& device) {
+      tensor_table_->sortIndicesView(axis_name, dimension_index, select_labels, order_by, device);
+    };
+    void sortIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT& device) {
+      tensor_table_->sortIndicesView(axis_name, dimension_index, select_labels, order_by, device);
+    };
+    void sortIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT& device) {
       tensor_table_->sortIndicesView(axis_name, dimension_index, select_labels, order_by, device);
     };
 #endif
@@ -613,8 +1601,32 @@ namespace TensorBase
     void updateTensorDataValues(const std::shared_ptr<TensorArray8<char>[]>& values_new, std::shared_ptr<TensorArray8<char>[]>& values_old, DeviceT& device) {
       tensor_table_->updateTensorDataValuesConcept(values_new, values_old, device);
     };
+    void updateTensorDataValues(const std::shared_ptr<TensorArray32<char>[]>& values_new, std::shared_ptr<TensorArray32<char>[]>& values_old, DeviceT& device) {
+      tensor_table_->updateTensorDataValuesConcept(values_new, values_old, device);
+    };
+    void updateTensorDataValues(const std::shared_ptr<TensorArray128<char>[]>& values_new, std::shared_ptr<TensorArray128<char>[]>& values_old, DeviceT& device) {
+      tensor_table_->updateTensorDataValuesConcept(values_new, values_old, device);
+    };
+    void updateTensorDataValues(const std::shared_ptr<TensorArray512<char>[]>& values_new, std::shared_ptr<TensorArray512<char>[]>& values_old, DeviceT& device) {
+      tensor_table_->updateTensorDataValuesConcept(values_new, values_old, device);
+    };
+    void updateTensorDataValues(const std::shared_ptr<TensorArray2048<char>[]>& values_new, std::shared_ptr<TensorArray2048<char>[]>& values_old, DeviceT& device) {
+      tensor_table_->updateTensorDataValuesConcept(values_new, values_old, device);
+    };
 #if COMPILE_WITH_CUDA
     void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu8<char>[]>& values_new, std::shared_ptr<TensorArrayGpu8<char>[]>& values_old, DeviceT& device) {
+      tensor_table_->updateTensorDataValuesConcept(values_new, values_old, device);
+    };
+    void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu32<char>[]>& values_new, std::shared_ptr<TensorArrayGpu32<char>[]>& values_old, DeviceT& device) {
+      tensor_table_->updateTensorDataValuesConcept(values_new, values_old, device);
+    };
+    void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu128<char>[]>& values_new, std::shared_ptr<TensorArrayGpu128<char>[]>& values_old, DeviceT& device) {
+      tensor_table_->updateTensorDataValuesConcept(values_new, values_old, device);
+    };
+    void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu512<char>[]>& values_new, std::shared_ptr<TensorArrayGpu512<char>[]>& values_old, DeviceT& device) {
+      tensor_table_->updateTensorDataValuesConcept(values_new, values_old, device);
+    };
+    void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu2048<char>[]>& values_new, std::shared_ptr<TensorArrayGpu2048<char>[]>& values_old, DeviceT& device) {
       tensor_table_->updateTensorDataValuesConcept(values_new, values_old, device);
     };
 #endif
@@ -633,8 +1645,32 @@ namespace TensorBase
     void updateTensorDataValues(const std::shared_ptr<TensorArray8<char>[]>& values_new, DeviceT& device) {
       tensor_table_->updateTensorDataValuesConcept(values_new, device);
     };
+    void updateTensorDataValues(const std::shared_ptr<TensorArray32<char>[]>& values_new, DeviceT& device) {
+      tensor_table_->updateTensorDataValuesConcept(values_new, device);
+    };
+    void updateTensorDataValues(const std::shared_ptr<TensorArray128<char>[]>& values_new, DeviceT& device) {
+      tensor_table_->updateTensorDataValuesConcept(values_new, device);
+    };
+    void updateTensorDataValues(const std::shared_ptr<TensorArray512<char>[]>& values_new, DeviceT& device) {
+      tensor_table_->updateTensorDataValuesConcept(values_new, device);
+    };
+    void updateTensorDataValues(const std::shared_ptr<TensorArray2048<char>[]>& values_new, DeviceT& device) {
+      tensor_table_->updateTensorDataValuesConcept(values_new, device);
+    };
 #if COMPILE_WITH_CUDA
     void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu8<char>[]>& values_new, DeviceT& device) {
+      tensor_table_->updateTensorDataValuesConcept(values_new, device);
+    };
+    void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu32<char>[]>& values_new, DeviceT& device) {
+      tensor_table_->updateTensorDataValuesConcept(values_new, device);
+    };
+    void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu128<char>[]>& values_new, DeviceT& device) {
+      tensor_table_->updateTensorDataValuesConcept(values_new, device);
+    };
+    void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu512<char>[]>& values_new, DeviceT& device) {
+      tensor_table_->updateTensorDataValuesConcept(values_new, device);
+    };
+    void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu2048<char>[]>& values_new, DeviceT& device) {
       tensor_table_->updateTensorDataValuesConcept(values_new, device);
     };
 #endif
@@ -699,6 +1735,54 @@ namespace TensorBase
     void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
       tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
     };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
     void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArray8<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
       tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
     };
@@ -714,6 +1798,66 @@ namespace TensorBase
     void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArray8<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
       tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
     };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArray32<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArray32<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArray32<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArray32<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArray32<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArray128<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArray128<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArray128<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArray128<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArray128<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArray512<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArray512<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArray512<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArray512<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArray512<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArray2048<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArray2048<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArray2048<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArray2048<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArray2048<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
 #if COMPILE_WITH_CUDA
     void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
       tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
@@ -725,6 +1869,54 @@ namespace TensorBase
       tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
     };
     void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
       tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
     };
     void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu8<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
@@ -740,6 +1932,66 @@ namespace TensorBase
       tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
     };
     void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu8<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu32<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu32<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu32<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu32<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu32<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu128<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu128<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu128<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu128<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu128<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu512<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu512<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu512<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu512<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu512<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu2048<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu2048<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu2048<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu2048<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu2048<char>[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
       tensor_table_->appendToAxisConcept(axis_name, labels, values, indices, device);
     };
 #endif
@@ -807,6 +2059,54 @@ namespace TensorBase
     void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, DeviceT& device) {
       tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
     };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
     void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArray8<char>[]>& values, DeviceT& device) {
       tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
     };
@@ -822,6 +2122,66 @@ namespace TensorBase
     void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArray8<char>[]>& values, DeviceT& device) {
       tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
     };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArray32<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArray32<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArray32<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArray32<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArray32<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArray128<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArray128<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArray128<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArray128<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArray128<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArray512<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArray512<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArray512<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArray512<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArray512<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArray2048<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArray2048<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArray2048<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArray2048<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArray2048<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
 #if COMPILE_WITH_CUDA
     void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, DeviceT& device) {
       tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
@@ -833,6 +2193,54 @@ namespace TensorBase
       tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
     };
     void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, DeviceT& device) {
       tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
     };
     void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu8<char>[]>& values, DeviceT& device) {
@@ -848,6 +2256,66 @@ namespace TensorBase
       tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
     };
     void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu8<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu32<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu32<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu32<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu32<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu32<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu128<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu128<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu128<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu128<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu128<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu512<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu512<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu512<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu512<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu512<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu2048<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu2048<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu2048<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu2048<char>[]>& values, DeviceT& device) {
+      tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
+    };
+    void deleteFromAxis(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu2048<char>[]>& values, DeviceT& device) {
       tensor_table_->deleteFromAxisConcept(axis_name, indices, labels, values, device);
     };
 #endif
@@ -912,6 +2380,54 @@ namespace TensorBase
     void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
       tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
     };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
     void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArray8<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
       tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
     };
@@ -927,6 +2443,66 @@ namespace TensorBase
     void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArray8<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
       tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
     };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArray32<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArray32<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArray32<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArray32<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArray32<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArray128<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArray128<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArray128<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArray128<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArray128<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArray512<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArray512<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArray512<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArray512<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArray512<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArray2048<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArray2048<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArray2048<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArray2048<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArray2048<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
 #if COMPILE_WITH_CUDA
     void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
       tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
@@ -938,6 +2514,54 @@ namespace TensorBase
       tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
     };
     void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, std::shared_ptr<int[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, std::shared_ptr<float[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, std::shared_ptr<double[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, std::shared_ptr<char[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
       tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
     };
     void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu8<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
@@ -953,6 +2577,66 @@ namespace TensorBase
       tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
     };
     void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu8<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu32<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu32<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu32<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu32<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu32<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu128<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu128<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu128<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu128<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu128<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu512<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu512<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu512<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu512<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu512<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu2048<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu2048<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu2048<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu2048<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
+      tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
+    };
+    void insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, std::shared_ptr<TensorArrayGpu2048<char>[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device) {
       tensor_table_->insertIntoAxisConcept(axis_name, labels, values, indices, device);
     };
 #endif
@@ -972,8 +2656,32 @@ namespace TensorBase
     void updateTensorDataConstant(const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& values_new, std::shared_ptr<TensorTable<TensorArray8<char>, DeviceT, 2>>& values_old, DeviceT& device) {
       tensor_table_->updateTensorDataConstantConcept(values_new, values_old, device);
     };
+    void updateTensorDataConstant(const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& values_new, std::shared_ptr<TensorTable<TensorArray32<char>, DeviceT, 2>>& values_old, DeviceT& device) {
+      tensor_table_->updateTensorDataConstantConcept(values_new, values_old, device);
+    };
+    void updateTensorDataConstant(const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& values_new, std::shared_ptr<TensorTable<TensorArray128<char>, DeviceT, 2>>& values_old, DeviceT& device) {
+      tensor_table_->updateTensorDataConstantConcept(values_new, values_old, device);
+    };
+    void updateTensorDataConstant(const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& values_new, std::shared_ptr<TensorTable<TensorArray512<char>, DeviceT, 2>>& values_old, DeviceT& device) {
+      tensor_table_->updateTensorDataConstantConcept(values_new, values_old, device);
+    };
+    void updateTensorDataConstant(const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& values_new, std::shared_ptr<TensorTable<TensorArray2048<char>, DeviceT, 2>>& values_old, DeviceT& device) {
+      tensor_table_->updateTensorDataConstantConcept(values_new, values_old, device);
+    };
 #if COMPILE_WITH_CUDA
     void updateTensorDataConstant(const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& values_new, std::shared_ptr<TensorTable<TensorArrayGpu8<char>, DeviceT, 2>>& values_old, DeviceT& device) {
+      tensor_table_->updateTensorDataConstantConcept(values_new, values_old, device);
+    };
+    void updateTensorDataConstant(const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& values_new, std::shared_ptr<TensorTable<TensorArrayGpu32<char>, DeviceT, 2>>& values_old, DeviceT& device) {
+      tensor_table_->updateTensorDataConstantConcept(values_new, values_old, device);
+    };
+    void updateTensorDataConstant(const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& values_new, std::shared_ptr<TensorTable<TensorArrayGpu128<char>, DeviceT, 2>>& values_old, DeviceT& device) {
+      tensor_table_->updateTensorDataConstantConcept(values_new, values_old, device);
+    };
+    void updateTensorDataConstant(const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& values_new, std::shared_ptr<TensorTable<TensorArrayGpu512<char>, DeviceT, 2>>& values_old, DeviceT& device) {
+      tensor_table_->updateTensorDataConstantConcept(values_new, values_old, device);
+    };
+    void updateTensorDataConstant(const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& values_new, std::shared_ptr<TensorTable<TensorArrayGpu2048<char>, DeviceT, 2>>& values_old, DeviceT& device) {
       tensor_table_->updateTensorDataConstantConcept(values_new, values_old, device);
     };
 #endif
@@ -993,8 +2701,32 @@ namespace TensorBase
     void updateTensorDataFromSparseTensorTable(const std::shared_ptr<TensorTable<TensorArray8<char>, DeviceT, 2>>& values_old, DeviceT& device) {
       tensor_table_->updateTensorDataFromSparseTensorTableConcept(values_old, device);
     };
+    void updateTensorDataFromSparseTensorTable(const std::shared_ptr<TensorTable<TensorArray32<char>, DeviceT, 2>>& values_old, DeviceT& device) {
+      tensor_table_->updateTensorDataFromSparseTensorTableConcept(values_old, device);
+    };
+    void updateTensorDataFromSparseTensorTable(const std::shared_ptr<TensorTable<TensorArray128<char>, DeviceT, 2>>& values_old, DeviceT& device) {
+      tensor_table_->updateTensorDataFromSparseTensorTableConcept(values_old, device);
+    };
+    void updateTensorDataFromSparseTensorTable(const std::shared_ptr<TensorTable<TensorArray512<char>, DeviceT, 2>>& values_old, DeviceT& device) {
+      tensor_table_->updateTensorDataFromSparseTensorTableConcept(values_old, device);
+    };
+    void updateTensorDataFromSparseTensorTable(const std::shared_ptr<TensorTable<TensorArray2048<char>, DeviceT, 2>>& values_old, DeviceT& device) {
+      tensor_table_->updateTensorDataFromSparseTensorTableConcept(values_old, device);
+    };
 #if COMPILE_WITH_CUDA
     void updateTensorDataFromSparseTensorTable(const std::shared_ptr<TensorTable<TensorArrayGpu8<char>, DeviceT, 2>>& values_old, DeviceT& device) {
+      tensor_table_->updateTensorDataFromSparseTensorTableConcept(values_old, device);
+    };
+    void updateTensorDataFromSparseTensorTable(const std::shared_ptr<TensorTable<TensorArrayGpu32<char>, DeviceT, 2>>& values_old, DeviceT& device) {
+      tensor_table_->updateTensorDataFromSparseTensorTableConcept(values_old, device);
+    };
+    void updateTensorDataFromSparseTensorTable(const std::shared_ptr<TensorTable<TensorArrayGpu128<char>, DeviceT, 2>>& values_old, DeviceT& device) {
+      tensor_table_->updateTensorDataFromSparseTensorTableConcept(values_old, device);
+    };
+    void updateTensorDataFromSparseTensorTable(const std::shared_ptr<TensorTable<TensorArrayGpu512<char>, DeviceT, 2>>& values_old, DeviceT& device) {
+      tensor_table_->updateTensorDataFromSparseTensorTableConcept(values_old, device);
+    };
+    void updateTensorDataFromSparseTensorTable(const std::shared_ptr<TensorTable<TensorArrayGpu2048<char>, DeviceT, 2>>& values_old, DeviceT& device) {
       tensor_table_->updateTensorDataFromSparseTensorTableConcept(values_old, device);
     };
 #endif
@@ -1053,6 +2785,22 @@ CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableDefau
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray8<char>, 2>, Eigen::DefaultDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray8<char>, 3>, Eigen::DefaultDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray8<char>, 4>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray32<char>, 1>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray32<char>, 2>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray32<char>, 3>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray32<char>, 4>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray128<char>, 1>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray128<char>, 2>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray128<char>, 3>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray128<char>, 4>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray512<char>, 1>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray512<char>, 2>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray512<char>, 3>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray512<char>, 4>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray2048<char>, 1>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray2048<char>, 2>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray2048<char>, 3>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray2048<char>, 4>, Eigen::DefaultDevice>);
 
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableCpu<int, 1>, Eigen::ThreadPoolDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableCpu<float, 1>, Eigen::ThreadPoolDevice>);
@@ -1074,4 +2822,20 @@ CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableCpu<T
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableCpu<TensorBase::TensorArray8<char>, 2>, Eigen::ThreadPoolDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableCpu<TensorBase::TensorArray8<char>, 3>, Eigen::ThreadPoolDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableCpu<TensorBase::TensorArray8<char>, 4>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableCpu<TensorBase::TensorArray32<char>, 1>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableCpu<TensorBase::TensorArray32<char>, 2>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableCpu<TensorBase::TensorArray32<char>, 3>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableCpu<TensorBase::TensorArray32<char>, 4>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableCpu<TensorBase::TensorArray128<char>, 1>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableCpu<TensorBase::TensorArray128<char>, 2>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableCpu<TensorBase::TensorArray128<char>, 3>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableCpu<TensorBase::TensorArray128<char>, 4>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableCpu<TensorBase::TensorArray512<char>, 1>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableCpu<TensorBase::TensorArray512<char>, 2>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableCpu<TensorBase::TensorArray512<char>, 3>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableCpu<TensorBase::TensorArray512<char>, 4>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableCpu<TensorBase::TensorArray2048<char>, 1>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableCpu<TensorBase::TensorArray2048<char>, 2>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableCpu<TensorBase::TensorArray2048<char>, 3>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableCpu<TensorBase::TensorArray2048<char>, 4>, Eigen::ThreadPoolDevice>);
 #endif //TENSORBASE_TENSORTABLECONCEPT_H

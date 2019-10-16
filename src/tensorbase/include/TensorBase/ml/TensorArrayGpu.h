@@ -5859,6 +5859,7 @@ namespace TensorBase
     if (i == 509) return item_509_;
     if (i == 510) return item_510_;
     if (i == 511) return item_511_;
+    std::cout << "i " << i << " is greater than 512." << std::endl;
     return TensorT(0);
   }
 
@@ -10139,7 +10140,6 @@ namespace TensorBase
     else { this->item_2046_ = TensorT(0); }
     if (tensor_array_iter != tensor_array.end()) { this->item_2047_ = static_cast<TensorT>(*tensor_array_iter); ++tensor_array_iter; }
     else { this->item_2047_ = TensorT(0); }
-
   }
 
   template<typename TensorT>
@@ -14247,7 +14247,6 @@ namespace TensorBase
     else { this->item_2046_ = TensorT(0); }
     if (tensor_array_iter != tensor_array.end()) { this->item_2047_ = *tensor_array_iter; ++tensor_array_iter; }
     else { this->item_2047_ = TensorT(0); }
-
   }
 
   template<typename TensorT>
@@ -20422,6 +20421,7 @@ namespace TensorBase
     if (i == 2045) return item_2045_;
     if (i == 2046) return item_2046_;
     if (i == 2047) return item_2047_;
+    std::cout << "i " << i << " is greater than 2048." << std::endl;
     return TensorT(0);
   }
 

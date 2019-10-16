@@ -109,11 +109,15 @@ namespace TensorBase
   };
 };
 
-// Cereal registration of TensorTs: float, int, char, double, charArray8
+// Cereal registration of TensorTs: float, int, char, double, charArray8, charArray32, charArray128, charArray512, charArray2048
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionGpuPrimitiveT<int>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionGpuPrimitiveT<float>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionGpuPrimitiveT<double>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionGpuPrimitiveT<char>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionGpuClassT<TensorBase::TensorArrayGpu8, char>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionGpuClassT<TensorBase::TensorArrayGpu32, char>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionGpuClassT<TensorBase::TensorArrayGpu128, char>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionGpuClassT<TensorBase::TensorArrayGpu512, char>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionGpuClassT<TensorBase::TensorArrayGpu2048, char>);
 #endif
 #endif //TENSORBASE_TENSORDIMENSIONGPU_H

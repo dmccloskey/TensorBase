@@ -175,11 +175,19 @@ CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionDefaultDevice<float>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionDefaultDevice<double>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionDefaultDevice<char>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionDefaultDevice<TensorBase::TensorArray8<char>>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionDefaultDevice<TensorBase::TensorArray32<char>>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionDefaultDevice<TensorBase::TensorArray128<char>>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionDefaultDevice<TensorBase::TensorArray512<char>>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionDefaultDevice<TensorBase::TensorArray2048<char>>);
 
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionCpu<int>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionCpu<float>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionCpu<double>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionCpu<char>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionCpu<TensorBase::TensorArray8<char>>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionCpu<TensorBase::TensorArray32<char>>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionCpu<TensorBase::TensorArray128<char>>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionCpu<TensorBase::TensorArray512<char>>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionCpu<TensorBase::TensorArray2048<char>>);
 
 #endif //TENSORBASE_TENSORDIMENSION_H

@@ -68,8 +68,16 @@ namespace TensorBase
     virtual void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels_select, DeviceT& device) = 0;
     virtual void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels_select, DeviceT& device) = 0;
     virtual void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& labels_select, DeviceT& device) = 0;
+    virtual void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels_select, DeviceT& device) = 0;
+    virtual void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels_select, DeviceT& device) = 0;
+    virtual void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels_select, DeviceT& device) = 0;
+    virtual void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels_select, DeviceT& device) = 0;
 #if COMPILE_WITH_CUDA
     virtual void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels_select, DeviceT& device) = 0;
+    virtual void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels_select, DeviceT& device) = 0;
+    virtual void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels_select, DeviceT& device) = 0;
+    virtual void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels_select, DeviceT& device) = 0;
+    virtual void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels_select, DeviceT& device) = 0;
 #endif
 
     // All TensorT and DeviceT combos of `appendLabelsToAxis`
@@ -78,8 +86,16 @@ namespace TensorBase
     virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, DeviceT& device) = 0;
     virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, DeviceT& device) = 0;
     virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& labels, DeviceT& device) = 0;
+    virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, DeviceT& device) = 0;
+    virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, DeviceT& device) = 0;
+    virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, DeviceT& device) = 0;
+    virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, DeviceT& device) = 0;
 #if COMPILE_WITH_CUDA
     virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels, DeviceT& device) = 0;
+    virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, DeviceT& device) = 0;
+    virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, DeviceT& device) = 0;
+    virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, DeviceT& device) = 0;
+    virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, DeviceT& device) = 0;
 #endif
 
     // All DeviceT combos of tensorDataWrappers
@@ -142,8 +158,32 @@ namespace TensorBase
     void getLabelsDataPointer(std::shared_ptr<TensorArray8<char>[]>& data_copy) {
       tensor_axis_->getLabelsDataPointer(data_copy);
     };
+    void getLabelsDataPointer(std::shared_ptr<TensorArray32<char>[]>& data_copy) {
+      tensor_axis_->getLabelsDataPointer(data_copy);
+    };
+    void getLabelsDataPointer(std::shared_ptr<TensorArray128<char>[]>& data_copy) {
+      tensor_axis_->getLabelsDataPointer(data_copy);
+    };
+    void getLabelsDataPointer(std::shared_ptr<TensorArray512<char>[]>& data_copy) {
+      tensor_axis_->getLabelsDataPointer(data_copy);
+    };
+    void getLabelsDataPointer(std::shared_ptr<TensorArray2048<char>[]>& data_copy) {
+      tensor_axis_->getLabelsDataPointer(data_copy);
+    };
 #if COMPILE_WITH_CUDA
     void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu8<char>[]>& data_copy) {
+      tensor_axis_->getLabelsDataPointer(data_copy);
+    };
+    void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu32<char>[]>& data_copy) {
+      tensor_axis_->getLabelsDataPointer(data_copy);
+    };
+    void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu128<char>[]>& data_copy) {
+      tensor_axis_->getLabelsDataPointer(data_copy);
+    };
+    void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu512<char>[]>& data_copy) {
+      tensor_axis_->getLabelsDataPointer(data_copy);
+    };
+    void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu2048<char>[]>& data_copy) {
       tensor_axis_->getLabelsDataPointer(data_copy);
     };
 #endif
@@ -167,8 +207,32 @@ namespace TensorBase
     void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& labels_select, DeviceT& device) {
       tensor_axis_->selectFromAxisConcept(indices, labels_select, device);
     };
+    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels_select, DeviceT& device) {
+      tensor_axis_->selectFromAxisConcept(indices, labels_select, device);
+    };
+    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels_select, DeviceT& device) {
+      tensor_axis_->selectFromAxisConcept(indices, labels_select, device);
+    };
+    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels_select, DeviceT& device) {
+      tensor_axis_->selectFromAxisConcept(indices, labels_select, device);
+    };
+    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels_select, DeviceT& device) {
+      tensor_axis_->selectFromAxisConcept(indices, labels_select, device);
+    };
 #if COMPILE_WITH_CUDA
     void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels_select, DeviceT& device) {
+      tensor_axis_->selectFromAxisConcept(indices, labels_select, device);
+    };
+    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels_select, DeviceT& device) {
+      tensor_axis_->selectFromAxisConcept(indices, labels_select, device);
+    };
+    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels_select, DeviceT& device) {
+      tensor_axis_->selectFromAxisConcept(indices, labels_select, device);
+    };
+    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels_select, DeviceT& device) {
+      tensor_axis_->selectFromAxisConcept(indices, labels_select, device);
+    };
+    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels_select, DeviceT& device) {
       tensor_axis_->selectFromAxisConcept(indices, labels_select, device);
     };
 #endif
@@ -188,8 +252,32 @@ namespace TensorBase
     void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& labels, DeviceT& device) {
       tensor_axis_->appendLabelsToAxisConcept(labels, device);
     };
+    void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, DeviceT& device) {
+      tensor_axis_->appendLabelsToAxisConcept(labels, device);
+    };
+    void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, DeviceT& device) {
+      tensor_axis_->appendLabelsToAxisConcept(labels, device);
+    };
+    void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, DeviceT& device) {
+      tensor_axis_->appendLabelsToAxisConcept(labels, device);
+    };
+    void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, DeviceT& device) {
+      tensor_axis_->appendLabelsToAxisConcept(labels, device);
+    };
 #if COMPILE_WITH_CUDA
     void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels, DeviceT& device) {
+      tensor_axis_->appendLabelsToAxisConcept(labels, device);
+    };
+    void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, DeviceT& device) {
+      tensor_axis_->appendLabelsToAxisConcept(labels, device);
+    };
+    void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, DeviceT& device) {
+      tensor_axis_->appendLabelsToAxisConcept(labels, device);
+    };
+    void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, DeviceT& device) {
+      tensor_axis_->appendLabelsToAxisConcept(labels, device);
+    };
+    void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, DeviceT& device) {
       tensor_axis_->appendLabelsToAxisConcept(labels, device);
     };
 #endif
@@ -240,10 +328,18 @@ CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisDefault
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisDefaultDevice<double>, Eigen::DefaultDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisDefaultDevice<char>, Eigen::DefaultDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisDefaultDevice<TensorBase::TensorArray8<char>>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisDefaultDevice<TensorBase::TensorArray32<char>>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisDefaultDevice<TensorBase::TensorArray128<char>>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisDefaultDevice<TensorBase::TensorArray512<char>>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisDefaultDevice<TensorBase::TensorArray2048<char>>, Eigen::DefaultDevice>);
 
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisCpu<int>, Eigen::ThreadPoolDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisCpu<float>, Eigen::ThreadPoolDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisCpu<double>, Eigen::ThreadPoolDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisCpu<char>, Eigen::ThreadPoolDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisCpu<TensorBase::TensorArray8<char>>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisCpu<TensorBase::TensorArray32<char>>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisCpu<TensorBase::TensorArray128<char>>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisCpu<TensorBase::TensorArray512<char>>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisCpu<TensorBase::TensorArray2048<char>>, Eigen::ThreadPoolDevice>);
 #endif //TENSORBASE_TENSORAXISCONCEPT_H
