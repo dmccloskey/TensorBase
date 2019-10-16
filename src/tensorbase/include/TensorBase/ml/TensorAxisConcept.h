@@ -55,8 +55,16 @@ namespace TensorBase
     virtual void getLabelsDataPointer(std::shared_ptr<double[]>& data_copy) = 0;
     virtual void getLabelsDataPointer(std::shared_ptr<char[]>& data_copy) = 0;
     virtual void getLabelsDataPointer(std::shared_ptr<TensorArray8<char>[]>& data_copy) = 0;
+    virtual void getLabelsDataPointer(std::shared_ptr<TensorArray32<char>[]>& data_copy) = 0;
+    virtual void getLabelsDataPointer(std::shared_ptr<TensorArray128<char>[]>& data_copy) = 0;
+    virtual void getLabelsDataPointer(std::shared_ptr<TensorArray512<char>[]>& data_copy) = 0;
+    virtual void getLabelsDataPointer(std::shared_ptr<TensorArray2048<char>[]>& data_copy) = 0;
 #if COMPILE_WITH_CUDA
     virtual void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu8<char>[]>& data_copy) = 0;
+    virtual void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu32<char>[]>& data_copy) = 0;
+    virtual void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu128<char>[]>& data_copy) = 0;
+    virtual void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu512<char>[]>& data_copy) = 0;
+    virtual void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu2048<char>[]>& data_copy) = 0;
 #endif
 
     // All DeviceT combos of `deleteFromAxis`
@@ -92,7 +100,7 @@ namespace TensorBase
     virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, DeviceT& device) = 0;
 #if COMPILE_WITH_CUDA
     virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels, DeviceT& device) = 0;
-    virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, DeviceT& device) = 0;
+    virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, DeviceT& device) = 0;
     virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, DeviceT& device) = 0;
     virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, DeviceT& device) = 0;
     virtual void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, DeviceT& device) = 0;
@@ -136,180 +144,180 @@ namespace TensorBase
     TensorAxisWrapper() = default;
     ~TensorAxisWrapper() = default;
 
-    int getId() const { return tensor_axis_->getId(); };
-    std::string getName() const { return tensor_axis_->getName(); };
-    size_t getNLabels() const { return tensor_axis_->getNLabels(); };
-    size_t getNDimensions() const { return tensor_axis_->getNDimensions(); };
-    Eigen::TensorMap<Eigen::Tensor<std::string, 1>> getDimensions() { return tensor_axis_->getDimensions(); };
-    void setLabels() { tensor_axis_->setLabels(); }
+    int getId() const override { return tensor_axis_->getId(); };
+    std::string getName() const override { return tensor_axis_->getName(); };
+    size_t getNLabels() const override { return tensor_axis_->getNLabels(); };
+    size_t getNDimensions() const override { return tensor_axis_->getNDimensions(); };
+    Eigen::TensorMap<Eigen::Tensor<std::string, 1>> getDimensions() override { return tensor_axis_->getDimensions(); };
+    void setLabels() override { tensor_axis_->setLabels(); }
 
-    void getLabelsDataPointer(std::shared_ptr<int[]>& data_copy) {
+    void getLabelsDataPointer(std::shared_ptr<int[]>& data_copy) override {
       tensor_axis_->getLabelsDataPointer(data_copy);
     };
-    void getLabelsDataPointer(std::shared_ptr<float[]>& data_copy) {
+    void getLabelsDataPointer(std::shared_ptr<float[]>& data_copy) override {
       tensor_axis_->getLabelsDataPointer(data_copy);
     };
-    void getLabelsDataPointer(std::shared_ptr<double[]>& data_copy) {
+    void getLabelsDataPointer(std::shared_ptr<double[]>& data_copy) override {
       tensor_axis_->getLabelsDataPointer(data_copy);
     };
-    void getLabelsDataPointer(std::shared_ptr<char[]>& data_copy) {
+    void getLabelsDataPointer(std::shared_ptr<char[]>& data_copy) override {
       tensor_axis_->getLabelsDataPointer(data_copy);
     };
-    void getLabelsDataPointer(std::shared_ptr<TensorArray8<char>[]>& data_copy) {
+    void getLabelsDataPointer(std::shared_ptr<TensorArray8<char>[]>& data_copy) override {
       tensor_axis_->getLabelsDataPointer(data_copy);
     };
-    void getLabelsDataPointer(std::shared_ptr<TensorArray32<char>[]>& data_copy) {
+    void getLabelsDataPointer(std::shared_ptr<TensorArray32<char>[]>& data_copy) override {
       tensor_axis_->getLabelsDataPointer(data_copy);
     };
-    void getLabelsDataPointer(std::shared_ptr<TensorArray128<char>[]>& data_copy) {
+    void getLabelsDataPointer(std::shared_ptr<TensorArray128<char>[]>& data_copy) override {
       tensor_axis_->getLabelsDataPointer(data_copy);
     };
-    void getLabelsDataPointer(std::shared_ptr<TensorArray512<char>[]>& data_copy) {
+    void getLabelsDataPointer(std::shared_ptr<TensorArray512<char>[]>& data_copy) override {
       tensor_axis_->getLabelsDataPointer(data_copy);
     };
-    void getLabelsDataPointer(std::shared_ptr<TensorArray2048<char>[]>& data_copy) {
+    void getLabelsDataPointer(std::shared_ptr<TensorArray2048<char>[]>& data_copy) override {
       tensor_axis_->getLabelsDataPointer(data_copy);
     };
 #if COMPILE_WITH_CUDA
-    void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu8<char>[]>& data_copy) {
+    void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu8<char>[]>& data_copy) override {
       tensor_axis_->getLabelsDataPointer(data_copy);
     };
-    void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu32<char>[]>& data_copy) {
+    void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu32<char>[]>& data_copy) override {
       tensor_axis_->getLabelsDataPointer(data_copy);
     };
-    void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu128<char>[]>& data_copy) {
+    void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu128<char>[]>& data_copy) override {
       tensor_axis_->getLabelsDataPointer(data_copy);
     };
-    void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu512<char>[]>& data_copy) {
+    void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu512<char>[]>& data_copy) override {
       tensor_axis_->getLabelsDataPointer(data_copy);
     };
-    void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu2048<char>[]>& data_copy) {
+    void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu2048<char>[]>& data_copy) override {
       tensor_axis_->getLabelsDataPointer(data_copy);
     };
 #endif
 
-    void deleteFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) {
+    void deleteFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) override {
       tensor_axis_->deleteFromAxis(indices, device);
     };
 
-    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels_select, DeviceT& device) {
+    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels_select, DeviceT& device) override {
       tensor_axis_->selectFromAxisConcept(indices, labels_select, device);
     };
-    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels_select, DeviceT& device) {
+    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<float, DeviceT, 2>>& labels_select, DeviceT& device) override {
       tensor_axis_->selectFromAxisConcept(indices, labels_select, device);
     };
-    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels_select, DeviceT& device) {
+    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<double, DeviceT, 2>>& labels_select, DeviceT& device) override {
       tensor_axis_->selectFromAxisConcept(indices, labels_select, device);
     };
-    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels_select, DeviceT& device) {
+    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<char, DeviceT, 2>>& labels_select, DeviceT& device) override {
       tensor_axis_->selectFromAxisConcept(indices, labels_select, device);
     };
-    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& labels_select, DeviceT& device) {
+    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& labels_select, DeviceT& device) override {
       tensor_axis_->selectFromAxisConcept(indices, labels_select, device);
     };
-    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels_select, DeviceT& device) {
+    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels_select, DeviceT& device) override {
       tensor_axis_->selectFromAxisConcept(indices, labels_select, device);
     };
-    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels_select, DeviceT& device) {
+    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels_select, DeviceT& device) override {
       tensor_axis_->selectFromAxisConcept(indices, labels_select, device);
     };
-    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels_select, DeviceT& device) {
+    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels_select, DeviceT& device) override {
       tensor_axis_->selectFromAxisConcept(indices, labels_select, device);
     };
-    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels_select, DeviceT& device) {
+    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels_select, DeviceT& device) override {
       tensor_axis_->selectFromAxisConcept(indices, labels_select, device);
     };
 #if COMPILE_WITH_CUDA
-    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels_select, DeviceT& device) {
+    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels_select, DeviceT& device) override {
       tensor_axis_->selectFromAxisConcept(indices, labels_select, device);
     };
-    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels_select, DeviceT& device) {
+    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels_select, DeviceT& device) override {
       tensor_axis_->selectFromAxisConcept(indices, labels_select, device);
     };
-    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels_select, DeviceT& device) {
+    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels_select, DeviceT& device) override {
       tensor_axis_->selectFromAxisConcept(indices, labels_select, device);
     };
-    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels_select, DeviceT& device) {
+    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels_select, DeviceT& device) override {
       tensor_axis_->selectFromAxisConcept(indices, labels_select, device);
     };
-    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels_select, DeviceT& device) {
+    void selectFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels_select, DeviceT& device) override {
       tensor_axis_->selectFromAxisConcept(indices, labels_select, device);
     };
 #endif
 
-    void appendLabelsToAxis(const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, DeviceT& device) {
+    void appendLabelsToAxis(const std::shared_ptr<TensorData<int, DeviceT, 2>>& labels, DeviceT& device) override {
       tensor_axis_->appendLabelsToAxisConcept(labels, device);
     };
-    void appendLabelsToAxis(const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, DeviceT& device) {
+    void appendLabelsToAxis(const std::shared_ptr<TensorData<float, DeviceT, 2>>& labels, DeviceT& device) override {
       tensor_axis_->appendLabelsToAxisConcept(labels, device);
     };
-    void appendLabelsToAxis(const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, DeviceT& device) {
+    void appendLabelsToAxis(const std::shared_ptr<TensorData<double, DeviceT, 2>>& labels, DeviceT& device) override {
       tensor_axis_->appendLabelsToAxisConcept(labels, device);
     };
-    void appendLabelsToAxis(const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, DeviceT& device) {
+    void appendLabelsToAxis(const std::shared_ptr<TensorData<char, DeviceT, 2>>& labels, DeviceT& device) override {
       tensor_axis_->appendLabelsToAxisConcept(labels, device);
     };
-    void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& labels, DeviceT& device) {
+    void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& labels, DeviceT& device) override {
       tensor_axis_->appendLabelsToAxisConcept(labels, device);
     };
-    void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, DeviceT& device) {
+    void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& labels, DeviceT& device) override {
       tensor_axis_->appendLabelsToAxisConcept(labels, device);
     };
-    void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, DeviceT& device) {
+    void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& labels, DeviceT& device) override {
       tensor_axis_->appendLabelsToAxisConcept(labels, device);
     };
-    void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, DeviceT& device) {
+    void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& labels, DeviceT& device) override {
       tensor_axis_->appendLabelsToAxisConcept(labels, device);
     };
-    void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, DeviceT& device) {
+    void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& labels, DeviceT& device) override {
       tensor_axis_->appendLabelsToAxisConcept(labels, device);
     };
 #if COMPILE_WITH_CUDA
-    void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels, DeviceT& device) {
+    void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& labels, DeviceT& device) override {
       tensor_axis_->appendLabelsToAxisConcept(labels, device);
     };
-    void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, DeviceT& device) {
+    void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& labels, DeviceT& device) override {
       tensor_axis_->appendLabelsToAxisConcept(labels, device);
     };
-    void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, DeviceT& device) {
+    void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& labels, DeviceT& device) override {
       tensor_axis_->appendLabelsToAxisConcept(labels, device);
     };
-    void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, DeviceT& device) {
+    void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& labels, DeviceT& device) override {
       tensor_axis_->appendLabelsToAxisConcept(labels, device);
     };
-    void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, DeviceT& device) {
+    void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& labels, DeviceT& device) override {
       tensor_axis_->appendLabelsToAxisConcept(labels, device);
     };
 #endif
 
-    bool syncHAndDData(DeviceT& device) { return  tensor_axis_->syncHAndDData(device); };  
-    void setDataStatus(const bool& h_data_updated, const bool& d_data_updated) { tensor_axis_->setDataStatus(h_data_updated, d_data_updated); } 
-    std::pair<bool, bool> getDataStatus() { return  tensor_axis_->getDataStatus(); };  
+    bool syncHAndDData(DeviceT& device) override { return  tensor_axis_->syncHAndDData(device); };  
+    void setDataStatus(const bool& h_data_updated, const bool& d_data_updated) override { tensor_axis_->setDataStatus(h_data_updated, d_data_updated); } 
+    std::pair<bool, bool> getDataStatus() override { return  tensor_axis_->getDataStatus(); };  
 
-    void sortLabels(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) {
+    void sortLabels(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) override {
       tensor_axis_->sortLabels(indices, device);
     };
 
-    bool loadLabelsBinary(const std::string& filename, DeviceT& device) {
+    bool loadLabelsBinary(const std::string& filename, DeviceT& device) override {
       return tensor_axis_->loadLabelsBinary(filename, device);
     }
 
-    bool storeLabelsBinary(const std::string& filename, DeviceT& device) {
+    bool storeLabelsBinary(const std::string& filename, DeviceT& device) override {
       return tensor_axis_->storeLabelsBinary(filename, device);
     }
 
-    std::vector<std::string> getLabelsAsStrings(DeviceT& device) {
+    std::vector<std::string> getLabelsAsStrings(DeviceT& device) override {
       return tensor_axis_->getLabelsAsStrings(device);
     }
     std::vector<std::string> getLabelsAsStrings(const Eigen::array<Eigen::Index, 2>& offset, const Eigen::array<Eigen::Index, 2>& span) {
       return tensor_axis_->getLabelsAsStrings(offset, span);
     }
 
-    void appendLabelsToAxisFromCsv(const Eigen::Tensor<std::string, 2>& labels, DeviceT& device) {
+    void appendLabelsToAxisFromCsv(const Eigen::Tensor<std::string, 2>& labels, DeviceT& device) override {
       tensor_axis_->appendLabelsToAxisFromCsv(labels, device);
     }
 
-    void makeSelectIndicesFromCsv(std::shared_ptr<TensorData<int, DeviceT, 1>>& select_indices, const Eigen::Tensor<std::string, 2>& labels, DeviceT& device) {
+    void makeSelectIndicesFromCsv(std::shared_ptr<TensorData<int, DeviceT, 1>>& select_indices, const Eigen::Tensor<std::string, 2>& labels, DeviceT& device) override {
       tensor_axis_->makeSelectIndicesFromCsv(select_indices, labels, device);
     }
 

@@ -226,6 +226,32 @@ namespace TensorBase
     void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice& device);
     template<typename T = TensorT, std::enable_if_t<std::is_same<T, TensorArray8<int>>::value, int> = 0>
     void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice& device) { /*TODO*/};
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, TensorArray8<float>>::value, int> = 0>
+    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice& device) { /*TODO*/ };
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, TensorArray32<char>>::value, int> = 0>
+    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice& device);
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, TensorArray32<int>>::value, int> = 0>
+    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice& device) { /*TODO*/ };
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, TensorArray32<float>>::value, int> = 0>
+    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice& device) { /*TODO*/ };
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, TensorArray128<char>>::value, int> = 0>
+    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice& device);
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, TensorArray128<int>>::value, int> = 0>
+    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice& device) { /*TODO*/ };
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, TensorArray128<float>>::value, int> = 0>
+    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice& device) { /*TODO*/ };
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, TensorArray512<char>>::value, int> = 0>
+    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice& device);
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, TensorArray512<int>>::value, int> = 0>
+    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice& device) { /*TODO*/ };
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, TensorArray512<float>>::value, int> = 0>
+    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice& device) { /*TODO*/ };
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, TensorArray2048<char>>::value, int> = 0>
+    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice& device);
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, TensorArray2048<int>>::value, int> = 0>
+    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice& device) { /*TODO*/ };
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, TensorArray2048<float>>::value, int> = 0>
+    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice& device) { /*TODO*/ };
   private:
     friend class cereal::access;
     template<class Archive>
@@ -456,6 +482,42 @@ namespace TensorBase
     //Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_converted(getDataPointer().get(), dimensions_);
     //data_converted.device(device) = data_converted.unaryExpr([](const std::string& elem) { return TensorArray8<char>(elem); });
   }
+  template<typename TensorT, int TDim>
+  template<typename T, std::enable_if_t<std::is_same<T, TensorArray32<char>>::value, int>>
+  inline void TensorDataDefaultDevice<TensorT, TDim>::convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice & device)
+  {
+    assert(data_new.size() == this->getTensorSize());
+    // convert the data from string to TensorT
+    std::transform(data_new.data(), data_new.data() + data_new.size(), getDataPointer().get(),
+      [](const std::string& elem) -> TensorArray32<char> { return TensorArray32<char>(elem); });
+  }
+  template<typename TensorT, int TDim>
+  template<typename T, std::enable_if_t<std::is_same<T, TensorArray128<char>>::value, int>>
+  inline void TensorDataDefaultDevice<TensorT, TDim>::convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice & device)
+  {
+    assert(data_new.size() == this->getTensorSize());
+    // convert the data from string to TensorT
+    std::transform(data_new.data(), data_new.data() + data_new.size(), getDataPointer().get(),
+      [](const std::string& elem) -> TensorArray128<char> { return TensorArray128<char>(elem); });
+  }
+  template<typename TensorT, int TDim>
+  template<typename T, std::enable_if_t<std::is_same<T, TensorArray512<char>>::value, int>>
+  inline void TensorDataDefaultDevice<TensorT, TDim>::convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice & device)
+  {
+    assert(data_new.size() == this->getTensorSize());
+    // convert the data from string to TensorT
+    std::transform(data_new.data(), data_new.data() + data_new.size(), getDataPointer().get(),
+      [](const std::string& elem) -> TensorArray512<char> { return TensorArray512<char>(elem); });
+  }
+  template<typename TensorT, int TDim>
+  template<typename T, std::enable_if_t<std::is_same<T, TensorArray2048<char>>::value, int>>
+  inline void TensorDataDefaultDevice<TensorT, TDim>::convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::DefaultDevice & device)
+  {
+    assert(data_new.size() == this->getTensorSize());
+    // convert the data from string to TensorT
+    std::transform(data_new.data(), data_new.data() + data_new.size(), getDataPointer().get(),
+      [](const std::string& elem) -> TensorArray2048<char> { return TensorArray2048<char>(elem); });
+  }
 
   /**
     @brief Tensor data class specialization for Eigen::ThreadPoolDevice (Multi thread CPU)
@@ -491,6 +553,14 @@ namespace TensorBase
     template<typename T = TensorT, std::enable_if_t<std::is_same<T, bool>::value, int> = 0>
     void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::ThreadPoolDevice& device);
     template<typename T = TensorT, std::enable_if_t<std::is_same<T, TensorArray8<char>>::value, int> = 0>
+    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::ThreadPoolDevice& device);
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, TensorArray32<char>>::value, int> = 0>
+    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::ThreadPoolDevice& device);
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, TensorArray128<char>>::value, int> = 0>
+    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::ThreadPoolDevice& device);
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, TensorArray512<char>>::value, int> = 0>
+    void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::ThreadPoolDevice& device);
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, TensorArray2048<char>>::value, int> = 0>
     void convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::ThreadPoolDevice& device);
   private:
     friend class cereal::access;
@@ -718,10 +788,42 @@ namespace TensorBase
     // convert the data from string to TensorT
     std::transform(data_new.data(), data_new.data() + data_new.size(), getDataPointer().get(),
       [](const std::string& elem) -> TensorArray8<char> { return TensorArray8<char>(elem); });
-
-    // NOTE: unaryExpr operator does not appear to work with TensorArray8<char>!
-    //Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_converted(getDataPointer().get(), dimensions_);
-    //data_converted.device(device) = data_converted.unaryExpr([](const std::string& elem) { return TensorArray8<char>(elem); });
+  }
+  template<typename TensorT, int TDim>
+  template<typename T, std::enable_if_t<std::is_same<T, TensorArray32<char>>::value, int>>
+  inline void TensorDataCpu<TensorT, TDim>::convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::ThreadPoolDevice & device)
+  {
+    assert(data_new.size() == this->getTensorSize());
+    // convert the data from string to TensorT
+    std::transform(data_new.data(), data_new.data() + data_new.size(), getDataPointer().get(),
+      [](const std::string& elem) -> TensorArray32<char> { return TensorArray32<char>(elem); });
+  }
+  template<typename TensorT, int TDim>
+  template<typename T, std::enable_if_t<std::is_same<T, TensorArray128<char>>::value, int>>
+  inline void TensorDataCpu<TensorT, TDim>::convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::ThreadPoolDevice & device)
+  {
+    assert(data_new.size() == this->getTensorSize());
+    // convert the data from string to TensorT
+    std::transform(data_new.data(), data_new.data() + data_new.size(), getDataPointer().get(),
+      [](const std::string& elem) -> TensorArray128<char> { return TensorArray128<char>(elem); });
+  }
+  template<typename TensorT, int TDim>
+  template<typename T, std::enable_if_t<std::is_same<T, TensorArray512<char>>::value, int>>
+  inline void TensorDataCpu<TensorT, TDim>::convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::ThreadPoolDevice & device)
+  {
+    assert(data_new.size() == this->getTensorSize());
+    // convert the data from string to TensorT
+    std::transform(data_new.data(), data_new.data() + data_new.size(), getDataPointer().get(),
+      [](const std::string& elem) -> TensorArray512<char> { return TensorArray512<char>(elem); });
+  }
+  template<typename TensorT, int TDim>
+  template<typename T, std::enable_if_t<std::is_same<T, TensorArray2048<char>>::value, int>>
+  inline void TensorDataCpu<TensorT, TDim>::convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::ThreadPoolDevice & device)
+  {
+    assert(data_new.size() == this->getTensorSize());
+    // convert the data from string to TensorT
+    std::transform(data_new.data(), data_new.data() + data_new.size(), getDataPointer().get(),
+      [](const std::string& elem) -> TensorArray2048<char> { return TensorArray2048<char>(elem); });
   }
 }
 
