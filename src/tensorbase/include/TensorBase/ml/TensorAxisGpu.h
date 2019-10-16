@@ -612,6 +612,11 @@ CEREAL_REGISTER_TYPE(TensorBase::TensorAxisGpuPrimitiveT<int>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisGpuPrimitiveT<float>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisGpuPrimitiveT<double>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisGpuPrimitiveT<char>);
+
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisGpuClassT<TensorBase::TensorArrayGpu8, char>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisGpuClassT<TensorBase::TensorArrayGpu32, char>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisGpuClassT<TensorBase::TensorArrayGpu128, char>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisGpuClassT<TensorBase::TensorArrayGpu512, char>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisGpuClassT<TensorBase::TensorArrayGpu2048, char>);
 #endif
 #endif //TENSORBASE_TENSORAXISGPU_H

@@ -93,14 +93,14 @@ namespace TensorBase
     ~TensorDimensionDefaultDevice() = default; ///< Default destructor
     void setLabels(const Eigen::Tensor<TensorT, 1>& labels) override {
       Eigen::array<Eigen::Index, 1> dimensions = labels.dimensions();
-      this->labels_.reset(new TensorDataDefaultDevice<TensorT, 1>(dimensions));
+      this->labels_ = std::make_shared<TensorDataDefaultDevice<TensorT, 1>>(TensorDataDefaultDevice<TensorT, 1>(dimensions));
       this->labels_->setData(labels);
       this->setNLabels(labels.size());
     };
     void setLabels() override {
       Eigen::array<Eigen::Index, 1> dimensions;
       dimensions.at(0) = this->n_labels_;
-      this->labels_.reset(new TensorDataDefaultDevice<TensorT, 1>(dimensions));
+      this->labels_ = std::make_shared<TensorDataDefaultDevice<TensorT, 1>>(TensorDataDefaultDevice<TensorT, 1>(dimensions));
       this->labels_->setData();
     };
     bool loadLabelsBinary(const std::string& filename, Eigen::DefaultDevice& device) override {
@@ -136,14 +136,14 @@ namespace TensorBase
     ~TensorDimensionCpu() = default; ///< Default destructor
     void setLabels(const Eigen::Tensor<TensorT, 1>& labels) override {
       Eigen::array<Eigen::Index, 1> dimensions = labels.dimensions();
-      this->labels_.reset(new TensorDataCpu<TensorT, 1>(dimensions));
+      this->labels_ = std::make_shared<TensorDataCpu<TensorT, 1>>(TensorDataCpu<TensorT, 1>(dimensions));
       this->labels_->setData(labels);
       this->setNLabels(labels.size());
     };
     void setLabels() override {
       Eigen::array<Eigen::Index, 1> dimensions;
       dimensions.at(0) = this->n_labels_;
-      this->labels_.reset(new TensorDataCpu<TensorT, 1>(dimensions));
+      this->labels_ = std::make_shared<TensorDataCpu<TensorT, 1>>(TensorDataCpu<TensorT, 1>(dimensions));
       this->labels_->setData();
     };
     bool loadLabelsBinary(const std::string& filename, Eigen::ThreadPoolDevice& device) override {
@@ -175,11 +175,19 @@ CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionDefaultDevice<float>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionDefaultDevice<double>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionDefaultDevice<char>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionDefaultDevice<TensorBase::TensorArray8<char>>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionDefaultDevice<TensorBase::TensorArray32<char>>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionDefaultDevice<TensorBase::TensorArray128<char>>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionDefaultDevice<TensorBase::TensorArray512<char>>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionDefaultDevice<TensorBase::TensorArray2048<char>>);
 
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionCpu<int>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionCpu<float>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionCpu<double>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionCpu<char>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionCpu<TensorBase::TensorArray8<char>>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionCpu<TensorBase::TensorArray32<char>>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionCpu<TensorBase::TensorArray128<char>>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionCpu<TensorBase::TensorArray512<char>>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionCpu<TensorBase::TensorArray2048<char>>);
 
 #endif //TENSORBASE_TENSORDIMENSION_H

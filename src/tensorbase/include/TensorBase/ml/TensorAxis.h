@@ -910,10 +910,18 @@ CEREAL_REGISTER_TYPE(TensorBase::TensorAxisDefaultDevice<float>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisDefaultDevice<double>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisDefaultDevice<char>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisDefaultDevice<TensorBase::TensorArray8<char>>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisDefaultDevice<TensorBase::TensorArray32<char>>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisDefaultDevice<TensorBase::TensorArray128<char>>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisDefaultDevice<TensorBase::TensorArray512<char>>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisDefaultDevice<TensorBase::TensorArray2048<char>>);
 
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisCpu<int>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisCpu<float>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisCpu<double>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisCpu<char>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisCpu<TensorBase::TensorArray8<char>>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisCpu<TensorBase::TensorArray32<char>>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisCpu<TensorBase::TensorArray128<char>>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisCpu<TensorBase::TensorArray512<char>>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisCpu<TensorBase::TensorArray2048<char>>);
 #endif //TENSORBASE_TENSORAXIS_H

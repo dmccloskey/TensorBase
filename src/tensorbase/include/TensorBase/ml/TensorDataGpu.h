@@ -486,7 +486,7 @@ namespace TensorBase
       thrust::sort_by_key(thrust::cuda::par.on(device.stream()), d_data, d_data + data_copy->getTensorSize(), d_indices);
     }
     else if (sort_order == "DESC") {
-      isGreaterThanGpu comp(data_copy->getTensorSize());
+      isGreaterThanGpu8 comp(data_copy->getTensorSize());
       thrust::sort_by_key(thrust::cuda::par.on(device.stream()), d_data, d_data + data_copy->getTensorSize(), d_indices, comp);
     }
   }
@@ -499,7 +499,7 @@ namespace TensorBase
       thrust::stable_sort(thrust::cuda::par.on(device.stream()), d_data, d_data + this->getTensorSize());
     }
     else if (sort_order == "DESC") {
-      isGreaterThanGpu comp(this->getTensorSize());
+      isGreaterThanGpu8 comp(this->getTensorSize());
       thrust::stable_sort(thrust::cuda::par.on(device.stream()), d_data, d_data + this->getTensorSize(), comp);
     }
   }
@@ -587,5 +587,21 @@ CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu8
 CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu8, char, 2>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu8, char, 3>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu8, char, 4>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu32, char, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu32, char, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu32, char, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu32, char, 4>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu128, char, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu128, char, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu128, char, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu128, char, 4>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu512, char, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu512, char, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu512, char, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu512, char, 4>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu2048, char, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu2048, char, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu2048, char, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu2048, char, 4>);
 #endif
 #endif //TENSORBASE_TENSORDATAGPU_H

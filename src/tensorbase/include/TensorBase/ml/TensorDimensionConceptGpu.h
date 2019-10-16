@@ -18,5 +18,9 @@ CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimens
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionGpuPrimitiveT<double>, Eigen::GpuDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionGpuPrimitiveT<char>, Eigen::GpuDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionGpuClassT<TensorBase::TensorArrayGpu8, char>, Eigen::GpuDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionGpuClassT<TensorBase::TensorArrayGpu32, char>, Eigen::GpuDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionGpuClassT<TensorBase::TensorArrayGpu128, char>, Eigen::GpuDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionGpuClassT<TensorBase::TensorArrayGpu512, char>, Eigen::GpuDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionGpuClassT<TensorBase::TensorArrayGpu2048, char>, Eigen::GpuDevice>);
 #endif
 #endif //TENSORBASE_TENSORDIMENSIONCONCEPTGPU_H

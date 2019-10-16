@@ -81,40 +81,40 @@ namespace TensorBase
     TensorDimensionWrapper() = default;
     ~TensorDimensionWrapper() = default;
 
-    int getId() const { return tensor_dimension_->getId(); };
-    std::string getName() const { return tensor_dimension_->getName(); };
-    size_t getNLabels() const { return tensor_dimension_->getNLabels(); };
+    int getId() const override { return tensor_dimension_->getId(); };
+    std::string getName() const override { return tensor_dimension_->getName(); };
+    size_t getNLabels() const override { return tensor_dimension_->getNLabels(); };
 
-//    void getLabelsDataPointer(std::shared_ptr<int>& data_copy) {
+//    void getLabelsDataPointer(std::shared_ptr<int>& data_copy) override {
 //      tensor_dimension_->getLabelsDataPointer(data_copy);
 //    };
-//    void getLabelsDataPointer(std::shared_ptr<float>& data_copy) {
+//    void getLabelsDataPointer(std::shared_ptr<float>& data_copy) override {
 //      tensor_dimension_->getLabelsDataPointer(data_copy);
 //    };
-//    void getLabelsDataPointer(std::shared_ptr<double>& data_copy) {
+//    void getLabelsDataPointer(std::shared_ptr<double>& data_copy) override {
 //      tensor_dimension_->getLabelsDataPointer(data_copy);
 //    };
-//    void getLabelsDataPointer(std::shared_ptr<char>& data_copy) {
+//    void getLabelsDataPointer(std::shared_ptr<char>& data_copy) override {
 //      tensor_dimension_->getLabelsDataPointer(data_copy);
 //    };
-//    void getLabelsDataPointer(std::shared_ptr<TensorArray8<char>>& data_copy) {
+//    void getLabelsDataPointer(std::shared_ptr<TensorArray8<char>>& data_copy) override {
 //      tensor_dimension_->getLabelsDataPointer(data_copy);
 //    };
 //#if COMPILE_WITH_CUDA
-//    void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu8<char>>& data_copy) {
+//    void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu8<char>>& data_copy) override {
 //      tensor_dimension_->getLabelsDataPointer(data_copy);
 //    };
 //#endif
 
-    bool syncHAndDData(DeviceT& device) { return  tensor_dimension_->syncHAndDData(device); };  
+    bool syncHAndDData(DeviceT& device) override { return  tensor_dimension_->syncHAndDData(device); };  
     void setDataStatus(const bool& h_data_updated, const bool& d_data_updated) { tensor_dimension_->setDataStatus(h_data_updated, d_data_updated); } 
     std::pair<bool, bool> getDataStatus() { return  tensor_dimension_->getDataStatus(); };  
 
-    bool loadLabelsBinary(const std::string& filename, DeviceT& device) {
+    bool loadLabelsBinary(const std::string& filename, DeviceT& device) override {
       return tensor_dimension_->loadLabelsBinary(filename, device);
     }
 
-    bool storeLabelsBinary(const std::string& filename, DeviceT& device) {
+    bool storeLabelsBinary(const std::string& filename, DeviceT& device) override {
       return tensor_dimension_->storeLabelsBinary(filename, device);
     }
 
@@ -133,10 +133,18 @@ CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimens
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionDefaultDevice<double>, Eigen::DefaultDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionDefaultDevice<char>, Eigen::DefaultDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionDefaultDevice<TensorBase::TensorArray8<char>>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionDefaultDevice<TensorBase::TensorArray32<char>>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionDefaultDevice<TensorBase::TensorArray128<char>>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionDefaultDevice<TensorBase::TensorArray512<char>>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionDefaultDevice<TensorBase::TensorArray2048<char>>, Eigen::DefaultDevice>);
 
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionCpu<int>, Eigen::ThreadPoolDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionCpu<float>, Eigen::ThreadPoolDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionCpu<double>, Eigen::ThreadPoolDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionCpu<char>, Eigen::ThreadPoolDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionCpu<TensorBase::TensorArray8<char>>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionCpu<TensorBase::TensorArray32<char>>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionCpu<TensorBase::TensorArray128<char>>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionCpu<TensorBase::TensorArray512<char>>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionCpu<TensorBase::TensorArray2048<char>>, Eigen::ThreadPoolDevice>);
 #endif //TENSORBASE_TENSORDIMENSIONCONCEPT_H
