@@ -115,6 +115,26 @@ namespace TensorBase
     virtual void selectIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& select_labels, DeviceT& device) = 0;
 #endif
 
+		/*
+		All LabelT and DeviceT combos of `selectIndicesView`
+		*/
+		virtual void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels, DeviceT& device) = 0;
+		virtual void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels, DeviceT& device) = 0;
+		virtual void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels, DeviceT& device) = 0;
+		virtual void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels, DeviceT& device) = 0;
+		virtual void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& select_labels, DeviceT& device) = 0;
+		virtual void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& select_labels, DeviceT& device) = 0;
+		virtual void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& select_labels, DeviceT& device) = 0;
+		virtual void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& select_labels, DeviceT& device) = 0;
+		virtual void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& select_labels, DeviceT& device) = 0;
+#if COMPILE_WITH_CUDA
+		virtual void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& select_labels, DeviceT& device) = 0;
+		virtual void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& select_labels, DeviceT& device) = 0;
+		virtual void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& select_labels, DeviceT& device) = 0;
+		virtual void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& select_labels, DeviceT& device) = 0;
+		virtual void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& select_labels, DeviceT& device) = 0;
+#endif
+
     /*
     All DeviceT combos of `zeroIndicesView`
     */
@@ -1008,6 +1028,51 @@ namespace TensorBase
     void selectIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& select_labels, DeviceT& device) override {
       tensor_table_->selectIndicesView(axis_name, dimension_index, select_labels, device);
     };
+#endif
+
+		void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels, DeviceT& device) override {
+			tensor_table_->selectIndicesView(axis_name, select_labels, device);
+		};
+		void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels, DeviceT& device) override {
+			tensor_table_->selectIndicesView(axis_name, select_labels, device);
+		};
+		void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels, DeviceT& device) override {
+			tensor_table_->selectIndicesView(axis_name, select_labels, device);
+		};
+		void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels, DeviceT& device) override {
+			tensor_table_->selectIndicesView(axis_name, select_labels, device);
+		};
+		void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& select_labels, DeviceT& device) override {
+			tensor_table_->selectIndicesView(axis_name, select_labels, device);
+		};
+		void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& select_labels, DeviceT& device) override {
+			tensor_table_->selectIndicesView(axis_name, select_labels, device);
+		};
+		void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& select_labels, DeviceT& device) override {
+			tensor_table_->selectIndicesView(axis_name, select_labels, device);
+		};
+		void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& select_labels, DeviceT& device) override {
+			tensor_table_->selectIndicesView(axis_name, select_labels, device);
+		};
+		void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& select_labels, DeviceT& device) override {
+			tensor_table_->selectIndicesView(axis_name, select_labels, device);
+		};
+#if COMPILE_WITH_CUDA
+		void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& select_labels, DeviceT& device) override {
+			tensor_table_->selectIndicesView(axis_name, select_labels, device);
+		};
+		void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& select_labels, DeviceT& device) override {
+			tensor_table_->selectIndicesView(axis_name, select_labels, device);
+		};
+		void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& select_labels, DeviceT& device) override {
+			tensor_table_->selectIndicesView(axis_name, select_labels, device);
+		};
+		void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& select_labels, DeviceT& device) override {
+			tensor_table_->selectIndicesView(axis_name, select_labels, device);
+		};
+		void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& select_labels, DeviceT& device) override {
+			tensor_table_->selectIndicesView(axis_name, select_labels, device);
+		};
 #endif
 
     void zeroIndicesView(const std::string& axis_name, DeviceT& device) override { tensor_table_->zeroIndicesView(axis_name, device); }

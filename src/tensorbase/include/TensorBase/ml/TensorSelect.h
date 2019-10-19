@@ -75,15 +75,21 @@ namespace TensorBase
     for (auto& axis : tensor_collection->tables_.at(select_clause.table_name)->getAxes()) {
       if (axis.first == select_clause.axis_name) {
         // TODO: check for select_clause.axis_name == ""
-        // iterate through each axis dimensions
-        for (int d = 0; d < axis.second->getDimensions().size(); ++d) {
-          // TODO: check for select_clause.dimension_name == ""
-          if (axis.second->getDimensions()(d) == select_clause.dimension_name) {
-            // copy over indices into the view that are in the select clause
-            tensor_collection->tables_.at(select_clause.table_name)->selectIndicesView(
-              select_clause.axis_name, d, select_clause.labels, device);
-          }
-        }
+				if (select_clause.dimension_name == "" && select_clause.axis_labels != nullptr) { 
+					// Select option 2
+					tensor_collection->tables_.at(select_clause.table_name)->selectIndicesView(
+						select_clause.axis_name, select_clause.axis_labels, device);
+				}				
+				else { 
+					// iterate through each axis dimensions
+					for (int d = 0; d < axis.second->getDimensions().size(); ++d) {
+						if (axis.second->getDimensions()(d) == select_clause.dimension_name) {
+							// Select option 1
+							tensor_collection->tables_.at(select_clause.table_name)->selectIndicesView(
+								select_clause.axis_name, d, select_clause.labels, device);
+						}
+					}
+				}
       }
     }
   };
