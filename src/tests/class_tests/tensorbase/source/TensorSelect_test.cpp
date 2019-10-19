@@ -56,8 +56,8 @@ BOOST_AUTO_TEST_CASE(selectClauseDefaultDevice)
 
   // Set up the collection
   TensorCollectionDefaultDevice collection_1;
-  collection_1.addTensorTable(tensorTable1_ptr);
-  collection_1.addTensorTable(tensorTable2_ptr);
+  collection_1.addTensorTable(tensorTable1_ptr, "1");
+  collection_1.addTensorTable(tensorTable2_ptr, "1");
   std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> collection_1_ptr = std::make_shared<TensorCollectionDefaultDevice>(collection_1);
 
   // Set up the SelectClause
@@ -157,8 +157,8 @@ BOOST_AUTO_TEST_CASE(whereClauseDefaultDevice)
 
   // Set up the collection
   TensorCollectionDefaultDevice collection_1;
-  collection_1.addTensorTable(tensorTable1_ptr);
-  collection_1.addTensorTable(tensorTable2_ptr);
+  collection_1.addTensorTable(tensorTable1_ptr, "1");
+  collection_1.addTensorTable(tensorTable2_ptr, "1");
   std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> collection_1_ptr = std::make_shared<TensorCollectionDefaultDevice>(collection_1);
 
   // Set up the WhereClauses
@@ -288,8 +288,8 @@ BOOST_AUTO_TEST_CASE(sortClauseDefaultDevice)
 
   // Set up the collection
   TensorCollectionDefaultDevice collection_1;
-  collection_1.addTensorTable(tensorTable1_ptr);
-  collection_1.addTensorTable(tensorTable2_ptr);
+  collection_1.addTensorTable(tensorTable1_ptr, "1");
+  collection_1.addTensorTable(tensorTable2_ptr, "1");
   std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> collection_1_ptr = std::make_shared<TensorCollectionDefaultDevice>(collection_1);
 
   // setup the sort clauses

@@ -300,7 +300,6 @@ void test_partitionGpuPrimitiveT()
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
 
-
 void test_runLengthEncodeGpuPrimitiveT()
 {
   // Make the tensor data and expected data values
@@ -434,6 +433,56 @@ void test_syncHAndDGpuPrimitiveT()
   assert(tensordata.getData()(0, 2, 0) == 0.5);
   assert(tensordata.getData()(0, 0, 3) == 0.5);
   assert(tensordata.getData()(1, 2, 3) == 0.5);
+}
+
+void test_convertFromStringToTensorTGpuPrimitiveT()
+{
+  Eigen::Tensor<std::string, 3> tensor_string(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+  tensor_string.setConstant("1.001");
+  cudaStream_t stream;
+  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  Eigen::GpuStreamDevice stream_device;
+  Eigen::GpuDevice device(&stream_device);
+
+  // Test float
+  TensorDataGpuPrimitiveT<float, 3> tensordata_f(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+  tensordata_f.setData();
+  tensordata_f.syncHAndDData(device);
+  tensordata_f.convertFromStringToTensorT(tensor_string, device);
+  tensordata_f.syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  assert(tensordata_f.getData()(0, 0, 0) < 1.001 + 1e-3 && tensordata_f.getData()(0, 0, 0) > 1.001 - 1e-3);
+  assert(tensordata_f.getData()(1, 2, 3) < 1.001 + 1e-3 && tensordata_f.getData()(1, 2, 3) > 1.001 - 1e-3);
+
+  // Test double
+  TensorDataGpuPrimitiveT<double, 3> tensordata_d(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+  tensordata_d.setData();
+  tensordata_d.syncHAndDData(device);
+  tensordata_d.convertFromStringToTensorT(tensor_string, device);
+  tensordata_d.syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  assert(tensordata_d.getData()(0, 0, 0) < 1.001 + 1e-3 && tensordata_d.getData()(0, 0, 0) > 1.001 - 1e-3);
+  assert(tensordata_d.getData()(1, 2, 3) < 1.001 + 1e-3 && tensordata_d.getData()(0, 0, 0) > 1.001 - 1e-3);
+
+  // Test int
+  TensorDataGpuPrimitiveT<int, 3> tensordata_i(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+  tensordata_i.setData();
+  tensordata_i.syncHAndDData(device);
+  tensordata_i.convertFromStringToTensorT(tensor_string, device);
+  tensordata_i.syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  assert(tensordata_i.getData()(0, 0, 0) == 1);
+  assert(tensordata_i.getData()(1, 2, 3) == 1);
+
+  // Test int
+  TensorDataGpuPrimitiveT<char, 3> tensordata_c(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+  tensordata_c.setData();
+  tensordata_c.syncHAndDData(device);
+  tensordata_c.convertFromStringToTensorT(tensor_string, device);
+  tensordata_c.syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  assert(tensordata_c.getData()(0, 0, 0) == '1');
+  assert(tensordata_c.getData()(1, 2, 3) == '1');
 }
 
 /* TensorDataGpuClassT Tests
@@ -874,6 +923,26 @@ void test_runLengthEncodeGpuClassT()
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
 
+void test_convertFromStringToTensorTGpuClassT()
+{
+  Eigen::Tensor<std::string, 3> tensor_string(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+  tensor_string.setConstant("1.001");
+  cudaStream_t stream;
+  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  Eigen::GpuStreamDevice stream_device;
+  Eigen::GpuDevice device(&stream_device);
+
+  // Test array  // FIXME: causing a memory leak on deallocation
+  TensorDataGpuClassT<TensorArrayGpu8, char, 3> tensordata_a8(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+  tensordata_a8.setData();
+  tensordata_a8.syncHAndDData(device);
+  tensordata_a8.convertFromStringToTensorT(tensor_string, device);
+  tensordata_a8.syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  assert(tensordata_a8.getData()(0, 0, 0) == TensorArrayGpu8<char>("1.001"));
+  assert(tensordata_a8.getData()(1, 2, 3) == TensorArrayGpu8<char>("1.001"));
+}
+
 int main(int argc, char** argv)
 {
   // PrimitiveT
@@ -889,6 +958,7 @@ int main(int argc, char** argv)
   test_sortIndicesGpuPrimitiveT();
   test_partitionGpuPrimitiveT();
   test_runLengthEncodeGpuPrimitiveT();
+  test_convertFromStringToTensorTGpuPrimitiveT();
 
   // ClassT
   assert(cudaDeviceReset() == cudaSuccess);
@@ -900,6 +970,7 @@ int main(int argc, char** argv)
   //test_sortIndicesGpuClassT(); // run time device synchronization error during sort (2nd pass in Thrust merge_sort)
   test_partitionGpuClassT();
   test_runLengthEncodeGpuClassT();
+  test_convertFromStringToTensorTGpuClassT();
   return 0;
 }
 #endif

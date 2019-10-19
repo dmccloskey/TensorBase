@@ -60,15 +60,15 @@ BOOST_AUTO_TEST_CASE(commparisonDefaultDevice)
 
   // Test collection
   TensorCollectionDefaultDevice tensorCollection_test("1");
-  tensorCollection_test.addTensorTable(tensorTable1_ptr);
-  tensorCollection_test.addTensorTable(tensorTable2_ptr);
-  tensorCollection_test.addTensorTable(tensorTable3_ptr);
+  tensorCollection_test.addTensorTable(tensorTable1_ptr, "1");
+  tensorCollection_test.addTensorTable(tensorTable2_ptr, "1");
+  tensorCollection_test.addTensorTable(tensorTable3_ptr, "1");
 
   // Expected collection
   TensorCollectionDefaultDevice tensorCollection1("1");
-  tensorCollection1.addTensorTable(tensorTable1_ptr);
-  tensorCollection1.addTensorTable(tensorTable2_ptr);
-  tensorCollection1.addTensorTable(tensorTable3_ptr);
+  tensorCollection1.addTensorTable(tensorTable1_ptr, "1");
+  tensorCollection1.addTensorTable(tensorTable2_ptr, "1");
+  tensorCollection1.addTensorTable(tensorTable3_ptr, "1");
 
   BOOST_CHECK(tensorCollection_test == tensorCollection1); // Control
   tensorCollection1.setName("3");
@@ -111,12 +111,13 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   std::shared_ptr<TensorTableDefaultDevice<char, 3>> tensorTable3_ptr = std::make_shared<TensorTableDefaultDevice<char, 3>>(tensorTable3);
 
   TensorCollectionDefaultDevice tensorCollection;
-  tensorCollection.addTensorTable(tensorTable1_ptr);
-  tensorCollection.addTensorTable(tensorTable2_ptr);
-  tensorCollection.addTensorTable(tensorTable3_ptr);
+  tensorCollection.addTensorTable(tensorTable1_ptr, "1");
+  tensorCollection.addTensorTable(tensorTable2_ptr, "1");
+  tensorCollection.addTensorTable(tensorTable3_ptr, "1");
 
   // name getter
   BOOST_CHECK(tensorCollection.getTableNames() == std::vector<std::string>({ "1", "2", "3" }));
+  BOOST_CHECK(tensorCollection.getTableNamesFromUserName("1") == std::set<std::string>({ "1", "2", "3" }));
 
   // table concept getter
   auto tt1_ptr = tensorCollection.getTensorTableConcept("1");
@@ -131,10 +132,12 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   // remove tensor tables
   tensorCollection.removeTensorTable("2");
   BOOST_CHECK(tensorCollection.getTableNames() == std::vector<std::string>({ "1", "3" }));
+  BOOST_CHECK(tensorCollection.getTableNamesFromUserName("1") == std::set<std::string>({ "1", "3" }));
 
   // clear the collection
   tensorCollection.clear();
   BOOST_CHECK(tensorCollection.getTableNames() == std::vector<std::string>());
+  BOOST_CHECK(tensorCollection.getTableNamesFromUserName("1") == std::set<std::string>());
 }
 
 BOOST_AUTO_TEST_CASE(addTensorTableConceptDefaultDevice)
@@ -170,9 +173,9 @@ BOOST_AUTO_TEST_CASE(addTensorTableConceptDefaultDevice)
   std::shared_ptr<TensorTableDefaultDevice<char, 3>> tensorTable3_ptr = std::make_shared<TensorTableDefaultDevice<char, 3>>(tensorTable3);
 
   TensorCollectionDefaultDevice tensorCollection;
-  tensorCollection.addTensorTable(tensorTable1_ptr);
-  tensorCollection.addTensorTable(tensorTable2_ptr);
-  tensorCollection.addTensorTable(tensorTable3_ptr);
+  tensorCollection.addTensorTable(tensorTable1_ptr, "1");
+  tensorCollection.addTensorTable(tensorTable2_ptr, "1");
+  tensorCollection.addTensorTable(tensorTable3_ptr, "1");
 
   // table concept getter
   const std::shared_ptr<TensorTableConcept<Eigen::DefaultDevice>> tt1_ptr = tensorCollection.getTensorTableConcept("1");
@@ -187,8 +190,10 @@ BOOST_AUTO_TEST_CASE(addTensorTableConceptDefaultDevice)
   // table concept adder
   tensorCollection.removeTensorTable("1");
   BOOST_CHECK(tensorCollection.getTableNames() == std::vector<std::string>({ "2", "3" }));
-  tensorCollection.addTensorTableConcept(tt1_ptr);
+  BOOST_CHECK(tensorCollection.getTableNamesFromUserName("1") == std::set<std::string>({ "2", "3" }));
+  tensorCollection.addTensorTableConcept(tt1_ptr, "1");
   BOOST_CHECK(tensorCollection.getTableNames() == std::vector<std::string>({ "1", "2", "3" }));
+  BOOST_CHECK(tensorCollection.getTableNamesFromUserName("1") == std::set<std::string>({ "1", "2", "3" }));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

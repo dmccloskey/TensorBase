@@ -50,6 +50,8 @@ namespace TensorBase
     void makeShardIDTensor(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& modified_shard_ids, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& num_runs, Eigen::DefaultDevice & device) const override;
     bool loadTensorTableBinary(const std::string& dir, Eigen::DefaultDevice& device) override;
     bool storeTensorTableBinary(const std::string& dir, Eigen::DefaultDevice& device) override;
+    // CSV methods
+    void makeSparseTensorTableFromCsv(std::shared_ptr<TensorTable<TensorT, Eigen::DefaultDevice, 2>>& sparse_table_ptr, const Eigen::Tensor<std::string, 2>& data_new, Eigen::DefaultDevice& device) override;
   private:
     friend class cereal::access;
     template<class Archive>
@@ -68,6 +70,7 @@ namespace TensorBase
     this->is_modified_.clear();
     this->not_in_memory_.clear();
     this->shard_id_.clear();
+    this->shard_indices_.clear();
     this->shard_spans_.clear();
 
     // Determine the overall dimensions of the tensor
@@ -780,6 +783,18 @@ namespace TensorBase
 
     return true;
   }
+  template<typename TensorT, int TDim>
+  inline void TensorTableDefaultDevice<TensorT, TDim>::makeSparseTensorTableFromCsv(std::shared_ptr<TensorTable<TensorT, Eigen::DefaultDevice, 2>>& sparse_table_ptr, const Eigen::Tensor<std::string, 2>& data_new, Eigen::DefaultDevice & device)
+  {
+    // Convert from string to TensorT and reshape to n_data x 1
+    TensorTableDefaultDevice<TensorT, 2> sparse_table;
+    sparse_table.setDimensions(Eigen::array<Eigen::Index, 2>({ int(data_new.size()), 1 }));
+    sparse_table.initData();
+    sparse_table.setData();
+    sparse_table.syncHAndDData(device);
+    sparse_table.convertDataFromStringToTensorT(data_new, device);
+    sparse_table_ptr = std::make_shared<TensorTableDefaultDevice<TensorT, 2>>(sparse_table);
+  }
 };
 
 // Cereal registration of TensorTs: float, int, char, double and TDims: 1, 2, 3, 4
@@ -787,16 +802,36 @@ CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<int, 1>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<float, 1>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<double, 1>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<char, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray8<char>, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray32<char>, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray128<char>, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray512<char>, 1>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray2048<char>, 1>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<int, 2>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<float, 2>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<double, 2>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<char, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray8<char>, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray32<char>, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray128<char>, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray512<char>, 2>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray2048<char>, 2>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<int, 3>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<float, 3>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<double, 3>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<char, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray8<char>, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray32<char>, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray128<char>, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray512<char>, 3>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray2048<char>, 3>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<int, 4>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<float, 4>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<double, 4>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<char, 4>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray8<char>, 4>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray32<char>, 4>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray128<char>, 4>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray512<char>, 4>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray2048<char>, 4>);
 #endif //TENSORBASE_TENSORTABLEDEFAULTDEVICE_H

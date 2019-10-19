@@ -145,19 +145,19 @@ BOOST_AUTO_TEST_CASE(getLabelsDataPointerDefaultDevice)
   TensorAxisDefaultDevice<int> tensoraxis("1", dimensions, labels);
 
   // Test data copy
-  std::shared_ptr<int> data_int = nullptr;
+  std::shared_ptr<int[]> data_int = nullptr;
   tensoraxis.getLabelsDataPointer<int>(data_int);
   BOOST_CHECK_EQUAL(data_int.get()[0], 1);
   BOOST_CHECK_EQUAL(data_int.get()[14], 1);
 
   // Test that no data is reinterpreted
-  std::shared_ptr<char> data_char = nullptr;
+  std::shared_ptr<char[]> data_char = nullptr;
   tensoraxis.getLabelsDataPointer<char>(data_char);
   BOOST_CHECK_EQUAL(data_char, nullptr);
-  std::shared_ptr<float> data_float = nullptr;
+  std::shared_ptr<float[]> data_float = nullptr;
   tensoraxis.getLabelsDataPointer<float>(data_float);
   BOOST_CHECK_EQUAL(data_float, nullptr);
-  std::shared_ptr<double> data_double = nullptr;
+  std::shared_ptr<double[]> data_double = nullptr;
   tensoraxis.getLabelsDataPointer<double>(data_double);
   BOOST_CHECK_EQUAL(data_double, nullptr);
 
@@ -223,7 +223,7 @@ BOOST_AUTO_TEST_CASE(deleteFromAxisDefaultDevice)
   }
 }
 
-BOOST_AUTO_TEST_CASE(appendLabelsToAxisDefaultDevice)
+BOOST_AUTO_TEST_CASE(appendLabelsToAxis1DefaultDevice)
 {
   // Setup the axis
   int n_dimensions = 2, n_labels = 5;
@@ -268,6 +268,42 @@ BOOST_AUTO_TEST_CASE(appendLabelsToAxisDefaultDevice)
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = n_labels; j < tensoraxis.getNLabels(); ++j) {
       BOOST_CHECK_EQUAL(tensoraxis.getLabels()(i, j), labels_values(i, j - n_labels));
+    }
+  }
+}
+
+BOOST_AUTO_TEST_CASE(appendLabelsToAxis2DefaultDevice)
+{
+  // Setup the axis
+  int n_dimensions = 2, n_labels = 5;
+  Eigen::Tensor<std::string, 1> dimensions(n_dimensions);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  TensorAxisDefaultDevice<int> tensoraxis("1", n_dimensions, 0);
+  tensoraxis.setDimensions(dimensions);
+
+  // Setup the new labels
+  Eigen::Tensor<int, 2> labels(n_dimensions, n_labels);
+  int iter = 0;
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      labels(i, j) = iter;
+      ++iter;
+    }
+  }
+  TensorDataDefaultDevice<int, 2> labels_new(Eigen::array<Eigen::Index, 2>({ n_dimensions, n_labels }));
+  labels_new.setData(labels);
+
+  // Test
+  Eigen::DefaultDevice device;
+  tensoraxis.appendLabelsToAxis(std::make_shared<TensorDataDefaultDevice<int, 2>>(labels_new), device);
+  BOOST_CHECK_EQUAL(tensoraxis.getNDimensions(), n_dimensions);
+  BOOST_CHECK_EQUAL(tensoraxis.getNLabels(), n_labels);
+  BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(0), "TensorDimension1");
+  BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(1), "TensorDimension2");
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      BOOST_CHECK_EQUAL(tensoraxis.getLabels()(i, j), labels(i, j));
     }
   }
 }
@@ -399,6 +435,177 @@ BOOST_AUTO_TEST_CASE(storeAndLoadLabelsDefaultDevice)
   BOOST_CHECK_EQUAL(tensoraxis.getLabels()(2, 4), 1);
 }
 
+BOOST_AUTO_TEST_CASE(getLabelsAsStringsDefaultDevice)
+{
+  Eigen::Tensor<std::string, 1> dimensions(3);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  dimensions(2) = "TensorDimension3";
+  Eigen::Tensor<int, 2> labels(3, 5);
+  labels.setConstant(1);
+  TensorAxisDefaultDevice<int> tensoraxis("1", dimensions, labels);
+
+  // Test getLabelsAsString
+  Eigen::DefaultDevice device;
+  std::vector<std::string> labels_str = tensoraxis.getLabelsAsStrings(device);
+  int iter = 0;
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 5; j++) {
+      BOOST_CHECK_EQUAL(labels_str.at(iter), std::to_string(tensoraxis.getLabels()(i, j)));
+    }
+    ++iter;
+  }
+
+  // Using Char
+  Eigen::Tensor<char, 2> labels_char(3, 5);
+  labels_char.setConstant('a');
+  TensorAxisDefaultDevice<char> tensoraxis_char("1", dimensions, labels_char);
+
+  // Test getLabelsAsString
+  std::vector<std::string> labels_char_str = tensoraxis_char.getLabelsAsStrings(device);
+  iter = 0;
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 5; j++) {
+      BOOST_CHECK_EQUAL(labels_char_str.at(iter), std::to_string(tensoraxis_char.getLabels()(i, j)));
+    }
+    ++iter;
+  }
+
+  // Use TensorArray8
+  Eigen::Tensor<TensorArray8<int>, 2> labels_array(3, 5);
+  labels_array.setConstant(TensorArray8<int>({1,2,3,4,5,6,7,8}));
+  TensorAxisDefaultDevice<TensorArray8<int>> tensoraxis_array("1", dimensions, labels_array);
+
+  // Test getLabelsAsString
+  std::vector<std::string> labels_array_str = tensoraxis_array.getLabelsAsStrings(device);
+  iter = 0;
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 5; j++) {
+      BOOST_CHECK_EQUAL(labels_array_str.at(iter), labels_array(i, j).getTensorArrayAsString());
+    }
+    ++iter;
+  }
+}
+
+BOOST_AUTO_TEST_CASE(appendLabelsToAxisFromCsv1DefaultDevice)
+{
+  // Setup the axis
+  int n_dimensions = 2, n_labels = 5;
+  Eigen::Tensor<std::string, 1> dimensions(n_dimensions);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  Eigen::Tensor<int, 2> labels(n_dimensions, n_labels);
+  int iter = 0;
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      labels(i, j) = iter;
+      ++iter;
+    }
+  }
+  TensorAxisDefaultDevice<int> tensoraxis("1", dimensions, labels);
+
+  // Setup the new labels
+  int n_new_labels = 4;
+  Eigen::Tensor<std::string, 2> labels_values(Eigen::array<Eigen::Index, 2>({ n_dimensions, n_new_labels }));
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_new_labels; ++j) {
+      if (j < 2)
+        labels_values(i, j) = std::to_string(i + j * n_dimensions + iter);
+      else
+        labels_values(i, j) = std::to_string(i + (j - 2) * n_dimensions + iter); // duplicates
+    }
+  }
+
+  // Test
+  Eigen::DefaultDevice device;
+  tensoraxis.appendLabelsToAxisFromCsv(labels_values, device);
+  BOOST_CHECK_EQUAL(tensoraxis.getNDimensions(), n_dimensions);
+  BOOST_CHECK_EQUAL(tensoraxis.getNLabels(), n_labels + 2);
+  BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(0), "TensorDimension1");
+  BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(1), "TensorDimension2");
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      BOOST_CHECK_EQUAL(tensoraxis.getLabels()(i, j), labels(i, j));
+    }
+  }
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = n_labels; j < tensoraxis.getNLabels(); ++j) {
+      BOOST_CHECK_EQUAL(tensoraxis.getLabels()(i, j), std::stoi(labels_values(i, j - n_labels)));
+    }
+  }
+}
+
+BOOST_AUTO_TEST_CASE(appendLabelsToAxisFromCsv2DefaultDevice)
+{
+  // Setup the axis
+  int n_dimensions = 2, n_labels = 5;
+  Eigen::Tensor<std::string, 1> dimensions(n_dimensions);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  TensorAxisDefaultDevice<int> tensoraxis("1", n_dimensions, 0);
+  tensoraxis.setDimensions(dimensions);
+
+  // Setup the new labels
+  Eigen::Tensor<std::string, 2> labels_values(Eigen::array<Eigen::Index, 2>({ n_dimensions, n_labels }));
+  int iter = 0;
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      labels_values(i, j) = std::to_string(i + j*n_dimensions);
+    }
+  }
+
+  // Test
+  Eigen::DefaultDevice device;
+  tensoraxis.appendLabelsToAxisFromCsv(labels_values, device);
+  BOOST_CHECK_EQUAL(tensoraxis.getNDimensions(), n_dimensions);
+  BOOST_CHECK_EQUAL(tensoraxis.getNLabels(), n_labels);
+  BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(0), "TensorDimension1");
+  BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(1), "TensorDimension2");
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      BOOST_CHECK_EQUAL(tensoraxis.getLabels()(i, j), i + j * n_dimensions);
+    }
+  }
+}
+
+BOOST_AUTO_TEST_CASE(makeSelectIndicesFromCsvDefaultDevice)
+{
+  // Setup the axis
+  int n_dimensions = 2, n_labels = 5;
+  Eigen::Tensor<std::string, 1> dimensions(n_dimensions);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  Eigen::Tensor<int, 2> labels(n_dimensions, n_labels);
+  int iter = 0;
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      labels(i, j) = iter;
+      ++iter;
+    }
+  }
+  TensorAxisDefaultDevice<int> tensoraxis("1", dimensions, labels);
+
+  // Setup the new labels
+  int n_new_labels = 3;
+  Eigen::Tensor<std::string, 2> labels_values(Eigen::array<Eigen::Index, 2>({ n_dimensions, n_new_labels }));
+  iter = 0;
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      if (j % 2 == 0) labels_values(i, j/2) = std::to_string(iter);
+      ++iter;
+    }
+  }
+
+  // Test
+  Eigen::DefaultDevice device;
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> select_indices;
+  tensoraxis.makeSelectIndicesFromCsv(select_indices, labels_values, device);
+  for (int i = 0; i < n_labels; ++i) {
+    if (i % 2 == 0) BOOST_CHECK_EQUAL(select_indices->getData()(i), 1);
+    else BOOST_CHECK_EQUAL(select_indices->getData()(i), 0);
+  }
+}
+
 /*TensorAxisCpu Tests*/
 BOOST_AUTO_TEST_CASE(constructorCpu)
 {
@@ -506,19 +713,19 @@ BOOST_AUTO_TEST_CASE(getLabelsDataPointerCpu)
   TensorAxisCpu<int> tensoraxis("1", dimensions, labels);
 
   // Test data copy
-  std::shared_ptr<int> data_int = nullptr;
+  std::shared_ptr<int[]> data_int = nullptr;
   tensoraxis.getLabelsDataPointer<int>(data_int);
   BOOST_CHECK_EQUAL(data_int.get()[0], 1);
   BOOST_CHECK_EQUAL(data_int.get()[14], 1);
 
   // Test that no data is reinterpreted
-  std::shared_ptr<char> data_char = nullptr;
+  std::shared_ptr<char[]> data_char = nullptr;
   tensoraxis.getLabelsDataPointer<char>(data_char);
   BOOST_CHECK_EQUAL(data_char, nullptr);
-  std::shared_ptr<float> data_float = nullptr;
+  std::shared_ptr<float[]> data_float = nullptr;
   tensoraxis.getLabelsDataPointer<float>(data_float);
   BOOST_CHECK_EQUAL(data_float, nullptr);
-  std::shared_ptr<double> data_double = nullptr;
+  std::shared_ptr<double[]> data_double = nullptr;
   tensoraxis.getLabelsDataPointer<double>(data_double);
   BOOST_CHECK_EQUAL(data_double, nullptr);
 }
@@ -575,7 +782,7 @@ BOOST_AUTO_TEST_CASE(deleteFromAxisCpu)
   }
 }
 
-BOOST_AUTO_TEST_CASE(appendLabelsToAxisCpu)
+BOOST_AUTO_TEST_CASE(appendLabelsToAxis1Cpu)
 {
   // Setup the axis
   int n_dimensions = 2, n_labels = 5;
@@ -621,6 +828,43 @@ BOOST_AUTO_TEST_CASE(appendLabelsToAxisCpu)
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = n_labels; j < tensoraxis.getNLabels(); ++j) {
       BOOST_CHECK_EQUAL(tensoraxis.getLabels()(i, j), labels_values(i, j - n_labels));
+    }
+  }
+}
+
+BOOST_AUTO_TEST_CASE(appendLabelsToAxis2Cpu)
+{
+  // Setup the axis
+  int n_dimensions = 2, n_labels = 5;
+  Eigen::Tensor<std::string, 1> dimensions(n_dimensions);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  TensorAxisCpu<int> tensoraxis("1", n_dimensions, 0);
+  tensoraxis.setDimensions(dimensions);
+
+  // Setup the new labels
+  Eigen::Tensor<int, 2> labels(n_dimensions, n_labels);
+  int iter = 0;
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      labels(i, j) = iter;
+      ++iter;
+    }
+  }
+  TensorDataCpu<int, 2> labels_new(Eigen::array<Eigen::Index, 2>({ n_dimensions, n_labels }));
+  labels_new.setData(labels);
+
+  // Test
+  Eigen::ThreadPool pool(1);
+  Eigen::ThreadPoolDevice device(&pool, 1);
+  tensoraxis.appendLabelsToAxis(std::make_shared<TensorDataCpu<int, 2>>(labels_new), device);
+  BOOST_CHECK_EQUAL(tensoraxis.getNDimensions(), n_dimensions);
+  BOOST_CHECK_EQUAL(tensoraxis.getNLabels(), n_labels);
+  BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(0), "TensorDimension1");
+  BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(1), "TensorDimension2");
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      BOOST_CHECK_EQUAL(tensoraxis.getLabels()(i, j), labels(i, j));
     }
   }
 }
@@ -753,6 +997,128 @@ BOOST_AUTO_TEST_CASE(storeAndLoadLabelsCpu)
   //BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(2), "TensorDimension3"); // Not loaded
   BOOST_CHECK_EQUAL(tensoraxis.getLabels()(0, 0), 1);
   BOOST_CHECK_EQUAL(tensoraxis.getLabels()(2, 4), 1);
+}
+
+BOOST_AUTO_TEST_CASE(appendLabelsToAxisFromCsv1Cpu)
+{
+  // Setup the axis
+  int n_dimensions = 2, n_labels = 5;
+  Eigen::Tensor<std::string, 1> dimensions(n_dimensions);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  Eigen::Tensor<int, 2> labels(n_dimensions, n_labels);
+  int iter = 0;
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      labels(i, j) = iter;
+      ++iter;
+    }
+  }
+  TensorAxisCpu<int> tensoraxis("1", dimensions, labels);
+
+  // Setup the new labels
+  int n_new_labels = 4;
+  Eigen::Tensor<std::string, 2> labels_values(Eigen::array<Eigen::Index, 2>({ n_dimensions, n_new_labels }));
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_new_labels; ++j) {
+      if (j < 2)
+        labels_values(i, j) = std::to_string(i + j * n_dimensions + iter);
+      else
+        labels_values(i, j) = std::to_string(i + (j - 2) * n_dimensions + iter); // duplicates
+    }
+  }
+
+  // Test
+  Eigen::ThreadPool pool(1);
+  Eigen::ThreadPoolDevice device(&pool, 1);
+  tensoraxis.appendLabelsToAxisFromCsv(labels_values, device);
+  BOOST_CHECK_EQUAL(tensoraxis.getNDimensions(), n_dimensions);
+  BOOST_CHECK_EQUAL(tensoraxis.getNLabels(), n_labels + 2);
+  BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(0), "TensorDimension1");
+  BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(1), "TensorDimension2");
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      BOOST_CHECK_EQUAL(tensoraxis.getLabels()(i, j), labels(i, j));
+    }
+  }
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = n_labels; j < tensoraxis.getNLabels(); ++j) {
+      BOOST_CHECK_EQUAL(tensoraxis.getLabels()(i, j), std::stoi(labels_values(i, j - n_labels)));
+    }
+  }
+}
+
+BOOST_AUTO_TEST_CASE(appendLabelsToAxisFromCsv2Cpu)
+{
+  // Setup the axis
+  int n_dimensions = 2, n_labels = 5;
+  Eigen::Tensor<std::string, 1> dimensions(n_dimensions);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  TensorAxisCpu<int> tensoraxis("1", n_dimensions, 0);
+  tensoraxis.setDimensions(dimensions);
+
+  // Setup the new labels
+  Eigen::Tensor<std::string, 2> labels_values(Eigen::array<Eigen::Index, 2>({ n_dimensions, n_labels }));
+  int iter = 0;
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      labels_values(i, j) = std::to_string(i + j * n_dimensions);
+    }
+  }
+
+  // Test
+  Eigen::ThreadPool pool(1);
+  Eigen::ThreadPoolDevice device(&pool, 1);
+  tensoraxis.appendLabelsToAxisFromCsv(labels_values, device);
+  BOOST_CHECK_EQUAL(tensoraxis.getNDimensions(), n_dimensions);
+  BOOST_CHECK_EQUAL(tensoraxis.getNLabels(), n_labels);
+  BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(0), "TensorDimension1");
+  BOOST_CHECK_EQUAL(tensoraxis.getDimensions()(1), "TensorDimension2");
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      BOOST_CHECK_EQUAL(tensoraxis.getLabels()(i, j), i + j * n_dimensions);
+    }
+  }
+}
+
+BOOST_AUTO_TEST_CASE(makeSelectIndicesFromCsvCpu)
+{
+  // Setup the axis
+  int n_dimensions = 2, n_labels = 5;
+  Eigen::Tensor<std::string, 1> dimensions(n_dimensions);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  Eigen::Tensor<int, 2> labels(n_dimensions, n_labels);
+  int iter = 0;
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      labels(i, j) = iter;
+      ++iter;
+    }
+  }
+  TensorAxisCpu<int> tensoraxis("1", dimensions, labels);
+
+  // Setup the new labels
+  int n_new_labels = 3;
+  Eigen::Tensor<std::string, 2> labels_values(Eigen::array<Eigen::Index, 2>({ n_dimensions, n_new_labels }));
+  iter = 0;
+  for (int i = 0; i < n_dimensions; ++i) {
+    for (int j = 0; j < n_labels; ++j) {
+      if (j % 2 == 0) labels_values(i, j / 2) = std::to_string(iter);
+      ++iter;
+    }
+  }
+
+  // Test
+  Eigen::ThreadPool pool(1);
+  Eigen::ThreadPoolDevice device(&pool, 1);
+  std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>> select_indices;
+  tensoraxis.makeSelectIndicesFromCsv(select_indices, labels_values, device);
+  for (int i = 0; i < n_labels; ++i) {
+    if (i % 2 == 0) BOOST_CHECK_EQUAL(select_indices->getData()(i), 1);
+    else BOOST_CHECK_EQUAL(select_indices->getData()(i), 0);
+  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()

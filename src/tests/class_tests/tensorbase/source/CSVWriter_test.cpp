@@ -62,25 +62,21 @@ BOOST_AUTO_TEST_CASE(writeDataInRow)
 	csvwriter.writeDataInRow(line.begin(), line.end());
 
   // Read the data back in
-  io::CSVReader<3> test_in(filename);
-  test_in.read_header(io::ignore_extra_column, 
-    "Column1", "Column2", "Column3");
-  std::string col1, col2, col3;
+  csv::CSVReader test_in(filename);
 
   int cnt = 0;
-  while(test_in.read_row(col1, col2, col3))
-  {
+  for (csv::CSVRow& row : test_in) {
     if (cnt == 0)
     {
-      BOOST_CHECK_EQUAL(col1, "a");
-      BOOST_CHECK_EQUAL(col2, "b");
-      BOOST_CHECK_EQUAL(col3, "c");
+      BOOST_CHECK_EQUAL(row["Column1"].get<>(), "a");
+      BOOST_CHECK_EQUAL(row["Column2"].get<>(), "b");
+      BOOST_CHECK_EQUAL(row["Column3"].get<>(), "c");
     }
     else if (cnt == 1)
     {
-      BOOST_CHECK_EQUAL(col1, "1");
-      BOOST_CHECK_EQUAL(col2, "2");
-      BOOST_CHECK_EQUAL(col3, "3");
+      BOOST_CHECK_EQUAL(row["Column1"].get<>(), "1");
+      BOOST_CHECK_EQUAL(row["Column2"].get<>(), "2");
+      BOOST_CHECK_EQUAL(row["Column3"].get<>(), "3");
     }
     cnt += 1;
   }

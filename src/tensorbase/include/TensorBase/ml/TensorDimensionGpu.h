@@ -31,14 +31,14 @@ namespace TensorBase
     ~TensorDimensionGpuPrimitiveT() = default; ///< Default destructor
     void setLabels(const Eigen::Tensor<TensorT, 1>& labels) override {
       Eigen::array<Eigen::Index, 1> dimensions = labels.dimensions();
-      this->labels_.reset(new TensorDataGpuPrimitiveT<TensorT, 1>(dimensions));
+      this->labels_ = std::make_shared<TensorDataGpuPrimitiveT<TensorT, 1>>(TensorDataGpuPrimitiveT<TensorT, 1>(dimensions));
       this->labels_->setData(labels);
       this->setNLabels(labels.size());
     };
     void setLabels() override {
       Eigen::array<Eigen::Index, 1> dimensions;
       dimensions.at(0) = this->n_labels_;
-      this->labels_.reset(new TensorDataGpuPrimitiveT<TensorT, 1>(dimensions));
+      this->labels_ = std::make_shared<TensorDataGpuPrimitiveT<TensorT, 1>>(TensorDataGpuPrimitiveT<TensorT, 1>(dimensions));
       this->labels_->setData();
     };
     bool loadLabelsBinary(const std::string& filename, Eigen::GpuDevice& device) override {
@@ -75,14 +75,14 @@ namespace TensorBase
     ~TensorDimensionGpuClassT() = default; ///< Default destructor
     void setLabels(const Eigen::Tensor<ArrayT<TensorT>, 1>& labels) override {
       Eigen::array<Eigen::Index, 1> dimensions = labels.dimensions();
-      this->labels_.reset(new TensorDataGpuClassT<ArrayT, TensorT, 1>(dimensions));
+      this->labels_ = std::make_shared<TensorDataGpuClassT<ArrayT, TensorT, 1>>(TensorDataGpuClassT<ArrayT, TensorT, 1>(dimensions));
       this->labels_->setData(labels);
       this->setNLabels(labels.size());
     };
     void setLabels() override {
       Eigen::array<Eigen::Index, 1> dimensions;
       dimensions.at(0) = this->n_labels_;
-      this->labels_.reset(new TensorDataGpuClassT<ArrayT, TensorT, 1>(dimensions));
+      this->labels_ = std::make_shared<TensorDataGpuClassT<ArrayT, TensorT, 1>>(TensorDataGpuClassT<ArrayT, TensorT, 1>(dimensions));
       this->labels_->setData();
     };
     bool loadLabelsBinary(const std::string& filename, Eigen::GpuDevice& device) override {
@@ -109,11 +109,15 @@ namespace TensorBase
   };
 };
 
-// Cereal registration of TensorTs: float, int, char, double, charArray8
+// Cereal registration of TensorTs: float, int, char, double, charArray8, charArray32, charArray128, charArray512, charArray2048
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionGpuPrimitiveT<int>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionGpuPrimitiveT<float>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionGpuPrimitiveT<double>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionGpuPrimitiveT<char>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionGpuClassT<TensorBase::TensorArrayGpu8, char>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionGpuClassT<TensorBase::TensorArrayGpu32, char>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionGpuClassT<TensorBase::TensorArrayGpu128, char>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionGpuClassT<TensorBase::TensorArrayGpu512, char>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionGpuClassT<TensorBase::TensorArrayGpu2048, char>);
 #endif
 #endif //TENSORBASE_TENSORDIMENSIONGPU_H
