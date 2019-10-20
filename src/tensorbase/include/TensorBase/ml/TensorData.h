@@ -616,104 +616,138 @@ namespace TensorBase
     //data_converted.device(device) = data_values;
     return std::make_shared<TensorDataCpu<TensorT, TDim>>(data_new);
   }
-  template<typename TensorT, int TDim>
-  inline void TensorDataCpu<TensorT, TDim>::select(std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices, Eigen::ThreadPoolDevice & device)
-  {
-    // Copy over the selected values
-    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> tensor_select_values(tensor_select->getDataPointer().get(), tensor_select->getDimensions());
-    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> tensor_values(this->getDataPointer().get(), this->getDimensions());
-    int iter_select = 0;
-    int iter_tensor = 0;
-    // TODO: add parallel execution policy C++17
-    std::for_each(indices->getDataPointer().get(), indices->getDataPointer().get() + indices->getData().size(),
-      [&](const int& index) {
-      if (index > 0) {
-        tensor_select_values.data()[iter_select] = tensor_values.data()[iter_tensor]; // works because all data is on the host
-        ++iter_select;
-      }
-      ++iter_tensor;
-    });
-  }
-  template<typename TensorT, int TDim>
-  inline void TensorDataCpu<TensorT, TDim>::sortIndices(std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices, const std::string& sort_order, Eigen::ThreadPoolDevice & device)
-  {
-    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> tensor_values(this->getDataPointer().get(), (int)this->getTensorSize());
-    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_values(indices->getDataPointer().get(), (int)indices->getTensorSize());
-    if (sort_order == "ASC") {
-      std::sort(indices_values.data(), indices_values.data() + indices_values.size(),
-        [&tensor_values](const int& lhs, const int& rhs) {
-        return tensor_values(lhs - 1) < tensor_values(rhs - 1);
-      });
-    }
-    else if (sort_order == "DESC") {
-      std::sort(indices_values.data(), indices_values.data() + indices_values.size(),
-        [&tensor_values](const int& lhs, const int& rhs) {
-        return tensor_values(lhs - 1) > tensor_values(rhs - 1);
-      });
-    }
-  }
-  template<typename TensorT, int TDim>
-  inline void TensorDataCpu<TensorT, TDim>::sort(const std::string & sort_order, Eigen::ThreadPoolDevice & device)
-  {
-    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> tensor_values(this->getDataPointer().get(), (int)this->getTensorSize());
-    if (sort_order == "ASC") {
-      std::sort(tensor_values.data(), tensor_values.data() + tensor_values.size(),
-        [](const TensorT& lhs, const TensorT& rhs) {
-        return lhs < rhs;
-      });
-    }
-    else if (sort_order == "DESC") {
-      std::sort(tensor_values.data(), tensor_values.data() + tensor_values.size(),
-        [](const TensorT& lhs, const TensorT& rhs) {
-        return lhs > rhs;
-      });
-    }
-  }
-  template<typename TensorT, int TDim>
-  inline void TensorDataCpu<TensorT, TDim>::sort(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices, Eigen::ThreadPoolDevice& device)
-  {
-    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> tensor_values(this->getDataPointer().get(), (int)this->getTensorSize());
-    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_values(indices->getDataPointer().get(), (int)indices->getTensorSize());
+	template<typename TensorT, int TDim>
+	inline void TensorDataCpu<TensorT, TDim>::select(std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices, Eigen::ThreadPoolDevice& device)
+	{
+		// STL sort helper structure
+		std::vector<std::pair<TensorT, int>> data_indices(this->getTensorSize());
+		auto make_vec_pair = [](const TensorT& a, const int& b) { return std::make_pair(a, b); };
+		std::transform(this->getDataPointer().get(), this->getDataPointer().get() + this->getTensorSize(), indices->getDataPointer().get(), data_indices.begin(), make_vec_pair);
 
-    // Create a copy
-    auto data_copy = this->copy(device);
-    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> copy_values(data_copy->getDataPointer().get(), (int)data_copy->getTensorSize());
+		// STL remove_if helper methods
+		auto isZero = [](const std::pair<TensorT, int>& a) {
+			return a.second == 0;
+		};
 
-    // Sort the data in place
-    int iter = 0;
-    std::for_each(indices_values.data(), indices_values.data() + indices_values.size(),
-      [&tensor_values, &copy_values, &iter, &device](const int& index) {
-      tensor_values(iter) = copy_values(index - 1);
-      ++iter;
-    });
-  }
-  template<typename TensorT, int TDim>
-  inline void TensorDataCpu<TensorT, TDim>::partition(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices, Eigen::ThreadPoolDevice & device)
-  {
-    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> tensor_values(this->getDataPointer().get(), (int)this->getTensorSize());
-    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_values(indices->getDataPointer().get(), (int)indices->getTensorSize());
+		// call remove_if on the flagged entries marked as false (i.e., 0)
+		std::remove_if(data_indices.begin(), data_indices.end(), isZero);
 
-    // Create a copy
-    auto data_copy = this->copy(device);
-    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> copy_values(data_copy->getDataPointer().get(), (int)data_copy->getTensorSize());
+		// extract out the ordered data
+		data_indices.resize(tensor_select->getTensorSize());
+		std::vector<TensorT> data_copy(tensor_select->getTensorSize());
+		auto extract_vec_pair = [](const std::pair<TensorT, int>& a) { return a.first; };
+		std::transform(data_indices.begin(), data_indices.end(), data_copy.begin(), extract_vec_pair);
 
-    // Partition the data in place
-    int iter = 0;
-    int partition_iter = 0;
-    int back_iter = data_copy->getTensorSize() - 1;
-    std::for_each(indices_values.data(), indices_values.data() + indices_values.size(),
-      [&tensor_values, &copy_values, &iter, &partition_iter, &back_iter, &device](const int& index) {
-      if (index != 0) {
-        tensor_values(partition_iter) = copy_values(iter);
-        ++partition_iter;
-      }
-      else {
-        tensor_values(back_iter) = copy_values(iter);
-        --back_iter;
-      }
-      ++iter;
-    });
-  }
+		// Copy over the selected values
+		Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> tensor_select_values(tensor_select->getDataPointer().get(), (int)tensor_select->getTensorSize());
+		Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> data_copy_values(data_copy.data(), (int)tensor_select->getTensorSize());
+		tensor_select_values.device(device) = data_copy_values;
+	}
+	template<typename TensorT, int TDim>
+	inline void TensorDataCpu<TensorT, TDim>::sortIndices(std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices, const std::string& sort_order, Eigen::ThreadPoolDevice& device)
+	{
+		// STL sort helper structure
+		std::vector<std::pair<TensorT, int>> data_indices(this->getTensorSize());
+		auto make_vec_pair = [](const TensorT& a, const int& b) { return std::make_pair(a, b); };
+		std::transform(this->getDataPointer().get(), this->getDataPointer().get() + this->getTensorSize(), indices->getDataPointer().get(), data_indices.begin(), make_vec_pair);
+
+		// STL sort helper methods
+		auto sortAsc = [](const std::pair<TensorT, int>& a, const std::pair<TensorT, int>& b) {
+			return a.first < b.first;
+		};
+		auto sortDesc = [](const std::pair<TensorT, int>& a, const std::pair<TensorT, int>& b) {
+			return a.first > b.first;
+		};
+
+		// sort by key
+		if (sort_order == "ASC") {
+			std::sort(data_indices.begin(), data_indices.end(), sortAsc);
+		}
+		else if (sort_order == "DESC") {
+			std::sort(data_indices.begin(), data_indices.end(), sortDesc);
+		}
+
+		// extract out the ordered indices
+		std::vector<int> sorted_indices(this->getTensorSize());
+		auto extract_vec_pair = [](const std::pair<TensorT, int>& a) { return a.second; };
+		std::transform(data_indices.begin(), data_indices.end(), sorted_indices.begin(), extract_vec_pair);
+
+		// copy over the values
+		Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_values(indices->getDataPointer().get(), this->getTensorSize());
+		Eigen::TensorMap<Eigen::Tensor<int, 1>> sorted_values(sorted_indices.data(), this->getTensorSize());
+		indices_values.device(device) = sorted_values;
+	}
+	template<typename TensorT, int TDim>
+	inline void TensorDataCpu<TensorT, TDim>::sort(const std::string& sort_order, Eigen::ThreadPoolDevice& device)
+	{
+		// STL sort helper methods
+		auto sortAsc = [](const TensorT& a, const TensorT& b) {
+			return a < b;
+		};
+		auto sortDesc = [](const TensorT& a, const TensorT& b) {
+			return a > b;
+		};
+
+		// sort the data in place
+		if (sort_order == "ASC") {
+			std::stable_sort(this->getDataPointer().get(), this->getDataPointer().get() + this->getTensorSize(), sortAsc);
+		}
+		else if (sort_order == "DESC") {
+			std::stable_sort(this->getDataPointer().get(), this->getDataPointer().get() + this->getTensorSize(), sortDesc);
+		}
+	}
+	template<typename TensorT, int TDim>
+	inline void TensorDataCpu<TensorT, TDim>::sort(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices, Eigen::ThreadPoolDevice& device)
+	{
+		// STL sort helper structure
+		std::vector<std::pair<TensorT, int>> data_indices(this->getTensorSize());
+		auto make_vec_pair = [](const TensorT& a, const int& b) { return std::make_pair(a, b); };
+		std::transform(this->getDataPointer().get(), this->getDataPointer().get() + this->getTensorSize(), indices->getDataPointer().get(), data_indices.begin(), make_vec_pair);
+
+		// STL sort helper methods
+		auto sortByIndex = [](const std::pair<TensorT, int>& a, const std::pair<TensorT, int>& b) {
+			return a.second < b.second;
+		};
+
+		// sort by key
+		std::sort(data_indices.begin(), data_indices.end(), sortByIndex);
+
+		// extract out the ordered data
+		std::vector<TensorT> sorted_data(this->getTensorSize());
+		auto extract_vec_pair = [](const std::pair<TensorT, int>& a) { return a.first; };
+		std::transform(data_indices.begin(), data_indices.end(), sorted_data.begin(), extract_vec_pair);
+
+		// copy over the values
+		Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> data_values(this->getDataPointer().get(), this->getTensorSize());
+		Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> sorted_values(sorted_data.data(), this->getTensorSize());
+		data_values.device(device) = sorted_values;
+	}
+	template<typename TensorT, int TDim>
+	inline void TensorDataCpu<TensorT, TDim>::partition(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices, Eigen::ThreadPoolDevice& device)
+	{
+		// STL sort helper structure
+		std::vector<std::pair<TensorT, int>> data_indices(this->getTensorSize());
+		auto make_vec_pair = [](const TensorT& a, const int& b) { return std::make_pair(a, b); };
+		std::transform(this->getDataPointer().get(), this->getDataPointer().get() + this->getTensorSize(), indices->getDataPointer().get(), data_indices.begin(), make_vec_pair);
+
+		// STL remove_if helper methods
+		auto isGreaterThanZero = [](const std::pair<TensorT, int>& a) {
+			return a.second > 0;
+		};
+
+		// call partition on the flagged entries marked as true (i.e., 1)
+		std::stable_partition(data_indices.begin(), data_indices.end(), isGreaterThanZero);
+
+		// extract out the ordered data
+		std::vector<TensorT> sorted_data(this->getTensorSize());
+		auto extract_vec_pair = [](const std::pair<TensorT, int>& a) { return a.first; };
+		std::transform(data_indices.begin(), data_indices.end(), sorted_data.begin(), extract_vec_pair);
+
+		// copy over the values
+		Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> data_values(this->getDataPointer().get(), this->getTensorSize());
+		Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> sorted_values(sorted_data.data(), this->getTensorSize());
+		data_values.device(device) = sorted_values;
+	}
   template<typename TensorT, int TDim>
   inline void TensorDataCpu<TensorT, TDim>::runLengthEncode(std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& n_runs, Eigen::ThreadPoolDevice & device)
   {
