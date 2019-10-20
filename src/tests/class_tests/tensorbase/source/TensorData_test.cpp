@@ -250,7 +250,7 @@ BOOST_AUTO_TEST_CASE(partitionDefaultDevice)
 
   // Make the expected partitioned data tensor
   Eigen::Tensor<float, 1> expected_values_flat(Eigen::array<Eigen::Index, 1>({ dim_sizes * dim_sizes * dim_sizes }));
-  expected_values_flat.setValues({0,2,4,6,8,10,12,14,16,18,20,22,24,26,25,23,21,19,17,15,13,11,9,7,5,3,1});
+  expected_values_flat.setValues({0,2,4,6,8,10,12,14,16,18,20,22,24,26,1,3,5,7,9,11,13,15,17,19,21,23,25});
   Eigen::Tensor<float, 3> expected_values = expected_values_flat.reshape(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
 
   Eigen::DefaultDevice device;
