@@ -8,6 +8,7 @@
 #include <Eigen/src/Core/util/Meta.h>
 #include <memory>
 #include <array>
+#include <execution>
 #include <TensorBase/ml/TensorArray.h>
 
 #include <cereal/access.hpp>  // serialiation of private members
@@ -619,10 +620,14 @@ namespace TensorBase
 	template<typename TensorT, int TDim>
 	inline void TensorDataCpu<TensorT, TDim>::select(std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices, Eigen::ThreadPoolDevice& device)
 	{
+		// C++20/23
+		//std::static_thread_pool thread_pool(device.numThreads());
+		//std::transform(std::execution::par.on(thread_pool), ...
+
 		// STL sort helper structure
 		std::vector<std::pair<TensorT, int>> data_indices(this->getTensorSize());
 		auto make_vec_pair = [](const TensorT& a, const int& b) { return std::make_pair(a, b); };
-		std::transform(this->getDataPointer().get(), this->getDataPointer().get() + this->getTensorSize(), indices->getDataPointer().get(), data_indices.begin(), make_vec_pair);
+		std::transform(std::execution::par, this->getDataPointer().get(), this->getDataPointer().get() + this->getTensorSize(), indices->getDataPointer().get(), data_indices.begin(), make_vec_pair);
 
 		// STL remove_if helper methods
 		auto isZero = [](const std::pair<TensorT, int>& a) {
@@ -630,13 +635,13 @@ namespace TensorBase
 		};
 
 		// call remove_if on the flagged entries marked as false (i.e., 0)
-		std::remove_if(data_indices.begin(), data_indices.end(), isZero);
+		std::remove_if(std::execution::par, data_indices.begin(), data_indices.end(), isZero);
 
 		// extract out the ordered data
 		data_indices.resize(tensor_select->getTensorSize());
 		std::vector<TensorT> data_copy(tensor_select->getTensorSize());
 		auto extract_vec_pair = [](const std::pair<TensorT, int>& a) { return a.first; };
-		std::transform(data_indices.begin(), data_indices.end(), data_copy.begin(), extract_vec_pair);
+		std::transform(std::execution::par, data_indices.begin(), data_indices.end(), data_copy.begin(), extract_vec_pair);
 
 		// Copy over the selected values
 		Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> tensor_select_values(tensor_select->getDataPointer().get(), (int)tensor_select->getTensorSize());
@@ -649,7 +654,7 @@ namespace TensorBase
 		// STL sort helper structure
 		std::vector<std::pair<TensorT, int>> data_indices(this->getTensorSize());
 		auto make_vec_pair = [](const TensorT& a, const int& b) { return std::make_pair(a, b); };
-		std::transform(this->getDataPointer().get(), this->getDataPointer().get() + this->getTensorSize(), indices->getDataPointer().get(), data_indices.begin(), make_vec_pair);
+		std::transform(std::execution::par, this->getDataPointer().get(), this->getDataPointer().get() + this->getTensorSize(), indices->getDataPointer().get(), data_indices.begin(), make_vec_pair);
 
 		// STL sort helper methods
 		auto sortAsc = [](const std::pair<TensorT, int>& a, const std::pair<TensorT, int>& b) {
@@ -661,16 +666,16 @@ namespace TensorBase
 
 		// sort by key
 		if (sort_order == "ASC") {
-			std::sort(data_indices.begin(), data_indices.end(), sortAsc);
+			std::sort(std::execution::par, data_indices.begin(), data_indices.end(), sortAsc);
 		}
 		else if (sort_order == "DESC") {
-			std::sort(data_indices.begin(), data_indices.end(), sortDesc);
+			std::sort(std::execution::par, data_indices.begin(), data_indices.end(), sortDesc);
 		}
 
 		// extract out the ordered indices
 		std::vector<int> sorted_indices(this->getTensorSize());
 		auto extract_vec_pair = [](const std::pair<TensorT, int>& a) { return a.second; };
-		std::transform(data_indices.begin(), data_indices.end(), sorted_indices.begin(), extract_vec_pair);
+		std::transform(std::execution::par, data_indices.begin(), data_indices.end(), sorted_indices.begin(), extract_vec_pair);
 
 		// copy over the values
 		Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_values(indices->getDataPointer().get(), this->getTensorSize());
@@ -690,10 +695,10 @@ namespace TensorBase
 
 		// sort the data in place
 		if (sort_order == "ASC") {
-			std::stable_sort(this->getDataPointer().get(), this->getDataPointer().get() + this->getTensorSize(), sortAsc);
+			std::stable_sort(std::execution::par, this->getDataPointer().get(), this->getDataPointer().get() + this->getTensorSize(), sortAsc);
 		}
 		else if (sort_order == "DESC") {
-			std::stable_sort(this->getDataPointer().get(), this->getDataPointer().get() + this->getTensorSize(), sortDesc);
+			std::stable_sort(std::execution::par, this->getDataPointer().get(), this->getDataPointer().get() + this->getTensorSize(), sortDesc);
 		}
 	}
 	template<typename TensorT, int TDim>
@@ -702,7 +707,7 @@ namespace TensorBase
 		// STL sort helper structure
 		std::vector<std::pair<TensorT, int>> data_indices(this->getTensorSize());
 		auto make_vec_pair = [](const TensorT& a, const int& b) { return std::make_pair(a, b); };
-		std::transform(this->getDataPointer().get(), this->getDataPointer().get() + this->getTensorSize(), indices->getDataPointer().get(), data_indices.begin(), make_vec_pair);
+		std::transform(std::execution::par, this->getDataPointer().get(), this->getDataPointer().get() + this->getTensorSize(), indices->getDataPointer().get(), data_indices.begin(), make_vec_pair);
 
 		// STL sort helper methods
 		auto sortByIndex = [](const std::pair<TensorT, int>& a, const std::pair<TensorT, int>& b) {
@@ -710,12 +715,12 @@ namespace TensorBase
 		};
 
 		// sort by key
-		std::sort(data_indices.begin(), data_indices.end(), sortByIndex);
+		std::sort(std::execution::par, data_indices.begin(), data_indices.end(), sortByIndex);
 
 		// extract out the ordered data
 		std::vector<TensorT> sorted_data(this->getTensorSize());
 		auto extract_vec_pair = [](const std::pair<TensorT, int>& a) { return a.first; };
-		std::transform(data_indices.begin(), data_indices.end(), sorted_data.begin(), extract_vec_pair);
+		std::transform(std::execution::par, data_indices.begin(), data_indices.end(), sorted_data.begin(), extract_vec_pair);
 
 		// copy over the values
 		Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> data_values(this->getDataPointer().get(), this->getTensorSize());
@@ -728,7 +733,7 @@ namespace TensorBase
 		// STL sort helper structure
 		std::vector<std::pair<TensorT, int>> data_indices(this->getTensorSize());
 		auto make_vec_pair = [](const TensorT& a, const int& b) { return std::make_pair(a, b); };
-		std::transform(this->getDataPointer().get(), this->getDataPointer().get() + this->getTensorSize(), indices->getDataPointer().get(), data_indices.begin(), make_vec_pair);
+		std::transform(std::execution::par, this->getDataPointer().get(), this->getDataPointer().get() + this->getTensorSize(), indices->getDataPointer().get(), data_indices.begin(), make_vec_pair);
 
 		// STL remove_if helper methods
 		auto isGreaterThanZero = [](const std::pair<TensorT, int>& a) {
@@ -736,12 +741,12 @@ namespace TensorBase
 		};
 
 		// call partition on the flagged entries marked as true (i.e., 1)
-		std::stable_partition(data_indices.begin(), data_indices.end(), isGreaterThanZero);
+		std::stable_partition(std::execution::par, data_indices.begin(), data_indices.end(), isGreaterThanZero);
 
 		// extract out the ordered data
 		std::vector<TensorT> sorted_data(this->getTensorSize());
 		auto extract_vec_pair = [](const std::pair<TensorT, int>& a) { return a.first; };
-		std::transform(data_indices.begin(), data_indices.end(), sorted_data.begin(), extract_vec_pair);
+		std::transform(std::execution::par, data_indices.begin(), data_indices.end(), sorted_data.begin(), extract_vec_pair);
 
 		// copy over the values
 		Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> data_values(this->getDataPointer().get(), this->getTensorSize());
