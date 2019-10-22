@@ -1,53 +1,53 @@
 /**TODO:  Add copyright*/
 
-#define BOOST_TEST_MODULE TensorDimension test suite 
+#define BOOST_TEST_MODULE TensorDimensionCpu test suite 
 #include <boost/test/included/unit_test.hpp>
-#include <TensorBase/ml/TensorDimension.h>
+#include <TensorBase/ml/TensorDimensionCpu.h>
 
 using namespace TensorBase;
 using namespace std;
 
-BOOST_AUTO_TEST_SUITE(tensorDimension)
+BOOST_AUTO_TEST_SUITE(tensorDimensionCpu)
 
-/*TensorDimensionDefaultDevice Tests*/
-BOOST_AUTO_TEST_CASE(constructorDefaultDevice) 
+/*TensorDimensionCpu Tests*/
+BOOST_AUTO_TEST_CASE(constructorCpu)
 {
-	TensorDimensionDefaultDevice<std::string>* ptr = nullptr;
-	TensorDimensionDefaultDevice<std::string>* nullPointer = nullptr;
-	ptr = new TensorDimensionDefaultDevice<std::string>();
+  TensorDimensionCpu<std::string>* ptr = nullptr;
+  TensorDimensionCpu<std::string>* nullPointer = nullptr;
+  ptr = new TensorDimensionCpu<std::string>();
   BOOST_CHECK_NE(ptr, nullPointer);
   delete ptr;
 }
 
-BOOST_AUTO_TEST_CASE(destructorDefaultDevice)
+BOOST_AUTO_TEST_CASE(destructorCpu)
 {
-	TensorDimensionDefaultDevice<std::string>* ptr = nullptr;
-	ptr = new TensorDimensionDefaultDevice<std::string>();
+  TensorDimensionCpu<std::string>* ptr = nullptr;
+  ptr = new TensorDimensionCpu<std::string>();
   delete ptr;
 }
 
-BOOST_AUTO_TEST_CASE(constructorNameDefaultDevice)
+BOOST_AUTO_TEST_CASE(constructorNameCpu)
 {
-  TensorDimensionDefaultDevice<std::string> tensordimension("1");
+  TensorDimensionCpu<std::string> tensordimension("1");
   BOOST_CHECK_EQUAL(tensordimension.getId(), -1);
   BOOST_CHECK_EQUAL(tensordimension.getName(), "1");
   BOOST_CHECK_EQUAL(tensordimension.getNLabels(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(constructorNameAndLabelsDefaultDevice)
+BOOST_AUTO_TEST_CASE(constructorNameAndLabelsCpu)
 {
   Eigen::Tensor<int, 1> labels(5);
   labels.setConstant(1);
-  TensorDimensionDefaultDevice<int> tensordimension("1", labels);
+  TensorDimensionCpu<int> tensordimension("1", labels);
   BOOST_CHECK_EQUAL(tensordimension.getName(), "1");
   BOOST_CHECK_EQUAL(tensordimension.getNLabels(), 5);
   BOOST_CHECK_EQUAL(tensordimension.getLabels()(0), 1);
   BOOST_CHECK_EQUAL(tensordimension.getLabels()(4), 1);
 }
 
-BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
+BOOST_AUTO_TEST_CASE(gettersAndSettersCpu)
 {
-  TensorDimensionDefaultDevice<int> tensordimension;
+  TensorDimensionCpu<int> tensordimension;
   // Check defaults
   BOOST_CHECK_EQUAL(tensordimension.getId(), -1);
   BOOST_CHECK_EQUAL(tensordimension.getName(), "");
@@ -67,19 +67,20 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   BOOST_CHECK_EQUAL(tensordimension.getLabels()(4), 1);
 }
 
-BOOST_AUTO_TEST_CASE(loadAndStoreLabelsDefaultDevice)
+BOOST_AUTO_TEST_CASE(loadAndStoreLabelsCpu)
 {
   // initialize the dimensions
   Eigen::Tensor<int, 1> labels(5);
   labels.setConstant(1);
-  TensorDimensionDefaultDevice<int> tensordimension_io("1", labels);
+  TensorDimensionCpu<int> tensordimension_io("1", labels);
 
   // write the dimension labels to disk
-  Eigen::DefaultDevice device;
+  Eigen::ThreadPool pool(1);
+  Eigen::ThreadPoolDevice device(&pool, 1);
   tensordimension_io.storeLabelsBinary("Dimensions_test.bin", device);
 
   // read the dimension labels from disk
-  TensorDimensionDefaultDevice<int> tensordimension("1", 5);
+  TensorDimensionCpu<int> tensordimension("1", 5);
   tensordimension.loadLabelsBinary("Dimensions_test.bin", device);
 
   BOOST_CHECK_EQUAL(tensordimension.getName(), "1");

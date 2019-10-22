@@ -7,20 +7,26 @@ set(sources_list_h
 	TensorArrayGpu.h
 	TensorAxis.h
 	TensorAxisConcept.h
+	TensorAxisConceptCpu.h
 	TensorAxisConceptGpu.h
+	TensorAxisCpu.h
 	TensorAxisGpu.h
 	TensorClauses.h
 	TensorCollection.h
 	TensorCollectionGpu.h
 	TensorDimension.h
 	TensorDimensionConcept.h
+	TensorDimensionConceptCpu.h
 	TensorDimensionConceptGpu.h
+	TensorDimensionCpu.h
 	TensorDimensionGpu.h
 	TensorData.h
+	TensorDataCpu.h
 	TensorDataGpu.h
 	TensorOperation.h
 	TensorTable.h
 	TensorTableConcept.h
+	TensorTableConceptCpu.h
 	TensorTableConceptGpu.h
 	TensorTableCpu.h
 	TensorTableDefaultDevice.h
