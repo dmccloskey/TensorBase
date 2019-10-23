@@ -10,6 +10,46 @@
 #include <TensorBase/ml/TensorCollection.h>
 #include <TensorBase/ml/TensorSelect.h>
 
+template<typename DeviceT, int NDim>
+class PixelManager {
+public:
+	PixelManager(const int& data_size) : data_size_(data_size){};
+	~PixelManager = default;
+	virtual void setDimSizes() = 0
+	virtual void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<float, DeviceT, NDim>>& values_ptr) = 0;
+	virtual void makeLabelsPtr(const Eigen::Tensor<int, 2>& labels, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels_ptr) = 0;
+	virtual void makeValuesPtr(const Eigen::Tensor<float, NDim>& values, std::shared_ptr<TensorData<float, DeviceT, NDim>>& values_ptr) = 0;
+protected:
+	int data_size_;
+};
+
+template<typename DeviceT>
+class PixelManager1D : public PixelManager<DeviceT, 2> {
+public:
+	using PixelManager::PixelManager;
+	void setDimSizes();
+	void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<float, DeviceT, 2>>& values_ptr);
+private:
+	int xyzt_dim_size_;
+};
+template<typename DeviceT>
+void PixelManager1D<DeviceT>::setDimSizes() {
+	xyzt_dim_size_ = this->data_size_;
+}
+template<typename DeviceT>
+void PixelManager1D<DeviceT>::getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<float, DeviceT, 2>>& values_ptr) {
+	setDimSizes();
+	// Make the labels
+	Eigen::Tensor<int, 2> labels(4, span);
+	// TODO....
+	this->makeLabelsPtr(labels, labels_ptr);
+
+	// Make the data
+	Eigen::Tensor<float, 2> values(1, span);
+	// TODO....
+	this->makeValuesPtr(values, values_ptr);
+}
+
 /*
 @brief insert 1 pixel at a time
 
@@ -103,14 +143,19 @@ void run_pixel_benchmark(const std::string& data_dir, const int& n_dims, const i
 	// Run each table through the time-point by time-point benchmarks
 }
 
-/* Benchmark for toy 4D pixels data
+/* Benchmark for toy 4D pixels data where x, y, and z describe the coordinates of the pixel in 3D space (type=int),
+	t describes the time of the pixel (type=int), and the value of the pixel (from 0 to 255) describes the intensity of the pixel
 
 Example usage:
 	pixels_benchmark [data_dir] [n_dims] [data_size] [in_memory] [shard_size_perc] 
 
-Command line options
 @param[in] n_dims The number of dimensions (i.e., 1-4) with default of 4
+	1 dimension: x, y, z, and t on a single axis with a "values" dimensions on the other axis
+	2 dimensions: x, y, z on a single axis, and t on another axis
+	3 dimensions: y, z on a single axis, x on an axis, and t on an axis
+	4 dimensions: x, y, z, and t on seperate axes
 @param[in] data_size Options include small, medium, large, and XL (i.e., 1296, 1048576, 1003875856, and 1e12 pixels, respectively) with default of small
+	where x, y, z, and t span 1 to 6, 32, 178, and 1000, respectively
 @param[in] in_memory Simulate all data loaded into memory (true) or JIT load into memory from disk (false) with default of true
 @param[in] shard_size_perc Different shard span configurations.  Options include 1, 5, 20, and 100 with a default of 100
 */
