@@ -13,6 +13,7 @@ set(sources_list_h
 	TensorAxisGpu.h
 	TensorClauses.h
 	TensorCollection.h
+	TensorCollectionCpu.h
 	TensorCollectionGpu.h
 	TensorDimension.h
 	TensorDimensionConcept.h

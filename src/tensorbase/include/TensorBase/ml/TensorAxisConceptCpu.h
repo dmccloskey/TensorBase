@@ -7,12 +7,6 @@
 #include <TensorBase/ml/TensorAxisConcept.h>
 #include <TensorBase/ml/TensorAxisCpu.h>
 
-#include <cereal/access.hpp>  // serialiation of private members
-#include <cereal/types/memory.hpp>
-#undef min // clashes with std::limit on windows in polymorphic.hpp
-#undef max // clashes with std::limit on windows in polymorphic.hpp
-#include <cereal/types/polymorphic.hpp>
-
 // Cereal registration of TensorTs: float, int, char, double and DeviceTs: Default, ThreadPool, Gpu
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisCpu<int>, Eigen::ThreadPoolDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisCpu<float>, Eigen::ThreadPoolDevice>);

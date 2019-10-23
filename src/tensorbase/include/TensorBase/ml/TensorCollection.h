@@ -228,17 +228,5 @@ namespace TensorBase
       archive(cereal::base_class<TensorCollection<Eigen::DefaultDevice>>(this));
     }
   };
-
-  class TensorCollectionCpu : public TensorCollection<Eigen::ThreadPoolDevice>
-  {
-  public:
-    using TensorCollection<Eigen::ThreadPoolDevice>::TensorCollection;
-  private:
-    friend class cereal::access;
-    template<class Archive>
-    void serialize(Archive& archive) {
-      archive(cereal::base_class<TensorCollection<Eigen::ThreadPoolDevice>>(this));
-    }
-  };
 };
 #endif //TENSORBASE_TENSORCOLLECTION_H

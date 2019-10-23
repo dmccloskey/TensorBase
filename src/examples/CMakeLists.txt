@@ -25,9 +25,9 @@ if (CMAKE_COMPILER_IS_INTELCXX OR CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_
 endif()
 
 #------------------------------------------------------------------------------
-# # core examples
-# add_custom_target(CORE_EXAMPLES)
-# add_dependencies(CORE_EXAMPLES ${core_executables_list})
+# benchmark examples
+add_custom_target(BENCHMARK_EXAMPLES)
+add_dependencies(BENCHMARK_EXAMPLES ${benchmark_executables_list})
 
 # cuda examples
 if (EVONET_CUDA)
@@ -37,15 +37,15 @@ endif()
 
 #------------------------------------------------------------------------------
 # Add the actual examples
-# foreach(_examples ${core_executables_list})
-  # add_executable(${_examples} source/${_examples})
-  # target_link_libraries(${_examples} ${TensorBase_LIBRARIES})
+foreach(_examples ${benchmark_executables_list})
+  add_executable(${_examples} source/${_examples})
+  target_link_libraries(${_examples} ${TensorBase_LIBRARIES})
   # # only add OPENMP flags to gcc linker (execpt Mac OS X, due to compiler bug
   # # see https://sourceforge.net/apps/trac/open-ms/ticket/280 for details)
-  # if (OPENMP_FOUND AND NOT MSVC AND NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  if (OPENMP_FOUND AND NOT MSVC AND NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     # set_target_properties(${_examples} PROPERTIES LINK_FLAGS ${OpenMP_CXX_FLAGS})
-  # endif()
-# endforeach(_examples)
+  endif()
+endforeach(_examples)
 
 if (EVONET_CUDA)
   foreach(_examples ${cuda_executables_list})
