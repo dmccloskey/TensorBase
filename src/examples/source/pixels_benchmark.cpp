@@ -21,7 +21,7 @@ class PixelManager {
 public:
 	PixelManager(const int& data_size) : data_size_(data_size){};
 	~PixelManager() = default;
-	virtual void setDimSizes() = 0
+	virtual void setDimSizes() = 0;
 	virtual void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<float, DeviceT, NDim>>& values_ptr) = 0;
 	virtual void makeLabelsPtr(const Eigen::Tensor<int, 2>& labels, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels_ptr) = 0;
 	virtual void makeValuesPtr(const Eigen::Tensor<float, NDim>& values, std::shared_ptr<TensorData<float, DeviceT, NDim>>& values_ptr) = 0;
@@ -73,9 +73,9 @@ void PixelManager1DDefaultDevice::makeLabelsPtr(const Eigen::Tensor<int, 2>& lab
 	labels_ptr = std::make_shared<TensorDataDefaultDevice<int, 2>>(labels_data);
 }
 void PixelManager1DDefaultDevice::makeValuesPtr(const Eigen::Tensor<float, 2>& values, std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 2>>& values_ptr) {
-	TensorDataDefaultDevice<int, 2> values_data(Eigen::array<Eigen::Index, 2>({ values.dimension(0), values.dimension(1) }));
+	TensorDataDefaultDevice<float, 2> values_data(Eigen::array<Eigen::Index, 2>({ values.dimension(0), values.dimension(1) }));
 	values_data.setData(values);
-	values_ptr = std::make_shared<TensorDataDefaultDevice<int, 2>>(values_data);
+	values_ptr = std::make_shared<TensorDataDefaultDevice<float, 2>>(values_data);
 }
 
 /*
@@ -92,12 +92,12 @@ std::string insert_1_test(TransactionManager<DeviceT>& transaction_manager, cons
 	auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
 	// Insert 1 pixel at a time
-	PixelManager1DDefaultDevice pixel_manager;
+	PixelManager1DDefaultDevice pixel_manager(data_size);
 	for (int i = 0; i < data_size; ++i) {
 		std::shared_ptr<TensorData<int, DeviceT, 2>> labels_ptr;
 		std::shared_ptr<TensorData<float, DeviceT, 2>> values_ptr;
 		pixel_manager.getInsertData(i, 1, labels_ptr, values_ptr);
-		TensorAppendToAxis<int, float, DeviceT, 2> appendToAxis("xyzt", "nDTensorTable", labels_new_ptr, values_new_ptr);
+		TensorAppendToAxis<int, float, DeviceT, 2> appendToAxis("xyzt", "nDTensorTable", labels_ptr, values_ptr);
 		std::shared_ptr<TensorOperation<DeviceT>> appendToAxis_ptr = std::make_shared<TensorAppendToAxis<int, float, DeviceT, 2>>(appendToAxis);
 		transaction_manager.executeOperation(appendToAxis_ptr, device);
 	}
@@ -152,8 +152,8 @@ void update_TP_test() {};
 @brief Simulate a typical database table where one axis will be the headers (x, y, z, and t)
 	and the other axis will be the index starting from 1
 */
-TensorCollectionDefaultDevice make_2DColRowTable(const int& data_size, const int& shard_size, const bool& is_columnar) {};
-TensorCollectionDefaultDevice make_nDTensorTable(const int& n_dims, const int& data_size, const int& shard_size) {};
+TensorCollectionDefaultDevice make_2DColRowTable(const int& data_size, const int& shard_size, const bool& is_columnar) { return TensorCollectionDefaultDevice(); };
+TensorCollectionDefaultDevice make_nDTensorTable(const int& n_dims, const int& data_size, const int& shard_size) { return TensorCollectionDefaultDevice(); };
 
 void run_pixel_benchmark(const std::string& data_dir, const int& n_dims, const int& data_size, const bool& in_memory, const int& shard_span_perc) {
 	std::cout << "Starting insert/delete/update pixel benchmarks for n_dims=" << n_dims << ", data_size=" << data_size << ", in_memory=" << in_memory << ", and shard_span_perc=" << shard_span_perc << std::endl;
