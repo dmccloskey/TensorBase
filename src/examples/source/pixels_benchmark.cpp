@@ -9,12 +9,18 @@
 #include <TensorBase/ml/TransactionManager.h>
 #include <TensorBase/ml/TensorCollection.h>
 #include <TensorBase/ml/TensorSelect.h>
+#include <math.h>
 
+using namespace TensorBase;
+
+/*
+@brief Class for managing the generation of random pixels in a 4D (3D + time) space
+*/
 template<typename DeviceT, int NDim>
 class PixelManager {
 public:
 	PixelManager(const int& data_size) : data_size_(data_size){};
-	~PixelManager = default;
+	~PixelManager() = default;
 	virtual void setDimSizes() = 0
 	virtual void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<float, DeviceT, NDim>>& values_ptr) = 0;
 	virtual void makeLabelsPtr(const Eigen::Tensor<int, 2>& labels, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels_ptr) = 0;
@@ -31,23 +37,45 @@ public:
 	void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<float, DeviceT, 2>>& values_ptr);
 private:
 	int xyzt_dim_size_;
+	int dim_span_;
 };
 template<typename DeviceT>
 void PixelManager1D<DeviceT>::setDimSizes() {
 	xyzt_dim_size_ = this->data_size_;
+	dim_span_ = std::pow(this->data_size_, 0.25);
 }
 template<typename DeviceT>
 void PixelManager1D<DeviceT>::getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<int, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<float, DeviceT, 2>>& values_ptr) {
 	setDimSizes();
-	// Make the labels
+	// Make the labels and values
 	Eigen::Tensor<int, 2> labels(4, span);
-	// TODO....
-	this->makeLabelsPtr(labels, labels_ptr);
-
-	// Make the data
 	Eigen::Tensor<float, 2> values(1, span);
-	// TODO....
+	for (int i=offset; i<offset + span; ++i){
+		labels(0, i) = int(floor(float(i) / float(std::pow(this->dim_span_, 0)))) % this->dim_span_ + 1;
+		labels(1, i) = int(floor(float(i) / float(std::pow(this->dim_span_, 1)))) % this->dim_span_ + 1;
+		labels(2, i) = int(floor(float(i) / float(std::pow(this->dim_span_, 2)))) % this->dim_span_ + 1;
+		labels(3, i) = int(floor(float(i) / float(std::pow(this->dim_span_, 3)))) % this->dim_span_ + 1;
+		values(0, i) = float(i);
+	}
+	this->makeLabelsPtr(labels, labels_ptr);
 	this->makeValuesPtr(values, values_ptr);
+}
+
+class PixelManager1DDefaultDevice : public PixelManager1D<Eigen::DefaultDevice> {
+public:
+	using PixelManager1D::PixelManager1D;
+	void makeLabelsPtr(const Eigen::Tensor<int, 2>& labels, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& labels_ptr);
+	void makeValuesPtr(const Eigen::Tensor<float, 2>& values, std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 2>>& values_ptr);
+};
+void PixelManager1DDefaultDevice::makeLabelsPtr(const Eigen::Tensor<int, 2>& labels, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& labels_ptr) {
+	TensorDataDefaultDevice<int, 2> labels_data(Eigen::array<Eigen::Index, 2>({ labels.dimension(0), labels.dimension(1) }));
+	labels_data.setData(labels);
+	labels_ptr = std::make_shared<TensorDataDefaultDevice<int, 2>>(labels_data);
+}
+void PixelManager1DDefaultDevice::makeValuesPtr(const Eigen::Tensor<float, 2>& values, std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 2>>& values_ptr) {
+	TensorDataDefaultDevice<int, 2> values_data(Eigen::array<Eigen::Index, 2>({ values.dimension(0), values.dimension(1) }));
+	values_data.setData(values);
+	values_ptr = std::make_shared<TensorDataDefaultDevice<int, 2>>(values_data);
 }
 
 /*
@@ -64,9 +92,14 @@ std::string insert_1_test(TransactionManager<DeviceT>& transaction_manager, cons
 	auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
 	// Insert 1 pixel at a time
+	PixelManager1DDefaultDevice pixel_manager;
 	for (int i = 0; i < data_size; ++i) {
-		//getPixels(data_size, i);
-
+		std::shared_ptr<TensorData<int, DeviceT, 2>> labels_ptr;
+		std::shared_ptr<TensorData<float, DeviceT, 2>> values_ptr;
+		pixel_manager.getInsertData(i, 1, labels_ptr, values_ptr);
+		TensorAppendToAxis<int, float, DeviceT, 2> appendToAxis("xyzt", "nDTensorTable", labels_new_ptr, values_new_ptr);
+		std::shared_ptr<TensorOperation<DeviceT>> appendToAxis_ptr = std::make_shared<TensorAppendToAxis<int, float, DeviceT, 2>>(appendToAxis);
+		transaction_manager.executeOperation(appendToAxis_ptr, device);
 	}
 
 	// Stop the timer
@@ -130,13 +163,13 @@ void run_pixel_benchmark(const std::string& data_dir, const int& n_dims, const i
 
 	// Setup the transaction manager
 	TransactionManager<Eigen::DefaultDevice> transaction_manager;
-	transactionManager.setMaxOperations(data_size + 1);
+	transaction_manager.setMaxOperations(data_size + 1);
 
 	// Setup the device
 	Eigen::DefaultDevice device;
 
 	// Run each table through the pixel by pixel benchmarks
-	std::cout << "col_2D insertion pixel by pixel took " << insert_1_test(transaction_manager, device) << " milliseconds." << std::endl;
+	std::cout << "col_2D insertion pixel by pixel took " << insert_1_test(transaction_manager, data_size, device) << " milliseconds." << std::endl;
 
 	// Run each table through the 20% pixels benchmarks
 
@@ -174,7 +207,7 @@ int main(int argc, char** argv)
 		try {
 			n_dims = (std::stoi(argv[2]) > 0 && std::stoi(argv[2]) <= 4) ? std::stoi(argv[2]) : 4;
 		}
-		catch (Exception& e) {
+		catch (std::exception& e) {
 			std::cout << e.what() << std::endl;
 		}
 	}
@@ -202,7 +235,7 @@ int main(int argc, char** argv)
 			else if (std::stoi(argv[5]) == 20) shard_span_perc = 20;
 			else if (std::stoi(argv[5]) == 100) shard_span_perc = 100;
 		}
-		catch (Exception & e) {
+		catch (std::exception & e) {
 			std::cout << e.what() << std::endl;
 		}
 	}
