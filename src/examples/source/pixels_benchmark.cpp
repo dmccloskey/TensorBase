@@ -152,8 +152,84 @@ void update_TP_test() {};
 @brief Simulate a typical database table where one axis will be the headers (x, y, z, and t)
 	and the other axis will be the index starting from 1
 */
-TensorCollectionDefaultDevice make_2DColRowTable(const int& data_size, const int& shard_size, const bool& is_columnar) { return TensorCollectionDefaultDevice(); };
-TensorCollectionDefaultDevice make_nDTensorTable(const int& n_dims, const int& data_size, const int& shard_size) { return TensorCollectionDefaultDevice(); };
+template<typename DeviceT>
+class TensorCollectionGenerator{
+public:
+	TensorCollectionGenerator() = default;
+	~TensorCollectionGenerator() = default;
+	std::shared_ptr<TensorCollection<DeviceT>> makeTensorCollection(const int& n_dims, const int& data_size, const int& shard_span_perc, const bool& is_columnar);
+	virtual std::shared_ptr<TensorCollection<DeviceT>> make0DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar) = 0;
+	virtual std::shared_ptr<TensorCollection<DeviceT>> make1DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar) = 0;
+	virtual std::shared_ptr<TensorCollection<DeviceT>> make2DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar) = 0;
+	virtual std::shared_ptr<TensorCollection<DeviceT>> make3DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar) = 0;
+	virtual std::shared_ptr<TensorCollection<DeviceT>> make4DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar) = 0;
+};
+template<typename DeviceT>
+std::shared_ptr<TensorCollection<DeviceT>> TensorCollectionGenerator<DeviceT>::makeTensorCollection(const int& n_dims, const int& data_size, const int& shard_span_perc, const bool& is_columnar)
+{
+	if (n_dims == 0) {
+		std::map<std::string, int> shard_span;
+		return make0DTensorCollection(data_size, shard_span, is_columnar);
+	}
+	else if (n_dims == 1) {
+		std::map<std::string, int> shard_span;
+		return make1DTensorCollection(data_size, shard_span, is_columnar);
+	}
+	else if (n_dims == 1) {
+		std::map<std::string, int> shard_span;
+		return make1DTensorCollection(data_size, shard_span, is_columnar);
+	}
+	else if (n_dims == 2) {
+		std::map<std::string, int> shard_span;
+		return make2DTensorCollection(data_size, shard_span, is_columnar);
+	}
+	else if (n_dims == 3) {
+		std::map<std::string, int> shard_span;
+		return make3DTensorCollection(data_size, shard_span, is_columnar);
+	}
+	else if (n_dims == 4) {
+		std::map<std::string, int> shard_span;
+		return make4DTensorCollection(data_size, shard_span, is_columnar);
+	}
+	else {
+		return std::shared_ptr<TensorCollection<DeviceT>>();
+	}
+}
+
+class TensorCollectionGeneratorDefaultDevice: public TensorCollectionGenerator<Eigen::DefaultDevice>{
+public:
+	std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> make0DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar);
+	std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> make1DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar);
+	std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> make2DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar);
+	std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> make3DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar);
+	std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> make4DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar);
+};
+std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> TensorCollectionGeneratorDefaultDevice::make1DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar)
+{
+	// Setup the axes
+	Eigen::Tensor<std::string, 1> dimensions_1(4), dimensions_2(1);
+	dimensions_1.setValues({ "x","y","z","t" });
+	dimensions_2.setValues({ "values" });
+	Eigen::Tensor<TensorArray8<char>, 2> labels_v(1, 1);
+	labels_v.setValues({ { TensorArray8<char>("values")} });
+
+	// Setup the tables
+	std::shared_ptr<TensorTable<float, Eigen::DefaultDevice, 2>> table_1_ptr = std::make_shared<TensorTableDefaultDevice<float, 2>>(TensorTableDefaultDevice<float, 2>("TTable"));
+	auto table_1_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("xyzt", 4, 1));
+	table_1_axis_1_ptr->setDimensions(dimensions_1);
+	auto table_1_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("values", dimensions_2, labels_v));
+	table_1_ptr->addTensorAxis(table_1_axis_1_ptr);
+	table_1_ptr->addTensorAxis(table_1_axis_2_ptr);
+	table_1_ptr->setAxes();
+
+	// Setup the table data
+	table_1_ptr->setData();
+	table_1_ptr->setShardSpans(shard_span);
+
+	// Setup the collection
+	auto collection_1_ptr = std::make_shared<TensorCollectionDefaultDevice>(TensorCollectionDefaultDevice());
+	collection_1_ptr->addTensorTable(table_1_ptr, "TTable");
+}
 
 void run_pixel_benchmark(const std::string& data_dir, const int& n_dims, const int& data_size, const bool& in_memory, const int& shard_span_perc) {
 	std::cout << "Starting insert/delete/update pixel benchmarks for n_dims=" << n_dims << ", data_size=" << data_size << ", in_memory=" << in_memory << ", and shard_span_perc=" << shard_span_perc << std::endl;
@@ -190,7 +266,7 @@ Example usage:
 @param[in] data_size Options include small, medium, large, and XL (i.e., 1296, 1048576, 1003875856, and 1e12 pixels, respectively) with default of small
 	where x, y, z, and t span 1 to 6, 32, 178, and 1000, respectively
 @param[in] in_memory Simulate all data loaded into memory (true) or JIT load into memory from disk (false) with default of true
-@param[in] shard_size_perc Different shard span configurations.  Options include 1, 5, 20, and 100 with a default of 100
+@param[in] shard_size_perc Different shard span configurations.  Options include 5, 20, and 100 with a default of 100
 */
 int main(int argc, char** argv)
 {
@@ -230,8 +306,7 @@ int main(int argc, char** argv)
 	}
 	if (argc >= 6) {
 		try {
-			if (std::stoi(argv[5]) == 1) shard_span_perc = 1;
-			else if (std::stoi(argv[5]) == 5) shard_span_perc = 5;
+			if (std::stoi(argv[5]) == 5) shard_span_perc = 5;
 			else if (std::stoi(argv[5]) == 20) shard_span_perc = 20;
 			else if (std::stoi(argv[5]) == 100) shard_span_perc = 100;
 		}
@@ -241,6 +316,7 @@ int main(int argc, char** argv)
 	}
 
 	// run the application
+	run_pixel_benchmark(data_dir, n_dims, data_size, in_memory, shard_span_perc);
 
 	return 0;
 }
