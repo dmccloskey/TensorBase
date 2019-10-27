@@ -1742,9 +1742,11 @@ namespace TensorBase
   template<typename LabelsT>
   inline void TensorTable<TensorT, DeviceT, TDim>::appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<TensorT[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device)
   {
-    // Check that the needed values are in memory
-    // TODO [not_in_memory]: only the shards on the "edge" of the insert will be needed
-    loadTensorTableBinary(dir_, device);
+		if (getDataTensorSize() > 0) {
+			// Check that the needed values are in memory
+			// TODO [not_in_memory]: only the shards on the "edge" of the insert will be needed
+			loadTensorTableBinary(dir_, device);
+		}
 
     // Append the new labels to the axis
     axes_.at(axis_name)->appendLabelsToAxis(labels, device);
@@ -1775,9 +1777,14 @@ namespace TensorBase
 
     // Concatenate the new data with the existing tensor data along the axis dimension
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> values_new_values(values.get(), value_dimensions);
-    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy_values(data_copy->getDataPointer().get(), data_copy->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(data_->getDataPointer().get(), data_->getDimensions());
-    data_values.device(device) = data_copy_values.concatenate(values_new_values, axes_to_dims_.at(axis_name));
+		if (value_dimensions == new_dimensions) {
+			data_values.device(device) = values_new_values;
+		}
+		else {
+			Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy_values(data_copy->getDataPointer().get(), data_copy->getDimensions());
+			data_values.device(device) = data_copy_values.concatenate(values_new_values, axes_to_dims_.at(axis_name));
+		}
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
