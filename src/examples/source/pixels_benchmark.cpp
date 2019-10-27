@@ -87,7 +87,7 @@ void PixelManager1DDefaultDevice<LabelsT, TensorT>::makeValuesPtr(const Eigen::T
 @param[in, out] transaction_manager
 @param[in] device
 
-@returns A string giving the total time of the benchmark
+@returns A string with the total time of the benchmark in milliseconds
 */
 template<typename LabelsT, typename TensorT, typename DeviceT>
 std::string insert_1_test(TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) {
@@ -95,15 +95,15 @@ std::string insert_1_test(TransactionManager<DeviceT>& transaction_manager, cons
 	auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
 	// Insert 1 pixel at a time
-	PixelManager1DDefaultDevice pixel_manager(data_size);
+	PixelManager1DDefaultDevice<LabelsT, TensorT> pixel_manager(data_size);
 	std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> labels_ptr;
 	std::shared_ptr<TensorData<TensorT, DeviceT, 2>> values_ptr;
 	for (int i = 0; i < data_size; ++i) {
 		labels_ptr.reset();
 		values_ptr.reset();
 		pixel_manager.getInsertData(i, 1, labels_ptr, values_ptr);
-		TensorAppendToAxis<LabelsT, DeviceT, DeviceT, 2> appendToAxis("TTable", "xyzt", labels_ptr, values_ptr);
-		std::shared_ptr<TensorOperation<DeviceT>> appendToAxis_ptr = std::make_shared<TensorAppendToAxis<LabelsT, DeviceT, DeviceT, 2>>(appendToAxis);
+		TensorAppendToAxis<LabelsT, TensorT, DeviceT, 2> appendToAxis("TTable", "xyzt", labels_ptr, values_ptr);
+		std::shared_ptr<TensorOperation<DeviceT>> appendToAxis_ptr = std::make_shared<TensorAppendToAxis<LabelsT, TensorT, DeviceT, 2>>(appendToAxis);
 		transaction_manager.executeOperation(appendToAxis_ptr, device);
 	}
 
@@ -295,7 +295,7 @@ static void run_pixel_benchmark(const std::string& data_dir, const int& n_dims, 
 
 	// Run each table through the pixel by pixel benchmarks
 	transaction_manager.setTensorCollection(n_dim_tensor_collection);
-	std::cout << "col_2D insertion pixel by pixel took " << insert_1_test(transaction_manager, data_size, device) << " milliseconds." << std::endl;
+	std::cout << n_dims << " insertion pixel by pixel took " << insert_1_test<LabelsT, TensorT>(transaction_manager, data_size, device) << " milliseconds." << std::endl;
 
 	// Run each table through the 20% pixels benchmarks
 
@@ -307,6 +307,7 @@ static void run_pixel_benchmark(const std::string& data_dir, const int& n_dims, 
 
 Example usage:
 	pixels_benchmark [data_dir] [n_dims] [data_size] [in_memory] [shard_size_perc] 
+	pixels_benchmark C:/Users/dmccloskey/Documents/GitHub/mnist/ 1 1296 true 1000
 
 @param[in] n_dims The number of dimensions (i.e., 1-4) with default of 4
 	1 dimension: x, y, z, and t on a single axis with a "values" dimensions on the other axis
