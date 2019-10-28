@@ -1,5 +1,5 @@
 set(benchmark_executables_list
-  pixels_benchmark
+  BenchmarkPixels
 )
 
 set(cuda_executables_list
