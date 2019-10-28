@@ -89,13 +89,93 @@ void PixelManager2D<LabelsT, TensorT, DeviceT>::getInsertData(const int& offset,
 	setDimSizes();
 	// Make the labels and values
 	Eigen::Tensor<LabelsT, 2> labels(1, span);
-	Eigen::Tensor<TensorT, 2> values(1, this->xyz_dim_size_ * span);
+	Eigen::Tensor<TensorT, 2> values(this->xyz_dim_size_, span);
 	for (int i = offset; i < offset + span; ++i) {
-		labels(0, i - offset) = int(floor(float(i) / float(std::pow(this->dim_span_, 0)))) % this->dim_span_ + 1;
+		labels(0, i) = int(floor(float(i + offset) / float(std::pow(this->dim_span_, 0)))) % this->dim_span_ + 1;
 		Eigen::Tensor<TensorT, 1> new_values(this->xyz_dim_size_);
 		new_values.setConstant(offset);
 		new_values = new_values.cumsum(0);
-		values.slice(Eigen::array<Eigen::Index, 2>({0, i - offset}), Eigen::array<Eigen::Index, 2>({ 1, this->xyz_dim_size_ })) = new_values.reshape(Eigen::array<Eigen::Index, 2>({ 1, this->xyz_dim_size_ }));
+		values.slice(Eigen::array<Eigen::Index, 2>({0, i}), Eigen::array<Eigen::Index, 2>({ this->xyz_dim_size_, 1 })) = new_values.reshape(Eigen::array<Eigen::Index, 2>({ this->xyz_dim_size_, 1 }));
+	}
+	this->makeLabelsPtr(labels, labels_ptr);
+	this->makeValuesPtr(values, values_ptr);
+}
+
+/*
+@brief Specialized `PixelManager` for the 3D case
+*/
+template<typename LabelsT, typename TensorT, typename DeviceT>
+class PixelManager3D : public PixelManager<LabelsT, TensorT, DeviceT, 3> {
+public:
+	using PixelManager::PixelManager;
+	void setDimSizes();
+	void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 3>>& values_ptr);
+private:
+	int xy_dim_size_;
+	int z_dim_size_;
+	int t_dim_size_;
+	int dim_span_;
+};
+template<typename LabelsT, typename TensorT, typename DeviceT>
+void PixelManager3D<LabelsT, TensorT, DeviceT>::setDimSizes() {
+	dim_span_ = std::pow(this->data_size_, 0.25);
+	xy_dim_size_ = std::pow(dim_span_, 2);
+	z_dim_size_ = dim_span_;
+	t_dim_size_ = dim_span_;
+}
+template<typename LabelsT, typename TensorT, typename DeviceT>
+void PixelManager3D<LabelsT, TensorT, DeviceT>::getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 3>>& values_ptr) {
+	setDimSizes();
+	// Make the labels and values
+	Eigen::Tensor<LabelsT, 2> labels(1, span);
+	Eigen::Tensor<TensorT, 3> values(this->xy_dim_size_, this->z_dim_size_, span);
+	for (int i = 0; i < span; ++i) {
+		labels(0, i) = int(floor(float(i + offset) / float(std::pow(this->dim_span_, 0)))) % this->dim_span_ + 1;
+		Eigen::Tensor<TensorT, 1> new_values(this->xy_dim_size_ * this->z_dim_size_);
+		new_values.setConstant(offset);
+		new_values = new_values.cumsum(0);
+		values.slice(Eigen::array<Eigen::Index, 3>({ 0, 0, i }), Eigen::array<Eigen::Index, 3>({ this->xy_dim_size_, this->z_dim_size_, 1 })) = new_values.reshape(Eigen::array<Eigen::Index, 3>({ this->xy_dim_size_, this->z_dim_size_, 1 }));
+	}
+	this->makeLabelsPtr(labels, labels_ptr);
+	this->makeValuesPtr(values, values_ptr);
+}
+
+/*
+@brief Specialized `PixelManager` for the 4D case
+*/
+template<typename LabelsT, typename TensorT, typename DeviceT>
+class PixelManager4D : public PixelManager<LabelsT, TensorT, DeviceT, 4> {
+public:
+	using PixelManager::PixelManager;
+	void setDimSizes();
+	void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 4>>& values_ptr);
+private:
+	int x_dim_size_;
+	int y_dim_size_;
+	int z_dim_size_;
+	int t_dim_size_;
+	int dim_span_;
+};
+template<typename LabelsT, typename TensorT, typename DeviceT>
+void PixelManager4D<LabelsT, TensorT, DeviceT>::setDimSizes() {
+	dim_span_ = std::pow(this->data_size_, 0.25);
+	x_dim_size_ = dim_span_;
+	y_dim_size_ = dim_span_;
+	z_dim_size_ = dim_span_;
+	t_dim_size_ = dim_span_;
+}
+template<typename LabelsT, typename TensorT, typename DeviceT>
+void PixelManager4D<LabelsT, TensorT, DeviceT>::getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 4>>& values_ptr) {
+	setDimSizes();
+	// Make the labels and values
+	Eigen::Tensor<LabelsT, 2> labels(1, span);
+	Eigen::Tensor<TensorT, 4> values(this->x_dim_size_, this->y_dim_size_, this->z_dim_size_, span);
+	for (int i = 0; i < span; ++i) {
+		labels(0, i) = int(floor(float(i + offset) / float(std::pow(this->dim_span_, 0)))) % this->dim_span_ + 1;
+		Eigen::Tensor<TensorT, 1> new_values(this->x_dim_size_ * this->y_dim_size_ * this->z_dim_size_);
+		new_values.setConstant(offset);
+		new_values = new_values.cumsum(0);
+		values.slice(Eigen::array<Eigen::Index, 4>({ 0, 0, 0, i }), Eigen::array<Eigen::Index, 4>({ this->x_dim_size_, this->y_dim_size_, this->z_dim_size_, 1 })) = new_values.reshape(Eigen::array<Eigen::Index, 4>({ this->x_dim_size_, this->y_dim_size_, this->z_dim_size_, 1 }));
 	}
 	this->makeLabelsPtr(labels, labels_ptr);
 	this->makeValuesPtr(values, values_ptr);
@@ -148,6 +228,52 @@ void PixelManager2DDefaultDevice<LabelsT, TensorT>::makeValuesPtr(const Eigen::T
 }
 
 /*
+@brief Specialized `PixelManager` for the 3D and DefaultDevice case
+*/
+template<typename LabelsT, typename TensorT>
+class PixelManager3DDefaultDevice : public PixelManager3D<LabelsT, TensorT, Eigen::DefaultDevice> {
+public:
+	using PixelManager3D::PixelManager3D;
+	void makeLabelsPtr(const Eigen::Tensor<LabelsT, 2>& labels, std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& labels_ptr);
+	void makeValuesPtr(const Eigen::Tensor<TensorT, 3>& values, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 3>>& values_ptr);
+};
+template<typename LabelsT, typename TensorT>
+void PixelManager3DDefaultDevice<LabelsT, TensorT>::makeLabelsPtr(const Eigen::Tensor<LabelsT, 2>& labels, std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& labels_ptr) {
+	TensorDataDefaultDevice<LabelsT, 2> labels_data(Eigen::array<Eigen::Index, 2>({ labels.dimension(0), labels.dimension(1) }));
+	labels_data.setData(labels);
+	labels_ptr = std::make_shared<TensorDataDefaultDevice<LabelsT, 2>>(labels_data);
+}
+template<typename LabelsT, typename TensorT>
+void PixelManager3DDefaultDevice<LabelsT, TensorT>::makeValuesPtr(const Eigen::Tensor<TensorT, 3>& values, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 3>>& values_ptr) {
+	TensorDataDefaultDevice<TensorT, 3> values_data(Eigen::array<Eigen::Index, 3>({ values.dimension(0), values.dimension(1), values.dimension(2) }));
+	values_data.setData(values);
+	values_ptr = std::make_shared<TensorDataDefaultDevice<TensorT, 3>>(values_data);
+}
+
+/*
+@brief Specialized `PixelManager` for the 4D and DefaultDevice case
+*/
+template<typename LabelsT, typename TensorT>
+class PixelManager4DDefaultDevice : public PixelManager4D<LabelsT, TensorT, Eigen::DefaultDevice> {
+public:
+	using PixelManager4D::PixelManager4D;
+	void makeLabelsPtr(const Eigen::Tensor<LabelsT, 2>& labels, std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& labels_ptr);
+	void makeValuesPtr(const Eigen::Tensor<TensorT, 4>& values, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 4>>& values_ptr);
+};
+template<typename LabelsT, typename TensorT>
+void PixelManager4DDefaultDevice<LabelsT, TensorT>::makeLabelsPtr(const Eigen::Tensor<LabelsT, 2>& labels, std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& labels_ptr) {
+	TensorDataDefaultDevice<LabelsT, 2> labels_data(Eigen::array<Eigen::Index, 2>({ labels.dimension(0), labels.dimension(1) }));
+	labels_data.setData(labels);
+	labels_ptr = std::make_shared<TensorDataDefaultDevice<LabelsT, 2>>(labels_data);
+}
+template<typename LabelsT, typename TensorT>
+void PixelManager4DDefaultDevice<LabelsT, TensorT>::makeValuesPtr(const Eigen::Tensor<TensorT, 4>& values, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 4>>& values_ptr) {
+	TensorDataDefaultDevice<TensorT, 4> values_data(Eigen::array<Eigen::Index, 4>({ values.dimension(0), values.dimension(1), values.dimension(2), values.dimension(3) }));
+	values_data.setData(values);
+	values_ptr = std::make_shared<TensorDataDefaultDevice<TensorT, 4>>(values_data);
+}
+
+/*
 @brief A class for running 1 line insertion, deletion, and update benchmarks
 */
 template<typename LabelsT, typename TensorT, typename DeviceT>
@@ -183,7 +309,7 @@ std::string Benchmark1TimePoint<LabelsT, TensorT, DeviceT>::insert1TimePoint(con
 		insert1TimePoint1D(transaction_manager, data_size, device);
 	}
 	else if (n_dims == 2) {
-		// TODO...
+		insert1TimePoint2D(transaction_manager, data_size, device);
 	}
 	else if (n_dims == 3) {
 		// TODO...
@@ -207,7 +333,7 @@ void Benchmark1TimePoint<LabelsT, TensorT, DeviceT>::insert1TimePoint1D(Transact
 	std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> labels_ptr;
 	std::shared_ptr<TensorData<TensorT, DeviceT, 2>> values_ptr;
 	//int span = data_size / std::pow(data_size, 0.25);  // BUG: breaks auto max_bcast = indices_view_values.maximum(Eigen::array<Eigen::Index, 1>({ 0 })).broadcast(Eigen::array<Eigen::Index, 1>({ n_labels })); in TensorTableDefaultDevice<TensorT, TDim>::makeAppendIndices
-	int span = 4;
+	int span = 2;
 	for (int i = 0; i < data_size; i += span) {
 		labels_ptr.reset();
 		values_ptr.reset();
@@ -220,7 +346,7 @@ void Benchmark1TimePoint<LabelsT, TensorT, DeviceT>::insert1TimePoint1D(Transact
 template<typename LabelsT, typename TensorT, typename DeviceT>
 void Benchmark1TimePoint<LabelsT, TensorT, DeviceT>::insert1TimePoint2D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device)
 {
-	PixelManager1DDefaultDevice<LabelsT, TensorT> pixel_manager(data_size);
+	PixelManager2DDefaultDevice<LabelsT, TensorT> pixel_manager(data_size);
 	std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> labels_ptr;
 	std::shared_ptr<TensorData<TensorT, DeviceT, 2>> values_ptr;
 	int time_points = std::pow(data_size, 0.25);
@@ -243,7 +369,7 @@ class TensorCollectionGenerator{
 public:
 	TensorCollectionGenerator() = default;
 	~TensorCollectionGenerator() = default;
-	std::shared_ptr<TensorCollection<DeviceT>> makeTensorCollection(const int& n_dims, const int& data_size, const int& shard_span_perc, const bool& is_columnar) const;
+	std::shared_ptr<TensorCollection<DeviceT>> makeTensorCollection(const int& n_dims, const int& data_size, const double& shard_span_perc, const bool& is_columnar) const;
 	virtual std::shared_ptr<TensorCollection<DeviceT>> make0DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar) const = 0;
 	virtual std::shared_ptr<TensorCollection<DeviceT>> make1DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar) const = 0;
 	virtual std::shared_ptr<TensorCollection<DeviceT>> make2DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar) const = 0;
@@ -251,7 +377,7 @@ public:
 	virtual std::shared_ptr<TensorCollection<DeviceT>> make4DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar) const = 0;
 };
 template<typename LabelsT, typename TensorT, typename DeviceT>
-std::shared_ptr<TensorCollection<DeviceT>> TensorCollectionGenerator<LabelsT, TensorT, DeviceT>::makeTensorCollection(const int& n_dims, const int& data_size, const int& shard_span_perc, const bool& is_columnar) const
+std::shared_ptr<TensorCollection<DeviceT>> TensorCollectionGenerator<LabelsT, TensorT, DeviceT>::makeTensorCollection(const int& n_dims, const int& data_size, const double& shard_span_perc, const bool& is_columnar) const
 {
 	if (n_dims == 0) {
 		std::map<std::string, int> shard_span;
@@ -259,38 +385,29 @@ std::shared_ptr<TensorCollection<DeviceT>> TensorCollectionGenerator<LabelsT, Te
 	}
 	else if (n_dims == 1) {
 		std::map<std::string, int> shard_span;
-		if (data_size == 1296) {
-			shard_span.emplace("xyzt", 1296);
-			shard_span.emplace("values", 1);
-		}
-		else if (data_size == 1048576) {
-			shard_span.emplace("xyzt", 1048576);
-			shard_span.emplace("values", 1);
-		}
-		else if (data_size == 1003875856) {
-			shard_span.emplace("xyzt", 1003875856);
-			shard_span.emplace("values", 1);
-		}
-		else if (data_size == 1e12) {
-			shard_span.emplace("xyzt", 1e12);
-			shard_span.emplace("values", 1);
-		}
-		return make1DTensorCollection(data_size, shard_span, is_columnar);
-	}
-	else if (n_dims == 1) {
-		std::map<std::string, int> shard_span;
+		shard_span.emplace("xyzt", data_size * shard_span_perc);
+		shard_span.emplace("values", 1);
 		return make1DTensorCollection(data_size, shard_span, is_columnar);
 	}
 	else if (n_dims == 2) {
 		std::map<std::string, int> shard_span;
+		shard_span.emplace("xyz", std::pow(std::pow(data_size, 0.25), 3) * shard_span_perc);
+		shard_span.emplace("t", std::pow(data_size, 0.25) * shard_span_perc);
 		return make2DTensorCollection(data_size, shard_span, is_columnar);
 	}
 	else if (n_dims == 3) {
 		std::map<std::string, int> shard_span;
+		shard_span.emplace("xy", std::pow(std::pow(data_size, 0.25), 2) * shard_span_perc);
+		shard_span.emplace("z", std::pow(data_size, 0.25) * shard_span_perc);
+		shard_span.emplace("t", std::pow(data_size, 0.25) * shard_span_perc);
 		return make3DTensorCollection(data_size, shard_span, is_columnar);
 	}
 	else if (n_dims == 4) {
 		std::map<std::string, int> shard_span;
+		shard_span.emplace("x", std::pow(data_size, 0.25) * shard_span_perc);
+		shard_span.emplace("y", std::pow(data_size, 0.25) * shard_span_perc);
+		shard_span.emplace("z", std::pow(data_size, 0.25) * shard_span_perc);
+		shard_span.emplace("t", std::pow(data_size, 0.25) * shard_span_perc);
 		return make4DTensorCollection(data_size, shard_span, is_columnar);
 	}
 	else {
@@ -316,17 +433,17 @@ template<typename LabelsT, typename TensorT>
 std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> TensorCollectionGeneratorDefaultDevice<LabelsT, TensorT>::make1DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar) const
 {
 	// Setup the axes
-	Eigen::Tensor<std::string, 1> dimensions_1(4), dimensions_2(1);
-	dimensions_1.setValues({ "x","y","z","t" });
-	dimensions_2.setValues({ "values" });
+	Eigen::Tensor<std::string, 1> dimensions_1(1), dimensions_2(4);
+	dimensions_1.setValues({ "values" });
+	dimensions_2.setValues({ "x","y","z","t" });
 	Eigen::Tensor<TensorArray8<char>, 2> labels_v(1, 1);
 	labels_v.setValues({ { TensorArray8<char>("values")} });
 
 	// Setup the tables
 	std::shared_ptr<TensorTable<TensorT, Eigen::DefaultDevice, 2>> table_1_ptr = std::make_shared<TensorTableDefaultDevice<TensorT, 2>>(TensorTableDefaultDevice<TensorT, 2>("TTable"));
-	auto table_1_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<LabelsT>>(TensorAxisDefaultDevice<LabelsT>("xyzt", 4, 0));
-	table_1_axis_1_ptr->setDimensions(dimensions_1);
-	auto table_1_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray8<char>>>(TensorAxisDefaultDevice<TensorArray8<char>>("values", dimensions_2, labels_v));
+	auto table_1_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray8<char>>>(TensorAxisDefaultDevice<TensorArray8<char>>("values", dimensions_1, labels_v));
+	auto table_1_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<LabelsT>>(TensorAxisDefaultDevice<LabelsT>("xyzt", 4, 0));
+	table_1_axis_2_ptr->setDimensions(dimensions_2);
 	table_1_ptr->addTensorAxis(table_1_axis_1_ptr);
 	table_1_ptr->addTensorAxis(table_1_axis_2_ptr);
 	table_1_ptr->setAxes();
@@ -343,7 +460,35 @@ std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> TensorCollectionGenerato
 template<typename LabelsT, typename TensorT>
 std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> TensorCollectionGeneratorDefaultDevice<LabelsT, TensorT>::make2DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar) const
 {
-	return std::shared_ptr<TensorCollection<Eigen::DefaultDevice>>();
+	// Setup the axes
+	int dim_span = std::pow(data_size, 0.25);
+	Eigen::Tensor<std::string, 1> dimensions_1(3), dimensions_2(1);
+	dimensions_1.setValues({ "x","y","z" });
+	dimensions_2.setValues({ "t" });
+	Eigen::Tensor<LabelsT, 2> labels_1(3, std::pow(dim_span, 3));
+	for (int i = 0; i < labels_1.dimension(1); ++i) {
+		labels_1(0, i) = int(floor(float(i) / float(std::pow(dim_span, 0)))) % dim_span + 1;
+		labels_1(1, i) = int(floor(float(i) / float(std::pow(dim_span, 1)))) % dim_span + 1;
+		labels_1(2, i) = int(floor(float(i) / float(std::pow(dim_span, 2)))) % dim_span + 1;
+	}
+
+	// Setup the tables
+	std::shared_ptr<TensorTable<TensorT, Eigen::DefaultDevice, 2>> table_1_ptr = std::make_shared<TensorTableDefaultDevice<TensorT, 2>>(TensorTableDefaultDevice<TensorT, 2>("TTable"));
+	auto table_1_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<LabelsT>>(TensorAxisDefaultDevice<LabelsT>("xyz", dimensions_1, labels_1));
+	auto table_1_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<LabelsT>>(TensorAxisDefaultDevice<LabelsT>("t", 1, 0));
+	table_1_axis_2_ptr->setDimensions(dimensions_2);
+	table_1_ptr->addTensorAxis(table_1_axis_1_ptr);
+	table_1_ptr->addTensorAxis(table_1_axis_2_ptr);
+	table_1_ptr->setAxes();
+
+	// Setup the table data
+	table_1_ptr->setData();
+	table_1_ptr->setShardSpans(shard_span);
+
+	// Setup the collection
+	auto collection_1_ptr = std::make_shared<TensorCollectionDefaultDevice>(TensorCollectionDefaultDevice());
+	collection_1_ptr->addTensorTable(table_1_ptr, "TTable");
+	return collection_1_ptr;
 }
 template<typename LabelsT, typename TensorT>
 std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> TensorCollectionGeneratorDefaultDevice<LabelsT, TensorT>::make3DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar) const
@@ -357,7 +502,7 @@ std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> TensorCollectionGenerato
 }
 
 template<typename LabelsT, typename TensorT, typename DeviceT>
-static void run_pixel_benchmark(const std::string& data_dir, const int& n_dims, const int& data_size, const bool& in_memory, const int& shard_span_perc, 
+static void run_pixel_benchmark(const std::string& data_dir, const int& n_dims, const int& data_size, const bool& in_memory, const double& shard_span_perc, 
 	TransactionManager<DeviceT>& transaction_manager,
 	const TensorCollectionGenerator<LabelsT, TensorT, DeviceT>& tensor_collection_generator,	DeviceT& device) {
 	std::cout << "Starting insert/delete/update pixel benchmarks for n_dims=" << n_dims << ", data_size=" << data_size << ", in_memory=" << in_memory << ", and shard_span_perc=" << shard_span_perc << std::endl;
@@ -396,10 +541,10 @@ int main(int argc, char** argv)
 {
 	// Parse the user commands
 	std::string data_dir = "C:/Users/dmccloskey/Documents/GitHub/mnist/";
-	int n_dims = 1;
+	int n_dims = 2;
 	int data_size = 1296;
 	bool in_memory = true;
-	int shard_span_perc = 100;
+	double shard_span_perc = 1;
 	if (argc >= 2) {
 		data_dir = argv[1];
 	}
@@ -430,9 +575,9 @@ int main(int argc, char** argv)
 	}
 	if (argc >= 6) {
 		try {
-			if (std::stoi(argv[5]) == 5) shard_span_perc = 5;
-			else if (std::stoi(argv[5]) == 20) shard_span_perc = 20;
-			else if (std::stoi(argv[5]) == 100) shard_span_perc = 100;
+			if (std::stoi(argv[5]) == 5) shard_span_perc = 0.05;
+			else if (std::stoi(argv[5]) == 20) shard_span_perc = 0.2;
+			else if (std::stoi(argv[5]) == 100) shard_span_perc = 1;
 		}
 		catch (std::exception & e) {
 			std::cout << e.what() << std::endl;
