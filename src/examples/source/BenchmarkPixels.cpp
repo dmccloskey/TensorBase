@@ -2,10 +2,10 @@
 
 #define EIGEN_USE_THREADS
 #include <unsupported/Eigen/CXX11/Tensor>
-#include <BenchmarkPixels.h>
+#include "BenchmarkPixels.h"
 
 using namespace TensorBase;
-using namespace TensorBaseBenchmark;
+using namespace TensorBaseBenchmarks;
 
 /*
 @brief Specialized `PixelManager` for the 0D and DefaultDevice case
@@ -133,31 +133,62 @@ protected:
 	void insert1TimePoint2D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `insert1TimePoint2D`
 	void insert1TimePoint3D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `insert1TimePoint3D`
 	void insert1TimePoint4D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `insert1TimePoint4D`
+
+	void update1TimePoint0D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `update1TimePoint0D`
+	void update1TimePoint1D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `update1TimePoint1D`
+	void update1TimePoint2D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `update1TimePoint2D`
+	void update1TimePoint3D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `update1TimePoint3D`
+	void update1TimePoint4D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `update1TimePoint4D`
 };
 template<typename LabelsT, typename TensorT>
 void Benchmark1TimePointDefaultDevice<LabelsT, TensorT>::insert1TimePoint0D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const {
-	PixelManager0DDefaultDevice<LabelsT, TensorT> pixel_manager(data_size);
+	PixelManager0DDefaultDevice<LabelsT, TensorT> pixel_manager(data_size, false);
 	this->insert1TimePoint0D_(pixel_manager, transaction_manager, data_size, device);
 }
 template<typename LabelsT, typename TensorT>
 void Benchmark1TimePointDefaultDevice<LabelsT, TensorT>::insert1TimePoint1D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const {
-	PixelManager1DDefaultDevice<LabelsT, TensorT> pixel_manager(data_size);
+	PixelManager1DDefaultDevice<LabelsT, TensorT> pixel_manager(data_size, false);
 	this->insert1TimePoint1D_(pixel_manager, transaction_manager, data_size, device);
 }
 template<typename LabelsT, typename TensorT>
 void Benchmark1TimePointDefaultDevice<LabelsT, TensorT>::insert1TimePoint2D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const {
-	PixelManager2DDefaultDevice<LabelsT, TensorT> pixel_manager(data_size);
+	PixelManager2DDefaultDevice<LabelsT, TensorT> pixel_manager(data_size, false);
 	this->insert1TimePoint2D_(pixel_manager, transaction_manager, data_size, device);
 }
 template<typename LabelsT, typename TensorT>
 void Benchmark1TimePointDefaultDevice<LabelsT, TensorT>::insert1TimePoint3D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const {
-	PixelManager3DDefaultDevice<LabelsT, TensorT> pixel_manager(data_size);
+	PixelManager3DDefaultDevice<LabelsT, TensorT> pixel_manager(data_size, false);
 	this->insert1TimePoint3D_(pixel_manager, transaction_manager, data_size, device);
 }
 template<typename LabelsT, typename TensorT>
 void Benchmark1TimePointDefaultDevice<LabelsT, TensorT>::insert1TimePoint4D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const {
-	PixelManager4DDefaultDevice<LabelsT, TensorT> pixel_manager(data_size);
+	PixelManager4DDefaultDevice<LabelsT, TensorT> pixel_manager(data_size, false);
 	this->insert1TimePoint4D_(pixel_manager, transaction_manager, data_size, device);
+}
+template<typename LabelsT, typename TensorT>
+void Benchmark1TimePointDefaultDevice<LabelsT, TensorT>::update1TimePoint0D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const {
+	PixelManager0DDefaultDevice<LabelsT, TensorT> pixel_manager(data_size, true);
+	this->update1TimePoint0D_(pixel_manager, transaction_manager, data_size, device);
+}
+template<typename LabelsT, typename TensorT>
+void Benchmark1TimePointDefaultDevice<LabelsT, TensorT>::update1TimePoint1D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const {
+	PixelManager1DDefaultDevice<LabelsT, TensorT> pixel_manager(data_size, true);
+	this->update1TimePoint1D_(pixel_manager, transaction_manager, data_size, device);
+}
+template<typename LabelsT, typename TensorT>
+void Benchmark1TimePointDefaultDevice<LabelsT, TensorT>::update1TimePoint2D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const {
+	PixelManager2DDefaultDevice<LabelsT, TensorT> pixel_manager(data_size, true);
+	this->update1TimePoint2D_(pixel_manager, transaction_manager, data_size, device);
+}
+template<typename LabelsT, typename TensorT>
+void Benchmark1TimePointDefaultDevice<LabelsT, TensorT>::update1TimePoint3D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const {
+	PixelManager3DDefaultDevice<LabelsT, TensorT> pixel_manager(data_size, true);
+	this->update1TimePoint3D_(pixel_manager, transaction_manager, data_size, device);
+}
+template<typename LabelsT, typename TensorT>
+void Benchmark1TimePointDefaultDevice<LabelsT, TensorT>::update1TimePoint4D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const {
+	PixelManager4DDefaultDevice<LabelsT, TensorT> pixel_manager(data_size, true);
+	this->update1TimePoint4D_(pixel_manager, transaction_manager, data_size, device);
 }
 
 template<typename LabelsT, typename TensorT>
@@ -363,7 +394,7 @@ int main(int argc, char** argv)
 {
 	// Parse the user commands
 	std::string data_dir = "C:/Users/dmccloskey/Documents/GitHub/mnist/";
-	int n_dims = 3;
+	int n_dims = 4;
 	int data_size = 1296;
 	bool in_memory = true;
 	double shard_span_perc = 1;
