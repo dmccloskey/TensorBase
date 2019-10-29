@@ -32,45 +32,53 @@ namespace TensorBaseBenchmarks
 	/// The select Functor for the 0D case
 	template<typename LabelsT, typename DeviceT>
 	class SelectTable0D: public SelectTable<LabelsT, DeviceT> {
+	public:
 		using SelectTable::SelectTable;
 		void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) override {
 			SelectClause<LabelsT, DeviceT> select_clause1("TTable", "indices", this->select_labels_);
-			TensorSelect::selectClause(tensor_collection, select_clause1, device);
-			TensorSelect::applySelect(tensor_collection, { "TTable" }, device);
+			TensorSelect tensorSelect;
+			tensorSelect.selectClause(tensor_collection, select_clause1, device);
+			tensorSelect.applySelect(tensor_collection, { "TTable" }, device);
 		}
 	};
 
 	/// The select Functor for the 1D case
 	template<typename LabelsT, typename DeviceT>
 	class SelectTable1D : public SelectTable<LabelsT, DeviceT> {
+	public:
 		using SelectTable::SelectTable;
 		void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) override {
 			SelectClause<LabelsT, DeviceT> select_clause1("TTable", "xyzt", this->select_labels_);
-			TensorSelect::selectClause(tensor_collection, select_clause1, device);
-			TensorSelect::applySelect(tensor_collection, { "TTable" }, device);
+			TensorSelect tensorSelect;
+			tensorSelect.selectClause(tensor_collection, select_clause1, device);
+			tensorSelect.applySelect(tensor_collection, { "TTable" }, device);
 		}
 	};
 
 	/// The select Functor for the 2D case
 	template<typename LabelsT, typename DeviceT>
 	class SelectTable2D : public SelectTable<LabelsT, DeviceT> {
+	public:
 		using SelectTable::SelectTable;
 		void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) {
 			SelectClause<LabelsT, DeviceT> select_clause1("TTable", "t", this->select_labels_);
-			TensorSelect::selectClause(tensor_collection, select_clause1, device);
-			TensorSelect::applySelect(tensor_collection, { "TTable" }, device);
+			TensorSelect tensorSelect;
+			tensorSelect.selectClause(tensor_collection, select_clause1, device);
+			tensorSelect.applySelect(tensor_collection, { "TTable" }, device);
 		}
 	};
 
 	/// The select Functor for the 3D case (Same as 2D)
 	template<typename LabelsT, typename DeviceT>
 	class SelectTable3D : public SelectTable2D<LabelsT, DeviceT> {
+	public:
 		using SelectTable2D::SelectTable2D;
 	};
 
 	/// The select Functor for the 4D case (Same as 2D)
 	template<typename LabelsT, typename DeviceT>
 	class SelectTable4D : public SelectTable2D<LabelsT, DeviceT> {
+	public:
 		using SelectTable2D::SelectTable2D;
 	};
 
@@ -484,7 +492,7 @@ namespace TensorBaseBenchmarks
 			values_ptr.reset();
 			pixel_manager.getInsertData(i, span, labels_ptr, values_ptr);
 			SelectTable1D<LabelsT, DeviceT> selectClause(labels_ptr);
-			TensorUpdateValues<TensorT, DeviceT, 2> tensorUpdate("TTable", selectClause., values_ptr);
+			TensorUpdateValues<TensorT, DeviceT, 2> tensorUpdate("TTable", selectClause, values_ptr);
 			std::shared_ptr<TensorOperation<DeviceT>> tensorUpdate_ptr = std::make_shared<TensorUpdateValues<TensorT, DeviceT, 2>>(tensorUpdate);
 			transaction_manager.executeOperation(tensorUpdate_ptr, device);
 		}
