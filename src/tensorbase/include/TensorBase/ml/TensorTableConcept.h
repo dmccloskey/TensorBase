@@ -83,6 +83,7 @@ namespace TensorBase
     virtual int getDimFromAxisName(const std::string& axis_name) = 0;
     virtual void setAxes() = 0;
     virtual void setData() = 0;
+		virtual size_t getDataTensorSize() const = 0;
 
     // All TensorT combos of `getLabelsDatapointer`
     virtual void getDataPointer(std::shared_ptr<int[]>& data_copy) = 0;
@@ -962,6 +963,7 @@ namespace TensorBase
     int getDimFromAxisName(const std::string& axis_name) override { return tensor_table_->getDimFromAxisName(axis_name); };
     void setAxes() override { tensor_table_->setAxes(); }
     void setData() override { tensor_table_->setData(); }
+		size_t getDataTensorSize() const override { return tensor_table_->getDataTensorSize(); }
 
     void getDataPointer(std::shared_ptr<int[]>& data_copy) override {
       tensor_table_->getDataPointer(data_copy);

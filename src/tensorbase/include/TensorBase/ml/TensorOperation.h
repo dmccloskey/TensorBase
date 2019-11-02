@@ -159,7 +159,8 @@ namespace TensorBase
     // Execute the select methods on the tensor_collection
     select_function_(tensor_collection, device);
 
-    // TODO: check that the dimensions of the values are compatible with the selected Tensor Table Data
+    // Check that the dimensions of the values are compatible with the selected Tensor Table Data
+		assert(tensor_collection->tables_.at(table_name_)->getDataTensorSize() == values_new_->getTensorSize());
 
     // Update the values with the `values_new` and copy the original values into the `values_old`
     values_old_ = values_new_->copy(device);
