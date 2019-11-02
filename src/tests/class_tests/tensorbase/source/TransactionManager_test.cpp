@@ -318,8 +318,8 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
   values_update.setData(values_new_values);
 
   // Set up the update
-  TensorUpdateValues<char, Eigen::DefaultDevice, 1> tensorUpdate("3", SelectTable3(), std::make_shared<TensorDataDefaultDevice<char, 1>>(values_update));
-  std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> tensorUpdate_ptr = std::make_shared<TensorUpdateValues<char, Eigen::DefaultDevice, 1>>(tensorUpdate);
+  TensorUpdateValuesReduceTable<char, Eigen::DefaultDevice, 1> tensorUpdate("3", SelectTable3(), std::make_shared<TensorDataDefaultDevice<char, 1>>(values_update));
+  std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> tensorUpdate_ptr = std::make_shared<TensorUpdateValuesReduceTable<char, Eigen::DefaultDevice, 1>>(tensorUpdate);
   transactionManager.executeOperation(tensorUpdate_ptr, device);
 
   BOOST_CHECK_EQUAL(transactionManager.getCurrentIndex(), 2);

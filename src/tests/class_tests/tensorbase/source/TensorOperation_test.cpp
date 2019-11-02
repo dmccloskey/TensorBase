@@ -406,19 +406,19 @@ BOOST_AUTO_TEST_CASE(redoAndTensorDeleteFromAxis)
   }
 }
 
-/*TensorUpdateValues Tests*/
+/*TensorUpdateValuesReduceTable Tests*/
 BOOST_AUTO_TEST_CASE(constructorTensorUpdateValues)
 {
-  TensorUpdateValues<float, Eigen::DefaultDevice, 3>* ptr = nullptr;
-  TensorUpdateValues<float, Eigen::DefaultDevice, 3>* nullPointer = nullptr;
-  ptr = new TensorUpdateValues<float, Eigen::DefaultDevice, 3>();
+  TensorUpdateValuesReduceTable<float, Eigen::DefaultDevice, 3>* ptr = nullptr;
+  TensorUpdateValuesReduceTable<float, Eigen::DefaultDevice, 3>* nullPointer = nullptr;
+  ptr = new TensorUpdateValuesReduceTable<float, Eigen::DefaultDevice, 3>();
   BOOST_CHECK_NE(ptr, nullPointer);
 }
 
 BOOST_AUTO_TEST_CASE(destructorTensorUpdateValues)
 {
-  TensorUpdateValues<float, Eigen::DefaultDevice, 3>* ptr = nullptr;
-  ptr = new TensorUpdateValues<float, Eigen::DefaultDevice, 3>();
+  TensorUpdateValuesReduceTable<float, Eigen::DefaultDevice, 3>* ptr = nullptr;
+  ptr = new TensorUpdateValuesReduceTable<float, Eigen::DefaultDevice, 3>();
   delete ptr;
 }
 
@@ -484,7 +484,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateValues)
   values_new.setData(values_new_values);
 
   // Set up the update
-  TensorUpdateValues<float, Eigen::DefaultDevice, 3> tensorUpdate("1", SelectTable1(), std::make_shared<TensorDataDefaultDevice<float, 3>>(values_new));
+  TensorUpdateValuesReduceTable<float, Eigen::DefaultDevice, 3> tensorUpdate("1", SelectTable1(), std::make_shared<TensorDataDefaultDevice<float, 3>>(values_new));
 
   // Reset `is_modified` to test for the new additions after the call to `setData`
   for (auto& tensor_table_map : collection_1_ptr->tables_) {

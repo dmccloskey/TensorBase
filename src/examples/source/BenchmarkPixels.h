@@ -475,8 +475,8 @@ namespace TensorBaseBenchmarks
 			values_ptr.reset();
 			pixel_manager.getInsertData(i, span, labels_ptr, values_ptr);
 			SelectTable0D<LabelsT, DeviceT> selectClause(labels_ptr);
-			TensorUpdateValues<TensorT, DeviceT, 2> tensorUpdate("TTable", selectClause, values_ptr);
-			std::shared_ptr<TensorOperation<DeviceT>> tensorUpdate_ptr = std::make_shared<TensorUpdateValues<TensorT, DeviceT, 2>>(tensorUpdate);
+			TensorUpdateValuesReduceTable<TensorT, DeviceT, 2> tensorUpdate("TTable", selectClause, values_ptr);
+			std::shared_ptr<TensorOperation<DeviceT>> tensorUpdate_ptr = std::make_shared<TensorUpdateValuesReduceTable<TensorT, DeviceT, 2>>(tensorUpdate);
 			transaction_manager.executeOperation(tensorUpdate_ptr, device);
 		}
 	}
@@ -492,8 +492,8 @@ namespace TensorBaseBenchmarks
 			values_ptr.reset();
 			pixel_manager.getInsertData(i, span, labels_ptr, values_ptr);
 			SelectTable1D<LabelsT, DeviceT> selectClause(labels_ptr);
-			TensorUpdateValues<TensorT, DeviceT, 2> tensorUpdate("TTable", selectClause, values_ptr);
-			std::shared_ptr<TensorOperation<DeviceT>> tensorUpdate_ptr = std::make_shared<TensorUpdateValues<TensorT, DeviceT, 2>>(tensorUpdate);
+			TensorUpdateValuesReduceTable<TensorT, DeviceT, 2> tensorUpdate("TTable", selectClause, values_ptr);
+			std::shared_ptr<TensorOperation<DeviceT>> tensorUpdate_ptr = std::make_shared<TensorUpdateValuesReduceTable<TensorT, DeviceT, 2>>(tensorUpdate);
 			transaction_manager.executeOperation(tensorUpdate_ptr, device);
 		}
 	}
@@ -508,8 +508,8 @@ namespace TensorBaseBenchmarks
 			values_ptr.reset();
 			pixel_manager.getInsertData(i, 1, labels_ptr, values_ptr);
 			SelectTable2D<LabelsT, DeviceT> selectClause(labels_ptr);
-			TensorUpdateValues<TensorT, DeviceT, 2> tensorUpdate("TTable", selectClause, values_ptr);
-			std::shared_ptr<TensorOperation<DeviceT>> tensorUpdate_ptr = std::make_shared<TensorUpdateValues<TensorT, DeviceT, 2>>(tensorUpdate);
+			TensorUpdateValuesReduceTable<TensorT, DeviceT, 2> tensorUpdate("TTable", selectClause, values_ptr);
+			std::shared_ptr<TensorOperation<DeviceT>> tensorUpdate_ptr = std::make_shared<TensorUpdateValuesReduceTable<TensorT, DeviceT, 2>>(tensorUpdate);
 			transaction_manager.executeOperation(tensorUpdate_ptr, device);
 		}
 	}
@@ -524,8 +524,8 @@ namespace TensorBaseBenchmarks
 			values_ptr.reset();
 			pixel_manager.getInsertData(i, 1, labels_ptr, values_ptr);
 			SelectTable2D<LabelsT, DeviceT> selectClause(labels_ptr);
-			TensorUpdateValues<TensorT, DeviceT, 3> tensorUpdate("TTable", selectClause, values_ptr);
-			std::shared_ptr<TensorOperation<DeviceT>> tensorUpdate_ptr = std::make_shared<TensorUpdateValues<TensorT, DeviceT, 3>>(tensorUpdate);
+			TensorUpdateValuesReduceTable<TensorT, DeviceT, 3> tensorUpdate("TTable", selectClause, values_ptr);
+			std::shared_ptr<TensorOperation<DeviceT>> tensorUpdate_ptr = std::make_shared<TensorUpdateValuesReduceTable<TensorT, DeviceT, 3>>(tensorUpdate);
 			transaction_manager.executeOperation(tensorUpdate_ptr, device);
 		}
 	}
@@ -540,8 +540,8 @@ namespace TensorBaseBenchmarks
 			values_ptr.reset();
 			pixel_manager.getInsertData(i, 1, labels_ptr, values_ptr);
 			SelectTable2D<LabelsT, DeviceT> selectClause(labels_ptr);
-			TensorUpdateValues<TensorT, DeviceT, 4> tensorUpdate("TTable", selectClause, values_ptr);
-			std::shared_ptr<TensorOperation<DeviceT>> tensorUpdate_ptr = std::make_shared<TensorUpdateValues<TensorT, DeviceT, 4>>(tensorUpdate);
+			TensorUpdateValuesReduceTable<TensorT, DeviceT, 4> tensorUpdate("TTable", selectClause, values_ptr);
+			std::shared_ptr<TensorOperation<DeviceT>> tensorUpdate_ptr = std::make_shared<TensorUpdateValuesReduceTable<TensorT, DeviceT, 4>>(tensorUpdate);
 			transaction_manager.executeOperation(tensorUpdate_ptr, device);
 		}
 	}
