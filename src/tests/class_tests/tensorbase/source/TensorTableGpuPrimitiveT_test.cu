@@ -2081,6 +2081,157 @@ void test_updateSelectTensorDataValues2Gpu()
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
 
+void test_updateTensorDataValuesGpu()
+{
+	// setup the table
+	TensorTableGpuPrimitiveT<float, 3> tensorTable;
+
+	// Initialize the device
+	cudaStream_t stream;
+	assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+	Eigen::GpuStreamDevice stream_device(&stream, 0);
+	Eigen::GpuDevice device(&stream_device);
+
+	// setup the axes
+	Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+	dimensions1(0) = "x";
+	dimensions2(0) = "y";
+	dimensions3(0) = "z";
+	int nlabels = 3;
+	Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels), labels3(1, nlabels);
+	labels1.setValues({ {0, 1, 2} });
+	labels2.setValues({ {0, 1, 2} });
+	labels3.setValues({ {0, 1, 2} });
+	auto axis_1_ptr = std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1", dimensions1, labels1));
+	auto axis_2_ptr = std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("2", dimensions2, labels2));
+	auto axis_3_ptr = std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("3", dimensions3, labels3));
+	tensorTable.addTensorAxis(axis_1_ptr);
+	tensorTable.addTensorAxis(axis_2_ptr);
+	tensorTable.addTensorAxis(axis_3_ptr);
+	tensorTable.setAxes();
+
+	// setup the tensor data and the update values
+	Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+	Eigen::Tensor<float, 3> update_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+	int iter = 0;
+	for (int k = 0; k < nlabels; ++k) {
+		for (int j = 0; j < nlabels; ++j) {
+			for (int i = 0; i < nlabels; ++i) {
+				tensor_values(i, j, k) = float(iter);
+				update_values(i, j, k) = 100;
+				++iter;
+			}
+		}
+	}
+	tensorTable.setData(tensor_values);
+	TensorDataGpuPrimitiveT<float, 3> values_new(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+	values_new.setData(update_values);
+	std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> values_new_ptr = std::make_shared<TensorDataGpuPrimitiveT<float, 3>>(values_new);
+
+	// sync the tensorTable
+	tensorTable.syncIndicesHAndDData(device);
+	tensorTable.syncIndicesViewHAndDData(device);
+	tensorTable.syncNotInMemoryHAndDData(device);
+	tensorTable.syncIsModifiedHAndDData(device);
+	tensorTable.syncShardIdHAndDData(device);
+	tensorTable.syncShardIndicesHAndDData(device);
+	tensorTable.syncAxesHAndDData(device);
+	tensorTable.syncHAndDData(device);
+	values_new_ptr->syncHAndDData(device);
+
+	// Test update
+	std::shared_ptr<TensorTable<float, Eigen::GpuDevice, 2>> values_old_ptr;
+	tensorTable.updateTensorDataValues(values_new_ptr->getDataPointer(), values_old_ptr, device);
+	values_old_ptr->syncHAndDData(device);
+	tensorTable.syncIndicesHAndDData(device);
+	tensorTable.syncIndicesViewHAndDData(device);
+	tensorTable.syncNotInMemoryHAndDData(device);
+	tensorTable.syncIsModifiedHAndDData(device);
+	tensorTable.syncShardIdHAndDData(device);
+	tensorTable.syncShardIndicesHAndDData(device);
+	tensorTable.syncAxesHAndDData(device);
+	tensorTable.syncHAndDData(device);
+	assert(cudaStreamSynchronize(stream) == cudaSuccess);
+	for (int k = 0; k < nlabels; ++k) {
+		for (int j = 0; j < nlabels; ++j) {
+			for (int i = 0; i < nlabels; ++i) {
+				assert(values_old_ptr->getData()(i + j * nlabels + k * nlabels * nlabels) == tensor_values(i, j, k));
+				assert(tensorTable.getData()(i, j, k) == 100);
+			}
+		}
+	}
+
+	// Test for the in_memory and is_modified attributes
+	for (int i = 0; i < nlabels; ++i) {
+		assert(tensorTable.getNotInMemory().at("1")->getData()(i) == 0);
+		assert(tensorTable.getNotInMemory().at("2")->getData()(i) == 0);
+		assert(tensorTable.getNotInMemory().at("3")->getData()(i) == 0);
+		assert(tensorTable.getIsModified().at("1")->getData()(i) == 1);
+		assert(tensorTable.getIsModified().at("2")->getData()(i) == 1);
+		assert(tensorTable.getIsModified().at("3")->getData()(i) == 1);
+	}
+
+	// Write the original data to disk, clear the data, and repeat the tests
+	tensorTable.clear();
+	axis_1_ptr = std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1", dimensions1, labels1));
+	axis_2_ptr = std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("2", dimensions2, labels2));
+	axis_3_ptr = std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("3", dimensions3, labels3));
+	tensorTable.addTensorAxis(axis_1_ptr);
+	tensorTable.addTensorAxis(axis_2_ptr);
+	tensorTable.addTensorAxis(axis_3_ptr);
+	tensorTable.setAxes();
+	tensorTable.setData(tensor_values);
+	tensorTable.syncIndicesHAndDData(device);
+	tensorTable.syncIndicesViewHAndDData(device);
+	tensorTable.syncNotInMemoryHAndDData(device);
+	tensorTable.syncIsModifiedHAndDData(device);
+	tensorTable.syncShardIdHAndDData(device);
+	tensorTable.syncShardIndicesHAndDData(device);
+	tensorTable.syncAxesHAndDData(device);
+	tensorTable.syncHAndDData(device);
+	tensorTable.storeTensorTableBinary("", device);
+	tensorTable.setData();
+	tensorTable.setNotInMemoryDataStatus(true, false);
+	tensorTable.syncNotInMemoryHAndDData(device);
+	tensorTable.setIsModifiedDataStatus(true, false);
+	tensorTable.syncIsModifiedHAndDData(device);
+	tensorTable.syncHAndDData(device);
+
+	// Test update
+	values_old_ptr.reset();
+	tensorTable.updateTensorDataValues(values_new_ptr->getDataPointer(), values_old_ptr, device);
+	values_old_ptr->syncHAndDData(device);
+	tensorTable.syncIndicesHAndDData(device);
+	tensorTable.syncIndicesViewHAndDData(device);
+	tensorTable.syncNotInMemoryHAndDData(device);
+	tensorTable.syncIsModifiedHAndDData(device);
+	tensorTable.syncShardIdHAndDData(device);
+	tensorTable.syncShardIndicesHAndDData(device);
+	tensorTable.syncAxesHAndDData(device);
+	tensorTable.syncHAndDData(device);
+	assert(cudaStreamSynchronize(stream) == cudaSuccess);
+	for (int k = 0; k < nlabels; ++k) {
+		for (int j = 0; j < nlabels; ++j) {
+			for (int i = 0; i < nlabels; ++i) {
+				assert(values_old_ptr->getData()(i + j * nlabels + k * nlabels * nlabels) == tensor_values(i, j, k));
+				assert(tensorTable.getData()(i, j, k) == 100);
+			}
+		}
+	}
+
+	// Test for the in_memory and is_modified attributes
+	for (int i = 0; i < nlabels; ++i) {
+		assert(tensorTable.getNotInMemory().at("1")->getData()(i) == 0);
+		assert(tensorTable.getNotInMemory().at("2")->getData()(i) == 0);
+		assert(tensorTable.getNotInMemory().at("3")->getData()(i) == 0);
+		assert(tensorTable.getIsModified().at("1")->getData()(i) == 1);
+		assert(tensorTable.getIsModified().at("2")->getData()(i) == 1);
+		assert(tensorTable.getIsModified().at("3")->getData()(i) == 1);
+	}
+
+	assert(cudaStreamDestroy(stream) == cudaSuccess);
+}
+
 void test_makeAppendIndicesGpu()
 {
   // setup the table
@@ -4124,6 +4275,7 @@ int main(int argc, char** argv)
   test_sortTensorDataGpuPrimitiveT();
   test_updateSelectTensorDataValues1Gpu();
   test_updateSelectTensorDataValues2Gpu();
+	test_updateTensorDataValuesGpu();
   test_makeAppendIndicesGpu();
   test_appendToIndicesGpu();
   test_appendToAxisGpu();
