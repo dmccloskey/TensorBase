@@ -199,7 +199,7 @@ namespace TensorBase
 		values_old_ = values_new_->copy(device);
 		values_new_->syncHAndDData(device);
 		values_old_->syncHAndDData(device);
-		tensor_collection->tables_.at(table_name_)->updateTensorDataValues(values_new_->getDataPointer(), values_old_->getDataPointer(), device);
+		tensor_collection->tables_.at(table_name_)->updateSelectTensorDataValues(values_new_->getDataPointer(), values_old_->getDataPointer(), device);
 	}
 	template<typename TensorT, typename DeviceT, int TDim>
 	inline void TensorUpdateValuesReduceTable<TensorT, DeviceT, TDim>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
@@ -212,7 +212,7 @@ namespace TensorBase
 		assert(tensor_collection->tables_.at(table_name_)->getDataTensorSize() == values_old_->getTensorSize());
 
 		// Update the values with the `values_old`
-		tensor_collection->tables_.at(table_name_)->updateTensorDataValues(values_old_->getDataPointer(), device);
+		tensor_collection->tables_.at(table_name_)->updateSelectTensorDataValues(values_old_->getDataPointer(), device);
 	}
 
   /**
