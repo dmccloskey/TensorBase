@@ -1767,7 +1767,7 @@ void test_sortTensorDataGpuClassT()
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
 
-void test_updateTensorDataValues1Gpu()
+void test_updateSelectTensorDataValues1Gpu()
 {
   // setup the table
   TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
@@ -1827,7 +1827,7 @@ void test_updateTensorDataValues1Gpu()
 
   // Test update
   std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 3>> values_old_ptr;
-  tensorTable.updateTensorDataValues(values_new_ptr, values_old_ptr, device);
+  tensorTable.updateSelectTensorDataValues(values_new_ptr, values_old_ptr, device);
   values_old_ptr->syncHAndDData(device);
   tensorTable.syncIndicesHAndDData(device);
   tensorTable.syncIndicesViewHAndDData(device);
@@ -1887,7 +1887,7 @@ void test_updateTensorDataValues1Gpu()
 
   // Test update
   values_old_ptr.reset();
-  tensorTable.updateTensorDataValues(values_new_ptr, values_old_ptr, device);
+  tensorTable.updateSelectTensorDataValues(values_new_ptr, values_old_ptr, device);
   values_old_ptr->syncHAndDData(device);
   tensorTable.syncIndicesHAndDData(device);
   tensorTable.syncIndicesViewHAndDData(device);
@@ -1922,7 +1922,7 @@ void test_updateTensorDataValues1Gpu()
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
 
-void test_updateTensorDataValues2Gpu()
+void test_updateSelectTensorDataValues2Gpu()
 {
   // setup the table
   TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
@@ -1985,7 +1985,7 @@ void test_updateTensorDataValues2Gpu()
   values_old.setData();
   std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 3>> values_old_ptr = std::make_shared<TensorDataGpuClassT<TensorArrayGpu8, char, 3>>(values_old);
   values_old_ptr->syncHAndDData(device);
-  tensorTable.updateTensorDataValues(values_new_ptr->getDataPointer(), values_old_ptr->getDataPointer(), device);
+  tensorTable.updateSelectTensorDataValues(values_new_ptr->getDataPointer(), values_old_ptr->getDataPointer(), device);
   values_old_ptr->syncHAndDData(device);
   tensorTable.syncIndicesHAndDData(device);
   tensorTable.syncIndicesViewHAndDData(device);
@@ -2046,7 +2046,7 @@ void test_updateTensorDataValues2Gpu()
   // Test update
   values_old_ptr = std::make_shared<TensorDataGpuClassT<TensorArrayGpu8, char, 3>>(values_old);
   values_old_ptr->syncHAndDData(device);
-  tensorTable.updateTensorDataValues(values_new_ptr->getDataPointer(), values_old_ptr->getDataPointer(), device);
+  tensorTable.updateSelectTensorDataValues(values_new_ptr->getDataPointer(), values_old_ptr->getDataPointer(), device);
   values_old_ptr->syncHAndDData(device);
   tensorTable.syncIndicesHAndDData(device);
   tensorTable.syncIndicesViewHAndDData(device);
@@ -2057,7 +2057,7 @@ void test_updateTensorDataValues2Gpu()
   tensorTable.syncAxesHAndDData(device);
   tensorTable.syncHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  //std::cout << "test_updateTensorDataValues2Gpu Failing:" << std::endl;
+  //std::cout << "test_updateSelectTensorDataValues2Gpu Failing:" << std::endl;
   //std::cout << "[TEST = float(iter)] values_old_ptr->getData()\n" << values_old_ptr->getData() << std::endl;
   //std::cout << "[TEST = 100] tensorTable.getData()\n" << tensorTable.getData() << std::endl;
   iter = 0;
@@ -4123,8 +4123,8 @@ int main(int argc, char** argv)
   test_selectTensorDataGpuClassT();
   test_makeSortIndicesViewFromIndicesViewGpu();
   test_sortTensorDataGpuClassT();
-  test_updateTensorDataValues1Gpu();
-  test_updateTensorDataValues2Gpu();
+  test_updateSelectTensorDataValues1Gpu();
+  test_updateSelectTensorDataValues2Gpu();
   test_makeAppendIndicesGpu();
   test_appendToIndicesGpu();
   test_appendToAxisGpu();

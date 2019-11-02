@@ -404,6 +404,9 @@ namespace TensorBase
 		template<typename T>
 		void updateTensorDataValuesConcept(const std::shared_ptr<T[]>& values_new, std::shared_ptr<TensorTable<T, DeviceT, 2>>& values_old, DeviceT& device);
 		void updateTensorDataValues(const std::shared_ptr<TensorT[]>& values_new, std::shared_ptr<TensorTable<TensorT, DeviceT, 2>>& values_old, DeviceT& device);
+		template<typename T>
+		void updateTensorDataValuesConcept(const std::shared_ptr<T[]>& values_new, DeviceT& device);
+		void updateTensorDataValues(const std::shared_ptr<TensorT[]>& values_new, DeviceT& device);
 
     /*
     @brief Update the tensor data by a constant value and optionally return the original values
@@ -1616,12 +1619,29 @@ namespace TensorBase
 		// copy the old values
 		getSelectTensorDataAsSparseTensorTable(values_old, device);
 
+		// update the data
+		updateTensorDataValues(values_new, device);
+	}
+
+	template<typename TensorT, typename DeviceT, int TDim>
+	template<typename T>
+	inline void TensorTable<TensorT, DeviceT, TDim>::updateTensorDataValuesConcept(const std::shared_ptr<T[]>& values_new, DeviceT& device)
+	{
+		if (std::is_same<T, TensorT>::value) {
+			auto values_new_copy = std::reinterpret_pointer_cast<TensorT[]>(values_new);
+			updateSelectTensorDataValues(values_new_copy, device);
+		}
+	}
+
+	template<typename TensorT, typename DeviceT, int TDim>
+	inline void TensorTable<TensorT, DeviceT, TDim>::updateTensorDataValues(const std::shared_ptr<TensorT[]>& values_new, DeviceT& device)
+	{
 		// make the sparseTensorTable update
 		// TODO: replace with new method `TensorTable::copy` (which does not yet exist...)
 		std::shared_ptr<TensorTable<TensorT, DeviceT, 2>> sparse_table_new;
 		getSelectTensorDataAsSparseTensorTable(sparse_table_new, device);
-		Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> values_new_values(values_new.get(), sparse_table_new->getDimensions());
-		Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(sparse_table_new->getDataPointer().get(), sparse_table_new->getDimensions());
+		Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> values_new_values(values_new.get(), sparse_table_new->getDataTensorSize());
+		Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> data_values(sparse_table_new->getDataPointer().get(), sparse_table_new->getDataTensorSize());
 		data_values.device(device) = values_new_values;
 
 		// update the tensorDataValues

@@ -165,10 +165,10 @@ namespace TensorBase
 			2. The update a selected contiguous region (i.e., continuous column or row, 2D sheet, 3D cube, etc.,) in the specified `tensor_table`
 	*/
 	template<typename TensorT, typename DeviceT, int TDim>
-	class TensorUpdateValuesReduceTable : public TensorOperation<DeviceT> {
+	class TensorUpdateSelectTensorData : public TensorOperation<DeviceT> {
 	public:
-		TensorUpdateValuesReduceTable() = default;
-		TensorUpdateValuesReduceTable(const std::string& table_name, const std::function<void(std::shared_ptr<TensorCollection<DeviceT>> & tensor_collection, DeviceT & device)>& select_function, const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_new) :
+		TensorUpdateSelectTensorData() = default;
+		TensorUpdateSelectTensorData(const std::string& table_name, const std::function<void(std::shared_ptr<TensorCollection<DeviceT>> & tensor_collection, DeviceT & device)>& select_function, const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_new) :
 			table_name_(table_name), select_function_(select_function), values_new_(values_new) {};
 		void redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
 		void undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
@@ -180,7 +180,7 @@ namespace TensorBase
 		std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> values_old_ = nullptr; // Undo
 	};
 	template<typename TensorT, typename DeviceT, int TDim>
-	inline void TensorUpdateValuesReduceTable<TensorT, DeviceT, TDim>::redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
+	inline void TensorUpdateSelectTensorData<TensorT, DeviceT, TDim>::redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
 	{
 		// Check that the table_name exist
 		if (tensor_collection->tables_.count(table_name_) < 1) {
@@ -202,7 +202,7 @@ namespace TensorBase
 		tensor_collection->tables_.at(table_name_)->updateSelectTensorDataValues(values_new_->getDataPointer(), values_old_->getDataPointer(), device);
 	}
 	template<typename TensorT, typename DeviceT, int TDim>
-	inline void TensorUpdateValuesReduceTable<TensorT, DeviceT, TDim>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
+	inline void TensorUpdateSelectTensorData<TensorT, DeviceT, TDim>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
 	{
 		// Execute the select methods on the tensor_collection
 		select_function_(tensor_collection, device);\

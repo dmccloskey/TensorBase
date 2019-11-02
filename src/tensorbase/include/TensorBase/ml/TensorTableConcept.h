@@ -549,6 +549,22 @@ namespace TensorBase
 		virtual void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu512<char>>[]>& values_new, std::shared_ptr<TensorTable<TensorArrayGpu512<char>, DeviceT, 2>>& values_old, DeviceT& device) = 0;
 		virtual void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu2048<char>>[]>& values_new, std::shared_ptr<TensorTable<TensorArrayGpu2048<char>, DeviceT, 2>>& values_old, DeviceT& device) = 0;
 #endif
+		virtual void updateTensorDataValues(const std::shared_ptr<int[]>& values_new, DeviceT& device) = 0;
+		virtual void updateTensorDataValues(const std::shared_ptr<float[]>& values_new, DeviceT& device) = 0;
+		virtual void updateTensorDataValues(const std::shared_ptr<double[]>& values_new, DeviceT& device) = 0;
+		virtual void updateTensorDataValues(const std::shared_ptr<char[]>& values_new, DeviceT& device) = 0;
+		virtual void updateTensorDataValues(const std::shared_ptr<TensorArray8<char>[]>& values_new, DeviceT& device) = 0;
+		virtual void updateTensorDataValues(const std::shared_ptr<TensorArray32<char>[]>& values_new, DeviceT& device) = 0;
+		virtual void updateTensorDataValues(const std::shared_ptr<TensorArray128<char>[]>& values_new, DeviceT& device) = 0;
+		virtual void updateTensorDataValues(const std::shared_ptr<TensorArray512<char>[]>& values_new, DeviceT& device) = 0;
+		virtual void updateTensorDataValues(const std::shared_ptr<TensorArray2048<char>[]>& values_new, DeviceT& device) = 0;
+#if COMPILE_WITH_CUDA
+		virtual void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu8<char>[]>& values_new, DeviceT& device) = 0;
+		virtual void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu32<char>[]>& values_new, DeviceT& device) = 0;
+		virtual void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu128<char>[]>& values_new, DeviceT& device) = 0;
+		virtual void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu512<char>[]>& values_new, DeviceT& device) = 0;
+		virtual void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu2048<char>[]>& values_new, DeviceT& device) = 0;
+#endif
 
     /*
     All LabelsT, TensorT, and DeviceT combos of `appendToAxis`
@@ -1816,6 +1832,50 @@ namespace TensorBase
 		};
 		void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu2048<char>>[]>& values_new, std::shared_ptr<TensorTable<TensorArrayGpu2048<char>, DeviceT, 2>>& values_old, DeviceT& device) override {
 			tensor_table_->updateTensorDataValuesConcept(values_new, values_old, device);
+		};
+#endif
+		void updateTensorDataValues(const std::shared_ptr<int[]>& values_new, DeviceT& device) override {
+			tensor_table_->updateTensorDataValuesConcept(values_new, device);
+		};
+		void updateTensorDataValues(const std::shared_ptr<float[]>& values_new, DeviceT& device) override {
+			tensor_table_->updateTensorDataValuesConcept(values_new, device);
+		};
+		void updateTensorDataValues(const std::shared_ptr<double[]>& values_new, DeviceT& device) override {
+			tensor_table_->updateTensorDataValuesConcept(values_new, device);
+		};
+		void updateTensorDataValues(const std::shared_ptr<char[]>& values_new, DeviceT& device) override {
+			tensor_table_->updateTensorDataValuesConcept(values_new, device);
+		};
+		void updateTensorDataValues(const std::shared_ptr<TensorArray8<char>[]>& values_new, DeviceT& device) override {
+			tensor_table_->updateTensorDataValuesConcept(values_new, device);
+		};
+		void updateTensorDataValues(const std::shared_ptr<TensorArray32<char>[]>& values_new, DeviceT& device) override {
+			tensor_table_->updateTensorDataValuesConcept(values_new, device);
+		};
+		void updateTensorDataValues(const std::shared_ptr<TensorArray128<char>[]>& values_new, DeviceT& device) override {
+			tensor_table_->updateTensorDataValuesConcept(values_new, device);
+		};
+		void updateTensorDataValues(const std::shared_ptr<TensorArray512<char>[]>& values_new, DeviceT& device) override {
+			tensor_table_->updateTensorDataValuesConcept(values_new, device);
+		};
+		void updateTensorDataValues(const std::shared_ptr<TensorArray2048<char>[]>& values_new, DeviceT& device) override {
+			tensor_table_->updateTensorDataValuesConcept(values_new, device);
+		};
+#if COMPILE_WITH_CUDA
+		void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu8<char>[]>& values_new, DeviceT& device) override {
+			tensor_table_->updateTensorDataValuesConcept(values_new, device);
+		};
+		void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu32<char>[]>& values_new, DeviceT& device) override {
+			tensor_table_->updateTensorDataValuesConcept(values_new, device);
+		};
+		void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu128<char>[]>& values_new, DeviceT& device) override {
+			tensor_table_->updateTensorDataValuesConcept(values_new, device);
+		};
+		void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu512<char>[]>& values_new, DeviceT& device) override {
+			tensor_table_->updateTensorDataValuesConcept(values_new, device);
+		};
+		void updateTensorDataValues(const std::shared_ptr<TensorArrayGpu2048<char>[]>& values_new, DeviceT& device) override {
+			tensor_table_->updateTensorDataValuesConcept(values_new, device);
 		};
 #endif
 

@@ -1513,7 +1513,7 @@ BOOST_AUTO_TEST_CASE(sortTensorDataCpu)
 
 }
 
-BOOST_AUTO_TEST_CASE(updateTensorDataValues1Cpu)
+BOOST_AUTO_TEST_CASE(updateSelectTensorDataValues1Cpu)
 {
   // setup the table
   TensorTableCpu<float, 3> tensorTable;
@@ -1557,7 +1557,7 @@ BOOST_AUTO_TEST_CASE(updateTensorDataValues1Cpu)
 
   // Test update
   std::shared_ptr<TensorData<float, Eigen::ThreadPoolDevice, 3>> values_old_ptr;
-  tensorTable.updateTensorDataValues(values_new_ptr, values_old_ptr, device);
+  tensorTable.updateSelectTensorDataValues(values_new_ptr, values_old_ptr, device);
   iter = 0;
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {
@@ -1594,7 +1594,7 @@ BOOST_AUTO_TEST_CASE(updateTensorDataValues1Cpu)
 
   // Test update
   values_old_ptr.reset();
-  tensorTable.updateTensorDataValues(values_new_ptr, values_old_ptr, device);
+  tensorTable.updateSelectTensorDataValues(values_new_ptr, values_old_ptr, device);
   iter = 0;
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {
@@ -1617,7 +1617,7 @@ BOOST_AUTO_TEST_CASE(updateTensorDataValues1Cpu)
   }
 }
 
-BOOST_AUTO_TEST_CASE(updateTensorDataValues2Cpu)
+BOOST_AUTO_TEST_CASE(updateSelectTensorDataValues2Cpu)
 {
   // setup the table
   TensorTableCpu<float, 3> tensorTable;
@@ -1663,7 +1663,7 @@ BOOST_AUTO_TEST_CASE(updateTensorDataValues2Cpu)
   TensorDataCpu<float, 3> values_old(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   values_old.setData();
   std::shared_ptr<TensorData<float, Eigen::ThreadPoolDevice, 3>> values_old_ptr = std::make_shared<TensorDataCpu<float, 3>>(values_old);
-  tensorTable.updateTensorDataValues(values_new_ptr->getDataPointer(), values_old_ptr->getDataPointer(), device);
+  tensorTable.updateSelectTensorDataValues(values_new_ptr->getDataPointer(), values_old_ptr->getDataPointer(), device);
   iter = 0;
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {
@@ -1700,7 +1700,7 @@ BOOST_AUTO_TEST_CASE(updateTensorDataValues2Cpu)
 
   // Test update
   values_old_ptr = std::make_shared<TensorDataCpu<float, 3>>(values_old);
-  tensorTable.updateTensorDataValues(values_new_ptr->getDataPointer(), values_old_ptr->getDataPointer(), device);
+  tensorTable.updateSelectTensorDataValues(values_new_ptr->getDataPointer(), values_old_ptr->getDataPointer(), device);
   iter = 0;
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {
