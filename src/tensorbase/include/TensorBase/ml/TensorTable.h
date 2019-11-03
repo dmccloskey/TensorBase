@@ -1608,7 +1608,7 @@ namespace TensorBase
 		if (std::is_same<T, TensorT>::value) {
 			auto values_new_copy = std::reinterpret_pointer_cast<TensorT[]>(values_new);
 			std::shared_ptr<TensorTable<TensorT, DeviceT, 2>> values_old_copy;
-			updateSelectTensorDataValues(values_new_copy, values_old_copy, device);
+			updateTensorDataValues(values_new_copy, values_old_copy, device);
 			values_old = std::reinterpret_pointer_cast<TensorTable<T, DeviceT, 2>>(values_old_copy);
 		}
 	}
