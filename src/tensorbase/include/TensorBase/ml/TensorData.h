@@ -128,6 +128,18 @@ namespace TensorBase
     */
     virtual void runLengthEncode(std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& unique, std::shared_ptr<TensorData<int, DeviceT, 1>>& count, std::shared_ptr<TensorData<int, DeviceT, 1>>& n_runs, DeviceT& device) = 0;
 
+		/*
+		@brief Bin the data for display as a histogram
+
+		NOTE: Only available for primitive types
+
+		@param[out] n_levels The number of bin levels where n_bins = n_levels -1
+		@param[out] lower_level The lower sample value boundary of lowest bin
+		@param[out] upper_level The upper sample value boundary of upper bin
+		@param[out] histogram The bin counts;
+		*/
+		virtual void histogram(const int& n_levels, const float& lower_level, const float& upper_level, std::shared_ptr<TensorData<int, DeviceT, 1>>& histogram, DeviceT& device) = 0;
+
     void setDimensions(const Eigen::array<Eigen::Index, TDim>& dimensions); ///< Set the tensor dimensions and calculate the tensor size
     Eigen::array<Eigen::Index, TDim> getDimensions() const; ///< Get the tensor dimensions
     size_t getTensorBytes() { return tensor_size_ * sizeof(TensorT); }; ///< Get the size of each tensor in bytes
