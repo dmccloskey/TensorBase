@@ -109,6 +109,7 @@ namespace TensorBase
     void setDimensions(const Eigen::array<Eigen::Index, TDim>& dimensions) { dimensions_ = dimensions; }; ///< dimensions setter
     Eigen::array<Eigen::Index, TDim> getDimensions() const { return dimensions_; }  ///< dimensions getter
     int getDimFromAxisName(const std::string& axis_name) const { return axes_to_dims_.at(axis_name); }
+		std::map<std::string, int> getAxesToDims() const { return axes_to_dims_; }  ///< axes_to_dims getter
     void clear();  ///< clears the axes and all associated data
 
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> getData() { return data_->getData(); } ///< data_->getData() wrapper
@@ -378,20 +379,35 @@ namespace TensorBase
     virtual void makeSortIndicesFromTensorIndicesComponent(const std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>>& indices_component, std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices_sort, DeviceT& device) const = 0;
 
     /*
-    @brief Update the tensor data with the given values and optionally return the original values
+    @brief Update the tensor data with the given values and optionally return the original values. 
+			The method assumes that the TensorTable Data, Indices, and Axes have already be selected and reduced.
 
     @param[in] values_new The new tensor data
     @param[out] values_old The old tensor data ([in] memory should already have been allocated and synced)
     @param[in] device
     */
     template<typename T>
-    void updateTensorDataValuesConcept(const std::shared_ptr<T[]>& values_new, std::shared_ptr<T[]>& values_old, DeviceT& device);
+    void updateSelectTensorDataValuesConcept(const std::shared_ptr<T[]>& values_new, std::shared_ptr<T[]>& values_old, DeviceT& device);
     template<typename T>
-    void updateTensorDataValuesConcept(const std::shared_ptr<T[]>& values_new, DeviceT& device);
-    void updateTensorDataValues(const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_new, std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_old, DeviceT& device);
-    void updateTensorDataValues(const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_new, DeviceT& device);
-    void updateTensorDataValues(const std::shared_ptr<TensorT[]>& values_new, std::shared_ptr<TensorT[]>& values_old, DeviceT& device);
-    void updateTensorDataValues(const std::shared_ptr<TensorT[]>& values_new, DeviceT& device);
+    void updateSelectTensorDataValuesConcept(const std::shared_ptr<T[]>& values_new, DeviceT& device);
+    void updateSelectTensorDataValues(const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_new, std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_old, DeviceT& device);
+    void updateSelectTensorDataValues(const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_new, DeviceT& device);
+    void updateSelectTensorDataValues(const std::shared_ptr<TensorT[]>& values_new, std::shared_ptr<TensorT[]>& values_old, DeviceT& device);
+    void updateSelectTensorDataValues(const std::shared_ptr<TensorT[]>& values_new, DeviceT& device);
+
+		/*
+		@brief Update the tensor data with the given values and optionally return the original values.
+
+		@param[in] values_new The new tensor data
+		@param[out] values_old The old tensor data in the form of a Sparse 2D TensorTable ([in] empty pointer)
+		@param[in] device
+		*/
+		template<typename T>
+		void updateTensorDataValuesConcept(const std::shared_ptr<T[]>& values_new, std::shared_ptr<TensorTable<T, DeviceT, 2>>& values_old, DeviceT& device);
+		void updateTensorDataValues(const std::shared_ptr<TensorT[]>& values_new, std::shared_ptr<TensorTable<TensorT, DeviceT, 2>>& values_old, DeviceT& device);
+		template<typename T>
+		void updateTensorDataValuesConcept(const std::shared_ptr<T[]>& values_new, DeviceT& device);
+		void updateTensorDataValues(const std::shared_ptr<TensorT[]>& values_new, DeviceT& device);
 
     /*
     @brief Update the tensor data by a constant value and optionally return the original values
@@ -1498,28 +1514,29 @@ namespace TensorBase
 
   template<typename TensorT, typename DeviceT, int TDim>
   template<typename T>
-  inline void TensorTable<TensorT, DeviceT, TDim>::updateTensorDataValuesConcept(const std::shared_ptr<T[]>& values_new, std::shared_ptr<T[]>& values_old, DeviceT & device)
+  inline void TensorTable<TensorT, DeviceT, TDim>::updateSelectTensorDataValuesConcept(const std::shared_ptr<T[]>& values_new, std::shared_ptr<T[]>& values_old, DeviceT & device)
   {
     if (std::is_same<T, TensorT>::value) {
       auto values_new_copy = std::reinterpret_pointer_cast<TensorT[]>(values_new);
       auto values_old_copy = std::reinterpret_pointer_cast<TensorT[]>(values_old);
-      updateTensorDataValues(values_new_copy, values_old_copy, device);
+      updateSelectTensorDataValues(values_new_copy, values_old_copy, device);
     }
   }
   template<typename TensorT, typename DeviceT, int TDim>
   template<typename T>
-  inline void TensorTable<TensorT, DeviceT, TDim>::updateTensorDataValuesConcept(const std::shared_ptr<T[]>& values_new, DeviceT & device)
+  inline void TensorTable<TensorT, DeviceT, TDim>::updateSelectTensorDataValuesConcept(const std::shared_ptr<T[]>& values_new, DeviceT & device)
   {
     if (std::is_same<T, TensorT>::value) {
       auto values_new_copy = std::reinterpret_pointer_cast<TensorT[]>(values_new);
-      updateTensorDataValues(values_new_copy, device);
+      updateSelectTensorDataValues(values_new_copy, device);
     }
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
-  inline void TensorTable<TensorT, DeviceT, TDim>::updateTensorDataValues(const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_new, std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_old, DeviceT & device)
+  inline void TensorTable<TensorT, DeviceT, TDim>::updateSelectTensorDataValues(const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_new, std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_old, DeviceT & device)
   {
-    assert(values_new->getDimensions() == data_->getDimensions());
+    assert(values_new->getDimensions() == data_->getDimensions()); // TODO: will need to be relocated
+
     // Check that the update values are in memory
     loadTensorTableBinary(dir_, device);
 
@@ -1527,13 +1544,13 @@ namespace TensorBase
     values_old = data_->copy(device);
 
     // assign the new values
-    updateTensorDataValues(values_new, device);
+    updateSelectTensorDataValues(values_new, device);
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
-  inline void TensorTable<TensorT, DeviceT, TDim>::updateTensorDataValues(const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_new, DeviceT & device)
+  inline void TensorTable<TensorT, DeviceT, TDim>::updateSelectTensorDataValues(const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_new, DeviceT & device)
   {
-    assert(values_new->getDimensions() == data_->getDimensions());
+    assert(values_new->getDimensions() == data_->getDimensions()); // TODO: will need to be relocated
 
     // assign the new values
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> values_new_values(values_new->getDataPointer().get(), values_new->getDimensions());
@@ -1553,7 +1570,7 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
-  inline void TensorTable<TensorT, DeviceT, TDim>::updateTensorDataValues(const std::shared_ptr<TensorT[]>& values_new, std::shared_ptr<TensorT[]>& values_old, DeviceT & device)
+  inline void TensorTable<TensorT, DeviceT, TDim>::updateSelectTensorDataValues(const std::shared_ptr<TensorT[]>& values_new, std::shared_ptr<TensorT[]>& values_old, DeviceT & device)
   {
     // Check that the update values are in memory
     loadTensorTableBinary(dir_, device);
@@ -1564,10 +1581,10 @@ namespace TensorBase
     values_old_values.device(device) = data_values;
 
     // assign the new values
-    updateTensorDataValues(values_new, device);
+    updateSelectTensorDataValues(values_new, device);
   }
   template<typename TensorT, typename DeviceT, int TDim>
-  inline void TensorTable<TensorT, DeviceT, TDim>::updateTensorDataValues(const std::shared_ptr<TensorT[]>& values_new, DeviceT & device)
+  inline void TensorTable<TensorT, DeviceT, TDim>::updateSelectTensorDataValues(const std::shared_ptr<TensorT[]>& values_new, DeviceT & device)
   {
     // assign the new values
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> values_new_values(values_new.get(), data_->getDimensions());
@@ -1584,6 +1601,53 @@ namespace TensorBase
       is_modified.device(device) = is_modified.constant(1); // device
     }
   }
+
+	template<typename TensorT, typename DeviceT, int TDim>
+	template<typename T>
+	inline void TensorTable<TensorT, DeviceT, TDim>::updateTensorDataValuesConcept(const std::shared_ptr<T[]>& values_new, std::shared_ptr<TensorTable<T, DeviceT, 2>>& values_old, DeviceT& device)
+	{
+		if (std::is_same<T, TensorT>::value) {
+			auto values_new_copy = std::reinterpret_pointer_cast<TensorT[]>(values_new);
+			std::shared_ptr<TensorTable<TensorT, DeviceT, 2>> values_old_copy;
+			updateTensorDataValues(values_new_copy, values_old_copy, device);
+			values_old = std::reinterpret_pointer_cast<TensorTable<T, DeviceT, 2>>(values_old_copy);
+		}
+	}
+
+	template<typename TensorT, typename DeviceT, int TDim>
+	inline void TensorTable<TensorT, DeviceT, TDim>::updateTensorDataValues(const std::shared_ptr<TensorT[]>& values_new, std::shared_ptr<TensorTable<TensorT, DeviceT, 2>>& values_old, DeviceT& device)
+	{
+		// copy the old values
+		getSelectTensorDataAsSparseTensorTable(values_old, device);
+
+		// update the data
+		updateTensorDataValues(values_new, device);
+	}
+
+	template<typename TensorT, typename DeviceT, int TDim>
+	template<typename T>
+	inline void TensorTable<TensorT, DeviceT, TDim>::updateTensorDataValuesConcept(const std::shared_ptr<T[]>& values_new, DeviceT& device)
+	{
+		if (std::is_same<T, TensorT>::value) {
+			auto values_new_copy = std::reinterpret_pointer_cast<TensorT[]>(values_new);
+			updateSelectTensorDataValues(values_new_copy, device);
+		}
+	}
+
+	template<typename TensorT, typename DeviceT, int TDim>
+	inline void TensorTable<TensorT, DeviceT, TDim>::updateTensorDataValues(const std::shared_ptr<TensorT[]>& values_new, DeviceT& device)
+	{
+		// make the sparseTensorTable update
+		// TODO: replace with new method `TensorTable::copy` (which does not yet exist...)
+		std::shared_ptr<TensorTable<TensorT, DeviceT, 2>> sparse_table_new;
+		getSelectTensorDataAsSparseTensorTable(sparse_table_new, device);
+		Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> values_new_values(values_new.get(), sparse_table_new->getDataTensorSize());
+		Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> data_values(sparse_table_new->getDataPointer().get(), sparse_table_new->getDataTensorSize());
+		data_values.device(device) = values_new_values;
+
+		// update the tensorDataValues
+		updateTensorDataFromSparseTensorTable(sparse_table_new, device);
+	}
 
   template<typename TensorT, typename DeviceT, int TDim>
   template<typename T>
@@ -1742,9 +1806,11 @@ namespace TensorBase
   template<typename LabelsT>
   inline void TensorTable<TensorT, DeviceT, TDim>::appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<TensorT[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device)
   {
-    // Check that the needed values are in memory
-    // TODO [not_in_memory]: only the shards on the "edge" of the insert will be needed
-    loadTensorTableBinary(dir_, device);
+		if (getDataTensorSize() > 0) {
+			// Check that the needed values are in memory
+			// TODO [not_in_memory]: only the shards on the "edge" of the insert will be needed
+			loadTensorTableBinary(dir_, device);
+		}
 
     // Append the new labels to the axis
     axes_.at(axis_name)->appendLabelsToAxis(labels, device);
@@ -1775,9 +1841,14 @@ namespace TensorBase
 
     // Concatenate the new data with the existing tensor data along the axis dimension
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> values_new_values(values.get(), value_dimensions);
-    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy_values(data_copy->getDataPointer().get(), data_copy->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(data_->getDataPointer().get(), data_->getDimensions());
-    data_values.device(device) = data_copy_values.concatenate(values_new_values, axes_to_dims_.at(axis_name));
+		if (value_dimensions == new_dimensions) {
+			data_values.device(device) = values_new_values;
+		}
+		else {
+			Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy_values(data_copy->getDataPointer().get(), data_copy->getDimensions());
+			data_values.device(device) = data_copy_values.concatenate(values_new_values, axes_to_dims_.at(axis_name));
+		}
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
@@ -1948,51 +2019,62 @@ namespace TensorBase
     Eigen::array<Eigen::Index, 1> new_dimensions = indices_.at(axis_name)->getDimensions();
     new_dimensions.at(0) -= indices->getDimensions().at(0);
 
-    // copy and resize the current indices
-    std::shared_ptr<TensorData<int, DeviceT, 1>> indices_copy = indices_.at(axis_name)->copy(device);
-    std::shared_ptr<TensorData<int, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copy(device);
-    std::shared_ptr<TensorData<int, DeviceT, 1>> is_modified_copy = is_modified_.at(axis_name)->copy(device);
-    std::shared_ptr<TensorData<int, DeviceT, 1>> in_memory_copy = not_in_memory_.at(axis_name)->copy(device);
-    std::shared_ptr<TensorData<int, DeviceT, 1>> shard_id_copy = shard_id_.at(axis_name)->copy(device);
-    std::shared_ptr<TensorData<int, DeviceT, 1>> shard_indices_copy = shard_indices_.at(axis_name)->copy(device);
-    indices_copy->setDimensions(new_dimensions); 
-    indices_copy->setData();
-    indices_view_copy->setDimensions(new_dimensions); 
-    indices_view_copy->setData();
-    is_modified_copy->setDimensions(new_dimensions); 
-    is_modified_copy->setData();
-    in_memory_copy->setDimensions(new_dimensions); 
-    in_memory_copy->setData();
-    shard_id_copy->setDimensions(new_dimensions); 
-    shard_id_copy->setData();
-    shard_indices_copy->setDimensions(new_dimensions);
-    shard_indices_copy->setData();
-    indices_copy->syncHAndDData(device);
-    indices_view_copy->syncHAndDData(device);
-    is_modified_copy->syncHAndDData(device);
-    in_memory_copy->syncHAndDData(device);
-    shard_id_copy->syncHAndDData(device);
-    shard_indices_copy->syncHAndDData(device);
+		if (new_dimensions.at(0) > 0) {
+			// copy and resize the current indices
+			std::shared_ptr<TensorData<int, DeviceT, 1>> indices_copy = indices_.at(axis_name)->copy(device);
+			std::shared_ptr<TensorData<int, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copy(device);
+			std::shared_ptr<TensorData<int, DeviceT, 1>> is_modified_copy = is_modified_.at(axis_name)->copy(device);
+			std::shared_ptr<TensorData<int, DeviceT, 1>> in_memory_copy = not_in_memory_.at(axis_name)->copy(device);
+			std::shared_ptr<TensorData<int, DeviceT, 1>> shard_id_copy = shard_id_.at(axis_name)->copy(device);
+			std::shared_ptr<TensorData<int, DeviceT, 1>> shard_indices_copy = shard_indices_.at(axis_name)->copy(device);
+ 			indices_copy->setDimensions(new_dimensions);
+			indices_copy->setData();
+			indices_view_copy->setDimensions(new_dimensions);
+			indices_view_copy->setData();
+			is_modified_copy->setDimensions(new_dimensions);
+			is_modified_copy->setData();
+			in_memory_copy->setDimensions(new_dimensions);
+			in_memory_copy->setData();
+			shard_id_copy->setDimensions(new_dimensions);
+			shard_id_copy->setData();
+			shard_indices_copy->setDimensions(new_dimensions);
+			shard_indices_copy->setData();
+			indices_copy->syncHAndDData(device);
+			indices_view_copy->syncHAndDData(device);
+			is_modified_copy->syncHAndDData(device);
+			in_memory_copy->syncHAndDData(device);
+			shard_id_copy->syncHAndDData(device);
+			shard_indices_copy->syncHAndDData(device);
 
-    // make the selection tensor based off of the selection indices
-    std::shared_ptr<TensorData<int, DeviceT, 1>> selection_indices;
-    makeIndicesViewSelectFromIndices(axis_name, selection_indices, indices, true, device);
+			// make the selection tensor based off of the selection indices
+			std::shared_ptr<TensorData<int, DeviceT, 1>> selection_indices;
+			makeIndicesViewSelectFromIndices(axis_name, selection_indices, indices, true, device);
 
-    // select the values based on the indices
-    indices_.at(axis_name)->select(indices_copy, selection_indices, device);
-    indices_view_.at(axis_name)->select(indices_view_copy, selection_indices, device);
-    is_modified_.at(axis_name)->select(is_modified_copy, selection_indices, device);
-    not_in_memory_.at(axis_name)->select(in_memory_copy, selection_indices, device);
-    shard_id_.at(axis_name)->select(shard_id_copy, selection_indices, device);
-    shard_indices_.at(axis_name)->select(shard_indices_copy, selection_indices, device);
+			// select the values based on the indices
+			indices_.at(axis_name)->select(indices_copy, selection_indices, device);
+			indices_view_.at(axis_name)->select(indices_view_copy, selection_indices, device);
+			is_modified_.at(axis_name)->select(is_modified_copy, selection_indices, device);
+			not_in_memory_.at(axis_name)->select(in_memory_copy, selection_indices, device);
+			shard_id_.at(axis_name)->select(shard_id_copy, selection_indices, device);
+			shard_indices_.at(axis_name)->select(shard_indices_copy, selection_indices, device);
 
-    // swap the indices
-    indices_.at(axis_name) = indices_copy;
-    indices_view_.at(axis_name) = indices_view_copy;
-    is_modified_.at(axis_name) = is_modified_copy;
-    not_in_memory_.at(axis_name) = in_memory_copy;
-    shard_id_.at(axis_name) = shard_id_copy;
-    shard_indices_.at(axis_name) = shard_indices_copy;
+			// swap the indices
+			indices_.at(axis_name) = indices_copy;
+			indices_view_.at(axis_name) = indices_view_copy;
+			is_modified_.at(axis_name) = is_modified_copy;
+			not_in_memory_.at(axis_name) = in_memory_copy;
+			shard_id_.at(axis_name) = shard_id_copy;
+			shard_indices_.at(axis_name) = shard_indices_copy;
+		}
+		else {
+			// resize the indices and reset the data
+			indices_.at(axis_name)->setDimensions(new_dimensions);
+			indices_view_.at(axis_name)->setDimensions(new_dimensions);
+			is_modified_.at(axis_name)->setDimensions(new_dimensions);
+			not_in_memory_.at(axis_name)->setDimensions(new_dimensions);
+			shard_id_.at(axis_name)->setDimensions(new_dimensions);
+			shard_indices_.at(axis_name)->setDimensions(new_dimensions);
+		}
 
     // update the dimensions
     dimensions_.at(axes_to_dims_.at(axis_name)) -= indices->getTensorSize();

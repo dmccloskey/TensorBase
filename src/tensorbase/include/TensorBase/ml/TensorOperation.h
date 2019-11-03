@@ -42,7 +42,20 @@ namespace TensorBase
   template<typename LabelsT, typename TensorT, typename DeviceT, int TDim>
   inline void TensorAppendToAxis<LabelsT, TensorT, DeviceT, TDim>::redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
   {
-    // TODO: check that the table_name and axis name exist
+		// Check that the table_name exist
+		if (tensor_collection->tables_.count(table_name_) < 1) {
+			std::cout << "The table " << table_name_ << " does not exist in the collection." << std::endl;
+			return;
+		}
+
+		// Check that the axis name exist
+		try {
+			tensor_collection->tables_.at(table_name_)->getDimFromAxisName(axis_name_);
+		}
+		catch (std::out_of_range& e) {
+			std::cout << "The axis " << axis_name_ << " does not exist in the table " << table_name_ << "." << std::endl;
+			return;
+		}
     // TODO: check that the dimensions of the values are compatible with a tensor concatenation give the dimensions of the Tensor table and specified axis
     // TODO: check that the dimensions of the labels match the dimensions of the axis labels
 
@@ -79,7 +92,20 @@ namespace TensorBase
   template<typename LabelsT, typename TensorT, typename DeviceT, int TDim>
   inline void TensorDeleteFromAxis<LabelsT, TensorT, DeviceT, TDim>::redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
   {
-    // TODO: check that the table_name and axis name exist
+		// Check that the table_name exist
+		if (tensor_collection->tables_.count(table_name_) < 1) {
+			std::cout << "The table " << table_name_ << " does not exist in the collection." << std::endl;
+			return;
+		}
+
+		// Check that the axis name exist
+		try {
+			tensor_collection->tables_.at(table_name_)->getDimFromAxisName(axis_name_);
+		}
+		catch (std::out_of_range & e) {
+			std::cout << "The axis " << axis_name_ << " does not exist in the table " << table_name_ << "." << std::endl;
+			return;
+		}
 
     // Execute the select methods on the tensor_collection
     select_function_(tensor_collection, device);
@@ -95,6 +121,11 @@ namespace TensorBase
 
     // Delete the selected labels
     tensor_collection->tables_.at(table_name_)->deleteFromAxis(axis_name_, indices_, labels_, values_->getDataPointer(), device);
+
+		// Reset the indices view
+		for (const auto& axes_to_dims : tensor_collection->tables_.at(table_name_)->getAxesToDims()) {
+			tensor_collection->tables_.at(table_name_)->resetIndicesView(axes_to_dims.first, device);
+		}
   }
   template<typename LabelsT, typename TensorT, typename DeviceT, int TDim>
   inline void TensorDeleteFromAxis<LabelsT, TensorT, DeviceT, TDim>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
@@ -129,8 +160,70 @@ namespace TensorBase
     this->values_ = std::make_shared<TensorDataDefaultDevice<TensorT, TDim>>(values_tmp);
   }
 
+	/**
+		@brief Class for updating data of a Tensor based on an optional select function.
+
+		IMPORTANT: the select function must "apply" the select clauses, which will reduce the data and axes in place, and then update the reduced data with the new values
+
+		Use cases:
+			1. The update replaces all of the data in the specified `tensor_table` if no select_function is specified
+			2. The update a selected contiguous region (i.e., continuous column or row, 2D sheet, 3D cube, etc.,) in the specified `tensor_table`
+	*/
+	template<typename TensorT, typename DeviceT, int TDim>
+	class TensorUpdateSelectValues : public TensorOperation<DeviceT> {
+	public:
+		TensorUpdateSelectValues() = default;
+		TensorUpdateSelectValues(const std::string& table_name, const std::function<void(std::shared_ptr<TensorCollection<DeviceT>> & tensor_collection, DeviceT & device)>& select_function, const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_new) :
+			table_name_(table_name), select_function_(select_function), values_new_(values_new) {};
+		void redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
+		void undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
+		std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> getValuesOld() const { return values_old_; };
+	protected:
+		std::function<void(std::shared_ptr<TensorCollection<DeviceT>> & tensor_collection, DeviceT & device)> select_function_; // Redo/Undo
+		std::string table_name_; // Undo/Redo
+		std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> values_new_ = nullptr; // Redo
+		std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> values_old_ = nullptr; // Undo
+	};
+	template<typename TensorT, typename DeviceT, int TDim>
+	inline void TensorUpdateSelectValues<TensorT, DeviceT, TDim>::redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
+	{
+		// Check that the table_name exist
+		if (tensor_collection->tables_.count(table_name_) < 1) {
+			std::cout << "The table " << table_name_ << " does not exist in the collection." << std::endl;
+			return;
+		}
+
+		// Execute the select methods on the tensor_collection
+		select_function_(tensor_collection, device);
+
+		// Check that the dimensions of the values are compatible with the selected Tensor Table Data
+		// Mismatch indicates that the select method was written incorrectly
+		assert(tensor_collection->tables_.at(table_name_)->getDataTensorSize() == values_new_->getTensorSize());
+
+		// Update the values with the `values_new` and copy the original values into the `values_old`
+		values_old_ = values_new_->copy(device);
+		values_new_->syncHAndDData(device);
+		values_old_->syncHAndDData(device);
+		tensor_collection->tables_.at(table_name_)->updateSelectTensorDataValues(values_new_->getDataPointer(), values_old_->getDataPointer(), device);
+	}
+	template<typename TensorT, typename DeviceT, int TDim>
+	inline void TensorUpdateSelectValues<TensorT, DeviceT, TDim>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
+	{
+		// Execute the select methods on the tensor_collection
+		select_function_(tensor_collection, device);\
+
+		// Check that the dimensions of the values are compatible with the selected Tensor Table Data
+		// Mismatch indicates that the select method was written incorrectly
+		assert(tensor_collection->tables_.at(table_name_)->getDataTensorSize() == values_old_->getTensorSize());
+
+		// Update the values with the `values_old`
+		tensor_collection->tables_.at(table_name_)->updateSelectTensorDataValues(values_old_->getDataPointer(), device);
+	}
+
   /**
-    @brief Class for updating data of a Tensor based on an optional select function
+    @brief Class for updating data of a Tensor based on an optional select function.
+
+		IMPORTant: the select function does not "apply" the select clauses, but instead updates the data based on the `indices_view`
 
     Use cases:
       1. The update replaces all of the data in the specified `tensor_table` if no select_function is specified
@@ -139,33 +232,38 @@ namespace TensorBase
   template<typename TensorT, typename DeviceT, int TDim>
   class TensorUpdateValues : public TensorOperation<DeviceT> {
   public:
-    TensorUpdateValues() = default;
-    TensorUpdateValues(const std::string& table_name, const std::function<void(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)>& select_function, const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_new) :
-      table_name_(table_name), select_function_(select_function), values_new_(values_new) {};
+		TensorUpdateValues() = default;
+		TensorUpdateValues(const std::string& table_name, const std::function<void(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)>& select_function, const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_new) :
+      table_name_(table_name), select_function_(select_function), values_new_(values_new){};
     void redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
     void undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
-    std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> getValuesOld() const { return values_old_; };
+		std::shared_ptr<TensorTable<TensorT, DeviceT, 2>> getValuesOld() const { return values_old_; };
   protected:
     std::function<void(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)> select_function_; // Redo/Undo
     std::string table_name_; // Undo/Redo
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> values_new_ = nullptr; // Redo
-    std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> values_old_ = nullptr; // Undo
+		std::shared_ptr<TensorTable<TensorT, DeviceT, 2>> values_old_ = nullptr; // Undo: Sparse table
   };
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorUpdateValues<TensorT, DeviceT, TDim>::redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
   {
-    // TODO: check that the table_name exist
+    // Check that the table_name exist
+		if (tensor_collection->tables_.count(table_name_) < 1) {
+			std::cout << "The table " << table_name_ << " does not exist in the collection." << std::endl;
+			return;
+		}
 
     // Execute the select methods on the tensor_collection
     select_function_(tensor_collection, device);
+		
+		// Update the values with the `values_new` and copy the original values into the `values_old`
+		values_new_->syncHAndDData(device);
+		tensor_collection->tables_.at(table_name_)->updateTensorDataValues(values_new_->getDataPointer(), values_old_, device);
 
-    // TODO: check that the dimensions of the values are compatible with the selected Tensor Table Data
-
-    // Update the values with the `values_new` and copy the original values into the `values_old`
-    values_old_ = values_new_->copy(device);
-    values_new_->syncHAndDData(device);
-    values_old_->syncHAndDData(device);
-    tensor_collection->tables_.at(table_name_)->updateTensorDataValues(values_new_->getDataPointer(), values_old_->getDataPointer(), device);
+		// Reset the indices view
+		for (const auto& axes_to_dims : tensor_collection->tables_.at(table_name_)->getAxesToDims()) {
+			tensor_collection->tables_.at(table_name_)->resetIndicesView(axes_to_dims.first, device);
+		}
   }
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorUpdateValues<TensorT, DeviceT, TDim>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
@@ -173,8 +271,13 @@ namespace TensorBase
     // Execute the select methods on the tensor_collection
     select_function_(tensor_collection, device);
 
-    // Update the values with the `values_old`
-    tensor_collection->tables_.at(table_name_)->updateTensorDataValues(values_old_->getDataPointer(), device);
+		// Update the values with the `values_old`
+		tensor_collection->tables_.at(table_name_)->updateTensorDataFromSparseTensorTable(values_old_, device);
+
+		// Reset the indices view
+		for (const auto& axes_to_dims : tensor_collection->tables_.at(table_name_)->getAxesToDims()) {
+			tensor_collection->tables_.at(table_name_)->resetIndicesView(axes_to_dims.first, device);
+		}
   }
 
   /**
@@ -200,7 +303,11 @@ namespace TensorBase
   template<typename TensorT, typename DeviceT>
   inline void TensorUpdateConstant<TensorT, DeviceT>::redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
   {
-    // TODO: check that the table_name exist
+		// Check that the table_name exist
+		if (tensor_collection->tables_.count(table_name_) < 1) {
+			std::cout << "The table " << table_name_ << " does not exist in the collection." << std::endl;
+			return;
+		}
 
     // Execute the select methods on the tensor_collection
     select_function_(tensor_collection, device);
@@ -210,8 +317,8 @@ namespace TensorBase
     tensor_collection->tables_.at(table_name_)->updateTensorDataConstant(values_new_, values_old_, device);
 
     // Reset the table indices
-    for (auto& axes_map: tensor_collection->tables_.at(table_name_)->getAxes())
-      tensor_collection->tables_.at(table_name_)->resetIndicesView(axes_map.first, device);
+    for (const auto& axes_to_dims : tensor_collection->tables_.at(table_name_)->getAxesToDims())
+      tensor_collection->tables_.at(table_name_)->resetIndicesView(axes_to_dims.first, device);
   }
   template<typename TensorT, typename DeviceT>
   inline void TensorUpdateConstant<TensorT, DeviceT>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
@@ -221,6 +328,10 @@ namespace TensorBase
 
     // Update the values with the `values_old`
     tensor_collection->tables_.at(table_name_)->updateTensorDataFromSparseTensorTable(values_old_, device);
+
+		// Reset the table indices
+		for (const auto& axes_to_dims : tensor_collection->tables_.at(table_name_)->getAxesToDims())
+			tensor_collection->tables_.at(table_name_)->resetIndicesView(axes_to_dims.first, device);
   }
 
   class TensorAppendToDimension;

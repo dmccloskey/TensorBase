@@ -6,7 +6,6 @@ set(sources_list_h
 	Helloworld.h
 	Statistics.h
 	StringParsing.h
-	TupleAlgorithms.h
 )
 
 ### add path to the filenames

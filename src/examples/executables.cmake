@@ -1,4 +1,5 @@
-set(core_executables_list
+set(benchmark_executables_list
+  BenchmarkPixels
 )
 
 set(cuda_executables_list
@@ -7,6 +8,6 @@ set(cuda_executables_list
 
 ### collect example executables
 set(EXAMPLE_executables
-  ${core_executables_list}
+  ${benchmark_executables_list}
   ${cuda_executables_list}
 )

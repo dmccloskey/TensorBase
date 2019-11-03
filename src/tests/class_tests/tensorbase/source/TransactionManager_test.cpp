@@ -44,9 +44,6 @@ struct SelectTable3 {
 
     // Select the axes
     tensorSelect.selectClause(tensor_collection, select_clause1, device);
-
-    // Apply the select clause
-    tensorSelect.applySelect(tensor_collection, { "3" }, device);
   }
 };
 
@@ -325,22 +322,20 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
   BOOST_CHECK_EQUAL(transactionManager.getCurrentIndex(), 2);
 
   // Test for the changed value
-  //Eigen::Tensor<char, 1> values_update_expected(Eigen::array<Eigen::Index, 1>({ nlabels1 }));
-  //values_update_expected.setValues({ 'a', 'c' });
-  //for (int i = 0; i < nlabels1; ++i) {
-  //  BOOST_CHECK_EQUAL(tensorTable3_ptr->getData()(i), values_update_expected(i));
-  //}
-  BOOST_CHECK_EQUAL(tensorTable3_ptr->getData()(0), 'c'); // TODO: Revert to the above when Update is fixed
+  Eigen::Tensor<char, 1> values_update_expected(Eigen::array<Eigen::Index, 1>({ nlabels1 }));
+  values_update_expected.setValues({ 'a', 'c' });
+  for (int i = 0; i < nlabels1; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable3_ptr->getData()(i), values_update_expected(i));
+  }
 
   // Undo #1
   transactionManager.undo(device);
   BOOST_CHECK_EQUAL(transactionManager.getCurrentIndex(), 1);
 
   // Test that table 3 update has been reverted
-  //for (int i = 0; i < nlabels1; ++i) {
-  //  BOOST_CHECK_EQUAL(tensorTable3_ptr->getData()(i), tensor_values3(i));
-  //}
-  BOOST_CHECK_EQUAL(tensorTable3_ptr->getData()(0), 'b'); // TODO: Revert to the above when Update is fixed
+  for (int i = 0; i < nlabels1; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable3_ptr->getData()(i), tensor_values3(i));
+  }
 
   // Undo #2
   transactionManager.undo(device);

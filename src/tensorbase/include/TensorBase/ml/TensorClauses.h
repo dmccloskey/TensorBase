@@ -48,14 +48,14 @@ namespace TensorBase
       COUNT,
       SUM,
       PROD,
-      CUSTOM,
+      CUSTOM, // TODO: example implementation for StDev and %RSD
       NONE
     };
   };
   /*
   @brief Class defining the `reduction` clause statements.  Specified axis from the same
     table will be reduced using the reduction function for all selected indices resulting in 
-    a tensor with dimensions = TDim - axes_names.siz()
+    a tensor with dimensions = TDim - axes_names.size()
   */
   template<typename DeviceT>
   class ReductionClause {
