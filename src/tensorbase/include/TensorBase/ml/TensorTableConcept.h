@@ -81,6 +81,7 @@ namespace TensorBase
     virtual void resetIndicesView(const std::string& axis_name, DeviceT& device) = 0;
     virtual void makeIndicesFromIndicesView(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) = 0;
     virtual int getDimFromAxisName(const std::string& axis_name) = 0;
+		virtual std::map<std::string, int> getAxesToDims() const = 0;
     virtual void setAxes() = 0;
     virtual void setData() = 0;
 		virtual size_t getDataTensorSize() const = 0;
@@ -996,7 +997,8 @@ namespace TensorBase
     void makeIndicesFromIndicesView(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) override { 
       tensor_table_->makeIndicesFromIndicesView(axis_name, indices, device);
     };
-    int getDimFromAxisName(const std::string& axis_name) override { return tensor_table_->getDimFromAxisName(axis_name); };
+    int getDimFromAxisName(const std::string& axis_name) override { return tensor_table_->getDimFromAxisName(axis_name); }
+		std::map<std::string, int> getAxesToDims() const override { return tensor_table_->getAxesToDims(); }
     void setAxes() override { tensor_table_->setAxes(); }
     void setData() override { tensor_table_->setData(); }
 		size_t getDataTensorSize() const override { return tensor_table_->getDataTensorSize(); }

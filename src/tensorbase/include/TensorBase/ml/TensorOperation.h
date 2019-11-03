@@ -121,6 +121,11 @@ namespace TensorBase
 
     // Delete the selected labels
     tensor_collection->tables_.at(table_name_)->deleteFromAxis(axis_name_, indices_, labels_, values_->getDataPointer(), device);
+
+		// Reset the indices view
+		for (const auto& axes_to_dims : tensor_collection->tables_.at(table_name_)->getAxesToDims()) {
+			tensor_collection->tables_.at(table_name_)->resetIndicesView(axes_to_dims.first, device);
+		}
   }
   template<typename LabelsT, typename TensorT, typename DeviceT, int TDim>
   inline void TensorDeleteFromAxis<LabelsT, TensorT, DeviceT, TDim>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
@@ -250,10 +255,15 @@ namespace TensorBase
 
     // Execute the select methods on the tensor_collection
     select_function_(tensor_collection, device);
-
+		
 		// Update the values with the `values_new` and copy the original values into the `values_old`
 		values_new_->syncHAndDData(device);
 		tensor_collection->tables_.at(table_name_)->updateTensorDataValues(values_new_->getDataPointer(), values_old_, device);
+
+		// Reset the indices view
+		for (const auto& axes_to_dims : tensor_collection->tables_.at(table_name_)->getAxesToDims()) {
+			tensor_collection->tables_.at(table_name_)->resetIndicesView(axes_to_dims.first, device);
+		}
   }
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorUpdateValues<TensorT, DeviceT, TDim>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
@@ -263,6 +273,11 @@ namespace TensorBase
 
 		// Update the values with the `values_old`
 		tensor_collection->tables_.at(table_name_)->updateTensorDataFromSparseTensorTable(values_old_, device);
+
+		// Reset the indices view
+		for (const auto& axes_to_dims : tensor_collection->tables_.at(table_name_)->getAxesToDims()) {
+			tensor_collection->tables_.at(table_name_)->resetIndicesView(axes_to_dims.first, device);
+		}
   }
 
   /**
@@ -302,8 +317,8 @@ namespace TensorBase
     tensor_collection->tables_.at(table_name_)->updateTensorDataConstant(values_new_, values_old_, device);
 
     // Reset the table indices
-    for (auto& axes_map: tensor_collection->tables_.at(table_name_)->getAxes())
-      tensor_collection->tables_.at(table_name_)->resetIndicesView(axes_map.first, device);
+    for (const auto& axes_to_dims : tensor_collection->tables_.at(table_name_)->getAxesToDims())
+      tensor_collection->tables_.at(table_name_)->resetIndicesView(axes_to_dims.first, device);
   }
   template<typename TensorT, typename DeviceT>
   inline void TensorUpdateConstant<TensorT, DeviceT>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
@@ -313,6 +328,10 @@ namespace TensorBase
 
     // Update the values with the `values_old`
     tensor_collection->tables_.at(table_name_)->updateTensorDataFromSparseTensorTable(values_old_, device);
+
+		// Reset the table indices
+		for (const auto& axes_to_dims : tensor_collection->tables_.at(table_name_)->getAxesToDims())
+			tensor_collection->tables_.at(table_name_)->resetIndicesView(axes_to_dims.first, device);
   }
 
   class TensorAppendToDimension;

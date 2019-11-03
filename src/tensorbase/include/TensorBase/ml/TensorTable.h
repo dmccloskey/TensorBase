@@ -109,6 +109,7 @@ namespace TensorBase
     void setDimensions(const Eigen::array<Eigen::Index, TDim>& dimensions) { dimensions_ = dimensions; }; ///< dimensions setter
     Eigen::array<Eigen::Index, TDim> getDimensions() const { return dimensions_; }  ///< dimensions getter
     int getDimFromAxisName(const std::string& axis_name) const { return axes_to_dims_.at(axis_name); }
+		std::map<std::string, int> getAxesToDims() const { return axes_to_dims_; }  ///< axes_to_dims getter
     void clear();  ///< clears the axes and all associated data
 
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> getData() { return data_->getData(); } ///< data_->getData() wrapper
@@ -2018,51 +2019,62 @@ namespace TensorBase
     Eigen::array<Eigen::Index, 1> new_dimensions = indices_.at(axis_name)->getDimensions();
     new_dimensions.at(0) -= indices->getDimensions().at(0);
 
-    // copy and resize the current indices
-    std::shared_ptr<TensorData<int, DeviceT, 1>> indices_copy = indices_.at(axis_name)->copy(device);
-    std::shared_ptr<TensorData<int, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copy(device);
-    std::shared_ptr<TensorData<int, DeviceT, 1>> is_modified_copy = is_modified_.at(axis_name)->copy(device);
-    std::shared_ptr<TensorData<int, DeviceT, 1>> in_memory_copy = not_in_memory_.at(axis_name)->copy(device);
-    std::shared_ptr<TensorData<int, DeviceT, 1>> shard_id_copy = shard_id_.at(axis_name)->copy(device);
-    std::shared_ptr<TensorData<int, DeviceT, 1>> shard_indices_copy = shard_indices_.at(axis_name)->copy(device);
-    indices_copy->setDimensions(new_dimensions); 
-    indices_copy->setData();
-    indices_view_copy->setDimensions(new_dimensions); 
-    indices_view_copy->setData();
-    is_modified_copy->setDimensions(new_dimensions); 
-    is_modified_copy->setData();
-    in_memory_copy->setDimensions(new_dimensions); 
-    in_memory_copy->setData();
-    shard_id_copy->setDimensions(new_dimensions); 
-    shard_id_copy->setData();
-    shard_indices_copy->setDimensions(new_dimensions);
-    shard_indices_copy->setData();
-    indices_copy->syncHAndDData(device);
-    indices_view_copy->syncHAndDData(device);
-    is_modified_copy->syncHAndDData(device);
-    in_memory_copy->syncHAndDData(device);
-    shard_id_copy->syncHAndDData(device);
-    shard_indices_copy->syncHAndDData(device);
+		if (new_dimensions.at(0) > 0) {
+			// copy and resize the current indices
+			std::shared_ptr<TensorData<int, DeviceT, 1>> indices_copy = indices_.at(axis_name)->copy(device);
+			std::shared_ptr<TensorData<int, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copy(device);
+			std::shared_ptr<TensorData<int, DeviceT, 1>> is_modified_copy = is_modified_.at(axis_name)->copy(device);
+			std::shared_ptr<TensorData<int, DeviceT, 1>> in_memory_copy = not_in_memory_.at(axis_name)->copy(device);
+			std::shared_ptr<TensorData<int, DeviceT, 1>> shard_id_copy = shard_id_.at(axis_name)->copy(device);
+			std::shared_ptr<TensorData<int, DeviceT, 1>> shard_indices_copy = shard_indices_.at(axis_name)->copy(device);
+ 			indices_copy->setDimensions(new_dimensions);
+			indices_copy->setData();
+			indices_view_copy->setDimensions(new_dimensions);
+			indices_view_copy->setData();
+			is_modified_copy->setDimensions(new_dimensions);
+			is_modified_copy->setData();
+			in_memory_copy->setDimensions(new_dimensions);
+			in_memory_copy->setData();
+			shard_id_copy->setDimensions(new_dimensions);
+			shard_id_copy->setData();
+			shard_indices_copy->setDimensions(new_dimensions);
+			shard_indices_copy->setData();
+			indices_copy->syncHAndDData(device);
+			indices_view_copy->syncHAndDData(device);
+			is_modified_copy->syncHAndDData(device);
+			in_memory_copy->syncHAndDData(device);
+			shard_id_copy->syncHAndDData(device);
+			shard_indices_copy->syncHAndDData(device);
 
-    // make the selection tensor based off of the selection indices
-    std::shared_ptr<TensorData<int, DeviceT, 1>> selection_indices;
-    makeIndicesViewSelectFromIndices(axis_name, selection_indices, indices, true, device);
+			// make the selection tensor based off of the selection indices
+			std::shared_ptr<TensorData<int, DeviceT, 1>> selection_indices;
+			makeIndicesViewSelectFromIndices(axis_name, selection_indices, indices, true, device);
 
-    // select the values based on the indices
-    indices_.at(axis_name)->select(indices_copy, selection_indices, device);
-    indices_view_.at(axis_name)->select(indices_view_copy, selection_indices, device);
-    is_modified_.at(axis_name)->select(is_modified_copy, selection_indices, device);
-    not_in_memory_.at(axis_name)->select(in_memory_copy, selection_indices, device);
-    shard_id_.at(axis_name)->select(shard_id_copy, selection_indices, device);
-    shard_indices_.at(axis_name)->select(shard_indices_copy, selection_indices, device);
+			// select the values based on the indices
+			indices_.at(axis_name)->select(indices_copy, selection_indices, device);
+			indices_view_.at(axis_name)->select(indices_view_copy, selection_indices, device);
+			is_modified_.at(axis_name)->select(is_modified_copy, selection_indices, device);
+			not_in_memory_.at(axis_name)->select(in_memory_copy, selection_indices, device);
+			shard_id_.at(axis_name)->select(shard_id_copy, selection_indices, device);
+			shard_indices_.at(axis_name)->select(shard_indices_copy, selection_indices, device);
 
-    // swap the indices
-    indices_.at(axis_name) = indices_copy;
-    indices_view_.at(axis_name) = indices_view_copy;
-    is_modified_.at(axis_name) = is_modified_copy;
-    not_in_memory_.at(axis_name) = in_memory_copy;
-    shard_id_.at(axis_name) = shard_id_copy;
-    shard_indices_.at(axis_name) = shard_indices_copy;
+			// swap the indices
+			indices_.at(axis_name) = indices_copy;
+			indices_view_.at(axis_name) = indices_view_copy;
+			is_modified_.at(axis_name) = is_modified_copy;
+			not_in_memory_.at(axis_name) = in_memory_copy;
+			shard_id_.at(axis_name) = shard_id_copy;
+			shard_indices_.at(axis_name) = shard_indices_copy;
+		}
+		else {
+			// resize the indices and reset the data
+			indices_.at(axis_name)->setDimensions(new_dimensions);
+			indices_view_.at(axis_name)->setDimensions(new_dimensions);
+			is_modified_.at(axis_name)->setDimensions(new_dimensions);
+			not_in_memory_.at(axis_name)->setDimensions(new_dimensions);
+			shard_id_.at(axis_name)->setDimensions(new_dimensions);
+			shard_indices_.at(axis_name)->setDimensions(new_dimensions);
+		}
 
     // update the dimensions
     dimensions_.at(axes_to_dims_.at(axis_name)) -= indices->getTensorSize();

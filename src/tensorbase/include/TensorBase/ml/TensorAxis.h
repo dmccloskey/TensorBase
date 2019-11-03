@@ -215,8 +215,14 @@ namespace TensorBase
     // perform the reduction on the labels and update the axis attributes
     std::shared_ptr<TensorData<TensorT, DeviceT, 2>> labels_select;
     selectFromAxis(indices, labels_select, device);
-    tensor_dimension_labels_ = labels_select;
-    setNLabels(labels_select->getDimensions().at(1));
+		if (labels_select->getDimensions().at(1) > 0) {
+			tensor_dimension_labels_ = labels_select;
+			setNLabels(labels_select->getDimensions().at(1));
+		}
+		else {
+			tensor_dimension_labels_.reset();
+			setNLabels(labels_select->getDimensions().at(1));
+		}
   }
 
   template<typename TensorT, typename DeviceT>

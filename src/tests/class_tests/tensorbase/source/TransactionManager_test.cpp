@@ -44,9 +44,6 @@ struct SelectTable3 {
 
     // Select the axes
     tensorSelect.selectClause(tensor_collection, select_clause1, device);
-
-    // Apply the select clause
-    tensorSelect.applySelect(tensor_collection, { "3" }, device);
   }
 };
 
@@ -318,29 +315,27 @@ BOOST_AUTO_TEST_CASE(undoRedoAndRollbackDefaultDevice)
   values_update.setData(values_new_values);
 
   // Set up the update
-  TensorUpdateSelectValues<char, Eigen::DefaultDevice, 1> tensorUpdate("3", SelectTable3(), std::make_shared<TensorDataDefaultDevice<char, 1>>(values_update));
-  std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> tensorUpdate_ptr = std::make_shared<TensorUpdateSelectValues<char, Eigen::DefaultDevice, 1>>(tensorUpdate);
+  TensorUpdateValues<char, Eigen::DefaultDevice, 1> tensorUpdate("3", SelectTable3(), std::make_shared<TensorDataDefaultDevice<char, 1>>(values_update));
+  std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> tensorUpdate_ptr = std::make_shared<TensorUpdateValues<char, Eigen::DefaultDevice, 1>>(tensorUpdate);
   transactionManager.executeOperation(tensorUpdate_ptr, device);
 
   BOOST_CHECK_EQUAL(transactionManager.getCurrentIndex(), 2);
 
   // Test for the changed value
-  //Eigen::Tensor<char, 1> values_update_expected(Eigen::array<Eigen::Index, 1>({ nlabels1 }));
-  //values_update_expected.setValues({ 'a', 'c' });
-  //for (int i = 0; i < nlabels1; ++i) {
-  //  BOOST_CHECK_EQUAL(tensorTable3_ptr->getData()(i), values_update_expected(i));
-  //}
-  BOOST_CHECK_EQUAL(tensorTable3_ptr->getData()(0), 'c'); // TODO: Revert to the above when Update is fixed
+  Eigen::Tensor<char, 1> values_update_expected(Eigen::array<Eigen::Index, 1>({ nlabels1 }));
+  values_update_expected.setValues({ 'a', 'c' });
+  for (int i = 0; i < nlabels1; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable3_ptr->getData()(i), values_update_expected(i));
+  }
 
   // Undo #1
   transactionManager.undo(device);
   BOOST_CHECK_EQUAL(transactionManager.getCurrentIndex(), 1);
 
   // Test that table 3 update has been reverted
-  //for (int i = 0; i < nlabels1; ++i) {
-  //  BOOST_CHECK_EQUAL(tensorTable3_ptr->getData()(i), tensor_values3(i));
-  //}
-  BOOST_CHECK_EQUAL(tensorTable3_ptr->getData()(0), 'b'); // TODO: Revert to the above when Update is fixed
+  for (int i = 0; i < nlabels1; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable3_ptr->getData()(i), tensor_values3(i));
+  }
 
   // Undo #2
   transactionManager.undo(device);

@@ -139,6 +139,12 @@ protected:
 	void update1TimePoint2D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `update1TimePoint2D`
 	void update1TimePoint3D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `update1TimePoint3D`
 	void update1TimePoint4D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `update1TimePoint4D`
+
+	void delete1TimePoint0D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `delete1TimePoint0D`
+	void delete1TimePoint1D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `delete1TimePoint1D`
+	void delete1TimePoint2D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `delete1TimePoint2D`
+	void delete1TimePoint3D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `delete1TimePoint3D`
+	void delete1TimePoint4D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `delete1TimePoint4D`
 };
 template<typename LabelsT, typename TensorT>
 void Benchmark1TimePointDefaultDevice<LabelsT, TensorT>::insert1TimePoint0D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const {
@@ -189,6 +195,88 @@ template<typename LabelsT, typename TensorT>
 void Benchmark1TimePointDefaultDevice<LabelsT, TensorT>::update1TimePoint4D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const {
 	PixelManager4DDefaultDevice<LabelsT, TensorT> pixel_manager(data_size, true);
 	this->update1TimePoint4D_(pixel_manager, transaction_manager, data_size, device);
+}
+template<typename LabelsT, typename TensorT>
+void Benchmark1TimePointDefaultDevice<LabelsT, TensorT>::delete1TimePoint0D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const {
+	PixelManager0DDefaultDevice<LabelsT, TensorT> pixel_manager(data_size, true);
+	std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>> labels_ptr;
+	std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>> values_ptr;
+	//int span = data_size / std::pow(data_size, 0.25);  // BUG: breaks auto max_bcast = indices_view_values.maximum(Eigen::array<Eigen::Index, 1>({ 0 })).broadcast(Eigen::array<Eigen::Index, 1>({ n_labels })); in TensorTableDefaultDevice<TensorT, TDim>::makeAppendIndices
+	int span = 2;
+	for (int i = 0; i < data_size - 1; i += span) { // TOOD: strange run-time error upon deallocation
+		labels_ptr.reset();
+		values_ptr.reset();
+		pixel_manager.getInsertData(i, span, labels_ptr, values_ptr);
+		SelectTable0D<LabelsT, Eigen::DefaultDevice> selectClause(labels_ptr);
+		TensorDeleteFromAxisDefaultDevice<LabelsT, TensorT, 2> tensorDelete("TTable", "indices", selectClause);
+		std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> tensorDelete_ptr = std::make_shared<TensorDeleteFromAxisDefaultDevice<LabelsT, TensorT, 2>>(tensorDelete);
+		transaction_manager.executeOperation(tensorDelete_ptr, device);
+	}
+}
+template<typename LabelsT, typename TensorT>
+void Benchmark1TimePointDefaultDevice<LabelsT, TensorT>::delete1TimePoint1D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const {
+	PixelManager1DDefaultDevice<LabelsT, TensorT> pixel_manager(data_size, true);
+	std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>> labels_ptr;
+	std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>> values_ptr;
+	//int span = data_size / std::pow(data_size, 0.25);  // BUG: breaks auto max_bcast = indices_view_values.maximum(Eigen::array<Eigen::Index, 1>({ 0 })).broadcast(Eigen::array<Eigen::Index, 1>({ n_labels })); in TensorTableDefaultDevice<TensorT, TDim>::makeAppendIndices
+	int span = 2;
+	for (int i = 0; i < data_size - 1; i += span) { // TOOD: strange run-time error upon deallocation
+		labels_ptr.reset();
+		values_ptr.reset();
+		pixel_manager.getInsertData(i, span, labels_ptr, values_ptr);
+		SelectTable1D<LabelsT, Eigen::DefaultDevice> selectClause(labels_ptr);
+		TensorDeleteFromAxisDefaultDevice<LabelsT, TensorT, 2> tensorDelete("TTable", "xyzt", selectClause);
+		std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> tensorDelete_ptr = std::make_shared<TensorDeleteFromAxisDefaultDevice<LabelsT, TensorT, 2>>(tensorDelete);
+		transaction_manager.executeOperation(tensorDelete_ptr, device);
+	}
+}
+template<typename LabelsT, typename TensorT>
+void Benchmark1TimePointDefaultDevice<LabelsT, TensorT>::delete1TimePoint2D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const {
+	PixelManager2DDefaultDevice<LabelsT, TensorT> pixel_manager(data_size, true);
+	std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>> labels_ptr;
+	std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>> values_ptr;
+	int time_points = std::pow(data_size, 0.25);
+	for (int i = 0; i < time_points - 1; ++i) { // TOOD: strange run-time error upon deallocation
+		labels_ptr.reset();
+		values_ptr.reset();
+		pixel_manager.getInsertData(i, 1, labels_ptr, values_ptr);
+		SelectTable2D<LabelsT, Eigen::DefaultDevice> selectClause(labels_ptr);
+		TensorDeleteFromAxisDefaultDevice<LabelsT, TensorT, 2> tensorDelete("TTable", "t", selectClause);
+		std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> tensorDelete_ptr = std::make_shared<TensorDeleteFromAxisDefaultDevice<LabelsT, TensorT, 2>>(tensorDelete);
+		transaction_manager.executeOperation(tensorDelete_ptr, device);
+	}
+}
+template<typename LabelsT, typename TensorT>
+void Benchmark1TimePointDefaultDevice<LabelsT, TensorT>::delete1TimePoint3D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const {
+	PixelManager3DDefaultDevice<LabelsT, TensorT> pixel_manager(data_size, true);
+	std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>> labels_ptr;
+	std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 3>> values_ptr;
+	int time_points = std::pow(data_size, 0.25);
+	for (int i = 0; i < time_points - 1; ++i) { // TOOD: strange run-time error upon deallocation
+		labels_ptr.reset();
+		values_ptr.reset();
+		pixel_manager.getInsertData(i, 1, labels_ptr, values_ptr);
+		SelectTable2D<LabelsT, Eigen::DefaultDevice> selectClause(labels_ptr);
+		TensorDeleteFromAxisDefaultDevice<LabelsT, TensorT, 3> tensorDelete("TTable", "t", selectClause);
+		std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> tensorDelete_ptr = std::make_shared<TensorDeleteFromAxisDefaultDevice<LabelsT, TensorT, 3>>(tensorDelete);
+		transaction_manager.executeOperation(tensorDelete_ptr, device);
+	}
+}
+template<typename LabelsT, typename TensorT>
+void Benchmark1TimePointDefaultDevice<LabelsT, TensorT>::delete1TimePoint4D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, Eigen::DefaultDevice& device) const {
+	PixelManager4DDefaultDevice<LabelsT, TensorT> pixel_manager(data_size, true);
+	std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>> labels_ptr;
+	std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 4>> values_ptr;
+	int time_points = std::pow(data_size, 0.25);
+	for (int i = 0; i < time_points - 1; ++i) { // TOOD: strange run-time error upon deallocation
+		labels_ptr.reset();
+		values_ptr.reset();
+		pixel_manager.getInsertData(i, 1, labels_ptr, values_ptr);
+		SelectTable2D<LabelsT, Eigen::DefaultDevice> selectClause(labels_ptr);
+		TensorDeleteFromAxisDefaultDevice<LabelsT, TensorT, 4> tensorDelete("TTable", "t", selectClause);
+		std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> tensorDelete_ptr = std::make_shared<TensorDeleteFromAxisDefaultDevice<LabelsT, TensorT, 4>>(tensorDelete);
+		transaction_manager.executeOperation(tensorDelete_ptr, device);
+	}
 }
 
 template<typename LabelsT, typename TensorT>
@@ -394,7 +482,7 @@ int main(int argc, char** argv)
 {
 	// Parse the user commands
 	std::string data_dir = "C:/Users/dmccloskey/Documents/GitHub/mnist/";
-	int n_dims = 2;
+	int n_dims = 0;
 	int data_size = 1296;
 	bool in_memory = true;
 	double shard_span_perc = 1;
@@ -402,9 +490,11 @@ int main(int argc, char** argv)
 
 	// Setup the Benchmarking suite
 	Benchmark1TimePointDefaultDevice<int, float> benchmark_1_tp;
+	//Benchmark1TimePointDefaultDevice<int, int> benchmark_1_tp; // 0D only
 
 	// Setup the TensorCollectionGenerator
 	TensorCollectionGeneratorDefaultDevice<int, float> tensor_collection_generator;
+	//TensorCollectionGeneratorDefaultDevice<int, int> tensor_collection_generator; // 0D only
 
 	// Setup the device
 	Eigen::DefaultDevice device;
