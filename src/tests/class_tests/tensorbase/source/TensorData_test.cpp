@@ -317,6 +317,42 @@ BOOST_AUTO_TEST_CASE(runLengthEncodeDefaultDevice)
   }
 }
 
+BOOST_AUTO_TEST_CASE(histogramDefaultDevice)
+{
+	// Setup the device
+	Eigen::DefaultDevice device;
+
+	// Make the tensor data and select indices
+	int dim_sizes = 3;
+	Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+	for (int i = 0; i < dim_sizes; ++i) {
+		for (int j = 0; j < dim_sizes; ++j) {
+			for (int k = 0; k < dim_sizes; ++k) {
+				float value = i + j * dim_sizes + k * dim_sizes * dim_sizes;
+				tensor_values(i, j, k) = dim_sizes*dim_sizes*dim_sizes - value;
+			}
+		}
+	}
+	TensorDataDefaultDevice<float, 3> tensordata(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+	tensordata.setData(tensor_values);
+
+	// Make the expected tensor
+	const int bin_width = 3;
+	const int n_bins = dim_sizes * dim_sizes * dim_sizes / bin_width;
+	const int n_levels = n_bins + 1;
+	const float lower_level = 0.0;
+	const float upper_level = (bin_width - 0.1) * n_bins; // NOTE: To ensure that the whole range is captured
+	TensorDataDefaultDevice<float, 1> histogram_bins(Eigen::array<Eigen::Index, 1>({ n_bins }));
+	histogram_bins.setData();
+	std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 1>> histogram_bins_ptr = std::make_shared<TensorDataDefaultDevice<float, 1>>(histogram_bins);
+
+	// Test
+	tensordata.histogram(n_levels, lower_level, upper_level, histogram_bins_ptr, device);
+	for (int i = 0; i < n_bins; ++i) {
+		BOOST_CHECK_CLOSE(histogram_bins_ptr->getData()(i), 3.0, 1e-3);
+	}
+}
+
 BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
 {
   TensorDataDefaultDevice<float, 3> tensordata;
