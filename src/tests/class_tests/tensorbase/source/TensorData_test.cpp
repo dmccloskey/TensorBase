@@ -2,7 +2,7 @@
 
 #define BOOST_TEST_MODULE TensorData test suite 
 #include <boost/test/included/unit_test.hpp>
-#include <TensorBase/ml/TensorData.h>
+#include <TensorBase/ml/TensorDataDefaultDevice.h>
 
 #include <iostream>
 

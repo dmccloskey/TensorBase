@@ -35,7 +35,12 @@ namespace TensorBase
     void sort(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices, Eigen::ThreadPoolDevice& device) override;
     void partition(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices, Eigen::ThreadPoolDevice& device) override;
     void runLengthEncode(std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& n_runs, Eigen::ThreadPoolDevice& device) override;
-    std::shared_ptr<TensorT[]> getHDataPointer() override { return h_data_; }
+		void histogram(const int& n_levels, const TensorT& lower_level, const TensorT& upper_level, std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 1>>& histogram, Eigen::ThreadPoolDevice& device) override { histogram_(n_levels, lower_level, upper_level, histogram, device); }
+		template<typename T = TensorT, std::enable_if_t<std::is_fundamental<T>::value && !std::is_same<char, T>::value, int> = 0>
+		void histogram_(const int& n_levels, const T& lower_level, const T& upper_level, std::shared_ptr<TensorData<T, Eigen::ThreadPoolDevice, 1>>& histogram, Eigen::ThreadPoolDevice& device);
+		template<typename T = TensorT, std::enable_if_t<!std::is_fundamental<T>::value || std::is_same<char, T>::value, int> = 0>
+		void histogram_(const int& n_levels, const T& lower_level, const T& upper_level, std::shared_ptr<TensorData<T, Eigen::ThreadPoolDevice, 1>>& histogram, Eigen::ThreadPoolDevice& device) { /*Do nothing*/ };
+		std::shared_ptr<TensorT[]> getHDataPointer() override { return h_data_; }
     std::shared_ptr<TensorT[]> getDataPointer() override  { return h_data_; }
     void setData(const Eigen::Tensor<TensorT, TDim>& data) override; ///< data setter
     void setData() override;
@@ -255,6 +260,34 @@ namespace TensorBase
       ++iter;
     });
   }
+	template<typename TensorT, int TDim>
+	template<typename T, std::enable_if_t<std::is_fundamental<T>::value && !std::is_same<char, T>::value, int>>
+	inline void TensorDataCpu<TensorT, TDim>::histogram_(const int& n_levels, const T& lower_level, const T& upper_level, std::shared_ptr<TensorData<T, Eigen::ThreadPoolDevice, 1>>& histogram, Eigen::ThreadPoolDevice& device)
+	{
+		// Copy the data
+		auto data_copy = this->copy(device);
+		data_copy->syncHAndDData(device);
+
+		// sort data to bring equal elements together
+		std::sort(std::execution::par, data_copy->getDataPointer().get(), data_copy->getDataPointer().get() + data_copy->getTensorSize());
+
+		// histogram bins and widths
+		const int n_bins = n_levels - 1;
+		const T bin_width = (upper_level - lower_level) / (n_levels - T(1));
+		std::vector<T> bin_search(n_bins);
+		std::generate(std::execution::par, bin_search.begin(), bin_search.end(), [n = lower_level, &bin_width]() mutable { return n += bin_width; });
+
+		// find the end of each bin of values
+		auto u_bound = [&data_copy](const T& v) {
+			return *std::upper_bound(data_copy->getDataPointer().get(), data_copy->getDataPointer().get() + data_copy->getTensorSize(), v);
+		};
+		std::transform(std::execution::par, bin_search.begin(), bin_search.end(), histogram->getDataPointer().get(), u_bound);
+
+		// compute the histogram by taking differences of the cumulative histogram
+		// NOTE: std::execution::par does not work as expected with std::adjacent_difference
+		std::adjacent_difference(histogram->getDataPointer().get(), histogram->getDataPointer().get() + histogram->getTensorSize(),
+			histogram->getDataPointer().get());
+	}
   template<typename TensorT, int TDim>
   void TensorDataCpu<TensorT, TDim>::setData(const Eigen::Tensor<TensorT, TDim>& data) {
     TensorT* h_data = new TensorT[this->tensor_size_];

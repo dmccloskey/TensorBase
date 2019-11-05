@@ -23,6 +23,7 @@ set(sources_list_h
 	TensorDimensionGpu.h
 	TensorData.h
 	TensorDataCpu.h
+	TensorDataDefaultDevice.h
 	TensorDataGpu.h
 	TensorOperation.h
 	TensorTable.h

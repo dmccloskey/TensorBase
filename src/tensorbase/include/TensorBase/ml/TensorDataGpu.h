@@ -123,7 +123,12 @@ namespace TensorBase
     void sort(const std::string& sort_order, Eigen::GpuDevice& device) override;
     void sort(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice& device) override;
     void partition(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice& device) override;
-    void runLengthEncode(std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& n_runs, Eigen::GpuDevice& device) override;
+		void runLengthEncode(std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& n_runs, Eigen::GpuDevice& device) override;
+		void histogram(const int& n_levels, const TensorT& lower_level, const TensorT& upper_level, std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 1>>& histogram, Eigen::GpuDevice& device) override { histogram_(n_levels, lower_level, upper_level, histogram, device); }
+		template<typename T = TensorT, std::enable_if_t<std::is_fundamental<T>::value && !std::is_same<char, T>::value, int> = 0>
+		void histogram_(const int& n_levels, const T& lower_level, const T& upper_level, std::shared_ptr<TensorData<T, Eigen::GpuDevice, 1>>& histogram, Eigen::GpuDevice& device);
+		template<typename T = TensorT, std::enable_if_t<!std::is_fundamental<T>::value || std::is_same<char, T>::value, int> = 0>
+		void histogram_(const int& n_levels, const T& lower_level, const T& upper_level, std::shared_ptr<TensorData<T, Eigen::GpuDevice, 1>>& histogram, Eigen::GpuDevice& device) { /*Do nothing*/ };
     // Other
     void convertFromStringToTensorT(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::GpuDevice& device) override { convertFromStringToTensorT_(data_new, device); };
     template<typename T = TensorT, std::enable_if_t<std::is_same<T, int>::value, int> = 0>
@@ -327,6 +332,26 @@ namespace TensorBase
 
     assert(cudaFree(d_temp_storage) == cudaSuccess);
   }
+	template<typename TensorT, int TDim>
+	template<typename T, std::enable_if_t<std::is_fundamental<T>::value && !std::is_same<char, T>::value, int>>
+	inline void TensorDataGpuPrimitiveT<TensorT, TDim>::histogram_(const int& n_levels, const T& lower_level, const T& upper_level, std::shared_ptr<TensorData<T, Eigen::GpuDevice, 1>>& histogram, Eigen::GpuDevice& device)
+	{
+		//// NOTE: Cannot compile due to odd bug in cub::DeviceHistogram::HistogramMultiEven
+		//// Determine temporary device storage requirements
+		//void* d_temp_storage = NULL;
+		//size_t   temp_storage_bytes = 0;
+		//cub::DeviceHistogram::HistogramEven(d_temp_storage, temp_storage_bytes,
+		//	this->getDataPointer().get(), histogram->getDataPointer().get(), n_levels, lower_level, upper_level, this->getTensorSize(), device.stream());
+
+		//// Allocate temporary storage
+		//cudaMalloc(&d_temp_storage, temp_storage_bytes);
+
+		//// Compute histograms
+		//cub::DeviceHistogram::HistogramEven(d_temp_storage, temp_storage_bytes,
+		//	this->getDataPointer().get(), histogram->getDataPointer().get(), n_levels, lower_level, upper_level, this->getTensorSize(), device.stream());
+
+		//assert(cudaFree(d_temp_storage) == cudaSuccess);
+	}
   template<typename TensorT, int TDim>
   template<typename T, std::enable_if_t<std::is_same<T, int>::value, int>>
   inline void TensorDataGpuPrimitiveT<TensorT, TDim>::convertFromStringToTensorT_(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::GpuDevice & device)
@@ -414,6 +439,7 @@ namespace TensorBase
     void sort(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice& device) override;
     void partition(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice& device) override;
     void runLengthEncode(std::shared_ptr<TensorData<ArrayT<TensorT>, Eigen::GpuDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& n_runs, Eigen::GpuDevice& device) override;
+		void histogram(const int& n_levels, const ArrayT<TensorT>& lower_level, const ArrayT<TensorT>& upper_level, std::shared_ptr<TensorData<ArrayT<TensorT>, Eigen::GpuDevice, 1>>& histogram, Eigen::GpuDevice& device) override {/*Not available*/}
     // Other
     void convertFromStringToTensorT(const Eigen::Tensor<std::string, TDim>& data_new, Eigen::GpuDevice& device) override { convertFromStringToTensorT_(data_new, device); };
     template<template<class> typename A = ArrayT, typename T = TensorT, std::enable_if_t<std::is_same<A<T>, A<char>>::value, int> = 0>
