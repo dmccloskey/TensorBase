@@ -10,6 +10,7 @@ set(sources_list_h
 	TensorAxisConceptCpu.h
 	TensorAxisConceptGpu.h
 	TensorAxisCpu.h
+	TensorAxisDefaultDevice.h
 	TensorAxisGpu.h
 	TensorClauses.h
 	TensorCollection.h
