@@ -7,6 +7,7 @@ include(source/io/sources.cmake)
 set(TensorBase_sources_h  CACHE INTERNAL "This variable should hold all TensorBase sources at the end of the config step" )
 
 ## ATTENTION: The order of includes should be similar to the inclusion hierarchy
+include(include/TensorBase/benchmarks/sources.cmake)
 include(include/TensorBase/core/sources.cmake)
 include(include/TensorBase/io/sources.cmake)
 include(include/TensorBase/ml/sources.cmake)
