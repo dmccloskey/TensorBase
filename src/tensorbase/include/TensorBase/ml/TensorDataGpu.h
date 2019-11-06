@@ -12,6 +12,8 @@
 #include <thrust/remove.h> // THRUST select
 #include <thrust/sort.h> // THRUST sort
 #include <thrust/device_ptr.h> // THRUST sort, select, partition, and runLengthEncode
+#include <thrust/binary_search.h> // THRUST histogram
+#include <thrust/device_vector.h> // THRUST histogram
 #include <thrust/execution_policy.h> // THRUST sort, select, partition, and runLengthEncode
 
 #include <TensorBase/ml/TensorData.h>
@@ -337,6 +339,7 @@ namespace TensorBase
 	inline void TensorDataGpuPrimitiveT<TensorT, TDim>::histogram_(const int& n_levels, const T& lower_level, const T& upper_level, std::shared_ptr<TensorData<T, Eigen::GpuDevice, 1>>& histogram, Eigen::GpuDevice& device)
 	{
 		//// NOTE: Cannot compile due to odd bug in cub::DeviceHistogram::HistogramMultiEven
+		////BEGIN CUB HISTOGRAM_____________________________________________________________
 		//// Determine temporary device storage requirements
 		//void* d_temp_storage = NULL;
 		//size_t   temp_storage_bytes = 0;
@@ -351,6 +354,32 @@ namespace TensorBase
 		//	this->getDataPointer().get(), histogram->getDataPointer().get(), n_levels, lower_level, upper_level, this->getTensorSize(), device.stream());
 
 		//assert(cudaFree(d_temp_storage) == cudaSuccess);
+		////END CUB HISTOGRAM_____________________________________________________________
+
+		// Copy the data
+		auto data_copy = this->copy(device);
+		data_copy->syncHAndDData(device);
+		thrust::device_ptr<T> d_data(data_copy->getDataPointer().get());
+		thrust::device_ptr<T> d_histogram(histogram->getDataPointer().get());
+
+		// sort data to bring equal elements together
+		thrust::sort(thrust::cuda::par.on(device.stream()), d_data, d_data + data_copy->getTensorSize());
+
+		// histogram bins and widths
+		const int n_bins = n_levels - 1;
+		const T bin_width = (upper_level - lower_level) / (n_levels - T(1));
+		thrust::device_vector<T> bin_search(n_bins);
+		histogramGenerateHelper<T> histogramGenerateHelper(lower_level, bin_width);
+		thrust::generate(thrust::cuda::par.on(device.stream()), bin_search.begin(), bin_search.end(), histogramGenerateHelper);
+
+		// find the end of each bin of values
+		thrust::upper_bound(d_data, d_data + data_copy->getTensorSize(),
+			bin_search.begin(), bin_search.end(),
+			d_histogram);
+
+		// compute the histogram by taking differences of the cumulative histogram
+		thrust::adjacent_difference(thrust::cuda::par.on(device.stream()), d_histogram, d_histogram + histogram->getTensorSize(),
+			d_histogram);
 	}
   template<typename TensorT, int TDim>
   template<typename T, std::enable_if_t<std::is_same<T, int>::value, int>>
@@ -413,11 +442,20 @@ namespace TensorBase
     this->syncHAndDData(device);
   }
 
-  struct isGreaterThanZero
-  {
+	template<typename TensorT>
+	struct histogramGenerateHelper {
+		histogramGenerateHelper(const TensorT& lower_level, const TensorT& bin_width) : n_(lower_level), bin_width_(bin_width) {}
+		__host__ __device__
+			TensorT operator()() {
+			return n_ += bin_width_;
+		}
+		TensorT n_ = TensorT(0);
+		TensorT bin_width_ = TensorT(1);
+	};
+
+  struct isGreaterThanZero {
     __host__ __device__
-      bool operator()(const int &x)
-    {
+      bool operator()(const int &x) {
       return x > 0;
     }
   };
