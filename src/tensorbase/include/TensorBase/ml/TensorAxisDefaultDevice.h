@@ -1,10 +1,10 @@
 /**TODO:  Add copyright*/
 
-#ifndef TENSORBASE_TENSORAXISCPU_H
-#define TENSORBASE_TENSORAXISCPU_H
+#ifndef TENSORBASE_TENSORAXISDEFAULTDEVICE_H
+#define TENSORBASE_TENSORAXISDEFAULTDEVICE_H
 
 #include <unsupported/Eigen/CXX11/Tensor>
-#include <TensorBase/ml/TensorDataCpu.h>
+#include <TensorBase/ml/TensorDataDefaultDevice.h>
 #include <TensorBase/ml/TensorAxis.h>
 
 #include <cereal/access.hpp>  // serialiation of private members
@@ -15,47 +15,47 @@
 namespace TensorBase
 {
   template<typename TensorT>
-  class TensorAxisCpu : public TensorAxis<TensorT, Eigen::ThreadPoolDevice>
+  class TensorAxisDefaultDevice : public TensorAxis<TensorT, Eigen::DefaultDevice>
   {
   public:
-    TensorAxisCpu() = default;  ///< Default constructor
-    TensorAxisCpu(const std::string& name, const size_t& n_dimensions, const size_t& n_labels) : TensorAxis(name, n_dimensions, n_labels) { this->setLabels(); };
-    TensorAxisCpu(const std::string& name, const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) : TensorAxis(name) { this->setDimensionsAndLabels(dimensions, labels); };
-    ~TensorAxisCpu() = default; ///< Default destructor
+    TensorAxisDefaultDevice() = default;  ///< Default constructor
+    TensorAxisDefaultDevice(const std::string& name, const size_t& n_dimensions, const size_t& n_labels) : TensorAxis(name, n_dimensions, n_labels) { this->setLabels(); };
+    TensorAxisDefaultDevice(const std::string& name, const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) : TensorAxis(name) { this->setDimensionsAndLabels(dimensions, labels); };
+    ~TensorAxisDefaultDevice() = default; ///< Default destructor
     void setLabels(const Eigen::Tensor<TensorT, 2>& labels) override;
     void setLabels() override;
-    void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>>& labels, Eigen::ThreadPoolDevice & device) override;
-    void makeSortIndices(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>>& indices_sort, Eigen::ThreadPoolDevice& device) override;
-    void selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>>& labels_select, Eigen::ThreadPoolDevice& device) override;
-    bool loadLabelsBinary(const std::string& filename, Eigen::ThreadPoolDevice& device) override;
-    bool storeLabelsBinary(const std::string& filename, Eigen::ThreadPoolDevice& device) override;
-    void appendLabelsToAxisFromCsv(const Eigen::Tensor<std::string, 2>& labels, Eigen::ThreadPoolDevice& device) override;
-    void makeSelectIndicesFromCsv(std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& select_indices, const Eigen::Tensor<std::string, 2>& labels, Eigen::ThreadPoolDevice& device) override;
+    void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& labels, Eigen::DefaultDevice & device) override;
+    void makeSortIndices(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& indices_sort, Eigen::DefaultDevice& device) override;
+    void selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& labels_select, Eigen::DefaultDevice& device) override;
+    bool loadLabelsBinary(const std::string& filename, Eigen::DefaultDevice& device) override;
+    bool storeLabelsBinary(const std::string& filename, Eigen::DefaultDevice& device) override;
+    void appendLabelsToAxisFromCsv(const Eigen::Tensor<std::string, 2>& labels, Eigen::DefaultDevice& device) override;
+    void makeSelectIndicesFromCsv(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& select_indices, const Eigen::Tensor<std::string, 2>& labels, Eigen::DefaultDevice& device) override;
   private:
     friend class cereal::access;
     template<class Archive>
     void serialize(Archive& archive) {
-      archive(cereal::base_class<TensorAxis<TensorT, Eigen::ThreadPoolDevice>>(this));
+      archive(cereal::base_class<TensorAxis<TensorT, Eigen::DefaultDevice>>(this));
     }
   };
   template<typename TensorT>
-  void TensorAxisCpu<TensorT>::setLabels(const Eigen::Tensor<TensorT, 2>& labels) {
+  void TensorAxisDefaultDevice<TensorT>::setLabels(const Eigen::Tensor<TensorT, 2>& labels) {
     Eigen::array<Eigen::Index, 2> labels_dims = labels.dimensions();
-    this->tensor_dimension_labels_ = std::make_shared<TensorDataCpu<TensorT, 2>>(TensorDataCpu<TensorT, 2>(labels_dims));
+    this->tensor_dimension_labels_ = std::make_shared<TensorDataDefaultDevice<TensorT, 2>>(TensorDataDefaultDevice<TensorT, 2>(labels_dims));
     this->tensor_dimension_labels_->setData(labels);
     this->setNLabels(labels.dimension(1));
   }
   template<typename TensorT>
-  inline void TensorAxisCpu<TensorT>::setLabels()
+  inline void TensorAxisDefaultDevice<TensorT>::setLabels()
   {
     Eigen::array<Eigen::Index, 2> labels_dims;
     labels_dims.at(0) = this->n_dimensions_;
     labels_dims.at(1) = this->n_labels_;
-    this->tensor_dimension_labels_ = std::make_shared<TensorDataCpu<TensorT, 2>>(TensorDataCpu<TensorT, 2>(labels_dims));
+    this->tensor_dimension_labels_ = std::make_shared<TensorDataDefaultDevice<TensorT, 2>>(TensorDataDefaultDevice<TensorT, 2>(labels_dims));
     this->tensor_dimension_labels_->setData();
   }
   template<typename TensorT>
-  inline void TensorAxisCpu<TensorT>::appendLabelsToAxis(const std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>>& labels, Eigen::ThreadPoolDevice & device)
+  inline void TensorAxisDefaultDevice<TensorT>::appendLabelsToAxis(const std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& labels, Eigen::DefaultDevice & device)
   {
     assert(labels->getDimensions().at(0) == this->n_dimensions_);
 
@@ -66,7 +66,7 @@ namespace TensorBase
     this->n_labels_ += labels->getDimensions().at(1);
 
     // Allocate additional memory for the new labels
-    TensorDataCpu<TensorT, 2> labels_concat(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, (int)this->n_labels_ }));
+    TensorDataDefaultDevice<TensorT, 2> labels_concat(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, (int)this->n_labels_ }));
     labels_concat.setData();
     labels_concat.syncHAndDData(device);
     Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> labels_concat_values(labels_concat.getDataPointer().get(), labels_concat.getDimensions());
@@ -82,18 +82,18 @@ namespace TensorBase
     }
 
     // Move over the new labels
-    this->tensor_dimension_labels_ = std::make_shared<TensorDataCpu<TensorT, 2>>(labels_concat);
+    this->tensor_dimension_labels_ = std::make_shared<TensorDataDefaultDevice<TensorT, 2>>(labels_concat);
   }
 
   template<typename TensorT>
-  inline void TensorAxisCpu<TensorT>::makeSortIndices(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>>& indices_sort, Eigen::ThreadPoolDevice & device)
+  inline void TensorAxisDefaultDevice<TensorT>::makeSortIndices(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& indices_sort, Eigen::DefaultDevice & device)
   {
     // allocate memory for the indices and set the values to zero
-    TensorDataCpu<int, 2> indices_sort_tmp(Eigen::array<Eigen::Index, 2>({ (int)this->getNDimensions(), (int)this->getNLabels() }));
+    TensorDataDefaultDevice<int, 2> indices_sort_tmp(Eigen::array<Eigen::Index, 2>({(int)this->getNDimensions(), (int)this->getNLabels()}));
     indices_sort_tmp.setData();
 
     // create a dummy index along the dimension
-    TensorDataCpu<int, 1> indices_dimension(Eigen::array<Eigen::Index, 1>({ (int)this->getNDimensions() }));
+    TensorDataDefaultDevice<int, 1> indices_dimension(Eigen::array<Eigen::Index, 1>({ (int)this->getNDimensions() }));
     indices_dimension.setData();
     for (int i = 0; i < this->getNDimensions(); ++i) {
       indices_dimension.getData()(i) = i + 1;
@@ -114,14 +114,14 @@ namespace TensorBase
     indices_sort_values.device(device) = indices_view_bcast_values + indices_dimension_bcast_values + indices_sort_values.constant(1);
 
     // move over the results
-    indices_sort = std::make_shared<TensorDataCpu<int, 2>>(indices_sort_tmp);
+    indices_sort = std::make_shared<TensorDataDefaultDevice<int, 2>>(indices_sort_tmp);
   }
 
   template<typename TensorT>
-  inline void TensorAxisCpu<TensorT>::selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>>& labels_select, Eigen::ThreadPoolDevice & device)
+  inline void TensorAxisDefaultDevice<TensorT>::selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& labels_select, Eigen::DefaultDevice & device)
   {
     // temporary memory for calculating the sum of the new axis
-    TensorDataCpu<int, 1> axis_size(Eigen::array<Eigen::Index, 1>({ 1 }));
+    TensorDataDefaultDevice<int, 1> axis_size(Eigen::array<Eigen::Index, 1>({ 1 }));
     axis_size.setData();
     Eigen::TensorMap<Eigen::Tensor<int, 0>> axis_size_value(axis_size.getDataPointer().get());
 
@@ -130,23 +130,23 @@ namespace TensorBase
     axis_size_value.device(device) = indices_values.clip(0, 1).sum();
 
     // allocate memory for the new labels
-    TensorDataCpu<TensorT, 2> new_labels(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, axis_size.getData()(0) }));
+    TensorDataDefaultDevice<TensorT, 2> new_labels(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, axis_size.getData()(0) }));
     new_labels.setData();
-    std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>> new_labels_ptr = std::make_shared<TensorDataCpu<TensorT, 2>>(new_labels);
+    std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>> new_labels_ptr = std::make_shared<TensorDataDefaultDevice<TensorT, 2>>(new_labels);
 
     // broadcast the indices across the dimensions and allocate to memory
-    TensorDataCpu<int, 2> indices_select(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, (int)this->n_labels_ }));
+    TensorDataDefaultDevice<int, 2> indices_select(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, (int)this->n_labels_ }));
     indices_select.setData();
     Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_select_values(indices_select.getDataPointer().get(), indices_select.getDimensions());
     indices_select_values.device(device) = indices_values.broadcast(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, 1 }));
-    std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>> indices_select_ptr = std::make_shared<TensorDataCpu<int, 2>>(indices_select);
+    std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> indices_select_ptr = std::make_shared<TensorDataDefaultDevice<int, 2>>(indices_select);
 
     // perform the reduction and move over the output
     this->tensor_dimension_labels_->select(new_labels_ptr, indices_select_ptr, device);
     labels_select = new_labels_ptr;
   }
   template<typename TensorT>
-  inline bool TensorAxisCpu<TensorT>::loadLabelsBinary(const std::string & filename, Eigen::ThreadPoolDevice & device)
+  inline bool TensorAxisDefaultDevice<TensorT>::loadLabelsBinary(const std::string & filename, Eigen::DefaultDevice & device)
   {
     // Read in the the labels
     this->setDataStatus(true, false);
@@ -157,7 +157,7 @@ namespace TensorBase
     return true;
   }
   template<typename TensorT>
-  inline bool TensorAxisCpu<TensorT>::storeLabelsBinary(const std::string & filename, Eigen::ThreadPoolDevice & device)
+  inline bool TensorAxisDefaultDevice<TensorT>::storeLabelsBinary(const std::string & filename, Eigen::DefaultDevice & device)
   {
     // Store the labels
     this->syncHAndDData(device); // D to H
@@ -165,19 +165,20 @@ namespace TensorBase
     this->setDataStatus(false, true);
     return true;
   }
+
   template<typename TensorT>
-  inline void TensorAxisCpu<TensorT>::appendLabelsToAxisFromCsv(const Eigen::Tensor<std::string, 2>& labels, Eigen::ThreadPoolDevice & device)
+  inline void TensorAxisDefaultDevice<TensorT>::appendLabelsToAxisFromCsv(const Eigen::Tensor<std::string, 2>& labels, Eigen::DefaultDevice & device)
   {
     assert(this->n_dimensions_ == (int)labels.dimension(0));
 
     // Convert to TensorT
-    TensorDataCpu<TensorT, 2> labels_converted(Eigen::array<Eigen::Index, 2>({ (int)labels.dimension(0), (int)labels.dimension(1) }));
+    TensorDataDefaultDevice<TensorT, 2> labels_converted(Eigen::array<Eigen::Index, 2>({ (int)labels.dimension(0), (int)labels.dimension(1) }));
     labels_converted.setData();
     labels_converted.syncHAndDData(device);
     labels_converted.convertFromStringToTensorT(labels, device);
 
     // Make the indices select
-    TensorDataCpu<int, 2> indices_select(Eigen::array<Eigen::Index, 2>({ (int)labels.dimension(0), (int)labels.dimension(1) }));
+    TensorDataDefaultDevice<int, 2> indices_select(Eigen::array<Eigen::Index, 2>({ (int)labels.dimension(0), (int)labels.dimension(1) }));
     indices_select.setData();
     indices_select.syncHAndDData(device);
     Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_select_values(indices_select.getDataPointer().get(), (int)labels.dimension(0), (int)labels.dimension(1));
@@ -198,6 +199,7 @@ namespace TensorBase
     auto labels_unique_v1v2 = (labels_new_v1v2_cumsum == labels_new_v1v2_cumsum.constant(1)).select(labels_new_v1v2_cumsum.constant(1), labels_new_v1v2_cumsum.constant(0));
     // Collapse back to 1xnlabels by summing along one of the axis labels dimensions
     auto labels_unique = labels_unique_v1v2.sum(Eigen::array<Eigen::Index, 1>({ 2 })).clip(0, 1);
+    //std::cout << "labels_unique\n" << labels_unique << std::endl; //DEBUG
 
     if (this->n_labels_ > 0) {
       // Determine the new labels to add to the axis 
@@ -213,11 +215,13 @@ namespace TensorBase
         Eigen::array<Eigen::Index, 2>({ 3, 4 })).prod(Eigen::array<Eigen::Index, 1>({ 1 })); // not new > 1, new = 0
       // Invert the selection
       auto labels_new = (labels_selected > labels_selected.constant(0)).select(labels_selected.constant(0), labels_selected.constant(1)); // new = 1, not new = 0
+      //std::cout << "labels_new\n" << labels_new << std::endl; //DEBUG
 
       // Determine the new and unique labels to add to the axis
       auto labels_new_unique = labels_new * labels_unique;
       // Broadcast back to n_dimensions x labels
       auto labels_new_unique_bcast = labels_new_unique.broadcast(Eigen::array<Eigen::Index, 2>({ (int)labels.dimension(0), 1 }));
+      //std::cout << "labels_new_unique_bcast\n" << labels_new_unique_bcast << std::endl; //DEBUG
 
       // Store the selection indices
       indices_select_values.device(device) = labels_new_unique_bcast;
@@ -225,39 +229,44 @@ namespace TensorBase
     else {
       // Broadcast back to n_dimensions x labels
       auto labels_new_unique_bcast = labels_unique.broadcast(Eigen::array<Eigen::Index, 2>({ (int)labels.dimension(0), 1 }));
+      //std::cout << "labels_new_unique_bcast\n" << labels_new_unique_bcast << std::endl; //DEBUG
 
       // Store the selection indices
       indices_select_values.device(device) = labels_new_unique_bcast;
     }
-    std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>> indices_select_ptr = std::make_shared<TensorDataCpu<int, 2>>(indices_select);
+    std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> indices_select_ptr = std::make_shared<TensorDataDefaultDevice<int, 2>>(indices_select);
 
     // Determine the number of new labels
-    TensorDataCpu<int, 1> n_labels_new(Eigen::array<Eigen::Index, 1>({ 1 }));
+    TensorDataDefaultDevice<int, 1> n_labels_new(Eigen::array<Eigen::Index, 1>({ 1 }));
     n_labels_new.setData();
     n_labels_new.syncHAndDData(device);
     Eigen::TensorMap<Eigen::Tensor<int, 0>> n_labels_new_values(n_labels_new.getDataPointer().get());
     n_labels_new_values.device(device) = indices_select_values.sum() / n_labels_new_values.constant((int)labels.dimension(0));
     n_labels_new.syncHAndDData(device); // NOTE: need sync for Gpu
+    //std::cout << "n_labels_new\n" << n_labels_new.getData() << std::endl; //DEBUG
 
-    // Allocate memory for the new labels
-    TensorDataCpu<TensorT, 2> labels_select(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, n_labels_new.getData()(0) }));
-    labels_select.setData();
-    labels_select.syncHAndDData(device);
-    std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>> labels_select_ptr = std::make_shared<TensorDataCpu<TensorT, 2>>(labels_select);
+    if (n_labels_new.getData()(0) > 0) {
+      // Allocate memory for the new labels
+      TensorDataDefaultDevice<TensorT, 2> labels_select(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, n_labels_new.getData()(0) }));
+      labels_select.setData();
+      labels_select.syncHAndDData(device);
+      std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>> labels_select_ptr = std::make_shared<TensorDataDefaultDevice<TensorT, 2>>(labels_select);
 
-    // Select the labels
-    labels_converted.select(labels_select_ptr, indices_select_ptr, device);
+      // Select the labels
+      labels_converted.select(labels_select_ptr, indices_select_ptr, device);
 
-    // Append the selected labels to the axis
-    this->appendLabelsToAxis(labels_select_ptr, device);
+      // Append the selected labels to the axis
+      this->appendLabelsToAxis(labels_select_ptr, device);
+    }
   }
+
   template<typename TensorT>
-  inline void TensorAxisCpu<TensorT>::makeSelectIndicesFromCsv(std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& select_indices, const Eigen::Tensor<std::string, 2>& labels, Eigen::ThreadPoolDevice & device)
+  inline void TensorAxisDefaultDevice<TensorT>::makeSelectIndicesFromCsv(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& select_indices, const Eigen::Tensor<std::string, 2>& labels, Eigen::DefaultDevice & device)
   {
     assert(this->n_dimensions_ == (int)labels.dimension(0));
 
     // Convert to TensorT
-    TensorDataCpu<TensorT, 2> select_labels(Eigen::array<Eigen::Index, 2>({ (int)labels.dimension(0), (int)labels.dimension(1) }));
+    TensorDataDefaultDevice<TensorT, 2> select_labels(Eigen::array<Eigen::Index, 2>({ (int)labels.dimension(0), (int)labels.dimension(1) }));
     select_labels.setData();
     select_labels.syncHAndDData(device);
     select_labels.convertFromStringToTensorT(labels, device);
@@ -271,7 +280,7 @@ namespace TensorBase
     auto labels_bcast = labels_reshape.broadcast(Eigen::array<Eigen::Index, 4>({ 1, 1, select_labels.getDimensions().at(0), select_labels.getDimensions().at(1) }));
 
     // broadcast the tensor indices the size of the labels queried
-    TensorDataCpu<int, 1> select_indices_tmp(Eigen::array<Eigen::Index, 1>({ (int)this->getNLabels() }));
+    TensorDataDefaultDevice<int, 1> select_indices_tmp(Eigen::array<Eigen::Index, 1>({ (int)this->getNLabels() }));
     select_indices_tmp.setData();
     select_indices_tmp.syncHAndDData(device);
     Eigen::TensorMap<Eigen::Tensor<int, 4>> indices_reshape(select_indices_tmp.getDataPointer().get(), 1, (int)this->getNLabels(), 1, 1);
@@ -284,18 +293,18 @@ namespace TensorBase
     // assign the select indices
     Eigen::TensorMap<Eigen::Tensor<int, 1>> select_indices_values(select_indices_tmp.getDataPointer().get(), (int)this->getNLabels());
     select_indices_values.device(device) = selected;
-    select_indices = std::make_shared<TensorDataCpu<int, 1>>(select_indices_tmp);
+    select_indices = std::make_shared<TensorDataDefaultDevice<int, 1>>(select_indices_tmp);
   }
 };
 
 // Cereal registration of TensorTs: float, int, char, double
-CEREAL_REGISTER_TYPE(TensorBase::TensorAxisCpu<int>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorAxisCpu<float>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorAxisCpu<double>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorAxisCpu<char>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorAxisCpu<TensorBase::TensorArray8<char>>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorAxisCpu<TensorBase::TensorArray32<char>>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorAxisCpu<TensorBase::TensorArray128<char>>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorAxisCpu<TensorBase::TensorArray512<char>>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorAxisCpu<TensorBase::TensorArray2048<char>>);
-#endif //TENSORBASE_TENSORAXISCPU_H
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisDefaultDevice<int>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisDefaultDevice<float>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisDefaultDevice<double>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisDefaultDevice<char>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisDefaultDevice<TensorBase::TensorArray8<char>>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisDefaultDevice<TensorBase::TensorArray32<char>>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisDefaultDevice<TensorBase::TensorArray128<char>>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisDefaultDevice<TensorBase::TensorArray512<char>>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisDefaultDevice<TensorBase::TensorArray2048<char>>);
+#endif //TENSORBASE_TENSORAXISDEFAULTDEVICE_H

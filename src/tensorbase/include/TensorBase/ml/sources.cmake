@@ -8,12 +8,15 @@ set(sources_list_h
 	TensorAxis.h
 	TensorAxisConcept.h
 	TensorAxisConceptCpu.h
+	TensorAxisConceptDefaultDevice.h
 	TensorAxisConceptGpu.h
 	TensorAxisCpu.h
+	TensorAxisDefaultDevice.h
 	TensorAxisGpu.h
 	TensorClauses.h
 	TensorCollection.h
 	TensorCollectionCpu.h
+	TensorCollectionDefaultDevice.h
 	TensorCollectionGpu.h
 	TensorDimension.h
 	TensorDimensionConcept.h
@@ -23,11 +26,13 @@ set(sources_list_h
 	TensorDimensionGpu.h
 	TensorData.h
 	TensorDataCpu.h
+	TensorDataDefaultDevice.h
 	TensorDataGpu.h
 	TensorOperation.h
 	TensorTable.h
 	TensorTableConcept.h
 	TensorTableConceptCpu.h
+	TensorTableConceptDefaultDevice.h
 	TensorTableConceptGpu.h
 	TensorTableCpu.h
 	TensorTableDefaultDevice.h

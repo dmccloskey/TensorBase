@@ -2,7 +2,7 @@
 
 #define BOOST_TEST_MODULE TensorAxis test suite 
 #include <boost/test/included/unit_test.hpp>
-#include <TensorBase/ml/TensorAxis.h>
+#include <TensorBase/ml/TensorAxisDefaultDevice.h>
 
 using namespace TensorBase;
 using namespace std;

@@ -332,7 +332,5 @@ public:
     }
     return std::make_pair(non_primary_headers, primary_headers);
   }
-
-  class TensorCollectionFileDefaultDevice : public TensorCollectionFile<Eigen::DefaultDevice> {};
 };
 #endif //SMARTPEAK_TENSORCOLLECTIONFILE_H

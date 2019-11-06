@@ -216,17 +216,5 @@ namespace TensorBase
     }
     return user_table_name;
   }
-
-  class TensorCollectionDefaultDevice : public TensorCollection<Eigen::DefaultDevice>
-  {
-  public:
-    using TensorCollection<Eigen::DefaultDevice>::TensorCollection;
-  private:
-    friend class cereal::access;
-    template<class Archive>
-    void serialize(Archive& archive) {
-      archive(cereal::base_class<TensorCollection<Eigen::DefaultDevice>>(this));
-    }
-  };
 };
 #endif //TENSORBASE_TENSORCOLLECTION_H

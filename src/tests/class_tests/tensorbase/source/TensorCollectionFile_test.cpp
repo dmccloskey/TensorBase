@@ -3,6 +3,7 @@
 #define BOOST_TEST_MODULE TensorCollectionFile test suite 
 #include <boost/test/included/unit_test.hpp>
 #include <TensorBase/io/TensorCollectionFile.h>
+#include <TensorBase/ml/TensorCollectionDefaultDevice.h>
 
 using namespace TensorBase;
 using namespace std;
@@ -11,16 +12,16 @@ BOOST_AUTO_TEST_SUITE(TensorCollectionFile1)
 
 BOOST_AUTO_TEST_CASE(constructorDefaultDevice) 
 {
-  TensorCollectionFileDefaultDevice* ptr = nullptr;
-  TensorCollectionFileDefaultDevice* nullPointer = nullptr;
-  ptr = new TensorCollectionFileDefaultDevice();
+  TensorCollectionFile<Eigen::DefaultDevice>* ptr = nullptr;
+  TensorCollectionFile<Eigen::DefaultDevice>* nullPointer = nullptr;
+  ptr = new TensorCollectionFile<Eigen::DefaultDevice>();
   BOOST_CHECK_NE(ptr, nullPointer);
 }
 
 BOOST_AUTO_TEST_CASE(destructorDefaultDevice) 
 {
-  TensorCollectionFileDefaultDevice* ptr = nullptr;
-	ptr = new TensorCollectionFileDefaultDevice();
+  TensorCollectionFile<Eigen::DefaultDevice>* ptr = nullptr;
+	ptr = new TensorCollectionFile<Eigen::DefaultDevice>();
   delete ptr;
 }
 
@@ -92,8 +93,8 @@ BOOST_AUTO_TEST_CASE(storeAndLoadBinaryDefaultDevice)
 
   // Store the Tensor Collection
   Eigen::DefaultDevice device;
-  TensorCollectionFileDefaultDevice data;
-  std::string filename = "TensorCollectionFileDefaultDeviceTest.dat";
+  TensorCollectionFile<Eigen::DefaultDevice> data;
+  std::string filename = "TensorCollectionFile<Eigen::DefaultDevice>Test.dat";
   data.storeTensorCollectionBinary(filename, tensorCollection, device);
 
   // Load the Tensor Collection
@@ -280,7 +281,7 @@ BOOST_AUTO_TEST_CASE(getTensorTableHeadersDefaultDevice)
 
   // Test making the output header names
   Eigen::DefaultDevice device;
-  TensorCollectionFileDefaultDevice data;
+  TensorCollectionFile<Eigen::DefaultDevice> data;
   std::pair<std::map<std::string, std::vector<std::string>>, std::map<std::string, std::vector<std::string>>> headers = data.getTensorTableHeaders("1", tensorCollection, device);
   BOOST_CHECK(headers.first.at("2") == std::vector<std::string>({ "y" }));
   BOOST_CHECK(headers.first.at("3") == std::vector<std::string>({ "z" }));

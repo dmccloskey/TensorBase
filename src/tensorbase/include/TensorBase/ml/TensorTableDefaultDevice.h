@@ -5,6 +5,7 @@
 
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/ml/TensorTable.h>
+#include <TensorBase/ml/TensorAxisConceptDefaultDevice.h>
 
 #include <cereal/access.hpp>  // serialiation of private members
 #undef min // clashes with std::limit on windows in polymorphic.hpp

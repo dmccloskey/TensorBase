@@ -52,8 +52,8 @@ BOOST_AUTO_TEST_CASE(copyCpu)
   Eigen::Tensor<float, 3> data(2, 3, 4);
   data.setConstant(1);
   tensordata_test.setData(data);
-  Eigen::ThreadPool pool(1);
-  Eigen::ThreadPoolDevice device(&pool, 1);
+  Eigen::ThreadPool pool(2);
+  Eigen::ThreadPoolDevice device(&pool, 2);
 
   // Check copy
   std::shared_ptr<TensorData<float, Eigen::ThreadPoolDevice, 3>> tensordata = tensordata_test.copy(device);
@@ -110,8 +110,8 @@ BOOST_AUTO_TEST_CASE(selectCpu)
   std::shared_ptr<TensorData<float, Eigen::ThreadPoolDevice, 3>> tensorselect_ptr = std::make_shared<TensorDataCpu<float, 3>>(tensorselect);
 
   // Test
-  Eigen::ThreadPool pool(1);
-  Eigen::ThreadPoolDevice device(&pool, 1);
+  Eigen::ThreadPool pool(2);
+  Eigen::ThreadPoolDevice device(&pool, 2);
   tensordata.select(tensorselect_ptr, std::make_shared<TensorDataCpu<int, 3>>(indices), device);
   for (int i = 0; i < dim_sizes_select; ++i) {
     for (int j = 0; j < dim_sizes_select; ++j) {
@@ -133,8 +133,8 @@ BOOST_AUTO_TEST_CASE(sortCpu)
   TensorDataCpu<float, 3> tensordata(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
   tensordata.setData(tensor_values);
 
-  Eigen::ThreadPool pool(1);
-  Eigen::ThreadPoolDevice device(&pool, 1);
+  Eigen::ThreadPool pool(2);
+  Eigen::ThreadPoolDevice device(&pool, 2);
   // Test ASC
   tensordata.sort("ASC", device);
   for (int i = 0; i < dim_sizes; ++i) {
@@ -178,8 +178,8 @@ BOOST_AUTO_TEST_CASE(sortIndicesCpu)
   indices.setData(indices_values);
   std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 3>> indices_ptr = std::make_shared<TensorDataCpu<int, 3>>(indices);
 
-  Eigen::ThreadPool pool(1);
-  Eigen::ThreadPoolDevice device(&pool, 1);
+  Eigen::ThreadPool pool(2);
+  Eigen::ThreadPoolDevice device(&pool, 2);
   // Test ASC
   tensordata.sortIndices(indices_ptr, "ASC", device);
   tensordata.sort(indices_ptr, device);
@@ -237,8 +237,8 @@ BOOST_AUTO_TEST_CASE(partitionCpu)
 	expected_values_flat.setValues({ 0,2,4,6,8,10,12,14,16,18,20,22,24,26,1,3,5,7,9,11,13,15,17,19,21,23,25 });
   Eigen::Tensor<float, 3> expected_values = expected_values_flat.reshape(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
 
-  Eigen::ThreadPool pool(1);
-  Eigen::ThreadPoolDevice device(&pool, 1);
+  Eigen::ThreadPool pool(2);
+  Eigen::ThreadPoolDevice device(&pool, 2);
   // Test partition
   tensordata.partition(indices_ptr, device);
   for (int i = 0; i < dim_sizes; ++i) {
@@ -277,8 +277,8 @@ BOOST_AUTO_TEST_CASE(runLengthEncodeCpu)
   num_runs.getData()(0) = 0;
   std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>> num_runs_ptr = std::make_shared<TensorDataCpu<int, 1>>(num_runs);
 
-  Eigen::ThreadPool pool(1);
-  Eigen::ThreadPoolDevice device(&pool, 1);
+  Eigen::ThreadPool pool(2);
+  Eigen::ThreadPoolDevice device(&pool, 2);
   // Test runLengthEncode for the case where the last value is the same as the previous
   tensordata.runLengthEncode(uniquev_ptr, count_ptr, num_runs_ptr, device);
   BOOST_CHECK_EQUAL(num_runs_ptr->getData()(0), 3);
@@ -299,6 +299,43 @@ BOOST_AUTO_TEST_CASE(runLengthEncodeCpu)
     BOOST_CHECK_EQUAL(uniquev_ptr->getData()(i), unique_values(i));
     BOOST_CHECK_EQUAL(count_ptr->getData()(i), count_values(i));
   }
+}
+
+BOOST_AUTO_TEST_CASE(histogramCpu)
+{
+	// Setup the device
+	Eigen::ThreadPool pool(2);
+	Eigen::ThreadPoolDevice device(&pool, 2);
+
+	// Make the tensor data and select indices
+	int dim_sizes = 3;
+	Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+	for (int i = 0; i < dim_sizes; ++i) {
+		for (int j = 0; j < dim_sizes; ++j) {
+			for (int k = 0; k < dim_sizes; ++k) {
+				float value = i + j * dim_sizes + k * dim_sizes * dim_sizes;
+				tensor_values(i, j, k) = dim_sizes * dim_sizes * dim_sizes - value;
+			}
+		}
+	}
+	TensorDataCpu<float, 3> tensordata(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+	tensordata.setData(tensor_values);
+
+	// Make the expected tensor
+	const int bin_width = 3;
+	const int n_bins = dim_sizes * dim_sizes * dim_sizes / bin_width;
+	const int n_levels = n_bins + 1;
+	const float lower_level = 0.0;
+	const float upper_level = bin_width * n_bins;
+	TensorDataCpu<float, 1> histogram_bins(Eigen::array<Eigen::Index, 1>({ n_bins }));
+	histogram_bins.setData();
+	std::shared_ptr<TensorData<float, Eigen::ThreadPoolDevice, 1>> histogram_bins_ptr = std::make_shared<TensorDataCpu<float, 1>>(histogram_bins);
+
+	// Test
+	tensordata.histogram(n_levels, lower_level, upper_level, histogram_bins_ptr, device);
+	for (int i = 0; i < n_bins; ++i) {
+		BOOST_CHECK_CLOSE(histogram_bins_ptr->getData()(i), 3.0, 1e-3);
+	}
 }
 
 BOOST_AUTO_TEST_CASE(gettersAndSetters2Cpu)
@@ -347,8 +384,8 @@ BOOST_AUTO_TEST_CASE(syncHAndDCpu)
 
   tensordata.setData(data);
 
-  Eigen::ThreadPool pool(1);
-  Eigen::ThreadPoolDevice device(&pool, 1);
+  Eigen::ThreadPool pool(2);
+  Eigen::ThreadPoolDevice device(&pool, 2);
   tensordata.syncHAndDData(device);
   BOOST_CHECK(tensordata.getDataStatus().first);
   BOOST_CHECK(tensordata.getDataStatus().second);
@@ -362,8 +399,8 @@ BOOST_AUTO_TEST_CASE(convertFromStringToTensorTCpu)
 {
   Eigen::Tensor<std::string, 3> tensor_string(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
   tensor_string.setConstant("1.001");
-  Eigen::ThreadPool pool(1);
-  Eigen::ThreadPoolDevice device(&pool, 1);
+  Eigen::ThreadPool pool(2);
+  Eigen::ThreadPoolDevice device(&pool, 2);
 
   // Test float
   TensorDataCpu<float, 3> tensordata_f(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));

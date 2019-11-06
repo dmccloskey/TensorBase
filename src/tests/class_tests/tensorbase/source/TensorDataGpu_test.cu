@@ -374,6 +374,51 @@ void test_runLengthEncodeGpuPrimitiveT()
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
 
+void test_histogramGpuPrimitiveT()
+{
+	// Initialize the device
+	cudaStream_t stream;
+	assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+	Eigen::GpuStreamDevice stream_device(&stream, 0);
+	Eigen::GpuDevice device(&stream_device);
+
+	// Make the tensor data and select indices
+	int dim_sizes = 3;
+	Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+	for (int i = 0; i < dim_sizes; ++i) {
+		for (int j = 0; j < dim_sizes; ++j) {
+			for (int k = 0; k < dim_sizes; ++k) {
+				float value = i + j * dim_sizes + k * dim_sizes * dim_sizes;
+				tensor_values(i, j, k) = dim_sizes * dim_sizes * dim_sizes - value;
+			}
+		}
+	}
+	TensorDataGpuPrimitiveT<float, 3> tensordata(Eigen::array<Eigen::Index, 3>({ dim_sizes, dim_sizes, dim_sizes }));
+	tensordata.setData(tensor_values);
+
+	// Make the expected tensor
+	const int bin_width = 3;
+	const int n_bins = dim_sizes * dim_sizes * dim_sizes / bin_width;
+	const int n_levels = n_bins + 1;
+	const float lower_level = 0.0;
+	const float upper_level = bin_width * n_bins;
+	TensorDataGpuPrimitiveT<float, 1> histogram_bins(Eigen::array<Eigen::Index, 1>({ n_bins }));
+	histogram_bins.setData();
+	std::shared_ptr<TensorData<float, Eigen::GpuDevice, 1>> histogram_bins_ptr = std::make_shared<TensorDataGpuPrimitiveT<float, 1>>(histogram_bins);
+
+	// Test
+	histogram_bins_ptr->syncHAndDData(device);
+	tensordata.syncHAndDData(device);
+	tensordata.histogram(n_levels, lower_level, upper_level, histogram_bins_ptr, device);
+	histogram_bins_ptr->syncHAndDData(device);
+	assert(cudaStreamSynchronize(stream) == cudaSuccess);
+	std::cout << "histogram_bins_ptr\n" << histogram_bins_ptr->getData() << std::endl;
+	for (int i = 0; i < n_bins; ++i) {
+		assert(histogram_bins_ptr->getData()(i) == 3.0);
+	}
+	assert(cudaStreamDestroy(stream) == cudaSuccess);
+}
+
 void test_gettersAndSettersGpuPrimitiveT()
 {
   TensorDataGpuPrimitiveT<float, 3> tensordata(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
@@ -958,6 +1003,7 @@ int main(int argc, char** argv)
   test_sortIndicesGpuPrimitiveT();
   test_partitionGpuPrimitiveT();
   test_runLengthEncodeGpuPrimitiveT();
+	test_histogramGpuPrimitiveT();
   test_convertFromStringToTensorTGpuPrimitiveT();
 
   // ClassT
