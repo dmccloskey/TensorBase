@@ -388,11 +388,6 @@ namespace TensorBase
 		// sort data to bring equal elements together
 		thrust::sort(thrust::cuda::par.on(device.stream()), d_data, d_data + data_copy->getTensorSize());
 
-		data_copy->syncHAndDData(device);
-		assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
-		std::cout << "histogram_bins_ptr\n" << data_copy->getData() << std::endl;
-		data_copy->syncHAndDData(device);
-
 		// histogram bins and widths
 		const int n_bins = n_levels - 1;
 		const T bin_width = (upper_level - lower_level) / (n_levels - T(1));
@@ -400,16 +395,9 @@ namespace TensorBase
 		thrust::sequence(thrust::cuda::par.on(device.stream()), bin_search.begin(), bin_search.end());
 		HistogramBinHelper<T> histogramBinHelper(lower_level, bin_width);
 		thrust::transform(thrust::cuda::par.on(device.stream()), bin_search.begin(), bin_search.end(), bin_search.begin(), histogramBinHelper);
-		for (int i = 0; i < bin_search.size(); i++)
-			std::cout << "bin_search[" << i << "] = " << bin_search[i] << std::endl;
 
 		// find the end of each bin of values
 		thrust::upper_bound(thrust::cuda::par.on(device.stream()), d_data, d_data + data_copy->getTensorSize(),	bin_search.begin(), bin_search.end(),	d_histogram);
-
-		histogram->syncHAndDData(device);
-		assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
-		std::cout << "histogram_bins_ptr\n" << histogram->getData() << std::endl;
-		histogram->syncHAndDData(device);
 
 		// compute the histogram by taking differences of the cumulative histogram
 		thrust::adjacent_difference(thrust::cuda::par.on(device.stream()), d_histogram, d_histogram + histogram->getTensorSize(),	d_histogram);

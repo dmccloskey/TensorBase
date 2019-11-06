@@ -3,7 +3,6 @@
 #ifndef TENSORBASE_TENSORDATA_H
 #define TENSORBASE_TENSORDATA_H
 
-#define EIGEN_USE_THREADS
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <Eigen/src/Core/util/Meta.h>
 #include <memory>
@@ -132,6 +131,7 @@ namespace TensorBase
 		@brief Bin the data for display as a histogram
 
 		NOTE: Only available for primitive types
+		TODO: optionally, return the calculated bins
 
 		@param[out] n_levels The number of bin levels where n_bins = n_levels -1
 		@param[out] lower_level The lower sample value boundary of lowest bin
