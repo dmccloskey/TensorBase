@@ -26,6 +26,29 @@
 
 namespace TensorBase
 {
+	/*
+	Thrust helper functors
+
+	NOTE: These MUST be declared before usage or the CUDA compiler will throw an error
+	*/
+	template<typename TensorT>
+	struct HistogramBinHelper {
+		HistogramBinHelper(const TensorT& lower_level, const TensorT& bin_width) : lower_level_(lower_level), bin_width_(bin_width) {}
+		__host__ __device__
+			TensorT operator()(const TensorT& v) {
+			return (v + 1) * bin_width_ + lower_level_;
+		}
+		TensorT lower_level_ = TensorT(0);
+		TensorT bin_width_ = TensorT(1);
+	};
+
+	struct isGreaterThanZero {
+		__host__ __device__
+			bool operator()(const int& x) {
+			return x > 0;
+		}
+	};
+
   /**
     @brief Tensor data class specialization for Eigen::GpuDevice (single GPU)
   */
@@ -365,21 +388,31 @@ namespace TensorBase
 		// sort data to bring equal elements together
 		thrust::sort(thrust::cuda::par.on(device.stream()), d_data, d_data + data_copy->getTensorSize());
 
+		data_copy->syncHAndDData(device);
+		assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+		std::cout << "histogram_bins_ptr\n" << data_copy->getData() << std::endl;
+		data_copy->syncHAndDData(device);
+
 		// histogram bins and widths
 		const int n_bins = n_levels - 1;
 		const T bin_width = (upper_level - lower_level) / (n_levels - T(1));
 		thrust::device_vector<T> bin_search(n_bins);
-		histogramGenerateHelper<T> histogramGenerateHelper(lower_level, bin_width);
-		thrust::generate(thrust::cuda::par.on(device.stream()), bin_search.begin(), bin_search.end(), histogramGenerateHelper);
+		thrust::sequence(thrust::cuda::par.on(device.stream()), bin_search.begin(), bin_search.end());
+		HistogramBinHelper<T> histogramBinHelper(lower_level, bin_width);
+		thrust::transform(thrust::cuda::par.on(device.stream()), bin_search.begin(), bin_search.end(), bin_search.begin(), histogramBinHelper);
+		for (int i = 0; i < bin_search.size(); i++)
+			std::cout << "bin_search[" << i << "] = " << bin_search[i] << std::endl;
 
 		// find the end of each bin of values
-		thrust::upper_bound(d_data, d_data + data_copy->getTensorSize(),
-			bin_search.begin(), bin_search.end(),
-			d_histogram);
+		thrust::upper_bound(thrust::cuda::par.on(device.stream()), d_data, d_data + data_copy->getTensorSize(),	bin_search.begin(), bin_search.end(),	d_histogram);
+
+		histogram->syncHAndDData(device);
+		assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+		std::cout << "histogram_bins_ptr\n" << histogram->getData() << std::endl;
+		histogram->syncHAndDData(device);
 
 		// compute the histogram by taking differences of the cumulative histogram
-		thrust::adjacent_difference(thrust::cuda::par.on(device.stream()), d_histogram, d_histogram + histogram->getTensorSize(),
-			d_histogram);
+		thrust::adjacent_difference(thrust::cuda::par.on(device.stream()), d_histogram, d_histogram + histogram->getTensorSize(),	d_histogram);
 	}
   template<typename TensorT, int TDim>
   template<typename T, std::enable_if_t<std::is_same<T, int>::value, int>>
@@ -441,24 +474,6 @@ namespace TensorBase
     data_converted.device(default_device) = data_new.unaryExpr([](const std::string& elem) { return elem == "1"; });
     this->syncHAndDData(device);
   }
-
-	template<typename TensorT>
-	struct histogramGenerateHelper {
-		histogramGenerateHelper(const TensorT& lower_level, const TensorT& bin_width) : n_(lower_level), bin_width_(bin_width) {}
-		__host__ __device__
-			TensorT operator()() {
-			return n_ += bin_width_;
-		}
-		TensorT n_ = TensorT(0);
-		TensorT bin_width_ = TensorT(1);
-	};
-
-  struct isGreaterThanZero {
-    __host__ __device__
-      bool operator()(const int &x) {
-      return x > 0;
-    }
-  };
 
   /**
     @brief Tensor data class specialization for Eigen::GpuDevice (single GPU) using custom class template types

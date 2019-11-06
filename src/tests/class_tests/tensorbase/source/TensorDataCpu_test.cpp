@@ -326,7 +326,7 @@ BOOST_AUTO_TEST_CASE(histogramCpu)
 	const int n_bins = dim_sizes * dim_sizes * dim_sizes / bin_width;
 	const int n_levels = n_bins + 1;
 	const float lower_level = 0.0;
-	const float upper_level = (bin_width - 0.1) * n_bins; // NOTE: To ensure that the whole range is captured
+	const float upper_level = bin_width * n_bins;
 	TensorDataCpu<float, 1> histogram_bins(Eigen::array<Eigen::Index, 1>({ n_bins }));
 	histogram_bins.setData();
 	std::shared_ptr<TensorData<float, Eigen::ThreadPoolDevice, 1>> histogram_bins_ptr = std::make_shared<TensorDataCpu<float, 1>>(histogram_bins);

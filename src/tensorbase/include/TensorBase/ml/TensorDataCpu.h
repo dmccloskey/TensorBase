@@ -279,7 +279,7 @@ namespace TensorBase
 
 		// find the end of each bin of values
 		auto u_bound = [&data_copy](const T& v) {
-			return *std::upper_bound(data_copy->getDataPointer().get(), data_copy->getDataPointer().get() + data_copy->getTensorSize(), v);
+			return std::distance(data_copy->getDataPointer().get(), std::upper_bound(data_copy->getDataPointer().get(), data_copy->getDataPointer().get() + data_copy->getTensorSize(), v));
 		};
 		std::transform(std::execution::par, bin_search.begin(), bin_search.end(), histogram->getDataPointer().get(), u_bound);
 

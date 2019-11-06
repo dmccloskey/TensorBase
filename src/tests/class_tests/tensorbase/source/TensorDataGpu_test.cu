@@ -401,7 +401,7 @@ void test_histogramGpuPrimitiveT()
 	const int n_bins = dim_sizes * dim_sizes * dim_sizes / bin_width;
 	const int n_levels = n_bins + 1;
 	const float lower_level = 0.0;
-	const float upper_level = (float(bin_width) - 0.1) * float(n_bins); // NOTE: To ensure that the whole range is captured
+	const float upper_level = bin_width * n_bins;
 	TensorDataGpuPrimitiveT<float, 1> histogram_bins(Eigen::array<Eigen::Index, 1>({ n_bins }));
 	histogram_bins.setData();
 	std::shared_ptr<TensorData<float, Eigen::GpuDevice, 1>> histogram_bins_ptr = std::make_shared<TensorDataGpuPrimitiveT<float, 1>>(histogram_bins);
@@ -412,6 +412,7 @@ void test_histogramGpuPrimitiveT()
 	tensordata.histogram(n_levels, lower_level, upper_level, histogram_bins_ptr, device);
 	histogram_bins_ptr->syncHAndDData(device);
 	assert(cudaStreamSynchronize(stream) == cudaSuccess);
+	std::cout << "histogram_bins_ptr\n" << histogram_bins_ptr->getData() << std::endl;
 	for (int i = 0; i < n_bins; ++i) {
 		assert(histogram_bins_ptr->getData()(i) == 3.0);
 	}
