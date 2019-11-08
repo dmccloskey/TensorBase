@@ -3,6 +3,7 @@
 #ifndef TENSORBASE_TENSORTABLECONCEPTCPU_H
 #define TENSORBASE_TENSORTABLECONCEPTCPU_H
 
+#define EIGEN_USE_THREADS
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/ml/TensorTableConcept.h>
 #include <TensorBase/ml/TensorTableCpu.h>

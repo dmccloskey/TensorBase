@@ -2,9 +2,9 @@
 
 #define BOOST_TEST_MODULE TensorOperation1 test suite 
 #include <boost/test/included/unit_test.hpp>
-#include <TensorBase/ml/TensorOperation.h>
 #include <TensorBase/ml/TensorSelect.h>
-#include <TensorBase/ml/TensorTableDefaultDevice.h>
+#include <TensorBase/ml/TensorOperationDefaultDevice.h>
+#include <TensorBase/ml/TensorCollectionDefaultDevice.h>
 
 using namespace TensorBase;
 using namespace std;

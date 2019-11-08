@@ -3,7 +3,8 @@
 #define BOOST_TEST_MODULE TransactionManager test suite 
 #include <boost/test/included/unit_test.hpp>
 #include <TensorBase/ml/TransactionManager.h>
-#include <TensorBase/ml/TensorTableDefaultDevice.h>
+#include <TensorBase/ml/TensorCollectionDefaultDevice.h>
+#include <TensorBase/ml/TensorOperationDefaultDevice.h>
 #include <TensorBase/ml/TensorSelect.h>
 
 using namespace TensorBase;

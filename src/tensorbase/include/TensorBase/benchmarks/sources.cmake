@@ -4,7 +4,9 @@ set(directory include/TensorBase/benchmarks)
 ### list all header files of the directory here
 set(sources_list_h
 	BenchmarkPixels.h
+	BenchmarkPixelsCpu.h
 	BenchmarkPixelsDefaultDevice.h
+	BenchmarkPixelsGpu.h
 )
 
 ### add path to the filenames

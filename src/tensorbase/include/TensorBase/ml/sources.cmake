@@ -29,6 +29,9 @@ set(sources_list_h
 	TensorDataDefaultDevice.h
 	TensorDataGpu.h
 	TensorOperation.h
+	TensorOperationCpu.h
+	TensorOperationDefaultDevice.h
+	TensorOperationGpu.h
 	TensorTable.h
 	TensorTableConcept.h
 	TensorTableConceptCpu.h

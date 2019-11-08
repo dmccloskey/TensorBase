@@ -6,6 +6,7 @@
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/benchmarks/BenchmarkPixels.h>
 #include <TensorBase/ml/TensorCollectionDefaultDevice.h>
+#include <TensorBase/ml/TensorOperationDefaultDevice.h>
 
 using namespace TensorBase;
 
