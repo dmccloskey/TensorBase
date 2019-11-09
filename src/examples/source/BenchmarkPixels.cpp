@@ -11,7 +11,7 @@ using namespace TensorBaseBenchmarks;
 
 Example usage:
 	pixels_benchmark [data_dir] [n_dims] [data_size] [in_memory] [shard_size_perc] 
-	pixels_benchmark C:/Users/dmccloskey/Documents/GitHub/mnist/ 1 1296 true 1000
+	pixels_benchmark C:/Users/dmccloskey/Documents/GitHub/mnist/ 1 small true 100
 
 @param[in] n_dims The number of dimensions (i.e., 1-4) with default of 4
 	1 dimension: x, y, z, and t on a single axis with a "values" dimensions on the other axis
