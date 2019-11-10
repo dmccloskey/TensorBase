@@ -21,26 +21,62 @@ namespace TensorBaseBenchmarks
 	template<template<class> class ArrayT, class TensorT, typename DeviceT>
 	class ArrayManager {
 	public:
-		ArrayManager(const int& data_size, const bool& use_random_values = false) : data_size_(data_size), use_random_values_(use_random_values){};
+		ArrayManager(const int& data_size, const int& array_size) : data_size_(data_size), array_size_(array_size){};
 		~ArrayManager() = default;
-		void getArrayData(std::shared_ptr<TensorData<ArrayT<TensorT>, DeviceT, 1>>& values_ptr) = 0;
+		void getArrayData(std::shared_ptr<TensorData<ArrayT<TensorT>, DeviceT, 1>>& values_ptr);
 		virtual void makeValuesPtr(const Eigen::Tensor<ArrayT<TensorT>, 1>& values, std::shared_ptr<TensorData<ArrayT<TensorT>, DeviceT, 1>>& values_ptr) = 0;
 
 		/*
 		@brief Generate a random value
 		*/
-		TensorT getRandomValue();
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, char>::value, int> = 0>
+		T getRandomValue();
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, float>::value || std::is_same<T, double>::value, int> = 0>
+    T getRandomValue();
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, int>::value, int> = 0>
+    T getRandomValue();
 	protected:
 		int data_size_;
-		bool use_random_values_;
+    int array_size_;
 	};
   template<template<class> class ArrayT, class TensorT, typename DeviceT>
-	TensorT ArrayManager<ArrayT, TensorT, DeviceT>::getRandomValue() {
-		std::random_device rd{};
-		std::mt19937 gen{ rd() };
-		std::normal_distribution<> d{ 0.0f, 10.0f };
-		return TensorT(d(gen));
+  TensorT ArrayManager<ArrayT, TensorT, DeviceT>::getArrayData(std::shared_ptr<TensorData<ArrayT<TensorT>, DeviceT, 1>>& values_ptr) {
+    Eigen::Tensor<ArrayT<TensorT>, 1> values(data_size_);
+    for (int i = 0; i < data_size_; ++i) {
+      Eigen::TensorT<TensorT, 1> array_tmp(array_size_);
+      for (int j = 0; j < array_size_; ++j) array_tmp(j) = getRandomValue();
+      values(i) = ArrayT<TensorT>(array_tmp);
+    }
+    makeValuesPtr(values, values_ptr);
+  }
+  template<template<class> class ArrayT, class TensorT, typename DeviceT>
+  template<typename T = TensorT, std::enable_if_t<std::is_same<T, char>::value, int>>
+	T ArrayManager<ArrayT, TensorT, DeviceT>::getRandomValue() {
+    std::vector<char> elements = { ' ','!','#','$','%','&','(',')','*','+',',','-','.','/','0','1','2','3','4','5','6','7','8','9',
+      ':',';','<','=','>','?','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
+      '[',']','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','{','}'};
+    std::random_device seed;
+    std::mt19937 engine(seed());
+    std::uniform_int_distribution<int> choose(0, elements.size() - 1);
+    return elements.at(choose(engine));
 	}
+  template<template<class> class ArrayT, class TensorT, typename DeviceT>
+  template<typename T = TensorT, std::enable_if_t<std::is_same<T, float>::value || std::is_same<T, double>::value, int>>
+  T ArrayManager<ArrayT, TensorT, DeviceT>::getRandomValue() {
+    std::random_device rd{};
+    std::mt19937 gen{ rd() };
+    std::normal_distribution<> d{ 0.0f, 10.0f };
+    return T(d(gen));
+  }
+  template<template<class> class ArrayT, class TensorT, typename DeviceT>
+  template<typename T = TensorT, std::enable_if_t<std::is_same<T, int>::value, int>>
+  T ArrayManager<ArrayT, TensorT, DeviceT>::getRandomValue() {
+    std::vector<int> elements = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    std::random_device seed;
+    std::mt19937 engine(seed());
+    std::uniform_int_distribution<int> choose(0, elements.size() - 1);
+    return elements.at(choose(engine));
+  }
    
 	/*
 	@brief A class for running various benchmarks on different flavors of TensorArrays
