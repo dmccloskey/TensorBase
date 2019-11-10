@@ -13,20 +13,6 @@ using namespace TensorBaseBenchmarks;
 
 /* Benchmark for toy 4D pixels data where x, y, and z describe the coordinates of the pixel in 3D space (type=int),
 	t describes the time of the pixel (type=int), and the value of the pixel (from 0 to 255) describes the intensity of the pixel
-
-Example usage:
-	pixels_benchmark [data_dir] [n_dims] [data_size] [in_memory] [shard_size_perc] 
-	pixels_benchmark C:/Users/dmccloskey/Documents/GitHub/mnist/ 2 1296 true 100
-
-@param[in] n_dims The number of dimensions (i.e., 1-4) with default of 4
-	1 dimension: x, y, z, and t on a single axis with a "values" dimensions on the other axis
-	2 dimensions: x, y, z on a single axis, and t on another axis
-	3 dimensions: y, z on a single axis, x on an axis, and t on an axis
-	4 dimensions: x, y, z, and t on seperate axes
-@param[in] data_size Options include small, medium, large, and XL (i.e., 1296, 1048576, 1003875856, and 1e12 pixels, respectively) with default of small
-	where x, y, z, and t span 1 to 6, 32, 178, and 1000, respectively
-@param[in] in_memory Simulate all data loaded into memory (true) or JIT load into memory from disk (false) with default of true
-@param[in] shard_size_perc Different shard span configurations.  Options include 5, 20, and 100 with a default of 100
 */
 int main(int argc, char** argv)
 {
@@ -36,7 +22,8 @@ int main(int argc, char** argv)
 	int data_size = 1296;
 	bool in_memory = true;
 	double shard_span_perc = 1;
-	parseCmdArgs(argc, argv, data_dir, n_dims, data_size, in_memory, shard_span_perc);
+  int n_engines = 1;
+	parseCmdArgs(argc, argv, data_dir, n_dims, data_size, in_memory, shard_span_perc, n_engines);
 
 	// Setup the Benchmarking suite
 	Benchmark1TimePointGpu<int, float> benchmark_1_tp;

@@ -31,7 +31,8 @@ int main(int argc, char** argv)
 	int data_size = 1296;
 	bool in_memory = true;
 	double shard_span_perc = 1;
-	parseCmdArgs(argc, argv, data_dir, n_dims, data_size, in_memory, shard_span_perc);
+  int n_engines = 1;
+  parseCmdArgs(argc, argv, data_dir, n_dims, data_size, in_memory, shard_span_perc, n_engines);
 
 	// Setup the Benchmarking suite
 	Benchmark1TimePointDefaultDevice<int, float> benchmark_1_tp;
