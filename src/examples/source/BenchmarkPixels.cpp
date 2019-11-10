@@ -27,7 +27,7 @@ int main(int argc, char** argv)
 {
 	// Parse the user commands
 	std::string data_dir = "C:/Users/dmccloskey/Documents/GitHub/mnist/";
-	int n_dims = 2;
+	int n_dims = 0;
 	int data_size = 1296;
 	bool in_memory = true;
 	double shard_span_perc = 1;
@@ -35,12 +35,12 @@ int main(int argc, char** argv)
   parseCmdArgs(argc, argv, data_dir, n_dims, data_size, in_memory, shard_span_perc, n_engines);
 
 	// Setup the Benchmarking suite
-	Benchmark1TimePointDefaultDevice<int, float> benchmark_1_tp;
-	//Benchmark1TimePointDefaultDevice<int, int> benchmark_1_tp; // 0D only
+	//Benchmark1TimePointDefaultDevice<int, float> benchmark_1_tp;
+	Benchmark1TimePointDefaultDevice<int, int> benchmark_1_tp; // 0D only
 
 	// Setup the TensorCollectionGenerator
-	TensorCollectionGeneratorDefaultDevice<int, float> tensor_collection_generator;
-	//TensorCollectionGeneratorDefaultDevice<int, int> tensor_collection_generator; // 0D only
+	//TensorCollectionGeneratorDefaultDevice<int, float> tensor_collection_generator;
+	TensorCollectionGeneratorDefaultDevice<int, int> tensor_collection_generator; // 0D only
 
 	// Setup the device
 	Eigen::DefaultDevice device;

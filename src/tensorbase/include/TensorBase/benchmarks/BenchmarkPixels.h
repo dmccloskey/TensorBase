@@ -94,7 +94,7 @@ namespace TensorBaseBenchmarks
 		virtual void setDimSizes() = 0;
 		virtual void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, NDim>>& values_ptr) = 0;
 		virtual void makeLabelsPtr(const Eigen::Tensor<int, 2>& labels, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr) = 0;
-		virtual void makeValuesPtr(const Eigen::Tensor<float, NDim>& values, std::shared_ptr<TensorData<TensorT, DeviceT, NDim>>& values_ptr) = 0;
+		virtual void makeValuesPtr(const Eigen::Tensor<TensorT, NDim>& values, std::shared_ptr<TensorData<TensorT, DeviceT, NDim>>& values_ptr) = 0;
 
 		/*
 		@brief Generate a random value
@@ -423,7 +423,7 @@ namespace TensorBaseBenchmarks
 			labels_ptr.reset();
 			values_ptr.reset();
 			pixel_manager.getInsertData(i, span, labels_ptr, values_ptr);
-			TensorAppendToAxis<LabelsT, TensorT, DeviceT, 2> appendToAxis("TTable", "index", labels_ptr, values_ptr);
+			TensorAppendToAxis<LabelsT, TensorT, DeviceT, 2> appendToAxis("TTable", "indices", labels_ptr, values_ptr);
 			std::shared_ptr<TensorOperation<DeviceT>> appendToAxis_ptr = std::make_shared<TensorAppendToAxis<LabelsT, TensorT, DeviceT, 2>>(appendToAxis);
 			transaction_manager.executeOperation(appendToAxis_ptr, device);
 		}
