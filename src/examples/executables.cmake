@@ -1,4 +1,5 @@
 set(benchmark_executables_list
+  BenchmarkArray
   BenchmarkPixels
   BenchmarkPixelsCpu
 )
