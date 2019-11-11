@@ -412,7 +412,6 @@ void test_histogramGpuPrimitiveT()
 	tensordata.histogram(n_levels, lower_level, upper_level, histogram_bins_ptr, device);
 	histogram_bins_ptr->syncHAndDData(device);
 	assert(cudaStreamSynchronize(stream) == cudaSuccess);
-	std::cout << "histogram_bins_ptr\n" << histogram_bins_ptr->getData() << std::endl;
 	for (int i = 0; i < n_bins; ++i) {
 		assert(histogram_bins_ptr->getData()(i) == 3.0);
 	}

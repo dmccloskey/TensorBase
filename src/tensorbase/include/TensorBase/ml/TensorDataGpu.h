@@ -31,6 +31,8 @@ namespace TensorBase
 
 	NOTE: These MUST be declared before usage or the CUDA compiler will throw an error
 	*/
+
+  /// Histogram even bin distribution helper
 	template<typename TensorT>
 	struct HistogramBinHelper {
 		HistogramBinHelper(const TensorT& lower_level, const TensorT& bin_width) : lower_level_(lower_level), bin_width_(bin_width) {}
@@ -42,12 +44,45 @@ namespace TensorBase
 		TensorT bin_width_ = TensorT(1);
 	};
 
+  /// Select and partition isGreaterThanZero functor
 	struct isGreaterThanZero {
 		__host__ __device__
 			bool operator()(const int& x) {
 			return x > 0;
 		}
 	};
+
+  /// Helper for Descending Sort methods to choose the correct comparison method based on TensorArray length
+  template<template<class> class ArrayT, class TensorT>
+  struct sortDesc {
+    __host__ __device__ sortDesc(const int& size) : size_(size) {};
+    int size_ = 0;
+    template<template<class> class A=ArrayT, class T=TensorT, std::enable_if_t<std::is_same<TensorArrayGpu8<T>, A<T>>::value, int> = 0>
+    __host__ __device__ bool operator()(const A<T>& s1, const A<T>& s2) {
+      isGreaterThanGpu8 comp(size_);
+      return comp(s1, s2);
+    }
+    template<template<class> class A = ArrayT, class T = TensorT, std::enable_if_t<std::is_same<TensorArrayGpu32<T>, A<T>>::value, int> = 0>
+    __host__ __device__ bool operator()(const A<T>& s1, const A<T>& s2) {
+      isGreaterThanGpu32 comp(size_);
+      return comp(s1, s2);
+    }
+    template<template<class> class A = ArrayT, class T = TensorT, std::enable_if_t<std::is_same<TensorArrayGpu128<T>, A<T>>::value, int> = 0>
+    __host__ __device__ bool operator()(const A<T>& s1, const A<T>& s2) {
+      isGreaterThanGpu128 comp(size_);
+      return comp(s1, s2);
+    }
+    template<template<class> class A = ArrayT, class T = TensorT, std::enable_if_t<std::is_same<TensorArrayGpu512<T>, A<T>>::value, int> = 0>
+    __host__ __device__ bool operator()(const A<T>& s1, const A<T>& s2) {
+      isGreaterThanGpu512 comp(size_);
+      return comp(s1, s2);
+    }
+    template<template<class> class A = ArrayT, class T = TensorT, std::enable_if_t<std::is_same<TensorArrayGpu2048<T>, A<T>>::value, int> = 0>
+    __host__ __device__ bool operator()(const A<T>& s1, const A<T>& s2) {
+      isGreaterThanGpu2048 comp(size_);
+      return comp(s1, s2);
+    }
+  };
 
   /**
     @brief Tensor data class specialization for Eigen::GpuDevice (single GPU)
@@ -553,7 +588,7 @@ namespace TensorBase
       thrust::sort_by_key(thrust::cuda::par.on(device.stream()), d_data, d_data + data_copy->getTensorSize(), d_indices);
     }
     else if (sort_order == "DESC") {
-      isGreaterThanGpu8 comp(data_copy->getTensorSize());
+      sortDesc<ArrayT, TensorT> comp(data_copy->getTensorSize());
       thrust::sort_by_key(thrust::cuda::par.on(device.stream()), d_data, d_data + data_copy->getTensorSize(), d_indices, comp);
     }
   }
@@ -566,7 +601,7 @@ namespace TensorBase
       thrust::stable_sort(thrust::cuda::par.on(device.stream()), d_data, d_data + this->getTensorSize());
     }
     else if (sort_order == "DESC") {
-      isGreaterThanGpu8 comp(this->getTensorSize());
+      sortDesc<ArrayT, TensorT> comp(this->getTensorSize());
       thrust::stable_sort(thrust::cuda::par.on(device.stream()), d_data, d_data + this->getTensorSize(), comp);
     }
   }

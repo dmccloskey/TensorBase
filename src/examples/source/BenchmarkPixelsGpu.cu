@@ -27,11 +27,9 @@ int main(int argc, char** argv)
 
 	// Setup the Benchmarking suite
 	Benchmark1TimePointGpu<int, float> benchmark_1_tp;
-	//Benchmark1TimePointGpu<int, int> benchmark_1_tp; // 0D only
 
 	// Setup the TensorCollectionGenerator
 	TensorCollectionGeneratorGpu<int, float> tensor_collection_generator;
-	//TensorCollectionGeneratorGpu<int, int> tensor_collection_generator; // 0D only
 
 	// Setup the device
   cudaStream_t stream;
