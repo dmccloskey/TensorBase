@@ -483,6 +483,22 @@ namespace TensorBase
     virtual void sortIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT& device) = 0;
     virtual void sortIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT& device) = 0;
 #endif
+    virtual void sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device) = 0;
+    virtual void sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device) = 0;
+    virtual void sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device) = 0;
+    virtual void sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device) = 0;
+    virtual void sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device) = 0;
+    virtual void sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device) = 0;
+    virtual void sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device) = 0;
+    virtual void sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device) = 0;
+    virtual void sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device) = 0;
+#if COMPILE_WITH_CUDA
+    virtual void sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device) = 0;
+    virtual void sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device) = 0;
+    virtual void sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device) = 0;
+    virtual void sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device) = 0;
+    virtual void sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device) = 0;
+#endif
 
     /*
     All DeviceT combos of `selectTensorData`
@@ -1690,6 +1706,50 @@ namespace TensorBase
     };
     void sortIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT& device) override {
       tensor_table_->sortIndicesView(axis_name, dimension_index, select_labels, order_by, device);
+    };
+#endif
+    void sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device) override {
+      tensor_table_->sortIndicesView(axis_name, select_labels, order_by, device);
+    };
+    void sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device) override {
+      tensor_table_->sortIndicesView(axis_name, select_labels, order_by, device);
+    };
+    void sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device) override {
+      tensor_table_->sortIndicesView(axis_name, select_labels, order_by, device);
+    };
+    void sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device) override {
+      tensor_table_->sortIndicesView(axis_name, select_labels, order_by, device);
+    };
+    void sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device) override {
+      tensor_table_->sortIndicesView(axis_name, select_labels, order_by, device);
+    };
+    void sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device) override {
+      tensor_table_->sortIndicesView(axis_name, select_labels, order_by, device);
+    };
+    void sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device) override {
+      tensor_table_->sortIndicesView(axis_name, select_labels, order_by, device);
+    };
+    void sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device) override {
+      tensor_table_->sortIndicesView(axis_name, select_labels, order_by, device);
+    };
+    void sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device) override {
+      tensor_table_->sortIndicesView(axis_name, select_labels, order_by, device);
+    };
+#if COMPILE_WITH_CUDA
+    void sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device) override {
+      tensor_table_->sortIndicesView(axis_name, select_labels, order_by, device);
+    };
+    void sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device) override {
+      tensor_table_->sortIndicesView(axis_name, select_labels, order_by, device);
+    };
+    void sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device) override {
+      tensor_table_->sortIndicesView(axis_name, select_labels, order_by, device);
+    };
+    void sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device) override {
+      tensor_table_->sortIndicesView(axis_name, select_labels, order_by, device);
+    };
+    void sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device) override {
+      tensor_table_->sortIndicesView(axis_name, select_labels, order_by, device);
     };
 #endif
 

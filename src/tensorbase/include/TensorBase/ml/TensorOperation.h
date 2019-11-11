@@ -114,7 +114,6 @@ namespace TensorBase
     select_function_(tensor_collection, device);
 
     // Extract out the labels to delete from the `indices_view`
-    if (!indices_->getDataStatus().second) indices_->syncHAndDData(device);
     tensor_collection->tables_.at(table_name_)->makeIndicesFromIndicesView(axis_name_, indices_, device);
     tensor_collection->tables_.at(table_name_)->resetIndicesView(axis_name_, device);
 
@@ -125,7 +124,6 @@ namespace TensorBase
 
     // Delete the selected labels
     if (!values_->getDataStatus().second) values_->syncHAndDData(device);
-    if (!labels_->getDataStatus().second) labels_->syncHAndDData(device);
     tensor_collection->tables_.at(table_name_)->deleteFromAxis(axis_name_, indices_, labels_, values_->getDataPointer(), device);
 
 		// Reset the indices view
