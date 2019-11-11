@@ -58,6 +58,7 @@ namespace TensorBase
   template<typename DeviceT>
   void TensorSelect::applySelect(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, const std::vector<std::string>& table_names, DeviceT& device) {
     for (const std::string& table_name : table_names) {
+      tensor_collection->tables_.at(table_name)->syncAxesAndIndicesDData(device);
       tensor_collection->tables_.at(table_name)->selectTensorData(device);
     }
   };
@@ -65,6 +66,7 @@ namespace TensorBase
   template<typename DeviceT>
   void TensorSelect::applySort(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, const std::vector<std::string>& table_names, DeviceT& device) {
     for (const std::string& table_name : table_names) {
+      tensor_collection->tables_.at(table_name)->syncAxesAndIndicesDData(device);
       tensor_collection->tables_.at(table_name)->sortTensorData(device);
     }
   };
@@ -78,6 +80,7 @@ namespace TensorBase
 				if (select_clause.dimension_name == "" && select_clause.axis_labels != nullptr) { 
 					// Select option 2
           if (!select_clause.axis_labels->getDataStatus().second) select_clause.axis_labels->syncHAndDData(device);
+          tensor_collection->tables_.at(select_clause.table_name)->syncAxesAndIndicesDData(device);
 					tensor_collection->tables_.at(select_clause.table_name)->selectIndicesView(
 						select_clause.axis_name, select_clause.axis_labels, device);
 				}				
@@ -87,6 +90,7 @@ namespace TensorBase
 						if (axis.second->getDimensions()(d) == select_clause.dimension_name) {
 							// Select option 1
               if (!select_clause.labels->getDataStatus().second) select_clause.labels->syncHAndDData(device);
+              tensor_collection->tables_.at(select_clause.table_name)->syncAxesAndIndicesDData(device);
 							tensor_collection->tables_.at(select_clause.table_name)->selectIndicesView(
 								select_clause.axis_name, d, select_clause.labels, device);
 						}
@@ -107,6 +111,7 @@ namespace TensorBase
             // select axis indices based on the where clause critiera
             if (!where_clause.values->getDataStatus().second) where_clause.values->syncHAndDData(device);
             if (!where_clause.labels->getDataStatus().second) where_clause.labels->syncHAndDData(device);
+            tensor_collection->tables_.at(where_clause.table_name)->syncAxesAndIndicesDData(device);
             tensor_collection->tables_.at(where_clause.table_name)->whereIndicesView(
               where_clause.axis_name, d, where_clause.labels, 
               where_clause.values, where_clause.comparitor, where_clause.modifier, 
@@ -125,6 +130,7 @@ namespace TensorBase
         if (sort_clause.dimension_name == "" && sort_clause.axis_labels != nullptr) {
           // Select option 2
           if (!sort_clause.axis_labels->getDataStatus().second) sort_clause.axis_labels->syncHAndDData(device);
+          tensor_collection->tables_.at(sort_clause.table_name)->syncAxesAndIndicesDData(device);
           tensor_collection->tables_.at(sort_clause.table_name)->sortIndicesView(
             sort_clause.axis_name, sort_clause.axis_labels, sort_clause.order_by, device);
         }
@@ -134,6 +140,7 @@ namespace TensorBase
             if (axis.second->getDimensions()(d) == sort_clause.dimension_name) {
               // order the indices view
               if (!sort_clause.labels->getDataStatus().second) sort_clause.labels->syncHAndDData(device);
+              tensor_collection->tables_.at(sort_clause.table_name)->syncAxesAndIndicesDData(device);
               tensor_collection->tables_.at(sort_clause.table_name)->sortIndicesView(
                 sort_clause.axis_name, d, sort_clause.labels, sort_clause.order_by, device);
             }

@@ -62,6 +62,7 @@ namespace TensorBase
     // Append to the axis
     if (!labels_->getDataStatus().second) labels_->syncHAndDData(device);
     if (!values_->getDataStatus().second) values_->syncHAndDData(device);
+    tensor_collection->tables_.at(table_name_)->syncAxesAndIndicesDData(device);
     tensor_collection->tables_.at(table_name_)->appendToAxis(axis_name_, labels_, values_->getDataPointer(), indices_, device);
   }
   template<typename LabelsT, typename TensorT, typename DeviceT, int TDim>
@@ -69,6 +70,7 @@ namespace TensorBase
   {
     // Delete from the axis
     if (!indices_->getDataStatus().second) indices_->syncHAndDData(device);
+    tensor_collection->tables_.at(table_name_)->syncAxesAndIndicesDData(device);
     tensor_collection->tables_.at(table_name_)->deleteFromAxis(axis_name_, indices_, device);
   }
 
@@ -111,6 +113,7 @@ namespace TensorBase
 		}
 
     // Execute the select methods on the tensor_collection
+    tensor_collection->tables_.at(table_name_)->syncAxesAndIndicesDData(device);
     select_function_(tensor_collection, device);
 
     // Extract out the labels to delete from the `indices_view`
@@ -138,6 +141,7 @@ namespace TensorBase
     if (!indices_->getDataStatus().second) indices_->syncHAndDData(device);
     if (!values_->getDataStatus().second) values_->syncHAndDData(device);
     if (!labels_->getDataStatus().second) labels_->syncHAndDData(device);
+    tensor_collection->tables_.at(table_name_)->syncAxesAndIndicesDData(device);
     tensor_collection->tables_.at(table_name_)->insertIntoAxis(axis_name_, labels_, values_->getDataPointer(), indices_, device);
   }
 
@@ -175,6 +179,7 @@ namespace TensorBase
 		}
 
 		// Execute the select methods on the tensor_collection
+    tensor_collection->tables_.at(table_name_)->syncAxesAndIndicesDData(device);
 		select_function_(tensor_collection, device);
 
 		// Check that the dimensions of the values are compatible with the selected Tensor Table Data
@@ -191,7 +196,8 @@ namespace TensorBase
 	inline void TensorUpdateSelectValues<TensorT, DeviceT, TDim>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
 	{
 		// Execute the select methods on the tensor_collection
-		select_function_(tensor_collection, device);\
+    tensor_collection->tables_.at(table_name_)->syncAxesAndIndicesDData(device);
+		select_function_(tensor_collection, device);
 
 		// Check that the dimensions of the values are compatible with the selected Tensor Table Data
 		// Mismatch indicates that the select method was written incorrectly
@@ -236,6 +242,7 @@ namespace TensorBase
 		}
 
     // Execute the select methods on the tensor_collection
+    tensor_collection->tables_.at(table_name_)->syncAxesAndIndicesDData(device);
     select_function_(tensor_collection, device);
 		
 		// Update the values with the `values_new` and copy the original values into the `values_old`
@@ -251,6 +258,7 @@ namespace TensorBase
   inline void TensorUpdateValues<TensorT, DeviceT, TDim>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
   {
     // Execute the select methods on the tensor_collection
+    tensor_collection->tables_.at(table_name_)->syncAxesAndIndicesDData(device);
     select_function_(tensor_collection, device);
 
 		// Update the values with the `values_old`
@@ -293,6 +301,7 @@ namespace TensorBase
 		}
 
     // Execute the select methods on the tensor_collection
+    tensor_collection->tables_.at(table_name_)->syncAxesAndIndicesDData(device);
     select_function_(tensor_collection, device);
 
     // Update the values with the `values_new`
@@ -307,6 +316,7 @@ namespace TensorBase
   inline void TensorUpdateConstant<TensorT, DeviceT>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
   {
     // Execute the select methods on the tensor_collection
+    tensor_collection->tables_.at(table_name_)->syncAxesAndIndicesDData(device);
     select_function_(tensor_collection, device);
 
     // Update the values with the `values_old`
