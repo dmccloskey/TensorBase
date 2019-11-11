@@ -37,37 +37,38 @@ namespace TensorBaseBenchmarks
   protected:
     void sortBenchmark_(const int& data_size, const int& array_size, Eigen::DefaultDevice& device) const override;
     void partitionBenchmark_(const int& data_size, const int& array_size, Eigen::DefaultDevice& device) const override;
+    void makeTensorSelectionData_(const Eigen::Tensor<int, 1>& values, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& selection_ptr) const override;
   };
   template<typename TensorT>
   void BenchmarkArrayDefaultDevice<TensorT>::sortBenchmark_(const int& data_size, const int& array_size, Eigen::DefaultDevice& device) const {
     if (array_size == 8) {
       ArrayManagerDefaultDevice<TensorArray8, TensorT> array_manager(data_size, array_size);
       std::shared_ptr<TensorData<TensorArray8<TensorT>, Eigen::DefaultDevice, 1>> values_ptr;
-      array_manager.getArrayData(values_ptr);
+      array_manager.getArrayData(values_ptr, device);
       values_ptr->sort("ASC", device);
     }
     else if (array_size == 32) {
       ArrayManagerDefaultDevice<TensorArray32, TensorT> array_manager(data_size, array_size);
       std::shared_ptr<TensorData<TensorArray32<TensorT>, Eigen::DefaultDevice, 1>> values_ptr;
-      array_manager.getArrayData(values_ptr);
+      array_manager.getArrayData(values_ptr, device);
       values_ptr->sort("ASC", device);
     }
     else if (array_size == 128) {
       ArrayManagerDefaultDevice<TensorArray128, TensorT> array_manager(data_size, array_size);
       std::shared_ptr<TensorData<TensorArray128<TensorT>, Eigen::DefaultDevice, 1>> values_ptr;
-      array_manager.getArrayData(values_ptr);
+      array_manager.getArrayData(values_ptr, device);
       values_ptr->sort("ASC", device);
     }
     else if (array_size == 512) {
       ArrayManagerDefaultDevice<TensorArray512, TensorT> array_manager(data_size, array_size);
       std::shared_ptr<TensorData<TensorArray512<TensorT>, Eigen::DefaultDevice, 1>> values_ptr;
-      array_manager.getArrayData(values_ptr);
+      array_manager.getArrayData(values_ptr, device);
       values_ptr->sort("ASC", device);
     }
     else if (array_size == 2048) {
       ArrayManagerDefaultDevice<TensorArray2048, TensorT> array_manager(data_size, array_size);
       std::shared_ptr<TensorData<TensorArray2048<TensorT>, Eigen::DefaultDevice, 1>> values_ptr;
-      array_manager.getArrayData(values_ptr);
+      array_manager.getArrayData(values_ptr, device);
       values_ptr->sort("ASC", device);
     }
     else {
@@ -77,6 +78,56 @@ namespace TensorBaseBenchmarks
   template<typename TensorT>
   inline void BenchmarkArrayDefaultDevice<TensorT>::partitionBenchmark_(const int& data_size, const int& array_size, Eigen::DefaultDevice& device) const
   {
+    if (array_size == 8) {
+      ArrayManagerDefaultDevice<TensorArray8, TensorT> array_manager(data_size, array_size);
+      std::shared_ptr<TensorData<TensorArray8<TensorT>, Eigen::DefaultDevice, 1>> values_ptr;
+      array_manager.getArrayData(values_ptr, device);
+      std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> selection_ptr;
+      this->makeRandomTensorSelectionData(data_size, selection_ptr, device);
+      values_ptr->partition(selection_ptr, device);
+    }
+    else if (array_size == 32) {
+      ArrayManagerDefaultDevice<TensorArray32, TensorT> array_manager(data_size, array_size);
+      std::shared_ptr<TensorData<TensorArray32<TensorT>, Eigen::DefaultDevice, 1>> values_ptr;
+      array_manager.getArrayData(values_ptr, device);
+      std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> selection_ptr;
+      this->makeRandomTensorSelectionData(data_size, selection_ptr, device);
+      values_ptr->partition(selection_ptr, device);
+    }
+    else if (array_size == 128) {
+      ArrayManagerDefaultDevice<TensorArray128, TensorT> array_manager(data_size, array_size);
+      std::shared_ptr<TensorData<TensorArray128<TensorT>, Eigen::DefaultDevice, 1>> values_ptr;
+      array_manager.getArrayData(values_ptr, device);
+      std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> selection_ptr;
+      this->makeRandomTensorSelectionData(data_size, selection_ptr, device);
+      values_ptr->partition(selection_ptr, device);
+    }
+    else if (array_size == 512) {
+      ArrayManagerDefaultDevice<TensorArray512, TensorT> array_manager(data_size, array_size);
+      std::shared_ptr<TensorData<TensorArray512<TensorT>, Eigen::DefaultDevice, 1>> values_ptr;
+      array_manager.getArrayData(values_ptr, device);
+      std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> selection_ptr;
+      this->makeRandomTensorSelectionData(data_size, selection_ptr, device);
+      values_ptr->partition(selection_ptr, device);
+    }
+    else if (array_size == 2048) {
+      ArrayManagerDefaultDevice<TensorArray2048, TensorT> array_manager(data_size, array_size);
+      std::shared_ptr<TensorData<TensorArray2048<TensorT>, Eigen::DefaultDevice, 1>> values_ptr;
+      array_manager.getArrayData(values_ptr, device);
+      std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> selection_ptr;
+      this->makeRandomTensorSelectionData(data_size, selection_ptr, device);
+      values_ptr->partition(selection_ptr, device);
+    }
+    else {
+      std::cout << "Array size " << array_size << " is not supported at this time." << std::endl;
+    }
+  }
+  template<typename TensorT>
+  inline void BenchmarkArrayDefaultDevice<TensorT>::makeTensorSelectionData_(const Eigen::Tensor<int, 1>& values, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& selection_ptr) const
+  {
+    TensorDataDefaultDevice<int, 1> values_data(Eigen::array<Eigen::Index, 1>({ values.dimension(0) }));
+    values_data.setData(values);
+    selection_ptr = std::make_shared<TensorDataDefaultDevice<int, 1>>(values_data);
   }
 };
 #endif //TENSORBASE_BENCHMARKARRAYDEFAULTDEVICE_H

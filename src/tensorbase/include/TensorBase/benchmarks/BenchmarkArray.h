@@ -23,7 +23,7 @@ namespace TensorBaseBenchmarks
 	public:
 		ArrayManager(const int& data_size, const int& array_size) : data_size_(data_size), array_size_(array_size){};
 		~ArrayManager() = default;
-		void getArrayData(std::shared_ptr<TensorData<ArrayT<TensorT>, DeviceT, 1>>& values_ptr);
+		void getArrayData(std::shared_ptr<TensorData<ArrayT<TensorT>, DeviceT, 1>>& values_ptr, DeviceT& device);
 		virtual void makeValuesPtr(const Eigen::Tensor<ArrayT<TensorT>, 1>& values, std::shared_ptr<TensorData<ArrayT<TensorT>, DeviceT, 1>>& values_ptr) = 0;
 
 		/*
@@ -40,7 +40,7 @@ namespace TensorBaseBenchmarks
     int array_size_;
 	};
   template<template<class> class ArrayT, class TensorT, typename DeviceT>
-  void ArrayManager<ArrayT, TensorT, DeviceT>::getArrayData(std::shared_ptr<TensorData<ArrayT<TensorT>, DeviceT, 1>>& values_ptr) {
+  void ArrayManager<ArrayT, TensorT, DeviceT>::getArrayData(std::shared_ptr<TensorData<ArrayT<TensorT>, DeviceT, 1>>& values_ptr, DeviceT& device) {
     Eigen::Tensor<ArrayT<TensorT>, 1> values(data_size_);
     for (int i = 0; i < data_size_; ++i) {
       Eigen::Tensor<TensorT, 1> array_tmp(array_size_);
@@ -48,6 +48,7 @@ namespace TensorBaseBenchmarks
       values(i) = ArrayT<TensorT>(array_tmp);
     }
     makeValuesPtr(values, values_ptr);
+    values_ptr->syncHAndDData(device);
   }
   template<template<class> class ArrayT, class TensorT, typename DeviceT>
   template<typename T, std::enable_if_t<std::is_same<T, char>::value, int>>
@@ -106,9 +107,20 @@ namespace TensorBaseBenchmarks
     @returns A string with the total time of the benchmark in milliseconds
     */
     std::string partitionBenchmark(const int& data_size, const int& array_size, DeviceT& device) const;
+    /*
+    @brief partition randomly generated arrays
+
+    @param[in] data_size
+    @param[in] array_size
+    @param[in] device
+
+    @returns A string with the total time of the benchmark in milliseconds
+    */
+    void makeRandomTensorSelectionData(const int& data_size, std::shared_ptr<TensorData<int, DeviceT, 1>>& selection_ptr, DeviceT& device) const;
 	protected:
     virtual void sortBenchmark_(const int& data_size, const int& array_size, DeviceT& device) const = 0;
     virtual void partitionBenchmark_(const int& data_size, const int& array_size, DeviceT& device) const = 0;
+    virtual void makeTensorSelectionData_(const Eigen::Tensor<int, 1>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& selection_ptr) const = 0;
 	};
   template<typename TensorT, typename DeviceT>
 	std::string BenchmarkArray<TensorT, DeviceT>::sortBenchmark(const int& data_size, const int& array_size, DeviceT& device) const
@@ -136,6 +148,22 @@ namespace TensorBaseBenchmarks
 		std::string milli_time = std::to_string(stop - start);
 		return milli_time;
 	}
+
+  template<typename TensorT, typename DeviceT>
+  inline void BenchmarkArray<TensorT, DeviceT>::makeRandomTensorSelectionData(const int& data_size, std::shared_ptr<TensorData<int, DeviceT, 1>>& selection_ptr, DeviceT& device) const
+  {
+    Eigen::Tensor<int, 1> selection_values(data_size);
+    auto zeroOrOne = [](const int& v) {
+      std::vector<int> elements = { 0, 1 };
+      std::random_device seed;
+      std::mt19937 engine(seed());
+      std::uniform_int_distribution<int> choose(0, elements.size() - 1);
+      return elements.at(choose(engine));
+    };
+    selection_values = selection_values.unaryExpr(zeroOrOne);
+    makeTensorSelectionData_(selection_values, selection_ptr);
+    selection_ptr->syncHAndDData(device);
+  }
 
   template<typename TensorT, typename DeviceT>
 	static void runBenchmarkArray(const int& data_size, const int& array_size, const BenchmarkArray<TensorT, DeviceT>& benchmark_array, DeviceT& device) {

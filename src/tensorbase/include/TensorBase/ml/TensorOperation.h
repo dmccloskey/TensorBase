@@ -176,7 +176,6 @@ namespace TensorBase
 
 		// Update the values with the `values_new` and copy the original values into the `values_old`
 		values_old_ = values_new_->copy(device);
-		values_new_->syncHAndDData(device);
 		values_old_->syncHAndDData(device);
 		tensor_collection->tables_.at(table_name_)->updateSelectTensorDataValues(values_new_->getDataPointer(), values_old_->getDataPointer(), device);
 	}
@@ -231,7 +230,6 @@ namespace TensorBase
     select_function_(tensor_collection, device);
 		
 		// Update the values with the `values_new` and copy the original values into the `values_old`
-		values_new_->syncHAndDData(device);
 		tensor_collection->tables_.at(table_name_)->updateTensorDataValues(values_new_->getDataPointer(), values_old_, device);
 
 		// Reset the indices view
@@ -287,7 +285,6 @@ namespace TensorBase
     select_function_(tensor_collection, device);
 
     // Update the values with the `values_new`
-    values_new_->syncHAndDData(device);
     tensor_collection->tables_.at(table_name_)->updateTensorDataConstant(values_new_, values_old_, device);
 
     // Reset the table indices
