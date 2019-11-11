@@ -155,6 +155,9 @@ namespace TensorBase
     void setDataStatus(const bool& h_data_updated, const bool& d_data_updated) { data_->setDataStatus(h_data_updated, d_data_updated); } ///< Set the status of the host and device tensor data
     std::pair<bool, bool> getDataStatus() { return data_->getDataStatus(); };   ///< Get the status of the host and device tensor data
 
+    bool syncAxesAndIndicesDData(DeviceT& device); ///< Transfer all axes and indices data to the device (if not already)
+    bool syncAxesAndIndicesHData(DeviceT& device); ///< Transfer all axes and indices data to the host (if not already)
+
     template<typename T>
     void getDataPointer(std::shared_ptr<T[]>& data_copy); ///< TensorTableConcept data getter
 
@@ -1077,6 +1080,122 @@ namespace TensorBase
       statuses.emplace(axis_map.first, axis_map.second->getDataStatus());
     }
     return statuses;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline bool TensorTable<TensorT, DeviceT, TDim>::syncAxesAndIndicesDData(DeviceT& device)
+  {
+    bool synced = true;
+    // transfer axis data to the device from the host
+    for (auto& axis_map : axes_) {
+      std::pair<bool, bool> statuses = axis_map.second->getDataStatus();
+      if (!statuses.second) {
+        bool synced_tmp = axis_map.second->syncHAndDData(device);
+        if (!synced_tmp) synced = false;
+      }
+    }
+    // transfer indices data to the device from the host
+    for (auto& index_map : indices_) {
+      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
+      if (!statuses.second) {
+        bool synced_tmp = index_map.second->syncHAndDData(device);
+        if (!synced_tmp) synced = false;
+      }
+    }
+    for (auto& index_map : indices_view_) {
+      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
+      if (!statuses.second) {
+        bool synced_tmp = index_map.second->syncHAndDData(device);
+        if (!synced_tmp) synced = false;
+      }
+    }
+    for (auto& index_map : is_modified_) {
+      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
+      if (!statuses.second) {
+        bool synced_tmp = index_map.second->syncHAndDData(device);
+        if (!synced_tmp) synced = false;
+      }
+    }
+    for (auto& index_map : not_in_memory_) {
+      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
+      if (!statuses.second) {
+        bool synced_tmp = index_map.second->syncHAndDData(device);
+        if (!synced_tmp) synced = false;
+      }
+    }
+    for (auto& index_map : shard_id_) {
+      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
+      if (!statuses.second) {
+        bool synced_tmp = index_map.second->syncHAndDData(device);
+        if (!synced_tmp) synced = false;
+      }
+    }
+    for (auto& index_map : shard_indices_) {
+      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
+      if (!statuses.second) {
+        bool synced_tmp = index_map.second->syncHAndDData(device);
+        if (!synced_tmp) synced = false;
+      }
+    }
+    return synced;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline bool TensorTable<TensorT, DeviceT, TDim>::syncAxesAndIndicesHData(DeviceT& device)
+  {
+    bool synced = true;
+    // transfer axis data to the device from the host
+    for (auto& axis_map : axes_) {
+      std::pair<bool, bool> statuses = axis_map.second->getDataStatus();
+      if (!statuses.first) {
+        bool synced_tmp = axis_map.second->syncHAndDData(device);
+        if (!synced_tmp) synced = false;
+      }
+    }
+    // transfer indices data to the device from the host
+    for (auto& index_map : indices_) {
+      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
+      if (!statuses.first) {
+        bool synced_tmp = index_map.second->syncHAndDData(device);
+        if (!synced_tmp) synced = false;
+      }
+    }
+    for (auto& index_map : indices_view_) {
+      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
+      if (!statuses.first) {
+        bool synced_tmp = index_map.second->syncHAndDData(device);
+        if (!synced_tmp) synced = false;
+      }
+    }
+    for (auto& index_map : is_modified_) {
+      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
+      if (!statuses.first) {
+        bool synced_tmp = index_map.second->syncHAndDData(device);
+        if (!synced_tmp) synced = false;
+      }
+    }
+    for (auto& index_map : not_in_memory_) {
+      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
+      if (!statuses.first) {
+        bool synced_tmp = index_map.second->syncHAndDData(device);
+        if (!synced_tmp) synced = false;
+      }
+    }
+    for (auto& index_map : shard_id_) {
+      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
+      if (!statuses.first) {
+        bool synced_tmp = index_map.second->syncHAndDData(device);
+        if (!synced_tmp) synced = false;
+      }
+    }
+    for (auto& index_map : shard_indices_) {
+      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
+      if (!statuses.first) {
+        bool synced_tmp = index_map.second->syncHAndDData(device);
+        if (!synced_tmp) synced = false;
+      }
+    }
+    return synced;
   }
 
   template<typename TensorT, typename DeviceT, int TDim>

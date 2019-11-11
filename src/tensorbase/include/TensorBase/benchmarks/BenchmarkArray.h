@@ -3,8 +3,6 @@
 #ifndef TENSORBASE_BENCHMARKARRAY_H
 #define TENSORBASE_BENCHMARKARRAY_H
 
-#include <ctime> // time format
-#include <chrono> // current time
 #include <random> // random number generator
 #include <typeinfo> // typeid
 
@@ -96,7 +94,7 @@ namespace TensorBaseBenchmarks
 
 		@returns A string with the total time of the benchmark in milliseconds
 		*/
-		std::string sortBenchmark(const int& data_size, const int& array_size, DeviceT& device) const;
+		virtual std::string sortBenchmark(const int& data_size, const int& array_size, DeviceT& device) const = 0;
     /*
     @brief partition randomly generated arrays
 
@@ -106,7 +104,7 @@ namespace TensorBaseBenchmarks
 
     @returns A string with the total time of the benchmark in milliseconds
     */
-    std::string partitionBenchmark(const int& data_size, const int& array_size, DeviceT& device) const;
+    virtual std::string partitionBenchmark(const int& data_size, const int& array_size, DeviceT& device) const = 0;
     /*
     @brief partition randomly generated arrays
 
@@ -118,37 +116,8 @@ namespace TensorBaseBenchmarks
     */
     void makeRandomTensorSelectionData(const int& data_size, std::shared_ptr<TensorData<int, DeviceT, 1>>& selection_ptr, DeviceT& device) const;
 	protected:
-    virtual void sortBenchmark_(const int& data_size, const int& array_size, DeviceT& device) const = 0;
-    virtual void partitionBenchmark_(const int& data_size, const int& array_size, DeviceT& device) const = 0;
     virtual void makeTensorSelectionData_(const Eigen::Tensor<int, 1>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& selection_ptr) const = 0;
 	};
-  template<typename TensorT, typename DeviceT>
-	std::string BenchmarkArray<TensorT, DeviceT>::sortBenchmark(const int& data_size, const int& array_size, DeviceT& device) const
-	{
-		// Start the timer
-		auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-
-    sortBenchmark_(data_size, array_size, device);
-
-		// Stop the timer
-		auto stop = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-		std::string milli_time = std::to_string(stop - start);
-		return milli_time;
-	}
-  template<typename TensorT, typename DeviceT>
-	std::string BenchmarkArray<TensorT, DeviceT>::partitionBenchmark(const int& data_size, const int& array_size, DeviceT& device) const
-	{
-		// Start the timer
-		auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-
-    partitionBenchmark_(data_size, array_size, device);
-
-		// Stop the timer
-		auto stop = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-		std::string milli_time = std::to_string(stop - start);
-		return milli_time;
-	}
-
   template<typename TensorT, typename DeviceT>
   inline void BenchmarkArray<TensorT, DeviceT>::makeRandomTensorSelectionData(const int& data_size, std::shared_ptr<TensorData<int, DeviceT, 1>>& selection_ptr, DeviceT& device) const
   {
