@@ -308,7 +308,7 @@ BOOST_AUTO_TEST_CASE(reShardIndicesDefaultDevice)
   }
 }
 
-BOOST_AUTO_TEST_CASE(tensorDataWrappersDefaultDevice) // TODO: add test to TensorTableGpu_test.cu
+BOOST_AUTO_TEST_CASE(tensorDataWrappersDefaultDevice)
 {
   // Set up the tensor table
   TensorTableDefaultDevice<float, 3> tensorTable;
@@ -436,47 +436,54 @@ BOOST_AUTO_TEST_CASE(tensorDataWrappersDefaultDevice) // TODO: add test to Tenso
   tensorTable.setShardIdDataStatus(false, false);
   tensorTable.setShardIndicesDataStatus(false, false);
   tensorTable.setAxesDataStatus(false, false);
-  tensorTable.syncAxesAndIndicesDData(device);
 
   // Test to Device
+  tensorTable.syncAxesAndIndicesDData(device);
   statuses = tensorTable.getIndicesDataStatus();
   for (auto& index_status : statuses) {
-    BOOST_CHECK(!index_status.second.first);
+    BOOST_CHECK(index_status.second.first);
     BOOST_CHECK(index_status.second.second);
   }
   statuses = tensorTable.getIndicesViewDataStatus();
   for (auto& index_status : statuses) {
-    BOOST_CHECK(!index_status.second.first);
+    BOOST_CHECK(index_status.second.first);
     BOOST_CHECK(index_status.second.second);
   }
   statuses = tensorTable.getIsModifiedDataStatus();
   for (auto& index_status : statuses) {
-    BOOST_CHECK(!index_status.second.first);
+    BOOST_CHECK(index_status.second.first);
     BOOST_CHECK(index_status.second.second);
   }
   statuses = tensorTable.getNotInMemoryDataStatus();
   for (auto& index_status : statuses) {
-    BOOST_CHECK(!index_status.second.first);
+    BOOST_CHECK(index_status.second.first);
     BOOST_CHECK(index_status.second.second);
   }
   statuses = tensorTable.getShardIdDataStatus();
   for (auto& index_status : statuses) {
-    BOOST_CHECK(!index_status.second.first);
+    BOOST_CHECK(index_status.second.first);
     BOOST_CHECK(index_status.second.second);
   }
   statuses = tensorTable.getShardIndicesDataStatus();
   for (auto& index_status : statuses) {
-    BOOST_CHECK(!index_status.second.first);
+    BOOST_CHECK(index_status.second.first);
     BOOST_CHECK(index_status.second.second);
   }
   statuses = tensorTable.getAxesDataStatus();
   for (auto& axis_status : statuses) {
-    BOOST_CHECK(!axis_status.second.first);
+    BOOST_CHECK(axis_status.second.first);
     BOOST_CHECK(axis_status.second.second);
   }
 
   // Test to host
-  tensorTable.syncAxesAndIndicesDData(device);
+  tensorTable.setIndicesDataStatus(false, false);
+  tensorTable.setIndicesViewDataStatus(false, false);
+  tensorTable.setIsModifiedDataStatus(false, false);
+  tensorTable.setNotInMemoryDataStatus(false, false);
+  tensorTable.setShardIdDataStatus(false, false);
+  tensorTable.setShardIndicesDataStatus(false, false);
+  tensorTable.setAxesDataStatus(false, false);
+  tensorTable.syncAxesAndIndicesHData(device);
   statuses = tensorTable.getIndicesDataStatus();
   for (auto& index_status : statuses) {
     BOOST_CHECK(index_status.second.first);

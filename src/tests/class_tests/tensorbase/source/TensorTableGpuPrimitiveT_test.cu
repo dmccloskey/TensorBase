@@ -275,6 +275,229 @@ void test_reShardIndicesGpu()
   }
 }
 
+void test_tensorDataWrappersGpu()
+{
+  // Set up the tensor table
+  TensorTableGpuPrimitiveT<float, 3> tensorTable;
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels1 = 2, nlabels2 = 3, nlabels3 = 5;
+  Eigen::Tensor<int, 2> labels1(1, nlabels1), labels2(1, nlabels2), labels3(1, nlabels3);
+  labels1.setConstant(1);
+  labels2.setConstant(2);
+  labels3.setConstant(3);
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1", dimensions1, labels1)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("2", dimensions2, labels2)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("3", dimensions3, labels3)));
+  tensorTable.setAxes();
+
+  // Set up the device
+  cudaStream_t stream;
+  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  Eigen::GpuStreamDevice stream_device(&stream, 0);
+  Eigen::GpuDevice device(&stream_device);
+
+  // Test indices wrappers
+  std::map<std::string, std::pair<bool, bool>> statuses;
+  tensorTable.setIndicesDataStatus(false, false);
+  statuses = tensorTable.getIndicesDataStatus();
+  for (auto& index_status : statuses) {
+    assert(!index_status.second.first);
+    assert(!index_status.second.second);
+  }
+  tensorTable.setIndicesDataStatus(true, false);
+  tensorTable.syncIndicesHAndDData(device);
+  statuses = tensorTable.getIndicesDataStatus();
+  for (auto& index_status : statuses) {
+    assert(!index_status.second.first);
+    assert(index_status.second.second);
+  }
+
+  // Test indices view wrappers
+  tensorTable.setIndicesViewDataStatus(false, false);
+  statuses = tensorTable.getIndicesViewDataStatus();
+  for (auto& index_status : statuses) {
+    assert(!index_status.second.first);
+    assert(!index_status.second.second);
+  }
+  tensorTable.setIndicesViewDataStatus(true, false);
+  tensorTable.syncIndicesViewHAndDData(device);
+  statuses = tensorTable.getIndicesViewDataStatus();
+  for (auto& index_status : statuses) {
+    assert(!index_status.second.first);
+    assert(index_status.second.second);
+  }
+
+  // Test in memory wrappers
+  tensorTable.setIsModifiedDataStatus(false, false);
+  statuses = tensorTable.getIsModifiedDataStatus();
+  for (auto& index_status : statuses) {
+    assert(!index_status.second.first);
+    assert(!index_status.second.second);
+  }
+  tensorTable.setIsModifiedDataStatus(true, false);
+  tensorTable.syncIsModifiedHAndDData(device);
+  statuses = tensorTable.getIsModifiedDataStatus();
+  for (auto& index_status : statuses) {
+    assert(!index_status.second.first);
+    assert(index_status.second.second);
+  }
+
+  // Test indices view wrappers
+  tensorTable.setNotInMemoryDataStatus(false, false);
+  statuses = tensorTable.getNotInMemoryDataStatus();
+  for (auto& index_status : statuses) {
+    assert(!index_status.second.first);
+    assert(!index_status.second.second);
+  }
+  tensorTable.setNotInMemoryDataStatus(true, false);
+  tensorTable.syncNotInMemoryHAndDData(device);
+  statuses = tensorTable.getNotInMemoryDataStatus();
+  for (auto& index_status : statuses) {
+    assert(!index_status.second.first);
+    assert(index_status.second.second);
+  }
+
+  // Test indices view wrappers
+  tensorTable.setShardIdDataStatus(false, false);
+  statuses = tensorTable.getShardIdDataStatus();
+  for (auto& index_status : statuses) {
+    assert(!index_status.second.first);
+    assert(!index_status.second.second);
+  }
+  tensorTable.setShardIdDataStatus(true, false);
+  tensorTable.syncShardIdHAndDData(device);
+  statuses = tensorTable.getShardIdDataStatus();
+  for (auto& index_status : statuses) {
+    assert(!index_status.second.first);
+    assert(index_status.second.second);
+  }
+
+  // Test indices view wrappers
+  tensorTable.setShardIndicesDataStatus(false, false);
+  statuses = tensorTable.getShardIndicesDataStatus();
+  for (auto& index_status : statuses) {
+    assert(!index_status.second.first);
+    assert(!index_status.second.second);
+  }
+  tensorTable.setShardIndicesDataStatus(true, false);
+  tensorTable.syncShardIndicesHAndDData(device);
+  statuses = tensorTable.getShardIndicesDataStatus();
+  for (auto& index_status : statuses) {
+    assert(!index_status.second.first);
+    assert(index_status.second.second);
+  }
+
+  // Test axes wrappers
+  tensorTable.setAxesDataStatus(false, false);
+  statuses = tensorTable.getAxesDataStatus();
+  for (auto& axis_status : statuses) {
+    assert(!axis_status.second.first);
+    assert(!axis_status.second.second);
+  }
+  tensorTable.setAxesDataStatus(true, false);
+  tensorTable.syncAxesHAndDData(device);
+  statuses = tensorTable.getAxesDataStatus();
+  for (auto& axis_status : statuses) {
+    assert(!axis_status.second.first);
+    assert(axis_status.second.second);
+  }
+
+  // Test bulk host/device transfers
+  tensorTable.setIndicesDataStatus(true, false);
+  tensorTable.setIndicesViewDataStatus(true, false);
+  tensorTable.setIsModifiedDataStatus(true, false);
+  tensorTable.setNotInMemoryDataStatus(true, false);
+  tensorTable.setShardIdDataStatus(true, false);
+  tensorTable.setShardIndicesDataStatus(true, false);
+  tensorTable.setAxesDataStatus(true, false);
+
+  // Test to Device
+  tensorTable.syncAxesAndIndicesDData(device);
+  statuses = tensorTable.getIndicesDataStatus();
+  for (auto& index_status : statuses) {
+    assert(!index_status.second.first);
+    assert(index_status.second.second);
+  }
+  statuses = tensorTable.getIndicesViewDataStatus();
+  for (auto& index_status : statuses) {
+    assert(!index_status.second.first);
+    assert(index_status.second.second);
+  }
+  statuses = tensorTable.getIsModifiedDataStatus();
+  for (auto& index_status : statuses) {
+    assert(!index_status.second.first);
+    assert(index_status.second.second);
+  }
+  statuses = tensorTable.getNotInMemoryDataStatus();
+  for (auto& index_status : statuses) {
+    assert(!index_status.second.first);
+    assert(index_status.second.second);
+  }
+  statuses = tensorTable.getShardIdDataStatus();
+  for (auto& index_status : statuses) {
+    assert(!index_status.second.first);
+    assert(index_status.second.second);
+  }
+  statuses = tensorTable.getShardIndicesDataStatus();
+  for (auto& index_status : statuses) {
+    assert(!index_status.second.first);
+    assert(index_status.second.second);
+  }
+  statuses = tensorTable.getAxesDataStatus();
+  for (auto& axis_status : statuses) {
+    assert(!axis_status.second.first);
+    assert(axis_status.second.second);
+  }
+
+  // Test to host
+  tensorTable.setIndicesDataStatus(false, true);
+  tensorTable.setIndicesViewDataStatus(false, true);
+  tensorTable.setIsModifiedDataStatus(false, true);
+  tensorTable.setNotInMemoryDataStatus(false, true);
+  tensorTable.setShardIdDataStatus(false, true);
+  tensorTable.setShardIndicesDataStatus(false, true);
+  tensorTable.setAxesDataStatus(false, true);
+  tensorTable.syncAxesAndIndicesHData(device);
+  statuses = tensorTable.getIndicesDataStatus();
+  for (auto& index_status : statuses) {
+    assert(index_status.second.first);
+    assert(!index_status.second.second);
+  }
+  statuses = tensorTable.getIndicesViewDataStatus();
+  for (auto& index_status : statuses) {
+    assert(index_status.second.first);
+    assert(!index_status.second.second);
+  }
+  statuses = tensorTable.getIsModifiedDataStatus();
+  for (auto& index_status : statuses) {
+    assert(index_status.second.first);
+    assert(!index_status.second.second);
+  }
+  statuses = tensorTable.getNotInMemoryDataStatus();
+  for (auto& index_status : statuses) {
+    assert(index_status.second.first);
+    assert(!index_status.second.second);
+  }
+  statuses = tensorTable.getShardIdDataStatus();
+  for (auto& index_status : statuses) {
+    assert(index_status.second.first);
+    assert(!index_status.second.second);
+  }
+  statuses = tensorTable.getShardIndicesDataStatus();
+  for (auto& index_status : statuses) {
+    assert(index_status.second.first);
+    assert(!index_status.second.second);
+  }
+  statuses = tensorTable.getAxesDataStatus();
+  for (auto& axis_status : statuses) {
+    assert(axis_status.second.first);
+    assert(!axis_status.second.second);
+  }
+}
+
 void test_zeroIndicesViewAndResetIndicesViewGpu()
 {
   // setup the table
@@ -4335,6 +4558,7 @@ int main(int argc, char** argv)
   test_constructorNameAndAxesGpu();
   test_gettersAndSettersGpu();
   test_reShardIndicesGpu();
+  test_tensorDataWrappersGpu();
   test_zeroIndicesViewAndResetIndicesViewGpu();
   test_selectIndicesView1Gpu();
   test_selectIndicesView2Gpu();

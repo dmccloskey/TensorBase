@@ -223,8 +223,7 @@ namespace TensorBase
     void sortIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT& device);
     template<typename LabelsT>
     void sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device);
-    void sortIndicesView_(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices_view_copy, const sortOrder::order& order_by, DeviceT& device)
-
+    void sortIndicesView_(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices_view_copy, const sortOrder::order& order_by, DeviceT& device);
 
     virtual int getFirstIndexFromIndicesView(const std::string& axis_name, DeviceT& device) = 0; ///< Helper method to get the first index
 
