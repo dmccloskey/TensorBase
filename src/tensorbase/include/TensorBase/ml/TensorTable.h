@@ -221,6 +221,10 @@ namespace TensorBase
     */
     template<typename LabelsT>
     void sortIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT& device);
+    template<typename LabelsT>
+    void sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device);
+    void sortIndicesView_(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices_view_copy, const sortOrder::order& order_by, DeviceT& device)
+
 
     virtual int getFirstIndexFromIndicesView(const std::string& axis_name, DeviceT& device) = 0; ///< Helper method to get the first index
 
@@ -1298,6 +1302,28 @@ namespace TensorBase
     selectIndicesView(axis_name, dimension_index, select_labels, device);
 
     // sort the indices view
+    sortIndicesView_(axis_name, indices_view_copy, order_by, device);
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  template<typename LabelsT>
+  inline void TensorTable<TensorT, DeviceT, TDim>::sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device)
+  {
+    // create a copy of the indices view
+    std::shared_ptr<TensorData<int, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copy(device);
+    assert(indices_view_copy->syncHAndDData(device));
+
+    // select the `labels` indices from the axis labels and store in the current indices view
+    selectIndicesView(axis_name, select_labels, device);
+
+    // sort the indices view
+    sortIndicesView_(axis_name, indices_view_copy, order_by, device);
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::sortIndicesView_(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices_view_copy, const sortOrder::order& order_by, DeviceT& device)
+  {
+    // sort the indices view
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_values(indices_view_.at(axis_name)->getDataPointer().get(), indices_view_.at(axis_name)->getDimensions());
     auto indices_view_selected = (indices_view_values != indices_view_values.constant(0)).select(indices_view_values, indices_view_values.constant(MAX_INT));
     indices_view_values.device(device) = indices_view_selected;
@@ -1322,7 +1348,7 @@ namespace TensorBase
       // Slice out the tensor that will be used for sorting
       std::shared_ptr<TensorData<TensorT, DeviceT, 1>> tensor_sort;
       sliceTensorDataForSort(tensor_sort, axis_name, label_index, axis_to_name.first, device);
-      
+
       // Sort the axis index view
       sortTensorDataSlice(tensor_sort, axis_to_name.first, order_by, device);
     }

@@ -1082,7 +1082,7 @@ void test_sliceTensorForSortGpu()
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
 
-void test_sortIndicesViewDataGpu()
+void test_sortIndicesViewData1Gpu()
 {
   // setup the table
   TensorTableGpuPrimitiveT<float, 3> tensorTable;
@@ -1148,6 +1148,83 @@ void test_sortIndicesViewDataGpu()
   // test sort DESC
   tensorTable.setIndicesViewDataStatus(false, true);
   tensorTable.sortIndicesView("1", 0, select_labels_ptr, sortOrder::DESC, device);
+  tensorTable.syncIndicesViewHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  for (int i = 0; i < nlabels; ++i) {
+    assert(tensorTable.getIndicesView().at("1")->getData()(i) == i + 1);
+    assert(tensorTable.getIndicesView().at("2")->getData()(i) == nlabels - i);
+    assert(tensorTable.getIndicesView().at("3")->getData()(i) == nlabels - i);
+  }
+
+  assert(cudaStreamDestroy(stream) == cudaSuccess);
+}
+
+void test_sortIndicesViewData2Gpu()
+{
+  // setup the table
+  TensorTableGpuPrimitiveT<float, 3> tensorTable;
+
+  // Initialize the device
+  cudaStream_t stream;
+  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  Eigen::GpuStreamDevice stream_device(&stream, 0);
+  Eigen::GpuDevice device(&stream_device);
+
+  // setup the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels = 3;
+  Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels), labels3(1, nlabels);
+  labels1.setValues({ {0, 1, 2} });
+  labels2.setValues({ {0, 1, 2} });
+  labels3.setValues({ {0, 1, 2} });
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1", dimensions1, labels1)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("2", dimensions2, labels2)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("3", dimensions3, labels3)));
+  tensorTable.setAxes();
+
+  // setup the tensor data
+  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  int iter = 0;
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        tensor_values(i, j, k) = float(iter);
+        ++iter;
+      }
+    }
+  }
+  tensorTable.setData(tensor_values);
+
+  // sync the tensorTable
+  tensorTable.syncIndicesHAndDData(device);
+  tensorTable.syncIndicesViewHAndDData(device);
+  tensorTable.syncAxesHAndDData(device);
+  tensorTable.syncHAndDData(device);
+
+  // set up the selection labels
+  Eigen::Tensor<int, 2> select_labels_values(1,1);
+  select_labels_values(0,0) = 1;
+  TensorDataGpuPrimitiveT<int, 2> select_labels(Eigen::array<Eigen::Index, 2>({ 1,1 }));
+  select_labels.setData(select_labels_values);
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>> select_labels_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 2>>(select_labels);
+  select_labels_ptr->syncHAndDData(device);
+
+  // test sort ASC
+  tensorTable.sortIndicesView("1", select_labels_ptr, sortOrder::ASC, device);
+  tensorTable.syncIndicesViewHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  for (int i = 0; i < nlabels; ++i) {
+    assert(tensorTable.getIndicesView().at("1")->getData()(i) == i + 1);
+    assert(tensorTable.getIndicesView().at("2")->getData()(i) == i + 1);
+    assert(tensorTable.getIndicesView().at("3")->getData()(i) == i + 1);
+  }
+
+  // test sort DESC
+  tensorTable.setIndicesViewDataStatus(false, true);
+  tensorTable.sortIndicesView("1", select_labels_ptr, sortOrder::DESC, device);
   tensorTable.syncIndicesViewHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < nlabels; ++i) {
@@ -4267,7 +4344,8 @@ int main(int argc, char** argv)
   test_applyIndicesSelectToIndicesViewGpu();
   test_whereIndicesViewDataGpu();
   test_sliceTensorForSortGpu();
-  test_sortIndicesViewDataGpu();
+  test_sortIndicesViewData1Gpu();
+  test_sortIndicesViewData2Gpu();
   test_makeSelectIndicesFromIndicesViewGpu();
   test_getSelectTensorDataFromIndicesViewGpu();
   test_selectTensorDataGpuPrimitiveT();

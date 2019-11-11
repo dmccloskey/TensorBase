@@ -77,6 +77,7 @@ namespace TensorBase
         // TODO: check for select_clause.axis_name == ""
 				if (select_clause.dimension_name == "" && select_clause.axis_labels != nullptr) { 
 					// Select option 2
+          if (!select_clause.axis_labels->getDataStatus().second) select_clause.axis_labels->syncHAndDData(device);
 					tensor_collection->tables_.at(select_clause.table_name)->selectIndicesView(
 						select_clause.axis_name, select_clause.axis_labels, device);
 				}				
@@ -85,6 +86,7 @@ namespace TensorBase
 					for (int d = 0; d < axis.second->getDimensions().size(); ++d) {
 						if (axis.second->getDimensions()(d) == select_clause.dimension_name) {
 							// Select option 1
+              if (!select_clause.labels->getDataStatus().second) select_clause.labels->syncHAndDData(device);
 							tensor_collection->tables_.at(select_clause.table_name)->selectIndicesView(
 								select_clause.axis_name, d, select_clause.labels, device);
 						}
@@ -103,6 +105,8 @@ namespace TensorBase
         for (int d = 0; d < axis.second->getDimensions().size(); ++d) {
           if (axis.second->getDimensions()(d) == where_clause.dimension_name) {
             // select axis indices based on the where clause critiera
+            if (!select_clause.values->getDataStatus().second) select_clause.values->syncHAndDData(device);
+            if (!select_clause.labels->getDataStatus().second) select_clause.labels->syncHAndDData(device);
             tensor_collection->tables_.at(where_clause.table_name)->whereIndicesView(
               where_clause.axis_name, d, where_clause.labels, 
               where_clause.values, where_clause.comparitor, where_clause.modifier, 
@@ -118,12 +122,21 @@ namespace TensorBase
     // iterate through each table axis
     for (auto& axis : tensor_collection->tables_.at(sort_clause.table_name)->getAxes()) {
       if (axis.first == sort_clause.axis_name) {
-        // iterate through each axis dimensions
-        for (int d = 0; d < axis.second->getDimensions().size(); ++d) {
-          if (axis.second->getDimensions()(d) == sort_clause.dimension_name) {
-            // order the indices view
-            tensor_collection->tables_.at(sort_clause.table_name)->sortIndicesView(
-              sort_clause.axis_name, d, sort_clause.labels, sort_clause.order_by, device);
+        if (select_clause.dimension_name == "" && select_clause.axis_labels != nullptr) {
+          // Select option 2
+          if (!select_clause.axis_labels->getDataStatus().second) select_clause.axis_labels->syncHAndDData(device);
+          tensor_collection->tables_.at(select_clause.table_name)->sortIndicesView(
+            select_clause.axis_name, select_clause.axis_labels, device);
+        }
+        else {
+          // iterate through each axis dimensions
+          for (int d = 0; d < axis.second->getDimensions().size(); ++d) {
+            if (axis.second->getDimensions()(d) == sort_clause.dimension_name) {
+              // order the indices view
+              if (!select_clause.labels->getDataStatus().second) select_clause.labels->syncHAndDData(device);
+              tensor_collection->tables_.at(sort_clause.table_name)->sortIndicesView(
+                sort_clause.axis_name, d, sort_clause.labels, sort_clause.order_by, device);
+            }
           }
         }
       }
