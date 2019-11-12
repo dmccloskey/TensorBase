@@ -4369,7 +4369,7 @@ int main(int argc, char** argv)
 	test_updateTensorDataValuesGpu();
   test_makeAppendIndicesGpu();
   test_appendToIndicesGpu(); // Failing to launch Gpu kernal???
-  test_appendToAxisGpu();
+  test_appendToAxisGpu(); // Failing to launch Gpu kernal???
   test_makeIndicesViewSelectFromIndicesGpu();
   test_deleteFromIndicesGpu();
   test_makeSelectIndicesFromIndicesGpu();
