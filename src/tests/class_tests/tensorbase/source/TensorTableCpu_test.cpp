@@ -2076,7 +2076,8 @@ BOOST_AUTO_TEST_CASE(makeAppendIndicesCpu)
   labels3.setValues({ {0, 1, 2} });
   auto axis_1_ptr = std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1));
   auto axis_2_ptr = std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2));
-  auto axis_3_ptr = std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3));
+  auto axis_3_ptr = std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", 1, 0));
+  axis_3_ptr->setDimensions(dimensions3);
   tensorTable.addTensorAxis(axis_1_ptr);
   tensorTable.addTensorAxis(axis_2_ptr);
   tensorTable.addTensorAxis(axis_3_ptr);
@@ -2087,6 +2088,13 @@ BOOST_AUTO_TEST_CASE(makeAppendIndicesCpu)
   tensorTable.makeAppendIndices("1", nlabels, indices_ptr, device);
   for (int i = 0; i < nlabels; ++i) {
     BOOST_CHECK_EQUAL(indices_ptr->getData()(i), nlabels + i + 1);
+  }
+
+  // test the making the append indices
+  indices_ptr.reset();
+  tensorTable.makeAppendIndices("3", nlabels, indices_ptr, device);
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_EQUAL(indices_ptr->getData()(i), i + 1);
   }
 }
 
