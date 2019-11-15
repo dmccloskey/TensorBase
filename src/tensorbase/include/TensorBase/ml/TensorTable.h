@@ -2017,22 +2017,22 @@ namespace TensorBase
     new_dimensions.at(0) += indices->getDimensions().at(0);
     indices_.at(axis_name)->setDimensions(new_dimensions); 
     indices_.at(axis_name)->setData();
-    indices_.at(axis_name)->syncHAndDData(device);
+    indices_.at(axis_name)->setDataStatus(false, true);
     indices_view_.at(axis_name)->setDimensions(new_dimensions); 
     indices_view_.at(axis_name)->setData();
-    indices_view_.at(axis_name)->syncHAndDData(device);
+    indices_view_.at(axis_name)->setDataStatus(false, true);
     is_modified_.at(axis_name)->setDimensions(new_dimensions); 
     is_modified_.at(axis_name)->setData();
-    is_modified_.at(axis_name)->syncHAndDData(device);
+    is_modified_.at(axis_name)->setDataStatus(false, true);
     not_in_memory_.at(axis_name)->setDimensions(new_dimensions); 
     not_in_memory_.at(axis_name)->setData();
-    not_in_memory_.at(axis_name)->syncHAndDData(device);
+    not_in_memory_.at(axis_name)->setDataStatus(false, true);
     shard_id_.at(axis_name)->setDimensions(new_dimensions); 
     shard_id_.at(axis_name)->setData();
-    shard_id_.at(axis_name)->syncHAndDData(device);
+    shard_id_.at(axis_name)->setDataStatus(false, true);
     shard_indices_.at(axis_name)->setDimensions(new_dimensions);
     shard_indices_.at(axis_name)->setData();
-    shard_indices_.at(axis_name)->syncHAndDData(device);
+    shard_indices_.at(axis_name)->setDataStatus(false, true);
 
     // concatenate the new indices
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_new_values(indices->getDataPointer().get(), (int)indices->getTensorSize());
@@ -2051,7 +2051,6 @@ namespace TensorBase
     Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_id_values(shard_id_.at(axis_name)->getDataPointer().get(), new_dimensions.at(0));
     Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_indices_values(shard_indices_.at(axis_name)->getDataPointer().get(), new_dimensions.at(0));
 
-    // OPTION 1: padding (Seems to fail periodicially on the GPU for some reason even though it is much more efficient)
     const Eigen::array<std::pair<int, int>, 1> padding_1({ std::make_pair(0, indices->getDimensions().at(0)) });
     const Eigen::array<std::pair<int, int>, 1> padding_2({ std::make_pair((int)indices_copy->getTensorSize(), 0) });
     indices_values.device(device) = indices_copy_values.pad(padding_1) + indices_new_values.pad(padding_2);
@@ -2061,25 +2060,6 @@ namespace TensorBase
     // TODO: need to add in logic to check if the shard size has been exceeded, and if so, start a new shard
     shard_id_values.device(device) = shard_id_copy_values.pad(padding_1) + indices_new_values.constant(1).pad(padding_2);
     shard_indices_values.device(device) = shard_indices_copy_values.pad(padding_1) + indices_new_values.constant(0).pad(padding_2);
-
-    //// OPTION 2: multiple slicing (less efficient that options 1)
-    //const Eigen::array<Eigen::Index, 1> offset_1 = { 0 };
-    //const Eigen::array<Eigen::Index, 1> extent_1 = { (int)indices_copy->getTensorSize() };
-    //const Eigen::array<Eigen::Index, 1> offset_2 = { (int)indices_copy->getTensorSize() };
-    //const Eigen::array<Eigen::Index, 1> extent_2 = { (int)indices->getTensorSize() };
-    //indices_values.slice(offset_1, extent_1).device(device) = indices_copy_values;
-    //indices_values.slice(offset_2, extent_2).device(device) = indices_new_values;
-    //indices_view_values.slice(offset_1, extent_1).device(device) = indices_view_copy_values;
-    //indices_view_values.slice(offset_2, extent_2).device(device) = indices_new_values;
-    //is_modified_values.slice(offset_1, extent_1).device(device) = is_modified_copy_values;
-    //is_modified_values.slice(offset_2, extent_2).device(device) = indices_new_values.constant(1);
-    //in_memory_values.slice(offset_1, extent_1).device(device) = in_memory_copy_values;
-    //in_memory_values.slice(offset_2, extent_2).device(device) = indices_new_values.constant(0);
-    //// TODO: need to add in logic to check if the shard size has been exceeded, and if so, start a new shard
-    //shard_id_values.slice(offset_1, extent_1).device(device) = shard_id_copy_values;
-    //shard_id_values.slice(offset_2, extent_2).device(device) = indices_new_values.constant(1);
-    //shard_indices_values.slice(offset_1, extent_1).device(device) = shard_indices_copy_values;
-    //shard_indices_values.slice(offset_2, extent_2).device(device) = indices_new_values.constant(0);
     reShardIndices(device);
 
     // update the dimensions
