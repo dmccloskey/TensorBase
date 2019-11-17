@@ -84,19 +84,18 @@ namespace TensorBase
     }
   };
 
-  enum PinnedFlags {
-    cudaHostAllocDefault,
-    cudaHostAllocPortable,
-    cudaHostAllocMappe,
-    cudaHostAllocWriteCombined
-  };
-
   /**
     @brief Tensor data class specialization for Eigen::GpuDevice (single GPU)
   */
   template<typename TensorT, int TDim>
   class TensorDataGpu : public TensorData<TensorT, Eigen::GpuDevice, TDim> {
   public:
+    enum struct PinnedFlags {
+      HostAllocDefault = 0,
+      HostAllocPortable,
+      HostAllocMapped,
+      HostAllocWriteCombined
+    };
     using TensorData<TensorT, Eigen::GpuDevice, TDim>::TensorData;
     /*
     @brief Constructor with arguments for using pinned memory with various CUDA flags
@@ -110,7 +109,8 @@ namespace TensorBase
     @param[in] pinned_memory Boolean value indicating whether to use pinned or pageable memory
     @param[in] pinned_flags String of the CUDA flag to use when creating pinned memory
     */
-    TensorDataGpu(const bool& pinned_memory = true, const PinnedFlags& pinned_flag = PinnedFlags::cudaHostAllocDefault): TensorData(),  { };
+    TensorDataGpu(const bool& pinned_memory = true, const PinnedFlags& pinned_flag = PinnedFlags::HostAllocDefault): 
+      TensorData(), pinned_memory_(pinned_memory), pinned_flag_(pinned_flag) {};
     ~TensorDataGpu() = default;
     // Interface overrides
     void setData(const Eigen::Tensor<TensorT, TDim>& data) override; ///< data setter
@@ -121,7 +121,7 @@ namespace TensorBase
     std::shared_ptr<TensorT[]> getDataPointer() override;
   private:
     bool pinned_memory_ = true;
-    PinnedFlags pinned_flag_ = PinnedFlags::cudaHostAllocDefault;
+    PinnedFlags pinned_flag_ = PinnedFlags::HostAllocDefault;
     friend class cereal::access;
     template<class Archive>
     void serialize(Archive& archive) {
@@ -169,8 +169,7 @@ namespace TensorBase
     TensorT* h_data;
     if (this->pinned_memory_) {
       // allocate cuda and pinned host memory
-      switch (this->pinned_flag_) {
-      case PinnedFlags::cudaHostAllocDefault:
+      if (this->pinned_flag_ == PinnedFlags::HostAllocDefault) {
         // allocate the host and device memory
         assert(cudaMalloc((void**)(&d_data), this->getTensorBytes()) == cudaSuccess);
         assert(cudaHostAlloc((void**)(&h_data), this->getTensorBytes(), cudaHostAllocDefault) == cudaSuccess);
@@ -179,8 +178,8 @@ namespace TensorBase
         auto d_deleter = [&](TensorT* ptr) { cudaFree(ptr); };
         this->h_data_.reset(h_data, h_deleter);
         this->d_data_.reset(d_data, d_deleter);
-        break;
-      case PinnedFlags::cudaHostAllocPortable:
+      }
+      else if (this->pinned_flag_ == PinnedFlags::HostAllocPortable) {
         // allocate the host and device memory
         assert(cudaMalloc((void**)(&d_data), this->getTensorBytes()) == cudaSuccess);
         assert(cudaHostAlloc((void**)(&h_data), this->getTensorBytes(), cudaHostAllocPortable) == cudaSuccess);
@@ -189,17 +188,17 @@ namespace TensorBase
         auto d_deleter = [&](TensorT* ptr) { cudaFree(ptr); };
         this->h_data_.reset(h_data, h_deleter);
         this->d_data_.reset(d_data, d_deleter);
-        break;
-      case PinnedFlags::cudaHostAllocMapped:
+      }
+      else if (this->pinned_flag_ == PinnedFlags::HostAllocMapped) {
         // allocate the host and device memory
-        assert(cudaHostAlloc((void**)(&h_data), this->getTensorBytes(), cudaHostAllocMapped) == cudaSuccess); 
+        assert(cudaHostAlloc((void**)(&h_data), this->getTensorBytes(), cudaHostAllocMapped) == cudaSuccess);
         assert(cudaHostGetDevicePointer(&d_data, h_ndata, 0) == cudaSuccess);
         // define the deleters
         auto h_deleter = [&](TensorT* ptr) { cudaFreeHost(ptr); };
         this->h_data_.reset(h_data, h_deleter);
         this->d_data_.reset(d_data);
-        break;
-      case PinnedFlags::cudaHostAllocWriteCombined:
+      }
+      else if (this->pinned_flag_ == PinnedFlags::HostAllocWriteCombined) {
         // allocate the host and device memory
         assert(cudaMalloc((void**)(&d_data), this->getTensorBytes()) == cudaSuccess);
         assert(cudaHostAlloc((void**)(&h_data), this->getTensorBytes(), cudaHostAllocWriteCombined) == cudaSuccess);
@@ -208,7 +207,6 @@ namespace TensorBase
         auto d_deleter = [&](TensorT* ptr) { cudaFree(ptr); };
         this->h_data_.reset(h_data, h_deleter);
         this->d_data_.reset(d_data, d_deleter);
-        break;
       }
     }
     else {
