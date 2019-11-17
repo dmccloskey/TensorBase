@@ -84,6 +84,13 @@ namespace TensorBase
     }
   };
 
+  enum PinnedFlags {
+    cudaHostAllocDefault,
+    cudaHostAllocPortable,
+    cudaHostAllocMappe,
+    cudaHostAllocWriteCombined
+  };
+
   /**
     @brief Tensor data class specialization for Eigen::GpuDevice (single GPU)
   */
@@ -91,19 +98,36 @@ namespace TensorBase
   class TensorDataGpu : public TensorData<TensorT, Eigen::GpuDevice, TDim> {
   public:
     using TensorData<TensorT, Eigen::GpuDevice, TDim>::TensorData;
+    /*
+    @brief Constructor with arguments for using pinned memory with various CUDA flags
+
+    The flags parameter enables different options to be specified that affect the allocation, as follows.
+      cudaHostAllocDefault: This flag's value is defined to be 0 and causes cudaHostAlloc() to emulate cudaMallocHost().
+      cudaHostAllocPortable: The memory returned by this call will be considered as pinned memory by all CUDA contexts, not just the one that performed the allocation.
+      cudaHostAllocMapped: Maps the allocation into the CUDA address space. The device pointer to the memory may be obtained by calling cudaHostGetDevicePointer().
+      cudaHostAllocWriteCombined: Allocates the memory as write-combined (WC). WC memory can be transferred across the PCI Express bus more quickly on some system configurations, but cannot be read efficiently by most CPUs. WC memory is a good option for buffers that will be written by the CPU and read by the device via mapped pinned memory or host->device transfers.
+
+    @param[in] pinned_memory Boolean value indicating whether to use pinned or pageable memory
+    @param[in] pinned_flags String of the CUDA flag to use when creating pinned memory
+    */
+    TensorDataGpu(const bool& pinned_memory = true, const PinnedFlags& pinned_flag = PinnedFlags::cudaHostAllocDefault): TensorData(),  { };
     ~TensorDataGpu() = default;
     // Interface overrides
     void setData(const Eigen::Tensor<TensorT, TDim>& data) override; ///< data setter
     void setData() override;
+    void setMemory();
     bool syncHAndDData(Eigen::GpuDevice& device) override;
     std::shared_ptr<TensorT[]> getHDataPointer() override;
     std::shared_ptr<TensorT[]> getDataPointer() override;
   private:
-    	friend class cereal::access;
-    	template<class Archive>
-    	void serialize(Archive& archive) {
-    		archive(cereal::base_class<TensorData<TensorT, Eigen::GpuDevice, TDim>>(this));
-    	}
+    bool pinned_memory_ = true;
+    PinnedFlags pinned_flag_ = PinnedFlags::cudaHostAllocDefault;
+    friend class cereal::access;
+    template<class Archive>
+    void serialize(Archive& archive) {
+    	archive(cereal::base_class<TensorData<TensorT, Eigen::GpuDevice, TDim>>(this),
+        pinned_memory_, pinned_flag_);
+    }
   };
   template<typename TensorT, int TDim>
   void TensorDataGpu<TensorT, TDim>::setData(const Eigen::Tensor<TensorT, TDim>& data) {
@@ -137,7 +161,67 @@ namespace TensorBase
     this->d_data_.reset(d_data, d_deleter);
     this->h_data_updated_ = true;
     this->d_data_updated_ = false;
-  };
+  }
+  template<typename TensorT, int TDim>
+  inline void TensorDataGpu<TensorT, TDim>::setMemory()
+  {
+    TensorT* d_data;
+    TensorT* h_data;
+    if (this->pinned_memory_) {
+      // allocate cuda and pinned host memory
+      switch (this->pinned_flag_) {
+      case PinnedFlags::cudaHostAllocDefault:
+        // allocate the host and device memory
+        assert(cudaMalloc((void**)(&d_data), this->getTensorBytes()) == cudaSuccess);
+        assert(cudaHostAlloc((void**)(&h_data), this->getTensorBytes(), cudaHostAllocDefault) == cudaSuccess);
+        // define the deleters
+        auto h_deleter = [&](TensorT* ptr) { cudaFreeHost(ptr); };
+        auto d_deleter = [&](TensorT* ptr) { cudaFree(ptr); };
+        this->h_data_.reset(h_data, h_deleter);
+        this->d_data_.reset(d_data, d_deleter);
+        break;
+      case PinnedFlags::cudaHostAllocPortable:
+        // allocate the host and device memory
+        assert(cudaMalloc((void**)(&d_data), this->getTensorBytes()) == cudaSuccess);
+        assert(cudaHostAlloc((void**)(&h_data), this->getTensorBytes(), cudaHostAllocPortable) == cudaSuccess);
+        // define the deleters
+        auto h_deleter = [&](TensorT* ptr) { cudaFreeHost(ptr); };
+        auto d_deleter = [&](TensorT* ptr) { cudaFree(ptr); };
+        this->h_data_.reset(h_data, h_deleter);
+        this->d_data_.reset(d_data, d_deleter);
+        break;
+      case PinnedFlags::cudaHostAllocMapped:
+        // allocate the host and device memory
+        assert(cudaHostAlloc((void**)(&h_data), this->getTensorBytes(), cudaHostAllocMapped) == cudaSuccess); 
+        assert(cudaHostGetDevicePointer(&d_data, h_ndata, 0) == cudaSuccess);
+        // define the deleters
+        auto h_deleter = [&](TensorT* ptr) { cudaFreeHost(ptr); };
+        this->h_data_.reset(h_data, h_deleter);
+        this->d_data_.reset(d_data);
+        break;
+      case PinnedFlags::cudaHostAllocWriteCombined:
+        // allocate the host and device memory
+        assert(cudaMalloc((void**)(&d_data), this->getTensorBytes()) == cudaSuccess);
+        assert(cudaHostAlloc((void**)(&h_data), this->getTensorBytes(), cudaHostAllocWriteCombined) == cudaSuccess);
+        // define the deleters
+        auto h_deleter = [&](TensorT* ptr) { cudaFreeHost(ptr); };
+        auto d_deleter = [&](TensorT* ptr) { cudaFree(ptr); };
+        this->h_data_.reset(h_data, h_deleter);
+        this->d_data_.reset(d_data, d_deleter);
+        break;
+      }
+    }
+    else {
+      // allocate cuda and pageable host memory
+      assert(cudaMalloc((void**)(&d_data), this->getTensorBytes()) == cudaSuccess);
+      h_data = (TensorT*)malloc(this->getTensorBytes());
+      // define the deleters
+      auto h_deleter = [&](TensorT* ptr) { cudaFreeHost(ptr); };
+      auto d_deleter = [&](TensorT* ptr) { free(ptr); };
+      this->h_data_.reset(h_data, h_deleter);
+      this->d_data_.reset(d_data, d_deleter);
+    }
+  }
   template<typename TensorT, int TDim>
   bool TensorDataGpu<TensorT, TDim>::syncHAndDData(Eigen::GpuDevice& device) {
     if (this->h_data_updated_ && !this->d_data_updated_) {
