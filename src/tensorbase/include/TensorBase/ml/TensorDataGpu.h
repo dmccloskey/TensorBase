@@ -115,11 +115,11 @@ namespace TensorBase
     // Interface overrides
     void setData(const Eigen::Tensor<TensorT, TDim>& data) override; ///< data setter
     void setData() override;
-    void setMemory();
     bool syncHAndDData(Eigen::GpuDevice& device) override;
     std::shared_ptr<TensorT[]> getHDataPointer() override;
     std::shared_ptr<TensorT[]> getDataPointer() override;
   private:
+    void setMemory(); ///< allocate the host and gpu memory
     bool pinned_memory_ = true;
     PinnedFlags pinned_flag_ = PinnedFlags::HostAllocDefault;
     friend class cereal::access;
@@ -131,34 +131,18 @@ namespace TensorBase
   };
   template<typename TensorT, int TDim>
   void TensorDataGpu<TensorT, TDim>::setData(const Eigen::Tensor<TensorT, TDim>& data) {
-    // allocate cuda and pinned host memory
-    TensorT* d_data;
-    TensorT* h_data;
-    assert(cudaMalloc((void**)(&d_data), getTensorBytes()) == cudaSuccess);
-    assert(cudaHostAlloc((void**)(&h_data), getTensorBytes(), cudaHostAllocDefault) == cudaSuccess);
+    // allocate cuda and host memory
+    this->setMemory();
     // copy the tensor
-    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy(h_data, getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy(this->h_data_.get(), this->getDimensions());
     data_copy = data;
-    // define the deleters
-    auto h_deleter = [&](TensorT* ptr) { cudaFreeHost(ptr); };
-    auto d_deleter = [&](TensorT* ptr) { cudaFree(ptr); };
-    this->h_data_.reset(h_data, h_deleter);
-    this->d_data_.reset(d_data, d_deleter);
     this->h_data_updated_ = true;
     this->d_data_updated_ = false;
   };
   template<typename TensorT, int TDim>
   void TensorDataGpu<TensorT, TDim>::setData() {
-    // allocate cuda and pinned host memory
-    TensorT* d_data;
-    TensorT* h_data;
-    assert(cudaMalloc((void**)(&d_data), getTensorBytes()) == cudaSuccess);
-    assert(cudaHostAlloc((void**)(&h_data), getTensorBytes(), cudaHostAllocDefault) == cudaSuccess);
-    // define the deleters
-    auto h_deleter = [&](TensorT* ptr) { cudaFreeHost(ptr); };
-    auto d_deleter = [&](TensorT* ptr) { cudaFree(ptr); };
-    this->h_data_.reset(h_data, h_deleter);
-    this->d_data_.reset(d_data, d_deleter);
+    // allocate cuda and host memory
+    this->setMemory();
     this->h_data_updated_ = true;
     this->d_data_updated_ = false;
   }
@@ -192,7 +176,7 @@ namespace TensorBase
       else if (this->pinned_flag_ == PinnedFlags::HostAllocMapped) {
         // allocate the host and device memory
         assert(cudaHostAlloc((void**)(&h_data), this->getTensorBytes(), cudaHostAllocMapped) == cudaSuccess);
-        assert(cudaHostGetDevicePointer(&d_data, h_ndata, 0) == cudaSuccess);
+        assert(cudaHostGetDevicePointer(&d_data, h_data, 0) == cudaSuccess);
         // define the deleters
         auto h_deleter = [&](TensorT* ptr) { cudaFreeHost(ptr); };
         this->h_data_.reset(h_data, h_deleter);
