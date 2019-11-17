@@ -479,6 +479,48 @@ void test_syncHAndDGpuPrimitiveT()
   assert(tensordata.getData()(1, 2, 3) == 0.5);
 }
 
+void test_memoryModelsGpuPrimitiveT()
+{
+  // Make the dummy data
+  Eigen::Tensor<float, 3> data(2, 3, 4);
+  data.setConstant(1.0);
+
+  // Test pinned default
+  TensorDataGpuPrimitiveT<float, 3> tensordata_0(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }), 
+    true, TensorDataGpuPinnedFlags::HostAllocDefault);
+  tensordata_0.setData(data);
+  assert(tensordata_0.getData()(0, 0, 0) == 1.0);
+  assert(tensordata_0.getData()(1, 2, 3) == 1.0);
+
+  // Test pinned HostAllocPortable
+  TensorDataGpuPrimitiveT<float, 3> tensordata_1(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }), 
+    true, TensorDataGpuPinnedFlags::HostAllocPortable);
+  tensordata_1.setData(data);
+  assert(tensordata_1.getData()(0, 0, 0) == 1.0);
+  assert(tensordata_1.getData()(1, 2, 3) == 1.0);
+
+  // Test pinned HostAllocMapped
+  TensorDataGpuPrimitiveT<float, 3> tensordata_2(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }), 
+    true, TensorDataGpuPinnedFlags::HostAllocMapped);
+  tensordata_2.setData(data);
+  assert(tensordata_2.getData()(0, 0, 0) == 1.0);
+  assert(tensordata_2.getData()(1, 2, 3) == 1.0);
+
+  // Test pinned HostAllocWriteCombined
+  TensorDataGpuPrimitiveT<float, 3> tensordata_3(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }), 
+    true, TensorDataGpuPinnedFlags::HostAllocWriteCombined);
+  tensordata_3.setData(data);
+  assert(tensordata_3.getData()(0, 0, 0) == 1.0);
+  assert(tensordata_3.getData()(1, 2, 3) == 1.0);
+
+  // Test pageable
+  TensorDataGpuPrimitiveT<float, 3> tensordata_4(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }),
+    false, TensorDataGpuPinnedFlags::HostAllocDefault);
+  tensordata_4.setData(data);
+  assert(tensordata_4.getData()(0, 0, 0) == 1.0);
+  assert(tensordata_4.getData()(1, 2, 3) == 1.0);
+}
+
 void test_convertFromStringToTensorTGpuPrimitiveT()
 {
   Eigen::Tensor<std::string, 3> tensor_string(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
@@ -995,6 +1037,7 @@ int main(int argc, char** argv)
   test_destructorGpuPrimitiveT();
   test_gettersAndSettersGpuPrimitiveT();
   test_syncHAndDGpuPrimitiveT();
+  test_memoryModelsGpuPrimitiveT();
   test_assignmentGpuPrimitiveT();
   test_copyGpuPrimitiveT();
   test_selectGpuPrimitiveT();
