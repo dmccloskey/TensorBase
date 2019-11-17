@@ -84,39 +84,13 @@ namespace TensorBase
     }
   };
 
-  /// Flagges for pinned memory
-  enum struct TensorDataGpuPinnedFlags {
-    HostAllocDefault = 0,
-    HostAllocPortable,
-    HostAllocMapped,
-    HostAllocWriteCombined
-  };
-
   /**
     @brief Tensor data class specialization for Eigen::GpuDevice (single GPU)
   */
   template<typename TensorT, int TDim>
   class TensorDataGpu : public TensorData<TensorT, Eigen::GpuDevice, TDim> {
   public:
-    TensorDataGpu() : TensorData() { };
-    TensorDataGpu(const Eigen::array<Eigen::Index, TDim>& dimensions) : TensorData(dimensions) { };
-    TensorDataGpu(const TensorData& other) : TensorData(other) { };
-    /*
-    @brief Constructor with arguments for using pinned memory with various CUDA flags
-
-    The flags parameter enables different options to be specified that affect the allocation, as follows.
-      cudaHostAllocDefault: This flag's value is defined to be 0 and causes cudaHostAlloc() to emulate cudaMallocHost().
-      cudaHostAllocPortable: The memory returned by this call will be considered as pinned memory by all CUDA contexts, not just the one that performed the allocation.
-      cudaHostAllocMapped: Maps the allocation into the CUDA address space. The device pointer to the memory may be obtained by calling cudaHostGetDevicePointer().
-      cudaHostAllocWriteCombined: Allocates the memory as write-combined (WC). WC memory can be transferred across the PCI Express bus more quickly on some system configurations, but cannot be read efficiently by most CPUs. WC memory is a good option for buffers that will be written by the CPU and read by the device via mapped pinned memory or host->device transfers.
-
-    @param[in] pinned_memory Boolean value indicating whether to use pinned or pageable memory
-    @param[in] pinned_flags String of the CUDA flag to use when creating pinned memory
-    */
-    TensorDataGpu(const bool& pinned_memory, const TensorDataGpuPinnedFlags& pinned_flag): 
-      TensorData(), pinned_memory_(pinned_memory), pinned_flag_(pinned_flag) {};
-    TensorDataGpu(const Eigen::array<Eigen::Index, TDim>& dimensions, const bool& pinned_memory, const TensorDataGpuPinnedFlags& pinned_flag) :
-      TensorData(dimensions), pinned_memory_(pinned_memory), pinned_flag_(pinned_flag) {};
+    using TensorData<TensorT, Eigen::GpuDevice, TDim>::TensorData;
     ~TensorDataGpu() = default;
     // Interface overrides
     void setData(const Eigen::Tensor<TensorT, TDim>& data) override; ///< data setter
@@ -126,13 +100,10 @@ namespace TensorBase
     std::shared_ptr<TensorT[]> getDataPointer() override;
   private:
     void setMemory(); ///< allocate the host and gpu memory
-    bool pinned_memory_ = true;
-    TensorDataGpuPinnedFlags pinned_flag_ = TensorDataGpuPinnedFlags::HostAllocDefault;
     friend class cereal::access;
     template<class Archive>
     void serialize(Archive& archive) {
-    	archive(cereal::base_class<TensorData<TensorT, Eigen::GpuDevice, TDim>>(this),
-        pinned_memory_, pinned_flag_);
+    	archive(cereal::base_class<TensorData<TensorT, Eigen::GpuDevice, TDim>>(this));
     }
   };
   template<typename TensorT, int TDim>
@@ -163,41 +134,27 @@ namespace TensorBase
         // allocate the host and device memory
         assert(cudaMalloc((void**)(&d_data), this->getTensorBytes()) == cudaSuccess);
         assert(cudaHostAlloc((void**)(&h_data), this->getTensorBytes(), cudaHostAllocDefault) == cudaSuccess);
-        // define the deleters
-        auto h_deleter = [&](TensorT* ptr) { cudaFreeHost(ptr); };
-        auto d_deleter = [&](TensorT* ptr) { cudaFree(ptr); };
-        this->h_data_.reset(h_data, h_deleter);
-        this->d_data_.reset(d_data, d_deleter);
       }
       else if (this->pinned_flag_ == TensorDataGpuPinnedFlags::HostAllocPortable) {
         // allocate the host and device memory
         assert(cudaMalloc((void**)(&d_data), this->getTensorBytes()) == cudaSuccess);
         assert(cudaHostAlloc((void**)(&h_data), this->getTensorBytes(), cudaHostAllocPortable) == cudaSuccess);
-        // define the deleters
-        auto h_deleter = [&](TensorT* ptr) { cudaFreeHost(ptr); };
-        auto d_deleter = [&](TensorT* ptr) { cudaFree(ptr); };
-        this->h_data_.reset(h_data, h_deleter);
-        this->d_data_.reset(d_data, d_deleter);
       }
       else if (this->pinned_flag_ == TensorDataGpuPinnedFlags::HostAllocMapped) {
         // allocate the host and device memory
         assert(cudaHostAlloc((void**)(&h_data), this->getTensorBytes(), cudaHostAllocMapped) == cudaSuccess);
         assert(cudaHostGetDevicePointer(&d_data, h_data, 0) == cudaSuccess);
-        // define the deleters
-        auto h_deleter = [&](TensorT* ptr) { cudaFreeHost(ptr); };
-        this->h_data_.reset(h_data, h_deleter);
-        this->d_data_.reset(d_data);
       }
       else if (this->pinned_flag_ == TensorDataGpuPinnedFlags::HostAllocWriteCombined) {
         // allocate the host and device memory
         assert(cudaMalloc((void**)(&d_data), this->getTensorBytes()) == cudaSuccess);
         assert(cudaHostAlloc((void**)(&h_data), this->getTensorBytes(), cudaHostAllocWriteCombined) == cudaSuccess);
-        // define the deleters
-        auto h_deleter = [&](TensorT* ptr) { cudaFreeHost(ptr); };
-        auto d_deleter = [&](TensorT* ptr) { cudaFree(ptr); };
-        this->h_data_.reset(h_data, h_deleter);
-        this->d_data_.reset(d_data, d_deleter);
       }
+      // define the deleters
+      auto h_deleter = [&](TensorT* ptr) { cudaFreeHost(ptr); };
+      auto d_deleter = [&](TensorT* ptr) { cudaFree(ptr); };
+      this->h_data_.reset(h_data, h_deleter);
+      this->d_data_.reset(d_data, d_deleter);
     }
     else {
       // allocate cuda and pageable host memory
@@ -288,7 +245,7 @@ namespace TensorBase
       assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
       this->setDataStatus(false, true);
     }
-    TensorDataGpuPrimitiveT<TensorT, TDim> data_new(this->getDimensions());
+    TensorDataGpuPrimitiveT<TensorT, TDim> data_new(this->getDimensions(), this->getPinnedMemory(), this->getPinnedFlag());
     data_new.setData(this->getData());
     //data_new.setData();
     //// copy over the values
@@ -613,7 +570,7 @@ namespace TensorBase
       assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
       this->setDataStatus(false, true);
     }
-    TensorDataGpuClassT<ArrayT, TensorT, TDim> data_new(this->getDimensions());
+    TensorDataGpuClassT<ArrayT, TensorT, TDim> data_new(this->getDimensions(), this->getPinnedMemory(), this->getPinnedFlag());
     data_new.setData(this->getData());
     //data_new.setData();
     //// copy over the values

@@ -18,6 +18,13 @@
 
 namespace TensorBase
 {
+  /// Flags for pinned memory
+  enum struct TensorDataGpuPinnedFlags {
+    HostAllocDefault = 0,
+    HostAllocPortable,
+    HostAllocMapped,
+    HostAllocWriteCombined
+  };
 
   /**
     @brief Tensor data base class to handle the underlying memory and resource
@@ -36,8 +43,26 @@ namespace TensorBase
     TensorData(const Eigen::array<Eigen::Index, TDim>& dimensions) { 
       setDimensions(dimensions); 
       device_name_ = typeid(DeviceT).name(); };
-    TensorData(const TensorData& other)
-    {
+    /*
+    @brief Constructor with arguments for using pinned memory with various CUDA flags
+
+    The flags parameter enables different options to be specified that affect the allocation, as follows.
+      cudaHostAllocDefault: This flag's value is defined to be 0 and causes cudaHostAlloc() to emulate cudaMallocHost().
+      cudaHostAllocPortable: The memory returned by this call will be considered as pinned memory by all CUDA contexts, not just the one that performed the allocation.
+      cudaHostAllocMapped: Maps the allocation into the CUDA address space. The device pointer to the memory may be obtained by calling cudaHostGetDevicePointer().
+      cudaHostAllocWriteCombined: Allocates the memory as write-combined (WC). WC memory can be transferred across the PCI Express bus more quickly on some system configurations, but cannot be read efficiently by most CPUs. WC memory is a good option for buffers that will be written by the CPU and read by the device via mapped pinned memory or host->device transfers.
+
+    @param[in] pinned_memory Boolean value indicating whether to use pinned or pageable memory
+    @param[in] pinned_flags String of the CUDA flag to use when creating pinned memory
+    */
+    TensorData(const bool& pinned_memory, const TensorDataGpuPinnedFlags& pinned_flag) :
+      pinned_memory_(pinned_memory), pinned_flag_(pinned_flag) {device_name_ = typeid(DeviceT).name();};
+    TensorData(const Eigen::array<Eigen::Index, TDim>& dimensions, const bool& pinned_memory, const TensorDataGpuPinnedFlags& pinned_flag) :
+      pinned_memory_(pinned_memory), pinned_flag_(pinned_flag) {
+      setDimensions(dimensions);
+      device_name_ = typeid(DeviceT).name();
+    };
+    TensorData(const TensorData& other) {
       h_data_ = other.h_data_;
       d_data_ = other.d_data_;
       h_data_updated_ = other.h_data_updated_;
@@ -45,6 +70,8 @@ namespace TensorBase
       dimensions_ = other.dimensions_;
       tensor_size_ = other.tensor_size_;
       device_name_ = other.device_name_;
+      pinned_memory_ = other.pinned_memory_;
+      pinned_flag_ = other.pinned_flag_;
     };
     virtual ~TensorData() = default; ///< Default destructor
 
@@ -77,6 +104,8 @@ namespace TensorBase
       dimensions_ = other.dimensions_;
       tensor_size_ = other.tensor_size_;
       device_name_ = other.device_name_;
+      pinned_memory_ = other.pinned_memory_;
+      pinned_flag_ = other.pinned_flag_;
       return *this;
     }
 
@@ -122,6 +151,8 @@ namespace TensorBase
     size_t getTensorSize() { return tensor_size_; }; ///< Get the size of the tensor
     int getDims() { return dimensions_.size(); };  ///< TDims getter
     std::string getDeviceName() { return device_name_; }; ///< Device name getter
+    bool getPinnedMemory() { return pinned_memory_; }
+    TensorDataGpuPinnedFlags getPinnedFlag() { return pinned_flag_; }
 
     virtual void setData(const Eigen::Tensor<TensorT, TDim>& data) = 0; ///< data setter
     virtual void setData() = 0; ///< data setter
@@ -152,12 +183,14 @@ namespace TensorBase
     Eigen::array<Eigen::Index, TDim> dimensions_ = Eigen::array<Eigen::Index, TDim>(); ///< Tensor dimensions (initialized to all zeros)
     size_t tensor_size_ = 0;  ///< Tensor size
     std::string device_name_ = "";
-
+    bool pinned_memory_ = true;
+    TensorDataGpuPinnedFlags pinned_flag_ = TensorDataGpuPinnedFlags::HostAllocDefault;
   private:
     friend class cereal::access;
     template<class Archive>
     void serialize(Archive& archive) {
-    	archive(dimensions_, tensor_size_, device_name_, h_data_updated_, d_data_updated_);
+    	archive(dimensions_, tensor_size_, device_name_, h_data_updated_, d_data_updated_,
+        pinned_memory_, pinned_flag_);
     }
   };
 

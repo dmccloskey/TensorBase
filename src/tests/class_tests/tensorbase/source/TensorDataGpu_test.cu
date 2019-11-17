@@ -45,7 +45,7 @@ void test_assignmentGpuPrimitiveT()
 
 void test_copyGpuPrimitiveT()
 {
-  TensorDataGpuPrimitiveT<float, 3> tensordata_test(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+  TensorDataGpuPrimitiveT<float, 3> tensordata_test(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }), false, TensorDataGpuPinnedFlags::HostAllocPortable);
   Eigen::Tensor<float, 3> data(2, 3, 4);
   data.setConstant(1);
   tensordata_test.setData(data);
@@ -57,6 +57,8 @@ void test_copyGpuPrimitiveT()
   assert(tensordata->getDimensions() == tensordata_test.getDimensions());
   assert(tensordata->getTensorSize() == tensordata_test.getTensorSize());
   assert(tensordata->getDeviceName() == tensordata_test.getDeviceName());
+  assert(tensordata->getPinnedMemory() == tensordata_test.getPinnedMemory());
+  assert(tensordata->getPinnedFlag() == tensordata_test.getPinnedFlag());
   assert(tensordata->getData()(0, 0, 0) == 1);
 
   // Check reference change
@@ -426,6 +428,8 @@ void test_gettersAndSettersGpuPrimitiveT()
   assert(tensordata.getDimensions().at(2) == 4);
   assert(tensordata.getDims() == 3);
   assert(tensordata.getDeviceName() == typeid(Eigen::GpuDevice).name());
+  assert(tensordata.getPinnedMemory());
+  assert(tensordata.getPinnedFlag() == TensorDataGpuPinnedFlags::HostAllocDefault);
 
   Eigen::Tensor<float, 3> data(2, 3, 4);
   data.setConstant(0.5);
