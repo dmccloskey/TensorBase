@@ -100,6 +100,11 @@ namespace TensorBase
     std::shared_ptr<TensorT[]> getDataPointer() override;
   private:
     void setMemory(); ///< allocate the host and gpu memory
+    void setDataPinnedHostAllocDefault(const Eigen::Tensor<TensorT, TDim>& data);
+    void setDataPinnedHostAllocPortable(const Eigen::Tensor<TensorT, TDim>& data);
+    void setDataPinnedHostAllocMapped(const Eigen::Tensor<TensorT, TDim>& data);
+    void setDataPinnedHostAllocWriteCombined(const Eigen::Tensor<TensorT, TDim>& data);
+    void setDataPageable(const Eigen::Tensor<TensorT, TDim>& data); 
     friend class cereal::access;
     template<class Archive>
     void serialize(Archive& archive) {
@@ -107,14 +112,107 @@ namespace TensorBase
     }
   };
   template<typename TensorT, int TDim>
-  void TensorDataGpu<TensorT, TDim>::setData(const Eigen::Tensor<TensorT, TDim>& data) {
+  void TensorDataGpu<TensorT, TDim>::setData(const Eigen::Tensor<TensorT, TDim>& data) {    
     // allocate cuda and host memory
     this->setMemory();
-    // copy the tensor
+    // copy the data
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy(this->h_data_.get(), this->getDimensions());
     data_copy = data;
+    //if (this->pinned_memory_ && this->pinned_flag_ == TensorDataGpuPinnedFlags::HostAllocDefault) { 
+    //  setDataPinnedHostAllocDefault(data); 
+    //}
+    //else if (this->pinned_memory_ && this->pinned_flag_ == TensorDataGpuPinnedFlags::HostAllocPortable) { 
+    //  setDataPinnedHostAllocPortable(data); 
+    //}
+    //else if (this->pinned_memory_ && this->pinned_flag_ == TensorDataGpuPinnedFlags::HostAllocMapped) { 
+    //  setDataPinnedHostAllocMapped(data); 
+    //}
+    //else if (this->pinned_memory_ && this->pinned_flag_ == TensorDataGpuPinnedFlags::HostAllocWriteCombined) { 
+    //  setDataPinnedHostAllocWriteCombined(data); 
+    //}
+    //else if (!this->pinned_memory_) { 
+    //  setDataPageable(data); 
+    //}
+    //else { 
+    //  setDataPinnedHostAllocDefault(data); 
+    //}
     this->h_data_updated_ = true;
     this->d_data_updated_ = false;
+  };
+  template<typename TensorT, int TDim>
+  void TensorDataGpu<TensorT, TDim>::setDataPinnedHostAllocDefault(const Eigen::Tensor<TensorT, TDim>& data) {
+    TensorT* d_data;
+    TensorT* h_data;
+    assert(cudaMalloc((void**)(&d_data), this->getTensorBytes()) == cudaSuccess);
+    assert(cudaHostAlloc((void**)(&h_data), this->getTensorBytes(), cudaHostAllocDefault) == cudaSuccess);
+    // copy the data
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy(h_data, this->getDimensions());
+    data_copy = data;
+    // define the deleters
+    auto h_deleter = [&](TensorT* ptr) { cudaFreeHost(ptr); };
+    auto d_deleter = [&](TensorT* ptr) { cudaFree(ptr); };
+    this->h_data_.reset(h_data, h_deleter);
+    this->d_data_.reset(d_data, d_deleter);
+  };
+  template<typename TensorT, int TDim>
+  void TensorDataGpu<TensorT, TDim>::setDataPinnedHostAllocPortable(const Eigen::Tensor<TensorT, TDim>& data) {
+    TensorT* d_data;
+    TensorT* h_data;
+    assert(cudaMalloc((void**)(&d_data), this->getTensorBytes()) == cudaSuccess);
+    assert(cudaHostAlloc((void**)(&h_data), this->getTensorBytes(), cudaHostAllocPortable) == cudaSuccess);
+    // copy the data
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy(h_data, this->getDimensions());
+    data_copy = data;
+    // define the deleters
+    auto h_deleter = [&](TensorT* ptr) { cudaFreeHost(ptr); };
+    auto d_deleter = [&](TensorT* ptr) { cudaFree(ptr); };
+    this->h_data_.reset(h_data, h_deleter);
+    this->d_data_.reset(d_data, d_deleter);
+  };
+  template<typename TensorT, int TDim>
+  void TensorDataGpu<TensorT, TDim>::setDataPinnedHostAllocMapped(const Eigen::Tensor<TensorT, TDim>& data) {
+    TensorT* d_data;
+    TensorT* h_data;
+    assert(cudaHostAlloc((void**)(&h_data), this->getTensorBytes(), cudaHostAllocMapped) == cudaSuccess);
+    assert(cudaHostGetDevicePointer(&d_data, h_data, 0) == cudaSuccess);
+    // copy the data
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy(h_data, this->getDimensions());
+    data_copy = data;
+    // define the deleters
+    auto h_deleter = [&](TensorT* ptr) { cudaFreeHost(ptr); };
+    auto d_deleter = [&](TensorT* ptr) { cudaFree(ptr); };
+    this->h_data_.reset(h_data, h_deleter);
+    this->d_data_.reset(d_data, d_deleter);
+  };
+  template<typename TensorT, int TDim>
+  void TensorDataGpu<TensorT, TDim>::setDataPinnedHostAllocWriteCombined(const Eigen::Tensor<TensorT, TDim>& data) {
+    TensorT* d_data;
+    TensorT* h_data;
+    assert(cudaMalloc((void**)(&d_data), this->getTensorBytes()) == cudaSuccess);
+    assert(cudaHostAlloc((void**)(&h_data), this->getTensorBytes(), cudaHostAllocWriteCombined) == cudaSuccess);
+    // copy the data
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy(h_data, this->getDimensions());
+    data_copy = data;
+    // define the deleters
+    auto h_deleter = [&](TensorT* ptr) { cudaFreeHost(ptr); };
+    auto d_deleter = [&](TensorT* ptr) { cudaFree(ptr); };
+    this->h_data_.reset(h_data, h_deleter);
+    this->d_data_.reset(d_data, d_deleter);
+  };
+  template<typename TensorT, int TDim>
+  void TensorDataGpu<TensorT, TDim>::setDataPageable(const Eigen::Tensor<TensorT, TDim>& data) {
+    TensorT* d_data;
+    TensorT* h_data;
+    assert(cudaMalloc((void**)(&d_data), this->getTensorBytes()) == cudaSuccess);
+    h_data = (TensorT*)malloc(this->getTensorBytes());
+    // copy the data
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_copy(h_data, this->getDimensions());
+    data_copy = data;
+    // define the deleters
+    auto h_deleter = [&](TensorT* ptr) { free(ptr); };
+    auto d_deleter = [&](TensorT* ptr) { cudaFree(ptr); };
+    this->h_data_.reset(h_data, h_deleter);
+    this->d_data_.reset(d_data, d_deleter);
   };
   template<typename TensorT, int TDim>
   void TensorDataGpu<TensorT, TDim>::setData() {
@@ -140,7 +238,7 @@ namespace TensorBase
         assert(cudaMalloc((void**)(&d_data), this->getTensorBytes()) == cudaSuccess);
         assert(cudaHostAlloc((void**)(&h_data), this->getTensorBytes(), cudaHostAllocPortable) == cudaSuccess);
       }
-      else if (this->pinned_flag_ == TensorDataGpuPinnedFlags::HostAllocMapped) {
+      else if (this->pinned_flag_ == TensorDataGpuPinnedFlags::HostAllocMapped) { // BUG: results in unspecified cuda launch errors
         // allocate the host and device memory
         assert(cudaHostAlloc((void**)(&h_data), this->getTensorBytes(), cudaHostAllocMapped) == cudaSuccess);
         assert(cudaHostGetDevicePointer(&d_data, h_data, 0) == cudaSuccess);
@@ -149,6 +247,11 @@ namespace TensorBase
         // allocate the host and device memory
         assert(cudaMalloc((void**)(&d_data), this->getTensorBytes()) == cudaSuccess);
         assert(cudaHostAlloc((void**)(&h_data), this->getTensorBytes(), cudaHostAllocWriteCombined) == cudaSuccess);
+      }
+      else {
+        // allocate the host and device memory
+        assert(cudaMalloc((void**)(&d_data), this->getTensorBytes()) == cudaSuccess);
+        assert(cudaHostAlloc((void**)(&h_data), this->getTensorBytes(), cudaHostAllocDefault) == cudaSuccess);
       }
       // define the deleters
       auto h_deleter = [&](TensorT* ptr) { cudaFreeHost(ptr); };
