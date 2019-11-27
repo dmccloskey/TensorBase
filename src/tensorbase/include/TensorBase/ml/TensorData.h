@@ -183,7 +183,7 @@ namespace TensorBase
     Eigen::array<Eigen::Index, TDim> dimensions_ = Eigen::array<Eigen::Index, TDim>(); ///< Tensor dimensions (initialized to all zeros)
     size_t tensor_size_ = 0;  ///< Tensor size
     std::string device_name_ = "";
-    bool pinned_memory_ = true;
+    bool pinned_memory_ = false; // true;
     TensorDataGpuPinnedFlags pinned_flag_ = TensorDataGpuPinnedFlags::HostAllocDefault;
   private:
     friend class cereal::access;

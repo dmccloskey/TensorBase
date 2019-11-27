@@ -115,9 +115,6 @@ void test_selectGpuPrimitiveT()
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
-  std::cout << "tensordata\n"<< tensordata.getData() <<std::endl;
-  std::cout << "indices_ptr\n"<< indices_ptr->getData() <<std::endl;
-
   // Test
   tensordata.syncHAndDData(device);
   tensorselect_ptr->setDataStatus(false, true);
@@ -431,7 +428,7 @@ void test_gettersAndSettersGpuPrimitiveT()
   assert(tensordata.getDimensions().at(2) == 4);
   assert(tensordata.getDims() == 3);
   assert(tensordata.getDeviceName() == typeid(Eigen::GpuDevice).name());
-  assert(tensordata.getPinnedMemory());
+  assert(!tensordata.getPinnedMemory()); // NOTE: changed default to False
   assert(tensordata.getPinnedFlag() == TensorDataGpuPinnedFlags::HostAllocDefault);
 
   Eigen::Tensor<float, 3> data(2, 3, 4);
