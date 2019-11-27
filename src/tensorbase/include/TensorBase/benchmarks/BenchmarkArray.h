@@ -145,43 +145,43 @@ namespace TensorBaseBenchmarks
 
 	///Parse the command line arguments
   static void parseCmdArgs(const int& argc, char** argv, int& data_size, int& array_size, int& n_engines) {
-    if (argc >= 2) {
-      if (argv[1] == std::string("XS")) {
-        data_size = 10;
-      }
-      else if (argv[1] == std::string("S")) {
-        data_size = 1e3;
-      }
-      else if (argv[1] == std::string("M")) {
-        data_size = 1e6;
-      }
-      else if (argv[1] == std::string("L")) {
-        data_size = 1e9;
-      }
-      else if (argv[1] == std::string("XL")) {
-        data_size = 1e12;
-      }
-    }
     if (argc >= 3) {
       if (argv[2] == std::string("XS")) {
-        array_size = 8;
+        data_size = 1e3;
       }
       else if (argv[2] == std::string("S")) {
-        array_size = 32;
+        data_size = 1e5;
       }
       else if (argv[2] == std::string("M")) {
-        array_size = 128;
+        data_size = 1e6;
       }
       else if (argv[2] == std::string("L")) {
-        array_size = 512;
+        data_size = 1e7;
       }
       else if (argv[2] == std::string("XL")) {
-        array_size = 2048;
+        data_size = 1e9;
       }
     }
     if (argc >= 4) {
+      if (argv[3] == std::string("XS")) {
+        array_size = 8;
+      }
+      else if (argv[3] == std::string("S")) {
+        array_size = 32;
+      }
+      else if (argv[3] == std::string("M")) {
+        array_size = 128;
+      }
+      else if (argv[3] == std::string("L")) {
+        array_size = 512;
+      }
+      else if (argv[3] == std::string("XL")) {
+        array_size = 2048;
+      }
+    }
+    if (argc >= 5) {
       try {
-        n_engines = std::stoi(argv[3]);
+        n_engines = std::stoi(argv[4]);
       }
       catch (std::exception & e) {
         std::cout << e.what() << std::endl;
