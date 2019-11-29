@@ -22,10 +22,12 @@ int main(int argc, char** argv)
   parseCmdArgs(argc, argv, data_dir, n_dims, data_size, in_memory, shard_span_perc, n_engines);
 
 	// Setup the Benchmarking suite
-	Benchmark1TimePointCpu<int, float> benchmark_1_tp;
+	//Benchmark1TimePointCpu<int, float> benchmark_1_tp;
+  Benchmark1TimePointCpu<int, int> benchmark_1_tp;
 
 	// Setup the TensorCollectionGenerator
-	TensorCollectionGeneratorCpu<int, float> tensor_collection_generator;
+	//TensorCollectionGeneratorCpu<int, float> tensor_collection_generator;
+  TensorCollectionGeneratorCpu<int, int> tensor_collection_generator;
 
 	// Setup the device
   Eigen::ThreadPool pool(n_engines);

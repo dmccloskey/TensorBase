@@ -656,25 +656,31 @@ namespace TensorBaseBenchmarks
 		}
 		if (argc >= 3) {
 			try {
-				n_dims = (std::stoi(argv[2]) > 0 && std::stoi(argv[2]) <= 4) ? std::stoi(argv[2]) : 4;
+				n_dims = (std::stoi(argv[2]) >= 0 && std::stoi(argv[2]) <= 4) ? std::stoi(argv[2]) : 4;
 			}
 			catch (std::exception & e) {
 				std::cout << e.what() << std::endl;
 			}
 		}
 		if (argc >= 4) {
-			if (argv[3] == std::string("small")) {
+			if (argv[3] == std::string("XS")) {
 				data_size = 1296;
 			}
-			if (argv[3] == std::string("medium")) {
+      else if (argv[3] == std::string("S")) {
+        data_size = 104976;
+      }
+			else if (argv[3] == std::string("M")) {
 				data_size = 1048576;
 			}
-			if (argv[3] == std::string("large")) {
+			else if (argv[3] == std::string("L")) {
+				data_size = 10556001;
+			}
+			else if (argv[3] == std::string("XL")) {
 				data_size = 1003875856;
 			}
-			if (argv[3] == std::string("XL")) {
-				data_size = 1e12;
-			}
+      else if (argv[3] == std::string("XXL")) {
+        data_size = 1e12;
+      }
 		}
 		if (argc >= 5) {
 			in_memory = (argv[4] == std::string("true")) ? true : false;
