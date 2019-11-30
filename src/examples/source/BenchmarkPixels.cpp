@@ -27,7 +27,7 @@ int main(int argc, char** argv)
 {
 	// Parse the user commands
 	std::string data_dir = "C:/Users/dmccloskey/Documents/GitHub/mnist/";
-	int n_dims = 0;
+	int n_dims = 1;
 	int data_size = 1296;
 	bool in_memory = true;
 	double shard_span_perc = 1;
