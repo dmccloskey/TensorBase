@@ -36,9 +36,20 @@ namespace TensorBaseBenchmarks
 	protected:
 		int data_size_;
     int array_size_;
+    //Eigen::Tensor<ArrayT<TensorT>, 1> values_; ///< cache for pre-made values
 	};
   template<template<class> class ArrayT, class TensorT, typename DeviceT>
   void ArrayManager<ArrayT, TensorT, DeviceT>::getArrayData(std::shared_ptr<TensorData<ArrayT<TensorT>, DeviceT, 1>>& values_ptr, DeviceT& device) {
+    //if (values_.size() <= 0) { // Make the values
+    //  Eigen::Tensor<ArrayT<TensorT>, 1> values(data_size_);
+    //  for (int i = 0; i < data_size_; ++i) {
+    //    Eigen::Tensor<TensorT, 1> array_tmp(array_size_);
+    //    for (int j = 0; j < array_size_; ++j) array_tmp(j) = getRandomValue();
+    //    values(i) = ArrayT<TensorT>(array_tmp);
+    //  }
+    //  values_ = values;
+    //}
+    //makeValuesPtr(values_, values_ptr);
     Eigen::Tensor<ArrayT<TensorT>, 1> values(data_size_);
     for (int i = 0; i < data_size_; ++i) {
       Eigen::Tensor<TensorT, 1> array_tmp(array_size_);

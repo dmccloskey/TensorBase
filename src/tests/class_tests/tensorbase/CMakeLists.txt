@@ -44,6 +44,10 @@ if (CMAKE_COMPILER_IS_INTELCXX OR CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_
 endif()
 
 #------------------------------------------------------------------------------
+# benchmarkd
+add_custom_target(BENCHMARKS_TEST)
+add_dependencies(BENCHMARKS_TEST ${benchmarks_executables_list})
+
 # core
 add_custom_target(CORE_TEST)
 add_dependencies(CORE_TEST ${core_executables_list})
