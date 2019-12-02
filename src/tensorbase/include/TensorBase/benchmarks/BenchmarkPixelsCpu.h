@@ -298,11 +298,11 @@ namespace TensorBaseBenchmarks
 	std::shared_ptr<TensorCollection<Eigen::ThreadPoolDevice>> TensorCollectionGeneratorCpu<LabelsT, TensorT>::make0DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar) const
 	{
 		// Setup the axes
-		Eigen::Tensor<std::string, 1> dimensions_1(5), dimensions_2(1);
-		dimensions_1.setValues({ "x","y","z","t","v" });
-		dimensions_2.setValues({ "indices" });
-		Eigen::Tensor<TensorArray8<char>, 2> labels_1(5, 1);
-		labels_1.setValues({ { TensorArray8<char>("x")}, { TensorArray8<char>("y")}, { TensorArray8<char>("z")}, { TensorArray8<char>("t")}, { TensorArray8<char>("v")} });
+    Eigen::Tensor<std::string, 1> dimensions_1(1), dimensions_2(1);
+    dimensions_1.setValues({ "xyztv" });
+    dimensions_2.setValues({ "indices" });
+    Eigen::Tensor<TensorArray8<char>, 2> labels_1(1, 5);
+    labels_1.setValues({ { TensorArray8<char>("x"), TensorArray8<char>("y"), TensorArray8<char>("z"), TensorArray8<char>("t"), TensorArray8<char>("v")} });
 
 		// Setup the tables
 		// TODO: refactor for the case where LabelsT != TensorT

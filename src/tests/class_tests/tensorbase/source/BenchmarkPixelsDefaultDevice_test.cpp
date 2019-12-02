@@ -39,15 +39,15 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DDefaultDevice)
   transaction_manager.setTensorCollection(n_dim_tensor_collection);
 
   // Test the initial tensor collection
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNDimensions(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNLabels(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNLabels(), 5);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNLabels(), 0);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
 
   // Make the expected tensor axes labels and tensor data
-  Eigen::Tensor<TensorArray8<char>, 2> labels_xyztv(5, 1);
-  labels_xyztv.setValues({ { TensorArray8<char>("x")}, { TensorArray8<char>("y")}, { TensorArray8<char>("z")}, { TensorArray8<char>("t")}, { TensorArray8<char>("v")} });
+  Eigen::Tensor<TensorArray8<char>, 2> labels_xyztv(1, 5);
+  labels_xyztv.setValues({ { TensorArray8<char>("x"), TensorArray8<char>("y"), TensorArray8<char>("z"), TensorArray8<char>("t"), TensorArray8<char>("v")} });
   Eigen::Tensor<int, 2> values(data_size, 5);
   Eigen::Tensor<int, 2> labels_indices(1, data_size);
   for (int i = 0; i < data_size; ++i) {
@@ -63,8 +63,8 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DDefaultDevice)
   benchmark_1_tp.insert1TimePoint(n_dims, transaction_manager, data_size, device);
 
   // Test the expected tensor axes after insert
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNDimensions(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNLabels(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNLabels(), 5);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNLabels(), 1296);
   std::shared_ptr<TensorArray8<char>[]> labels_xyztv_insert_data;
@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DDefaultDevice)
   }
   std::shared_ptr<int[]> labels_indices_insert_data;
   n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getLabelsDataPointer(labels_indices_insert_data);
-  Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_indices_insert_values(labels_indices_insert_data.get(), 4, data_size);
+  Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_indices_insert_values(labels_indices_insert_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
       BOOST_CHECK_EQUAL(labels_indices_insert_values(i, j), labels_indices(i, j));
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DDefaultDevice)
   // TODO: Test the expected axis indices after insert
 
   // Test the expected data after insert
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 6480);
   std::shared_ptr<int[]> data_insert_data;
   n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_insert_values(data_insert_data.get(), data_size, 5);
@@ -101,8 +101,8 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DDefaultDevice)
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, device);
 
   // Test the expected tensor axes after update
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNDimensions(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNLabels(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNLabels(), 5);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNLabels(), 1296);
   std::shared_ptr<TensorArray8<char>[]> labels_xyztv_update_data;
@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DDefaultDevice)
   }
   std::shared_ptr<int[]> labels_indices_update_data;
   n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getLabelsDataPointer(labels_indices_update_data);
-  Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_indices_update_values(labels_indices_update_data.get(), 4, data_size);
+  Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_indices_update_values(labels_indices_update_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
       BOOST_CHECK_EQUAL(labels_indices_update_values(i, j), labels_indices(i, j));
@@ -125,23 +125,24 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DDefaultDevice)
   // TODO: Test the expected axis indices after update
 
   // Test the expected data after update
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 6480);
   std::shared_ptr<int[]> data_update_data;
   n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_update_values(data_update_data.get(), data_size, 5);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 5; ++j) {
-      BOOST_CHECK_NE(data_update_values(i, j), values(i, j));
+      if (j==4) BOOST_CHECK_NE(data_update_values(i, j), values(i, j));
+      else BOOST_CHECK_EQUAL(data_update_values(i, j), values(i, j));
     }
   }
 
   // Test the expected tensor collection after deletion
   benchmark_1_tp.delete1TimePoint(n_dims, transaction_manager, data_size, device);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNDimensions(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNLabels(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNLabels(), 5);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNDimensions(), 1);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNLabels(), 0);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNLabels(), 260);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 5400);
 }
 
 BOOST_AUTO_TEST_CASE(InsertUpdateDelete1DDefaultDevice) 

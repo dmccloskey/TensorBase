@@ -135,15 +135,15 @@ namespace TensorBaseBenchmarks
 		setDimSizes();
 		// Make the labels and values
 		Eigen::Tensor<LabelsT, 2> labels(1, span);
-		Eigen::Tensor<TensorT, 2> values(5, span);
+		Eigen::Tensor<TensorT, 2> values(span, 5);
 		for (int i = offset; i < offset + span; ++i) {
 			labels(0, i - offset) = LabelsT(i);
-			values(0, i - offset) = int(floor(float(i) / float(std::pow(this->dim_span_, 0)))) % this->dim_span_ + 1;
-			values(1, i - offset) = int(floor(float(i) / float(std::pow(this->dim_span_, 1)))) % this->dim_span_ + 1;
-			values(2, i - offset) = int(floor(float(i) / float(std::pow(this->dim_span_, 2)))) % this->dim_span_ + 1;
-			values(3, i - offset) = int(floor(float(i) / float(std::pow(this->dim_span_, 3)))) % this->dim_span_ + 1;
-			if (this->use_random_values_) values(4, i - offset) = this->getRandomValue();
-			else values(4, i - offset) = TensorT(i);
+			values(i - offset, 0) = int(floor(float(i) / float(std::pow(this->dim_span_, 0)))) % this->dim_span_ + 1;
+			values(i - offset, 1) = int(floor(float(i) / float(std::pow(this->dim_span_, 1)))) % this->dim_span_ + 1;
+			values(i - offset, 2) = int(floor(float(i) / float(std::pow(this->dim_span_, 2)))) % this->dim_span_ + 1;
+			values(i - offset, 3) = int(floor(float(i) / float(std::pow(this->dim_span_, 3)))) % this->dim_span_ + 1;
+			if (this->use_random_values_) values(i - offset, 4) = this->getRandomValue();
+			else values(i - offset, 4) = TensorT(i);
 		}
 		this->makeLabelsPtr(labels, labels_ptr);
 		this->makeValuesPtr(values, values_ptr);

@@ -206,8 +206,7 @@ namespace TensorBaseBenchmarks
 		PixelManager0DDefaultDevice<LabelsT, TensorT> pixel_manager(data_size, true);
 		std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>> labels_ptr;
 		std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>> values_ptr;
-		//int span = data_size / std::pow(data_size, 0.25);  // BUG: breaks auto max_bcast = indices_view_values.maximum(Eigen::array<Eigen::Index, 1>({ 0 })).broadcast(Eigen::array<Eigen::Index, 1>({ n_labels })); in TensorTableDefaultDevice<TensorT, TDim>::makeAppendIndices
-		int span = 2;
+		int span = data_size / std::pow(data_size, 0.25);
 		for (int i = 0; i < data_size - 1; i += span) { // TOOD: strange run-time error upon deallocation
 			labels_ptr.reset();
 			values_ptr.reset();
@@ -223,8 +222,7 @@ namespace TensorBaseBenchmarks
 		PixelManager1DDefaultDevice<LabelsT, TensorT> pixel_manager(data_size, true);
 		std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>> labels_ptr;
 		std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>> values_ptr;
-		//int span = data_size / std::pow(data_size, 0.25);  // BUG: breaks auto max_bcast = indices_view_values.maximum(Eigen::array<Eigen::Index, 1>({ 0 })).broadcast(Eigen::array<Eigen::Index, 1>({ n_labels })); in TensorTableDefaultDevice<TensorT, TDim>::makeAppendIndices
-		int span = 2;
+		int span = data_size / std::pow(data_size, 0.25);
 		for (int i = 0; i < data_size - 1; i += span) { // TOOD: strange run-time error upon deallocation
 			labels_ptr.reset();
 			values_ptr.reset();
@@ -297,11 +295,11 @@ namespace TensorBaseBenchmarks
 	std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> TensorCollectionGeneratorDefaultDevice<LabelsT, TensorT>::make0DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar) const
 	{
 		// Setup the axes
-		Eigen::Tensor<std::string, 1> dimensions_1(5), dimensions_2(1);
-		dimensions_1.setValues({ "x","y","z","t","v" });
+		Eigen::Tensor<std::string, 1> dimensions_1(1), dimensions_2(1);
+		dimensions_1.setValues({ "xyztv" });
 		dimensions_2.setValues({ "indices" });
-		Eigen::Tensor<TensorArray8<char>, 2> labels_1(5, 1);
-		labels_1.setValues({ { TensorArray8<char>("x")}, { TensorArray8<char>("y")}, { TensorArray8<char>("z")}, { TensorArray8<char>("t")}, { TensorArray8<char>("v")} });
+		Eigen::Tensor<TensorArray8<char>, 2> labels_1(1, 5);
+		labels_1.setValues({ { TensorArray8<char>("x"), TensorArray8<char>("y"), TensorArray8<char>("z"), TensorArray8<char>("t"), TensorArray8<char>("v")} });
 
 		// Setup the tables
 		// TODO: refactor for the case where LabelsT != TensorT

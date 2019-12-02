@@ -302,11 +302,11 @@ namespace TensorBaseBenchmarks
 	std::shared_ptr<TensorCollection<Eigen::GpuDevice>> TensorCollectionGeneratorGpu<LabelsT, TensorT>::make0DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar) const
 	{
 		// Setup the axes
-		Eigen::Tensor<std::string, 1> dimensions_1(5), dimensions_2(1);
-		dimensions_1.setValues({ "x","y","z","t","v" });
+    Eigen::Tensor<std::string, 1> dimensions_1(1), dimensions_2(1);
+    dimensions_1.setValues({ "xyztv" });
 		dimensions_2.setValues({ "indices" });
-		Eigen::Tensor<TensorArrayGpu8<char>, 2> labels_1(5, 1);
-		labels_1.setValues({ { TensorArrayGpu8<char>("x")}, { TensorArrayGpu8<char>("y")}, { TensorArrayGpu8<char>("z")}, { TensorArrayGpu8<char>("t")}, { TensorArrayGpu8<char>("v")} });
+		Eigen::Tensor<TensorArrayGpu8<char>, 2> labels_1(1, 5);
+    labels_1.setValues({ { TensorArrayGpu8<char>("x"), TensorArrayGpu8<char>("y"), TensorArrayGpu8<char>("z"), TensorArrayGpu8<char>("t"), TensorArrayGpu8<char>("v")} });
 
 		// Setup the tables
 		// TODO: refactor for the case where LabelsT != TensorT
