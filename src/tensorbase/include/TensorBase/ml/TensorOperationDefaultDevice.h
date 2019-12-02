@@ -26,7 +26,7 @@ namespace TensorBase
     for (auto& axis_map: tensor_collection->tables_.at(this->table_name_)->getAxes()) {
       dimensions_new.at(tensor_collection->tables_.at(this->table_name_)->getDimFromAxisName(axis_map.second->getName())) = axis_map.second->getNLabels();
     }
-    dimensions_new.at(tensor_collection->tables_.at(this->table_name_)->getDimFromAxisName(this->axis_name_)) -= this->indices_->getTensorSize();
+    dimensions_new.at(tensor_collection->tables_.at(this->table_name_)->getDimFromAxisName(this->axis_name_)) = this->indices_->getTensorSize();
 
     // Allocate memory for the values
     TensorDataDefaultDevice<TensorT, TDim> values_tmp(dimensions_new);

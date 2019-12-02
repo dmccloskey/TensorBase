@@ -86,6 +86,9 @@ namespace TensorBase
     void redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
     void undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
     virtual void allocateMemoryForValues(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) = 0;
+    size_t getNLabelsDeleted() { return labels_->getTensorSize(); };
+    size_t getNIndicesDeleted() { return indices_->getTensorSize(); };
+    size_t getNValuesDeleted() { return values_->getTensorSize(); };
   protected:
     std::function<void(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)> select_function_; // Redo
     std::string table_name_; // Undo/Redo
@@ -120,8 +123,6 @@ namespace TensorBase
     tensor_collection->tables_.at(table_name_)->makeIndicesFromIndicesView(axis_name_, indices_, device);
     tensor_collection->tables_.at(table_name_)->resetIndicesView(axis_name_, device);
 
-    // TOOD: report the number of slices that will be deleted
-
     // Determine the dimensions of the deletion and allocate to memory
     allocateMemoryForValues(tensor_collection, device);
 
@@ -133,6 +134,31 @@ namespace TensorBase
 		for (const auto& axes_to_dims : tensor_collection->tables_.at(table_name_)->getAxesToDims()) {
 			tensor_collection->tables_.at(table_name_)->resetIndicesView(axes_to_dims.first, device);
 		}
+
+    // Report the changes
+    std::cout << getNLabelsDeleted() << " labels were deleted from Table "<< table_name_ << " axis " << axis_name_ << "." << std::endl;
+    std::cout << getNIndicesDeleted() << " indices were deleted from Table " << table_name_ << " axis " << axis_name_ << "." << std::endl;
+    std::cout << getNValuesDeleted() << " values were deleted from Table " << table_name_ << " axis " << axis_name_ << "." << std::endl;
+
+    /////DEBUG(DefaultDevice)
+    //std::cout << "indices_\n" << indices_->getData() << std::endl;
+
+    /////DEBUG(DefaultDevice): Change in deleted labels
+    //std::cout << "Deleted Axis labels\n" << labels_->getData() << std::endl;
+    //std::shared_ptr<LabelsT[]> labels_indices_data;
+    //tensor_collection->tables_.at(table_name_)->getAxes().at(axis_name_)->getLabelsDataPointer(labels_indices_data);
+    //Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> labels_indices_data_values(labels_indices_data.get(), tensor_collection->tables_.at(table_name_)->getAxes().at(axis_name_)->getNDimensions(), tensor_collection->tables_.at(table_name_)->getAxes().at(axis_name_)->getNLabels());
+    //std::cout << "Tensor Axis labels\n" << labels_indices_data_values << std::endl;
+
+    /////DEBUG(DefaultDevice): Change in deleted data
+    //Eigen::array<Eigen::Index, TDim> data_dimensions;
+    //for (const auto& axis_map : tensor_collection->tables_.at(table_name_)->getAxes()) {
+    //  data_dimensions.at(tensor_collection->tables_.at(table_name_)->getDimFromAxisName(axis_map.first)) = axis_map.second->getNLabels();
+    //}
+    //std::shared_ptr<TensorT[]> data_data;
+    //tensor_collection->tables_.at(table_name_)->getDataPointer(data_data);
+    //Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_data_values(data_data.get(), data_dimensions);
+    //std::cout << "data_data_values\n" << data_data_values << std::endl;
   }
   template<typename LabelsT, typename TensorT, typename DeviceT, int TDim>
   inline void TensorDeleteFromAxis<LabelsT, TensorT, DeviceT, TDim>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)

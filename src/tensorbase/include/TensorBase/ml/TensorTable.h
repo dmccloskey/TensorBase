@@ -2145,14 +2145,13 @@ namespace TensorBase
 
     // Select and reduce
     if (invert_selection) {
-      auto indices_selected_2d = (indices_view_bcast == indices_bcast).select(indices_view_bcast.constant(0), indices_view_bcast);
-      auto indices_selected = indices_selected_2d.prod(Eigen::array<Eigen::Index, 1>({ 1 })).clip(0, 1);
-      indices_select_values.device(device) = indices_selected;
+      auto indices_selected_2d = (indices_view_bcast != indices_bcast).select(indices_view_bcast, indices_view_bcast.constant(0));
+      //NOTE: product of many #s can result in overflow which will then be converted to 0 erroneously by clip
+      indices_select_values.device(device) = indices_selected_2d.clip(0, 1).prod(Eigen::array<Eigen::Index, 1>({ 1 })).clip(0, 1);
     }
     else {
       auto indices_selected_2d = (indices_view_bcast == indices_bcast).select(indices_view_bcast, indices_view_bcast.constant(0));
-      auto indices_selected = indices_selected_2d.sum(Eigen::array<Eigen::Index, 1>({ 1 })).clip(0, 1);
-      indices_select_values.device(device) = indices_selected;
+      indices_select_values.device(device) = indices_selected_2d.clip(0, 1).sum(Eigen::array<Eigen::Index, 1>({ 1 })).clip(0, 1);
     }
   }
 

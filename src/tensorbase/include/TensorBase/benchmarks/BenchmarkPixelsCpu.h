@@ -207,8 +207,7 @@ namespace TensorBaseBenchmarks
 		PixelManager0DCpu<LabelsT, TensorT> pixel_manager(data_size, true);
 		std::shared_ptr<TensorData<LabelsT, Eigen::ThreadPoolDevice, 2>> labels_ptr;
 		std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>> values_ptr;
-		//int span = data_size / std::pow(data_size, 0.25);  // BUG: breaks auto max_bcast = indices_view_values.maximum(Eigen::array<Eigen::Index, 1>({ 0 })).broadcast(Eigen::array<Eigen::Index, 1>({ n_labels })); in TensorTableCpu<TensorT, TDim>::makeAppendIndices
-		int span = 2;
+		int span = data_size / std::pow(data_size, 0.25);
 		for (int i = 0; i < data_size - 1; i += span) { // TOOD: strange run-time error upon deallocation
 			labels_ptr.reset();
 			values_ptr.reset();
@@ -224,8 +223,7 @@ namespace TensorBaseBenchmarks
 		PixelManager1DCpu<LabelsT, TensorT> pixel_manager(data_size, true);
 		std::shared_ptr<TensorData<LabelsT, Eigen::ThreadPoolDevice, 2>> labels_ptr;
 		std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>> values_ptr;
-		//int span = data_size / std::pow(data_size, 0.25);  // BUG: breaks auto max_bcast = indices_view_values.maximum(Eigen::array<Eigen::Index, 1>({ 0 })).broadcast(Eigen::array<Eigen::Index, 1>({ n_labels })); in TensorTableCpu<TensorT, TDim>::makeAppendIndices
-		int span = 2;
+		int span = data_size / std::pow(data_size, 0.25);
 		for (int i = 0; i < data_size - 1; i += span) { // TOOD: strange run-time error upon deallocation
 			labels_ptr.reset();
 			values_ptr.reset();
