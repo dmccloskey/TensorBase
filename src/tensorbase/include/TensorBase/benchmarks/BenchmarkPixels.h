@@ -106,10 +106,11 @@ namespace TensorBaseBenchmarks
 	};
 	template<typename LabelsT, typename TensorT, typename DeviceT, int NDim>
 	TensorT PixelManager<LabelsT, TensorT, DeviceT, NDim>::getRandomValue() {
-		std::random_device rd{};
-		std::mt19937 gen{ rd() };
-		std::normal_distribution<> d{ 0.0f, 10.0f };
-		return TensorT(-std::abs(d(gen)));
+		//std::random_device rd{};
+		//std::mt19937 gen{ rd() };
+		//std::normal_distribution<> d{ 0.0f, 10.0f };
+		//return TensorT(d(gen));
+    return TensorT(-1); // makes it easier to test that the values were updated correctly...
 	}
 
 	/*

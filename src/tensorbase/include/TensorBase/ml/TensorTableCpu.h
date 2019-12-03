@@ -404,8 +404,8 @@ namespace TensorBase
 		Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_values(indices_tmp.getDataPointer().get(), n_labels);
 		if (this->indices_view_.at(axis_name)->getTensorSize() > 0) {
 			// Determine the maximum index value
-			Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_view_values(this->indices_view_.at(axis_name)->getDataPointer().get(), this->indices_view_.at(axis_name)->getTensorSize(), 1);
-			auto max_bcast = indices_view_values.maximum(Eigen::array<Eigen::Index, 1>({ 0 })).broadcast(Eigen::array<Eigen::Index, 1>({ n_labels }));
+      Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_view_values(this->indices_view_.at(axis_name)->getDataPointer().get(), 1, this->indices_view_.at(axis_name)->getTensorSize());
+      auto max_bcast = indices_view_values.maximum(Eigen::array<Eigen::Index, 1>({ 1 })).eval().broadcast(Eigen::array<Eigen::Index, 1>({ n_labels })).eval();
 
 			// Make the extended axis indices
 			auto tmp = indices_values.constant(1).cumsum(0, false);

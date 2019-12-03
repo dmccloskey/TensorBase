@@ -187,7 +187,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DDefaultDevice)
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_update_values(data_update_data.get(), data_size, 5);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 5; ++j) {
-      if (j==4) BOOST_CHECK_NE(data_update_values(i, j), values(i, j));
+      if (j==4) BOOST_CHECK_EQUAL(data_update_values(i, j), -1);
       else BOOST_CHECK_EQUAL(data_update_values(i, j), values(i, j));
     }
   }
@@ -359,7 +359,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete1DDefaultDevice)
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_update_values(data_update_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
-      BOOST_CHECK_NE(data_update_values(i, j), values(i, j));
+      BOOST_CHECK_EQUAL(data_update_values(i, j), -1);
     }
   }
 
@@ -500,7 +500,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DDefaultDevice)
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_update_values(data_update_data.get(), t_dim_size, xyz_dim_size);
   for (int i = 0; i < xyz_dim_size; ++i) {
     for (int j = 0; j < t_dim_size; ++j) {
-      BOOST_CHECK_NE(data_update_values(i, j), values(i, j));
+      BOOST_CHECK_EQUAL(data_update_values(i, j), -1);
     }
   }
 
@@ -668,7 +668,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DDefaultDevice)
   for (int i = 0; i < t_dim_size; ++i) {
     for (int j = 0; j < xy_dim_size; ++j) {
       for (int k = 0; k < z_dim_size; ++k) {
-        BOOST_CHECK_NE(data_update_values(i, j, k), values(i, j, k));
+        BOOST_CHECK_EQUAL(data_update_values(i, j, k), -1);
       }
     }
   }
@@ -864,7 +864,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DDefaultDevice)
     for (int j = 0; j < x_dim_size; ++j) {
       for (int k = 0; k < y_dim_size; ++k) {
         for (int l = 0; l < z_dim_size; ++l) {
-          BOOST_CHECK_NE(data_update_values(i, j, k, l), values(i, j, k, l));
+          BOOST_CHECK_EQUAL(data_update_values(i, j, k, l), -1);
         }
       }
     }
