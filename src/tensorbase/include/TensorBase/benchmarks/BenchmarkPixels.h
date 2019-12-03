@@ -106,11 +106,10 @@ namespace TensorBaseBenchmarks
 	};
 	template<typename LabelsT, typename TensorT, typename DeviceT, int NDim>
 	TensorT PixelManager<LabelsT, TensorT, DeviceT, NDim>::getRandomValue() {
-		//std::random_device rd{};
-		//std::mt19937 gen{ rd() };
-		//std::normal_distribution<> d{ 0.0f, 10.0f };
-		//return TensorT(d(gen));
-    return TensorT(-1); // makes it easier to test that the values were updated correctly...
+		std::random_device rd{};
+		std::mt19937 gen{ rd() };
+		std::normal_distribution<> d{ 0.0f, 10.0f };
+		return TensorT(d(gen));
 	}
 
 	/*
@@ -143,7 +142,7 @@ namespace TensorBaseBenchmarks
 			values(i - offset, 1) = int(floor(float(i) / float(std::pow(this->dim_span_, 1)))) % this->dim_span_ + 1;
 			values(i - offset, 2) = int(floor(float(i) / float(std::pow(this->dim_span_, 2)))) % this->dim_span_ + 1;
 			values(i - offset, 3) = int(floor(float(i) / float(std::pow(this->dim_span_, 3)))) % this->dim_span_ + 1;
-			if (this->use_random_values_) values(i - offset, 4) = this->getRandomValue();
+      if (this->use_random_values_) values(i - offset, 4) = TensorT(-1); // this->getRandomValue();
 			else values(i - offset, 4) = TensorT(i);
 		}
 		this->makeLabelsPtr(labels, labels_ptr);
@@ -179,7 +178,7 @@ namespace TensorBaseBenchmarks
 			labels(1, i - offset) = int(floor(float(i) / float(std::pow(this->dim_span_, 1)))) % this->dim_span_ + 1;
 			labels(2, i - offset) = int(floor(float(i) / float(std::pow(this->dim_span_, 2)))) % this->dim_span_ + 1;
 			labels(3, i - offset) = int(floor(float(i) / float(std::pow(this->dim_span_, 3)))) % this->dim_span_ + 1;
-			if (this->use_random_values_) values(0, i - offset) = this->getRandomValue();
+			if (this->use_random_values_) values(0, i - offset) = TensorT(-1); // this->getRandomValue();
 			else values(0, i - offset) = TensorT(i);
 		}
 		this->makeLabelsPtr(labels, labels_ptr);
@@ -215,7 +214,7 @@ namespace TensorBaseBenchmarks
 		for (int i = 0; i < span; ++i) {
 			labels(0, i) = int(floor(float(i + offset) / float(std::pow(this->dim_span_, 0)))) % this->dim_span_ + 1;
 			Eigen::Tensor<TensorT, 1> new_values(this->xyz_dim_size_);
-			if (this->use_random_values_) new_values.setRandom();
+			if (this->use_random_values_) new_values.setConstant(TensorT(-1)); // new_values.setRandom();
 			else new_values.setConstant( (i + offset) * this->xyz_dim_size_ + 1);
 			new_values = new_values.cumsum(0);
 			values.slice(Eigen::array<Eigen::Index, 2>({ 0, i }), Eigen::array<Eigen::Index, 2>({ this->xyz_dim_size_, 1 })) = new_values.reshape(Eigen::array<Eigen::Index, 2>({ this->xyz_dim_size_, 1 }));
@@ -255,7 +254,7 @@ namespace TensorBaseBenchmarks
 		for (int i = 0; i < span; ++i) {
 			labels(0, i) = int(floor(float(i + offset) / float(std::pow(this->dim_span_, 0)))) % this->dim_span_ + 1;
 			Eigen::Tensor<TensorT, 1> new_values(this->xy_dim_size_ * this->z_dim_size_);
-			if (this->use_random_values_) new_values.setRandom();
+			if (this->use_random_values_) new_values.setConstant(TensorT(-1)); // new_values.setRandom();
 			else new_values.setConstant((i + offset) * this->xy_dim_size_ * this->z_dim_size_ + 1);
 			new_values = new_values.cumsum(0);
 			values.slice(Eigen::array<Eigen::Index, 3>({ 0, 0, i }), Eigen::array<Eigen::Index, 3>({ this->xy_dim_size_, this->z_dim_size_, 1 })) = new_values.reshape(Eigen::array<Eigen::Index, 3>({ this->xy_dim_size_, this->z_dim_size_, 1 }));
@@ -297,7 +296,7 @@ namespace TensorBaseBenchmarks
 		for (int i = 0; i < span; ++i) {
 			labels(0, i) = int(floor(float(i + offset) / float(std::pow(this->dim_span_, 0)))) % this->dim_span_ + 1;
 			Eigen::Tensor<TensorT, 1> new_values(this->x_dim_size_ * this->y_dim_size_ * this->z_dim_size_);
-			if (this->use_random_values_) new_values.setRandom();
+			if (this->use_random_values_) new_values.setConstant(TensorT(-1)); // new_values.setRandom();
 			else new_values.setConstant((i + offset) * this->x_dim_size_ * this->y_dim_size_ * this->z_dim_size_ + 1);
 			new_values = new_values.cumsum(0);
 			values.slice(Eigen::array<Eigen::Index, 4>({ 0, 0, 0, i }), Eigen::array<Eigen::Index, 4>({ this->x_dim_size_, this->y_dim_size_, this->z_dim_size_, 1 })) = new_values.reshape(Eigen::array<Eigen::Index, 4>({ this->x_dim_size_, this->y_dim_size_, this->z_dim_size_, 1 }));
