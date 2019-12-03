@@ -417,8 +417,7 @@ namespace TensorBaseBenchmarks
 	{
 		std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> labels_ptr;
 		std::shared_ptr<TensorData<TensorT, DeviceT, 2>> values_ptr;
-		//int span = data_size / std::pow(data_size, 0.25);  // BUG: breaks auto max_bcast = indices_view_values.maximum(Eigen::array<Eigen::Index, 1>({ 0 })).broadcast(Eigen::array<Eigen::Index, 1>({ n_labels })); in TensorTableDefaultDevice<TensorT, TDim>::makeAppendIndices
-		int span = 2;
+		int span = data_size / std::pow(data_size, 0.25);  // BUG: breaks auto max_bcast = indices_view_values.maximum(Eigen::array<Eigen::Index, 1>({ 0 })).broadcast(Eigen::array<Eigen::Index, 1>({ n_labels })); in TensorTableDefaultDevice<TensorT, TDim>::makeAppendIndices
 		for (int i = 0; i < data_size; i += span) {
 			labels_ptr.reset();
 			values_ptr.reset();
@@ -433,8 +432,7 @@ namespace TensorBaseBenchmarks
 	{
 		std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> labels_ptr;
 		std::shared_ptr<TensorData<TensorT, DeviceT, 2>> values_ptr;
-		//int span = data_size / std::pow(data_size, 0.25);  // BUG: breaks auto max_bcast = indices_view_values.maximum(Eigen::array<Eigen::Index, 1>({ 0 })).broadcast(Eigen::array<Eigen::Index, 1>({ n_labels })); in TensorTableDefaultDevice<TensorT, TDim>::makeAppendIndices
-    int span = 2;
+		int span = data_size / std::pow(data_size, 0.25);
     for (int i = 0; i < data_size; i += span) {
 			labels_ptr.reset();
 			values_ptr.reset();

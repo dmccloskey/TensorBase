@@ -8,6 +8,18 @@
 
 namespace TensorBase
 {
+  struct TensorOperationLog {
+    int n_labels_deleted = 0;
+    int n_labels_updated = 0;
+    int n_labels_inserted = 0;
+    int n_indices_deleted = 0;
+    int n_indices_updated = 0;
+    int n_indices_inserted = 0;
+    int n_data_deleted = 0;
+    int n_data_updated = 0;
+    int n_data_inserted = 0;
+  };
+
   /**
     @brief Abstract base class for all Tensor operations involving insertions, deletions, and updates
   */
@@ -19,7 +31,44 @@ namespace TensorBase
     virtual ~TensorOperation() = default;
     virtual void redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) = 0;
     virtual void undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) = 0;
+    TensorOperationLog const getRedoLog() const { return redo_log_; }
+    TensorOperationLog const getUndoLog() const { return undo_log_; }
+    std::string getRedoLogAsString() const;
+    std::string getUndoLogAsString() const;
+  private:
+    TensorOperationLog redo_log_; ///< tensor table changes reported by `redo` method
+    TensorOperationLog undo_log_; ///< tensor table changes reported by `undo` method
   };
+  template<typename DeviceT>
+  inline std::string TensorOperation<DeviceT>::getRedoLogAsString() const
+  {
+    std::string report = "Redo Log report:";
+    if (n_labels_deleted) report += (" " + redo_log_.n_labels_deleted + " deleted;");
+    if (n_labels_updated) report += (" " + redo_log_.n_labels_updated + " updated;");
+    if (n_labels_inserted) report += (" " + redo_log_.n_labels_inserted + " inserted;");
+    if (n_indices_deleted) report += (" " + redo_log_.n_indices_deleted + " deleted;");
+    if (n_indices_updated) report += (" " + redo_log_.n_indices_updated + " updated;");
+    if (n_indices_inserted) report += (" " + redo_log_.n_indices_inserted + " inserted;");
+    if (n_data_deleted) report += (" " + redo_log_.n_data_deleted + " deleted;");
+    if (n_data_updated) report += (" " + redo_log_.n_data_updated + " updated;");
+    if (n_data_inserted) report += (" " + redo_log_.n_data_inserted + " inserted;");
+    return report;
+  }
+  template<typename DeviceT>
+  inline std::string TensorOperation<DeviceT>::getUndoLogAsString() const
+  {
+    std::string report = "Undo Log report:";
+    if (n_labels_deleted) report += (" " + undo_log_.n_labels_deleted + " deleted;");
+    if (n_labels_updated) report += (" " + undo_log_.n_labels_updated + " updated;");
+    if (n_labels_inserted) report += (" " + undo_log_.n_labels_inserted + " inserted;");
+    if (n_indices_deleted) report += (" " + undo_log_.n_indices_deleted + " deleted;");
+    if (n_indices_updated) report += (" " + undo_log_.n_indices_updated + " updated;");
+    if (n_indices_inserted) report += (" " + undo_log_.n_indices_inserted + " inserted;");
+    if (n_data_deleted) report += (" " + undo_log_.n_data_deleted + " deleted;");
+    if (n_data_updated) report += (" " + undo_log_.n_data_updated + " updated;");
+    if (n_data_inserted) report += (" " + undo_log_.n_data_inserted + " inserted;");
+    return report;
+  }
 
   /**
     @brief Class for appending data to a Tensor
