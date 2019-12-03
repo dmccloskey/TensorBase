@@ -252,6 +252,7 @@ namespace TensorBase
     void redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
     void undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
 		std::shared_ptr<TensorTable<TensorT, DeviceT, 2>> getValuesOld() const { return values_old_; };
+    size_t getNValuesUpdated() { return values_old_->getDataTensorSize(); }
   protected:
     std::function<void(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)> select_function_; // Redo/Undo
     std::string table_name_; // Undo/Redo
@@ -279,6 +280,9 @@ namespace TensorBase
 		for (const auto& axes_to_dims : tensor_collection->tables_.at(table_name_)->getAxesToDims()) {
 			tensor_collection->tables_.at(table_name_)->resetIndicesView(axes_to_dims.first, device);
 		}
+
+    // Report the changes
+    std::cout << getNValuesUpdated() << " values were updated from Table " << table_name_ << "." << std::endl;
   }
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorUpdateValues<TensorT, DeviceT, TDim>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)

@@ -1255,7 +1255,7 @@ namespace TensorBase
 
     // select the indices and reduce back to a 1D Tensor
     auto selected = (labels_bcast == labels_names_selected_bcast).select(indices_bcast, indices_bcast.constant(0));
-    auto selected_sum = selected.sum(Eigen::array<Eigen::Index, 1>({ 1 })).clip(0, 1);
+    auto selected_sum = selected.clip(0, 1).sum(Eigen::array<Eigen::Index, 1>({ 1 })).clip(0, 1);
 
     // update the indices view based on the selection
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_name)->getDataPointer().get(), (int)axes_.at(axis_name)->getNLabels());
@@ -1281,8 +1281,8 @@ namespace TensorBase
     auto indices_bcast = indices_reshape.broadcast(Eigen::array<Eigen::Index, 4>({ (int)axes_.at(axis_name)->getNDimensions(), 1, select_labels->getDimensions().at(0), select_labels->getDimensions().at(1) }));
 
     // select the indices and reduce back to a 1D Tensor
-    auto selected = (labels_bcast == labels_names_selected_bcast).select(indices_bcast, indices_bcast.constant(0)).sum(
-      Eigen::array<Eigen::Index, 2>({ 2, 3 })).prod(Eigen::array<Eigen::Index, 1>({ 0 })).clip(0, 1); // matched = 1, not-matched = 0;
+    auto selected = (labels_bcast == labels_names_selected_bcast).select(indices_bcast, indices_bcast.constant(0)).clip(0, 1).sum(
+      Eigen::array<Eigen::Index, 2>({ 2, 3 })).clip(0, 1).prod(Eigen::array<Eigen::Index, 1>({ 0 })).clip(0, 1); // matched = 1, not-matched = 0;
 
     // update the indices view based on the selection
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_name)->getDataPointer().get(), (int)axes_.at(axis_name)->getNLabels());
