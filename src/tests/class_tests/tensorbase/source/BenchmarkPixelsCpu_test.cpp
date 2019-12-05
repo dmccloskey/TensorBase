@@ -1,16 +1,16 @@
 /**TODO:  Add copyright*/
 
-#define BOOST_TEST_MODULE BenchmarkPixelsDefaultDevice test suite 
+#define BOOST_TEST_MODULE BenchmarkPixelsCpu test suite 
 #include <boost/test/included/unit_test.hpp>
-#include <TensorBase/benchmarks/BenchmarkPixelsDefaultDevice.h>
+#include <TensorBase/benchmarks/BenchmarkPixelsCpu.h>
 
 using namespace TensorBase;
 using namespace TensorBaseBenchmarks;
 using namespace std;
 
-BOOST_AUTO_TEST_SUITE(benchmarkPixelsDefaultDevice)
+BOOST_AUTO_TEST_SUITE(benchmarkPixelsCpu)
 
-BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DDefaultDevice)
+BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DCpu)
 {
   // Parameters for the test
   std::string data_dir = "";
@@ -22,19 +22,19 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DDefaultDevice)
   const int dim_span = std::pow(data_size, 0.25);
 
   // Setup the Benchmarking suite
-  Benchmark1TimePointDefaultDevice<int, int> benchmark_1_tp;
+  Benchmark1TimePointCpu<int, int> benchmark_1_tp;
 
   // Setup the TensorCollectionGenerator
-  TensorCollectionGeneratorDefaultDevice<int, int> tensor_collection_generator;
+  TensorCollectionGeneratorCpu<int, int> tensor_collection_generator;
 
   // Setup the device
-  Eigen::DefaultDevice device;
+  Eigen::ThreadPool pool(2); Eigen::ThreadPoolDevice device(&pool, 2);
 
   // Make the nD TensorTables
-  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true);
+  std::shared_ptr<TensorCollection<Eigen::ThreadPoolDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true);
 
   // Setup the transaction manager
-  TransactionManager<Eigen::DefaultDevice> transaction_manager;
+  TransactionManager<Eigen::ThreadPoolDevice> transaction_manager;
   transaction_manager.setMaxOperations(data_size + 1);
   transaction_manager.setTensorCollection(n_dim_tensor_collection);
 
@@ -201,7 +201,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DDefaultDevice)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(InsertUpdateDelete1DDefaultDevice) 
+BOOST_AUTO_TEST_CASE(InsertUpdateDelete1DCpu) 
 {
   // Parameters for the test
   std::string data_dir = "";
@@ -213,19 +213,19 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete1DDefaultDevice)
   const int dim_span = std::pow(data_size, 0.25);
 
   // Setup the Benchmarking suite
-  Benchmark1TimePointDefaultDevice<int, int> benchmark_1_tp;
+  Benchmark1TimePointCpu<int, int> benchmark_1_tp;
 
   // Setup the TensorCollectionGenerator
-  TensorCollectionGeneratorDefaultDevice<int, int> tensor_collection_generator;
+  TensorCollectionGeneratorCpu<int, int> tensor_collection_generator;
 
   // Setup the device
-  Eigen::DefaultDevice device;
+  Eigen::ThreadPool pool(2); Eigen::ThreadPoolDevice device(&pool, 2);
 
   // Make the nD TensorTables
-  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true);
+  std::shared_ptr<TensorCollection<Eigen::ThreadPoolDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true);
 
   // Setup the transaction manager
-  TransactionManager<Eigen::DefaultDevice> transaction_manager;
+  TransactionManager<Eigen::ThreadPoolDevice> transaction_manager;
   transaction_manager.setMaxOperations(data_size + 1);
   transaction_manager.setTensorCollection(n_dim_tensor_collection);
 
@@ -372,7 +372,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete1DDefaultDevice)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DDefaultDevice)
+BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DCpu)
 {
   // Parameters for the test
   std::string data_dir = "";
@@ -386,19 +386,19 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DDefaultDevice)
   const int t_dim_size = dim_span;
 
   // Setup the Benchmarking suite
-  Benchmark1TimePointDefaultDevice<int, int> benchmark_1_tp;
+  Benchmark1TimePointCpu<int, int> benchmark_1_tp;
 
   // Setup the TensorCollectionGenerator
-  TensorCollectionGeneratorDefaultDevice<int, int> tensor_collection_generator;
+  TensorCollectionGeneratorCpu<int, int> tensor_collection_generator;
 
   // Setup the device
-  Eigen::DefaultDevice device;
+  Eigen::ThreadPool pool(2); Eigen::ThreadPoolDevice device(&pool, 2);
 
   // Make the nD TensorTables
-  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true);
+  std::shared_ptr<TensorCollection<Eigen::ThreadPoolDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true);
 
   // Setup the transaction manager
-  TransactionManager<Eigen::DefaultDevice> transaction_manager;
+  TransactionManager<Eigen::ThreadPoolDevice> transaction_manager;
   transaction_manager.setMaxOperations(data_size + 1);
   transaction_manager.setTensorCollection(n_dim_tensor_collection);
 
@@ -569,7 +569,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DDefaultDevice)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 216);
 }
 
-BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DDefaultDevice)
+BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DCpu)
 {
   // Parameters for the test
   std::string data_dir = "";
@@ -584,19 +584,19 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DDefaultDevice)
   const int t_dim_size = dim_span;
 
   // Setup the Benchmarking suite
-  Benchmark1TimePointDefaultDevice<int, int> benchmark_1_tp;
+  Benchmark1TimePointCpu<int, int> benchmark_1_tp;
 
   // Setup the TensorCollectionGenerator
-  TensorCollectionGeneratorDefaultDevice<int, int> tensor_collection_generator;
+  TensorCollectionGeneratorCpu<int, int> tensor_collection_generator;
 
   // Setup the device
-  Eigen::DefaultDevice device;
+  Eigen::ThreadPool pool(2); Eigen::ThreadPoolDevice device(&pool, 2);
 
   // Make the nD TensorTables
-  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true);
+  std::shared_ptr<TensorCollection<Eigen::ThreadPoolDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true);
 
   // Setup the transaction manager
-  TransactionManager<Eigen::DefaultDevice> transaction_manager;
+  TransactionManager<Eigen::ThreadPoolDevice> transaction_manager;
   transaction_manager.setMaxOperations(data_size + 1);
   transaction_manager.setTensorCollection(n_dim_tensor_collection);
 
@@ -824,7 +824,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DDefaultDevice)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 216);
 }
 
-BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DDefaultDevice)
+BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DCpu)
 {
   // Parameters for the test
   std::string data_dir = "";
@@ -840,19 +840,19 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DDefaultDevice)
   const int t_dim_size = dim_span;
 
   // Setup the Benchmarking suite
-  Benchmark1TimePointDefaultDevice<int, int> benchmark_1_tp;
+  Benchmark1TimePointCpu<int, int> benchmark_1_tp;
 
   // Setup the TensorCollectionGenerator
-  TensorCollectionGeneratorDefaultDevice<int, int> tensor_collection_generator;
+  TensorCollectionGeneratorCpu<int, int> tensor_collection_generator;
 
   // Setup the device
-  Eigen::DefaultDevice device;
+  Eigen::ThreadPool pool(2); Eigen::ThreadPoolDevice device(&pool, 2);
 
   // Make the nD TensorTables
-  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true);
+  std::shared_ptr<TensorCollection<Eigen::ThreadPoolDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true);
 
   // Setup the transaction manager
-  TransactionManager<Eigen::DefaultDevice> transaction_manager;
+  TransactionManager<Eigen::ThreadPoolDevice> transaction_manager;
   transaction_manager.setMaxOperations(data_size + 1);
   transaction_manager.setTensorCollection(n_dim_tensor_collection);
 

@@ -1,5 +1,7 @@
 set(benchmarks_executables_list
+  BenchmarkPixelsCpu_test
   BenchmarkPixelsDefaultDevice_test
+  BenchmarkPixelsGpu_test
 )
 
 set(core_executables_list
