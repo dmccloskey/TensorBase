@@ -157,6 +157,8 @@ namespace TensorBase
 
     bool syncAxesAndIndicesDData(DeviceT& device); ///< Transfer all axes and indices data to the device (if not already)
     bool syncAxesAndIndicesHData(DeviceT& device); ///< Transfer all axes and indices data to the host (if not already)
+    bool syncDData(DeviceT& device); ///< Transfer tensor data to the device (if not already)
+    bool syncHData(DeviceT& device); ///< Transfer tensor data to the host (if not already)
 
     template<typename T>
     void getDataPointer(std::shared_ptr<T[]>& data_copy); ///< TensorTableConcept data getter
@@ -1198,6 +1200,26 @@ namespace TensorBase
         if (!synced_tmp) synced = false;
       }
     }
+    return synced;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline bool TensorTable<TensorT, DeviceT, TDim>::syncDData(DeviceT& device)
+  {
+    bool synced = true;
+    std::pair<bool, bool> statuses = getDataStatus();
+    if (!statuses.second)
+      synced = syncHAndDData(device);
+    return synced;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline bool TensorTable<TensorT, DeviceT, TDim>::syncHData(DeviceT& device)
+  {
+    bool synced = true;
+    std::pair<bool, bool> statuses = getDataStatus();
+    if (!statuses.first)
+      synced = syncHAndDData(device);
     return synced;
   }
 

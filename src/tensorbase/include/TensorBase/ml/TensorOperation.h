@@ -9,15 +9,35 @@
 namespace TensorBase
 {
   struct TensorOperationLog {
-    int n_labels_deleted = 0;
-    int n_labels_updated = 0;
-    int n_labels_inserted = 0;
-    int n_indices_deleted = 0;
-    int n_indices_updated = 0;
-    int n_indices_inserted = 0;
-    int n_data_deleted = 0;
-    int n_data_updated = 0;
-    int n_data_inserted = 0;
+    TensorOperationLog() = default;
+    TensorOperationLog(const int& n_labels_deleted,
+      const int& n_labels_updated,
+      const int& n_labels_inserted,
+      const int& n_indices_deleted,
+      const int& n_indices_updated,
+      const int& n_indices_inserted,
+      const int& n_data_deleted,
+      const int& n_data_updated,
+      const int& n_data_inserted) {
+      n_labels_deleted_ = n_labels_deleted;
+      n_labels_updated_ = n_labels_updated;
+      n_labels_inserted_ = n_labels_inserted;
+      n_indices_deleted_ = n_indices_deleted;
+      n_indices_updated_ = n_indices_updated;
+      n_indices_inserted_ = n_indices_inserted;
+      n_data_deleted_ = n_data_deleted;
+      n_data_updated_ = n_data_updated;
+      n_data_inserted_ = n_data_inserted;
+    }
+    int n_labels_deleted_ = 0;
+    int n_labels_updated_ = 0;
+    int n_labels_inserted_ = 0;
+    int n_indices_deleted_ = 0;
+    int n_indices_updated_ = 0;
+    int n_indices_inserted_ = 0;
+    int n_data_deleted_ = 0;
+    int n_data_updated_ = 0;
+    int n_data_inserted_ = 0;
   };
 
   /**
@@ -31,42 +51,44 @@ namespace TensorBase
     virtual ~TensorOperation() = default;
     virtual void redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) = 0;
     virtual void undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) = 0;
+    void setRedoLog(const TensorOperationLog& operation_log) { redo_log_ = operation_log; }
+    void setUndoLog(const TensorOperationLog& operation_log) { undo_log_ = operation_log; }
     TensorOperationLog const getRedoLog() const { return redo_log_; }
     TensorOperationLog const getUndoLog() const { return undo_log_; }
     std::string getRedoLogAsString() const;
     std::string getUndoLogAsString() const;
   private:
-    TensorOperationLog redo_log_; ///< tensor table changes reported by `redo` method
-    TensorOperationLog undo_log_; ///< tensor table changes reported by `undo` method
+    TensorOperationLog redo_log_ = TensorOperationLog(); ///< tensor table changes reported by `redo` method
+    TensorOperationLog undo_log_ = TensorOperationLog(); ///< tensor table changes reported by `undo` method
   };
   template<typename DeviceT>
   inline std::string TensorOperation<DeviceT>::getRedoLogAsString() const
   {
     std::string report = "Redo Log report:";
-    if (n_labels_deleted) report += (" " + redo_log_.n_labels_deleted + " deleted;");
-    if (n_labels_updated) report += (" " + redo_log_.n_labels_updated + " updated;");
-    if (n_labels_inserted) report += (" " + redo_log_.n_labels_inserted + " inserted;");
-    if (n_indices_deleted) report += (" " + redo_log_.n_indices_deleted + " deleted;");
-    if (n_indices_updated) report += (" " + redo_log_.n_indices_updated + " updated;");
-    if (n_indices_inserted) report += (" " + redo_log_.n_indices_inserted + " inserted;");
-    if (n_data_deleted) report += (" " + redo_log_.n_data_deleted + " deleted;");
-    if (n_data_updated) report += (" " + redo_log_.n_data_updated + " updated;");
-    if (n_data_inserted) report += (" " + redo_log_.n_data_inserted + " inserted;");
+    if (redo_log_.n_labels_deleted_) report = report + " " + redo_log_.n_labels_deleted_ + " deleted;";
+    if (redo_log_.n_labels_updated_) report = report + " " + redo_log_.n_labels_updated_ + " updated;";
+    if (redo_log_.n_labels_inserted_) report = report + " " + redo_log_.n_labels_inserted_ + " inserted;";
+    if (redo_log_.n_indices_deleted_) report = report + " " + redo_log_.n_indices_deleted_ + " deleted;";
+    if (redo_log_.n_indices_updated_) report = report + " " + redo_log_.n_indices_updated_ + " updated;";
+    if (redo_log_.n_indices_inserted_) report = report + " " + redo_log_.n_indices_inserted_ + " inserted;";
+    if (redo_log_.n_data_deleted_) report = report + " " + redo_log_.n_data_deleted_ + " deleted;";
+    if (redo_log_.n_data_updated_) report = report + " " + redo_log_.n_data_updated_ + " updated;";
+    if (redo_log_.n_data_inserted_) report = report + " " + redo_log_.n_data_inserted_ + " inserted;";
     return report;
   }
   template<typename DeviceT>
   inline std::string TensorOperation<DeviceT>::getUndoLogAsString() const
   {
     std::string report = "Undo Log report:";
-    if (n_labels_deleted) report += (" " + undo_log_.n_labels_deleted + " deleted;");
-    if (n_labels_updated) report += (" " + undo_log_.n_labels_updated + " updated;");
-    if (n_labels_inserted) report += (" " + undo_log_.n_labels_inserted + " inserted;");
-    if (n_indices_deleted) report += (" " + undo_log_.n_indices_deleted + " deleted;");
-    if (n_indices_updated) report += (" " + undo_log_.n_indices_updated + " updated;");
-    if (n_indices_inserted) report += (" " + undo_log_.n_indices_inserted + " inserted;");
-    if (n_data_deleted) report += (" " + undo_log_.n_data_deleted + " deleted;");
-    if (n_data_updated) report += (" " + undo_log_.n_data_updated + " updated;");
-    if (n_data_inserted) report += (" " + undo_log_.n_data_inserted + " inserted;");
+    if (undo_log_.n_labels_deleted_) report = report + " " + undo_log_.n_labels_deleted_ + " deleted;";
+    if (undo_log_.n_labels_updated_) report = report + " " + undo_log_.n_labels_updated_ + " updated;";
+    if (undo_log_.n_labels_inserted_) report = report + " " + undo_log_.n_labels_inserted_ + " inserted;";
+    if (undo_log_.n_indices_deleted_) report = report + " " + undo_log_.n_indices_deleted_ + " deleted;";
+    if (undo_log_.n_indices_updated_) report = report + " " + undo_log_.n_indices_updated_ + " updated;";
+    if (undo_log_.n_indices_inserted_) report = report + " " + undo_log_.n_indices_inserted_ + " inserted;";
+    if (undo_log_.n_data_deleted_) report = report + " " + undo_log_.n_data_deleted_ + " deleted;";
+    if (undo_log_.n_data_updated_) report = report + " " + undo_log_.n_data_updated_ + " updated;";
+    if (undo_log_.n_data_inserted_) report = report + " " + undo_log_.n_data_inserted_ + " inserted;";
     return report;
   }
 
@@ -79,8 +101,8 @@ namespace TensorBase
     TensorAppendToAxis() = default;
     TensorAppendToAxis(const std::string& table_name, const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values) :
       table_name_(table_name), axis_name_(axis_name), labels_(labels), values_(values) {};
-    void redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
-    void undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
+    void redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) override;
+    void undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) override;
   protected:
     std::string table_name_; // Redo/Undo
     std::string axis_name_; // Redo/Undo
@@ -113,6 +135,9 @@ namespace TensorBase
     if (!values_->getDataStatus().second) values_->syncHAndDData(device);
     tensor_collection->tables_.at(table_name_)->syncAxesAndIndicesDData(device);
     tensor_collection->tables_.at(table_name_)->appendToAxis(axis_name_, labels_, values_->getDataPointer(), indices_, device);
+
+    // Log the changes
+    this->setRedoLog(TensorOperationLog(0,0, labels_->getTensorSize(),0,0,indices_->getTensorSize(),0,0,values_->getTensorSize()));
   }
   template<typename LabelsT, typename TensorT, typename DeviceT, int TDim>
   inline void TensorAppendToAxis<LabelsT, TensorT, DeviceT, TDim>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
@@ -121,6 +146,9 @@ namespace TensorBase
     if (!indices_->getDataStatus().second) indices_->syncHAndDData(device);
     tensor_collection->tables_.at(table_name_)->syncAxesAndIndicesDData(device);
     tensor_collection->tables_.at(table_name_)->deleteFromAxis(axis_name_, indices_, device);
+
+    // Log the changes
+    this->setUndoLog(TensorOperationLog(labels_->getTensorSize(), 0, 0, indices_->getTensorSize(), 0, 0, values_->getTensorSize(), 0, 0));
   }
 
   /**
@@ -132,12 +160,9 @@ namespace TensorBase
     TensorDeleteFromAxis() = default;
     TensorDeleteFromAxis(const std::string& table_name, const std::string& axis_name, const std::function<void(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)>& select_function) :
       table_name_(table_name), axis_name_(axis_name), select_function_(select_function) {};
-    void redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
-    void undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
+    void redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) override;
+    void undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) override;
     virtual void allocateMemoryForValues(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) = 0;
-    size_t getNLabelsDeleted() { return labels_->getTensorSize(); };
-    size_t getNIndicesDeleted() { return indices_->getTensorSize(); };
-    size_t getNValuesDeleted() { return values_->getTensorSize(); };
   protected:
     std::function<void(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)> select_function_; // Redo
     std::string table_name_; // Undo/Redo
@@ -184,10 +209,8 @@ namespace TensorBase
 			tensor_collection->tables_.at(table_name_)->resetIndicesView(axes_to_dims.first, device);
 		}
 
-    // Report the changes
-    std::cout << getNLabelsDeleted() << " labels were deleted from Table "<< table_name_ << " axis " << axis_name_ << "." << std::endl;
-    std::cout << getNIndicesDeleted() << " indices were deleted from Table " << table_name_ << " axis " << axis_name_ << "." << std::endl;
-    std::cout << getNValuesDeleted() << " values were deleted from Table " << table_name_ << " axis " << axis_name_ << "." << std::endl;
+    // Log the changes
+    this->setRedoLog(TensorOperationLog(labels_->getTensorSize(), 0, 0, indices_->getTensorSize(), 0, 0, values_->getTensorSize(), 0, 0));
 
     /////DEBUG(DefaultDevice)
     //std::cout << "indices_\n" << indices_->getData() << std::endl;
@@ -218,6 +241,9 @@ namespace TensorBase
     if (!labels_->getDataStatus().second) labels_->syncHAndDData(device);
     tensor_collection->tables_.at(table_name_)->syncAxesAndIndicesDData(device);
     tensor_collection->tables_.at(table_name_)->insertIntoAxis(axis_name_, labels_, values_->getDataPointer(), indices_, device);
+
+    // Log the changes
+    this->setUndoLog(TensorOperationLog(0, 0, labels_->getTensorSize(), 0, 0, indices_->getTensorSize(), 0, 0, values_->getTensorSize()));
   }
 
 	/**
@@ -235,8 +261,8 @@ namespace TensorBase
 		TensorUpdateSelectValues() = default;
 		TensorUpdateSelectValues(const std::string& table_name, const std::function<void(std::shared_ptr<TensorCollection<DeviceT>> & tensor_collection, DeviceT & device)>& select_function, const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_new) :
 			table_name_(table_name), select_function_(select_function), values_new_(values_new) {};
-		void redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
-		void undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
+		void redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) override;
+		void undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) override;
 		std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> getValuesOld() const { return values_old_; };
 	protected:
 		std::function<void(std::shared_ptr<TensorCollection<DeviceT>> & tensor_collection, DeviceT & device)> select_function_; // Redo/Undo
@@ -266,6 +292,9 @@ namespace TensorBase
 		values_old_->syncHAndDData(device);
     if (!values_new_->getDataStatus().second) values_new_->syncHAndDData(device);
 		tensor_collection->tables_.at(table_name_)->updateSelectTensorDataValues(values_new_->getDataPointer(), values_old_->getDataPointer(), device);
+
+    // Log the changes
+    this->setRedoLog(TensorOperationLog(0, 0, 0, 0, 0, 0, values_new_->getTensorSize(), 0, 0));
 	}
 	template<typename TensorT, typename DeviceT, int TDim>
 	inline void TensorUpdateSelectValues<TensorT, DeviceT, TDim>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
@@ -281,6 +310,9 @@ namespace TensorBase
 		// Update the values with the `values_old`
     if (!values_old_->getDataStatus().second) values_old_->syncHAndDData(device);
 		tensor_collection->tables_.at(table_name_)->updateSelectTensorDataValues(values_old_->getDataPointer(), device);
+
+    // Log the changes
+    this->setUndoLog(TensorOperationLog(0, 0, 0, 0, 0, 0, values_old_->getTensorSize(), 0, 0));
 	}
 
   /**
@@ -298,10 +330,9 @@ namespace TensorBase
 		TensorUpdateValues() = default;
 		TensorUpdateValues(const std::string& table_name, const std::function<void(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)>& select_function, const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_new) :
       table_name_(table_name), select_function_(select_function), values_new_(values_new){};
-    void redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
-    void undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
+    void redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) override;
+    void undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) override;
 		std::shared_ptr<TensorTable<TensorT, DeviceT, 2>> getValuesOld() const { return values_old_; };
-    size_t getNValuesUpdated() { return values_old_->getDataTensorSize(); }
   protected:
     std::function<void(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)> select_function_; // Redo/Undo
     std::string table_name_; // Undo/Redo
@@ -330,8 +361,8 @@ namespace TensorBase
 			tensor_collection->tables_.at(table_name_)->resetIndicesView(axes_to_dims.first, device);
 		}
 
-    // Report the changes
-    std::cout << getNValuesUpdated() << " values were updated from Table " << table_name_ << "." << std::endl;
+    // Log the changes
+    this->setRedoLog(TensorOperationLog(0, 0, 0, 0, 0, 0, values_new_->getTensorSize(), 0, 0));
   }
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorUpdateValues<TensorT, DeviceT, TDim>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
@@ -348,6 +379,9 @@ namespace TensorBase
 		for (const auto& axes_to_dims : tensor_collection->tables_.at(table_name_)->getAxesToDims()) {
 			tensor_collection->tables_.at(table_name_)->resetIndicesView(axes_to_dims.first, device);
 		}
+
+    // Log the changes
+    this->setUndoLog(TensorOperationLog(0, 0, 0, 0, 0, 0, values_old_->getDataTensorSize(), 0, 0));
   }
 
   /**
@@ -361,8 +395,8 @@ namespace TensorBase
     TensorUpdateConstant() = default;
     TensorUpdateConstant(const std::string& table_name, const std::function<void(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)>& select_function, const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values_new) :
       table_name_(table_name), select_function_(select_function), values_new_(values_new) {};
-    void redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
-    void undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
+    void redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) override;
+    void undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) override;
     std::shared_ptr<TensorTable<TensorT, DeviceT, 2>> getValuesOld() const { return values_old_; };
   protected:
     std::function<void(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)> select_function_; // Redo/Undo
@@ -390,6 +424,9 @@ namespace TensorBase
     // Reset the table indices
     for (const auto& axes_to_dims : tensor_collection->tables_.at(table_name_)->getAxesToDims())
       tensor_collection->tables_.at(table_name_)->resetIndicesView(axes_to_dims.first, device);
+
+    // Log the changes
+    this->setRedoLog(TensorOperationLog(0, 0, 0, 0, 0, 0, values_new_->getTensorSize(), 0, 0));
   }
   template<typename TensorT, typename DeviceT>
   inline void TensorUpdateConstant<TensorT, DeviceT>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
@@ -405,6 +442,9 @@ namespace TensorBase
 		// Reset the table indices
 		for (const auto& axes_to_dims : tensor_collection->tables_.at(table_name_)->getAxesToDims())
 			tensor_collection->tables_.at(table_name_)->resetIndicesView(axes_to_dims.first, device);
+
+    // Log the changes
+    this->setUndoLog(TensorOperationLog(0, 0, 0, 0, 0, 0, values_old_->getDataTensorSize(), 0, 0));
   }
 
   class TensorAppendToDimension;
@@ -422,8 +462,8 @@ namespace TensorBase
     TensorAddTable() = default;
     TensorAddTable(const std::shared_ptr<T>& table, const std::string& user_table_name) :
       table_(table), user_table_name_(user_table_name){};
-    void redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
-    void undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
+    void redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) override;
+    void undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) override;
   protected:
     std::shared_ptr<T> table_; // undo/redo
     std::string user_table_name_; // undo/redo
@@ -450,8 +490,8 @@ namespace TensorBase
     TensorDropTable() = default;
     TensorDropTable(const std::string& table_name) :
       table_name_(table_name) {};
-    void redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
-    void undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
+    void redo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) override;
+    void undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) override;
   protected:
     std::string table_name_; // redo
     std::string user_table_name_; // undo

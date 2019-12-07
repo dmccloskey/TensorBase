@@ -86,6 +86,8 @@ namespace TensorBase
 		virtual size_t getDataTensorSize() const = 0;
     virtual bool syncAxesAndIndicesDData(DeviceT& device) = 0;
     virtual bool syncAxesAndIndicesHData(DeviceT& device) = 0;
+    virtual bool syncDData(DeviceT& device) = 0;
+    virtual bool syncHData(DeviceT& device) = 0;
 
     // All TensorT combos of `getLabelsDatapointer`
     virtual void getDataPointer(std::shared_ptr<int[]>& data_copy) = 0;
@@ -1021,6 +1023,8 @@ namespace TensorBase
 		size_t getDataTensorSize() const override { return tensor_table_->getDataTensorSize(); }
     bool syncAxesAndIndicesDData(DeviceT& device) { return tensor_table_->syncAxesAndIndicesDData(device); }
     bool syncAxesAndIndicesHData(DeviceT& device) { return tensor_table_->syncAxesAndIndicesHData(device); }
+    bool syncDData(DeviceT& device) { return tensor_table_->syncDData(device); }
+    bool syncHData(DeviceT& device) { return tensor_table_->syncHData(device); }
 
     void getDataPointer(std::shared_ptr<int[]>& data_copy) override {
       tensor_table_->getDataPointer(data_copy);
