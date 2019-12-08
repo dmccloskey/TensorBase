@@ -120,6 +120,7 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersCpu)
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3)));
+  tensorTable.setShardSpans(std::map<std::string, int>()); // reset the shard spans to zero
   tensorTable.setAxes();
 
   // Test expected axes values

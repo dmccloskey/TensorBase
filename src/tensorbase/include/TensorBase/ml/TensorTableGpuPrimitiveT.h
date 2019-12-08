@@ -79,7 +79,11 @@ namespace TensorBase
     this->not_in_memory_.clear();
     this->shard_id_.clear();
     this->shard_indices_.clear();
-    this->shard_spans_.clear();
+    bool update_shard_spans = false;
+    if (this->shard_spans_.size() == 0) {
+      this->shard_spans_.clear();
+      update_shard_spans = true;
+    }
 
     // Determine the overall dimensions of the tensor
     int axis_cnt = 0;
@@ -91,7 +95,7 @@ namespace TensorBase
       this->axes_to_dims_.emplace(axis.second->getName(), axis_cnt);
 
       // Set the initial shard size
-      this->shard_spans_.emplace(axis.second->getName(), axis.second->getNLabels());
+      if (update_shard_spans) this->shard_spans_.emplace(axis.second->getName(), axis.second->getNLabels());
 
       // Set the indices
       Eigen::Tensor<int, 1> indices_values(axis.second->getNLabels());

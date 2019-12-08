@@ -77,6 +77,7 @@ void test_gettersAndSettersGpu()
   tensorTable.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1", dimensions1, labels1)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("2", dimensions2, labels2)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("3", dimensions3, labels3)));
+  tensorTable.setShardSpans(std::map<std::string, int>()); // reset the shard spans to zero
   tensorTable.setAxes();
 
   // Test expected axes values

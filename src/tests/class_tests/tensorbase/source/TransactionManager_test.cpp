@@ -583,6 +583,50 @@ BOOST_AUTO_TEST_CASE(CommitDefaultDevice)
   transactionManager.commit(device);
   BOOST_CHECK_EQUAL(transactionManager.getCurrentIndex(), -1);
 
+  // Clear table 1 and re-load the data
+  tensorTable1_ptr->clear();
+  TensorCollectionFile<Eigen::DefaultDevice> data;
+  data.loadTensorCollectionBinary(tensorCollection_ptr->getName() + ".TensorCollection", tensorCollection_ptr, device);   
+
+  // Test for the expected table data
+  for (int i = 0; i < nlabels1; ++i) {
+    for (int j = 0; j < nlabels2; ++j) {
+      for (int k = 0; k < nlabels3; ++k) {
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j, k), tensor_values1(i, j, k));
+      }
+    }
+  }
+  for (int i = 0; i < nlabels1; ++i) {
+    for (int j = 0; j < nlabels2; ++j) {
+      for (int k = 0; k < nlabels3; ++k) {
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j + nlabels2, k), tensor_values_new(i, j, k));
+      }
+    }
+  }
+
+  // Test for the expected axis data
+  BOOST_CHECK_EQUAL(table_1_axis_2_ptr->getNLabels(), nlabels2 + nlabels2);
+  for (int i = 0; i < nlabels2 + nlabels2; ++i) {
+    BOOST_CHECK_EQUAL(table_1_axis_2_ptr->getLabels()(0, i), i);
+  }
+
+  // Test for the expected indices data
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getDimensions().at(tensorTable1_ptr->getDimFromAxisName("2")), nlabels2 + nlabels2);
+  for (int i = 0; i < nlabels2 + nlabels2; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
+    if (i < nlabels2) {
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 1);
+    }
+    else {
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 2);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i - nlabels2 + 1);
+    }
+  }
+
 
 }
 
