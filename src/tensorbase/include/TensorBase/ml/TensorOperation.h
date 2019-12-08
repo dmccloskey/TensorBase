@@ -294,7 +294,7 @@ namespace TensorBase
 		tensor_collection->tables_.at(table_name_)->updateSelectTensorDataValues(values_new_->getDataPointer(), values_old_->getDataPointer(), device);
 
     // Log the changes
-    this->setRedoLog(TensorOperationLog(0, 0, 0, 0, 0, 0, values_new_->getTensorSize(), 0, 0));
+    this->setRedoLog(TensorOperationLog(0, 0, 0, 0, 0, 0, 0, values_new_->getTensorSize(), 0));
 	}
 	template<typename TensorT, typename DeviceT, int TDim>
 	inline void TensorUpdateSelectValues<TensorT, DeviceT, TDim>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
@@ -312,7 +312,7 @@ namespace TensorBase
 		tensor_collection->tables_.at(table_name_)->updateSelectTensorDataValues(values_old_->getDataPointer(), device);
 
     // Log the changes
-    this->setUndoLog(TensorOperationLog(0, 0, 0, 0, 0, 0, values_old_->getTensorSize(), 0, 0));
+    this->setUndoLog(TensorOperationLog(0, 0, 0, 0, 0, 0, 0, values_old_->getTensorSize(), 0));
 	}
 
   /**
@@ -362,7 +362,7 @@ namespace TensorBase
 		}
 
     // Log the changes
-    this->setRedoLog(TensorOperationLog(0, 0, 0, 0, 0, 0, values_new_->getTensorSize(), 0, 0));
+    this->setRedoLog(TensorOperationLog(0, 0, 0, 0, 0, 0, 0, values_new_->getTensorSize(), 0));
   }
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorUpdateValues<TensorT, DeviceT, TDim>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
@@ -381,7 +381,7 @@ namespace TensorBase
 		}
 
     // Log the changes
-    this->setUndoLog(TensorOperationLog(0, 0, 0, 0, 0, 0, values_old_->getDataTensorSize(), 0, 0));
+    this->setUndoLog(TensorOperationLog(0, 0, 0, 0, 0, 0, 0, values_old_->getDataTensorSize(), 0));
   }
 
   /**
@@ -426,7 +426,7 @@ namespace TensorBase
       tensor_collection->tables_.at(table_name_)->resetIndicesView(axes_to_dims.first, device);
 
     // Log the changes
-    this->setRedoLog(TensorOperationLog(0, 0, 0, 0, 0, 0, values_new_->getTensorSize(), 0, 0));
+    this->setRedoLog(TensorOperationLog(0, 0, 0, 0, 0, 0, 0, values_old_->getDataTensorSize(), 0));
   }
   template<typename TensorT, typename DeviceT>
   inline void TensorUpdateConstant<TensorT, DeviceT>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
@@ -444,7 +444,7 @@ namespace TensorBase
 			tensor_collection->tables_.at(table_name_)->resetIndicesView(axes_to_dims.first, device);
 
     // Log the changes
-    this->setUndoLog(TensorOperationLog(0, 0, 0, 0, 0, 0, values_old_->getDataTensorSize(), 0, 0));
+    this->setUndoLog(TensorOperationLog(0, 0, 0, 0, 0, 0, 0, values_old_->getDataTensorSize(), 0));
   }
 
   class TensorAppendToDimension;

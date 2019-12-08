@@ -260,13 +260,13 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorAppendToAxis)
   // Test for the expected redo/undo log data
   BOOST_CHECK_EQUAL(appendToAxis.getRedoLog().n_labels_deleted_, 0);
   BOOST_CHECK_EQUAL(appendToAxis.getRedoLog().n_labels_updated_, 0);
-  BOOST_CHECK_EQUAL(appendToAxis.getRedoLog().n_labels_inserted_, 0);
+  BOOST_CHECK_EQUAL(appendToAxis.getRedoLog().n_labels_inserted_, 3);
   BOOST_CHECK_EQUAL(appendToAxis.getRedoLog().n_indices_deleted_, 0);
   BOOST_CHECK_EQUAL(appendToAxis.getRedoLog().n_indices_updated_, 0);
-  BOOST_CHECK_EQUAL(appendToAxis.getRedoLog().n_indices_inserted_, 0);
+  BOOST_CHECK_EQUAL(appendToAxis.getRedoLog().n_indices_inserted_, 3);
   BOOST_CHECK_EQUAL(appendToAxis.getRedoLog().n_data_deleted_, 0);
   BOOST_CHECK_EQUAL(appendToAxis.getRedoLog().n_data_updated_, 0);
-  BOOST_CHECK_EQUAL(appendToAxis.getRedoLog().n_data_inserted_, 0);
+  BOOST_CHECK_EQUAL(appendToAxis.getRedoLog().n_data_inserted_, 30);
   BOOST_CHECK_EQUAL(appendToAxis.getUndoLog().n_labels_deleted_, 3);
   BOOST_CHECK_EQUAL(appendToAxis.getUndoLog().n_labels_updated_, 0);
   BOOST_CHECK_EQUAL(appendToAxis.getUndoLog().n_labels_inserted_, 0);
@@ -466,13 +466,13 @@ BOOST_AUTO_TEST_CASE(redoAndTensorDeleteFromAxis)
   }
 
   // Test for the expected redo/undo log data
-  BOOST_CHECK_EQUAL(deleteFromAxis.getRedoLog().n_labels_deleted_, 0);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getRedoLog().n_labels_deleted_, 1);
   BOOST_CHECK_EQUAL(deleteFromAxis.getRedoLog().n_labels_updated_, 0);
   BOOST_CHECK_EQUAL(deleteFromAxis.getRedoLog().n_labels_inserted_, 0);
-  BOOST_CHECK_EQUAL(deleteFromAxis.getRedoLog().n_indices_deleted_, 0);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getRedoLog().n_indices_deleted_, 1);
   BOOST_CHECK_EQUAL(deleteFromAxis.getRedoLog().n_indices_updated_, 0);
   BOOST_CHECK_EQUAL(deleteFromAxis.getRedoLog().n_indices_inserted_, 0);
-  BOOST_CHECK_EQUAL(deleteFromAxis.getRedoLog().n_data_deleted_, 0);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getRedoLog().n_data_deleted_, 10);
   BOOST_CHECK_EQUAL(deleteFromAxis.getRedoLog().n_data_updated_, 0);
   BOOST_CHECK_EQUAL(deleteFromAxis.getRedoLog().n_data_inserted_, 0);
   BOOST_CHECK_EQUAL(deleteFromAxis.getUndoLog().n_labels_deleted_, 0);
@@ -602,7 +602,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateSelectValues)
   BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_indices_updated_, 0);
   BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_indices_inserted_, 0);
   BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_deleted_, 0);
-  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_updated_, 2);
   BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_inserted_, 0);
   BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_labels_deleted_, 0);
   BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_labels_updated_, 0);
@@ -642,7 +642,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateSelectValues)
   BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_indices_updated_, 0);
   BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_indices_inserted_, 0);
   BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_deleted_, 0);
-  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_updated_, 2);
   BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_inserted_, 0);
   BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_labels_deleted_, 0);
   BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_labels_updated_, 0);
@@ -651,7 +651,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateSelectValues)
   BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_indices_updated_, 0);
   BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_indices_inserted_, 0);
   BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_data_deleted_, 0);
-  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_data_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_data_updated_, 2);
   BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_data_inserted_, 0);
 }
 
@@ -796,7 +796,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateValues)
   BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_indices_updated_, 0);
   BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_indices_inserted_, 0);
   BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_deleted_, 0);
-  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_updated_, 2);
   BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_inserted_, 0);
   BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_labels_deleted_, 0);
   BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_labels_updated_, 0);
@@ -856,7 +856,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateValues)
   BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_indices_updated_, 0);
   BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_indices_inserted_, 0);
   BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_deleted_, 0);
-  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_updated_, 2);
   BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_inserted_, 0);
   BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_labels_deleted_, 0);
   BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_labels_updated_, 0);
@@ -865,7 +865,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateValues)
   BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_indices_updated_, 0);
   BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_indices_inserted_, 0);
   BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_data_deleted_, 0);
-  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_data_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_data_updated_, 2);
   BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_data_inserted_, 0);
 }
 
@@ -1010,7 +1010,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateConstant)
   BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_indices_updated_, 0);
   BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_indices_inserted_, 0);
   BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_deleted_, 0);
-  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_updated_, 2);
   BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_inserted_, 0);
   BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_labels_deleted_, 0);
   BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_labels_updated_, 0);
@@ -1070,7 +1070,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateConstant)
   BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_indices_updated_, 0);
   BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_indices_inserted_, 0);
   BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_deleted_, 0);
-  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_updated_, 2);
   BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_inserted_, 0);
   BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_labels_deleted_, 0);
   BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_labels_updated_, 0);
@@ -1079,7 +1079,7 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateConstant)
   BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_indices_updated_, 0);
   BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_indices_inserted_, 0);
   BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_data_deleted_, 0);
-  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_data_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_data_updated_, 2);
   BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_data_inserted_, 0);
 }
 
