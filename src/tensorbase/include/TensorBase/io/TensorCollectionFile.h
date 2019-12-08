@@ -38,7 +38,7 @@ public:
 
       @returns Status True on success, False if not
     */ 
-    bool loadTensorCollectionBinary(const std::string& filename, TensorCollection<DeviceT>& tensor_collection, DeviceT& device);
+    bool loadTensorCollectionBinary(const std::string& filename, std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
 
     /**
       @brief Load select tensor table tensor data from .csv file
@@ -55,7 +55,7 @@ public:
 
       @returns Status True on success, False if not
     */
-    bool loadTensorTableFromCsv(const std::string& filename, const std::string& user_table_name, TensorCollection<DeviceT>& tensor_collection, DeviceT& device);
+    bool loadTensorTableFromCsv(const std::string& filename, const std::string& user_table_name, std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
  
     /**
       @brief Store the entire tensor collection metadata and tensor data to disk
@@ -65,7 +65,7 @@ public:
 
       @returns Status True on success, False if not
     */ 
-    bool storeTensorCollectionBinary(const std::string& filename, const TensorCollection<DeviceT>& tensor_collection, DeviceT& device);
+    bool storeTensorCollectionBinary(const std::string& filename, const std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
 
     /**
       @brief Store select tensor table tensor data as .csv file
@@ -76,7 +76,7 @@ public:
 
       @returns Status True on success, False if not
     */
-    bool storeTensorTableAsCsv(const std::string& filename, const std::string& user_table_name, TensorCollection<DeviceT>& tensor_collection, DeviceT& device);
+    bool storeTensorTableAsCsv(const std::string& filename, const std::string& user_table_name, std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
 
     /**
       @brief Get the tensor table headers
@@ -88,11 +88,11 @@ public:
         the first is a key/value pair of axis name and a string vectors of dimension names
         and the second is a key/value pair of tables_names and a string vectors of axis labels
     */
-    static std::pair<std::map<std::string, std::vector<std::string>>, std::map<std::string, std::vector<std::string>>> getTensorTableHeaders(const std::string& table_name, TensorCollection<DeviceT>& tensor_collection, DeviceT& device);
+    static std::pair<std::map<std::string, std::vector<std::string>>, std::map<std::string, std::vector<std::string>>> getTensorTableHeaders(const std::string& table_name, std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
   };
 
   template<typename DeviceT>
-  inline bool TensorCollectionFile<DeviceT>::loadTensorCollectionBinary(const std::string & filename, TensorCollection<DeviceT>& tensor_collection, DeviceT& device)
+  inline bool TensorCollectionFile<DeviceT>::loadTensorCollectionBinary(const std::string & filename, std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
   {
     // Load in the serialized metadata
     std::ifstream ifs(filename, std::ios::binary);
@@ -103,7 +103,7 @@ public:
     }
 
     // Load in the binarized tensor data
-    for (auto& tensor_table_map : tensor_collection.tables_) {
+    for (auto& tensor_table_map : tensor_collection->tables_) {
       tensor_table_map.second->setAxes(); // initialize the axes
       for (auto& axis_map : tensor_table_map.second->getAxes()) {
         axis_map.second->setLabels(); // initialize the axes labels host/device memory
@@ -117,10 +117,10 @@ public:
   }
 
   template<typename DeviceT>
-  inline bool TensorCollectionFile<DeviceT>::loadTensorTableFromCsv(const std::string & filename, const std::string & user_table_name, TensorCollection<DeviceT>& tensor_collection, DeviceT & device)
+  inline bool TensorCollectionFile<DeviceT>::loadTensorTableFromCsv(const std::string & filename, const std::string & user_table_name, std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT & device)
   {
     // Get the .csv headers
-    const std::string first_table_name = *(tensor_collection.user_table_names_to_tensor_table_names_.at(user_table_name).begin());
+    const std::string first_table_name = *(tensor_collection->user_table_names_to_tensor_table_names_.at(user_table_name).begin());
     std::pair<std::map<std::string, std::vector<std::string>>, std::map<std::string, std::vector<std::string>>> headers = getTensorTableHeaders(user_table_name, tensor_collection, device);
     
     // Determine the number of rows that will be read in
@@ -134,7 +134,7 @@ public:
     int n_shard_size = count_rows(filename);
 
     //// Calculate the shard size for the non-primary axes
-    //int n_shard_size = tensor_collection.tables_.at(first_table_name)->getCsvShardSpans().at(1);
+    //int n_shard_size = tensor_collection->tables_.at(first_table_name)->getCsvShardSpans().at(1);
 
     // Prepare the data structures for calls to insertIntoTableFromCsv
     std::map<std::string, Eigen::Tensor<std::string, 2>> data_new;
@@ -152,7 +152,7 @@ public:
     int n_cols = 0;
     csv::CSVReader reader(filename);
     for (csv::CSVRow& row: reader) {
-      for (const std::string& table_name : tensor_collection.user_table_names_to_tensor_table_names_.at(user_table_name)) {
+      for (const std::string& table_name : tensor_collection->user_table_names_to_tensor_table_names_.at(user_table_name)) {
         // Get the .csv data for each axis row
         if (table_name == first_table_name) {
           // Get the .csv data for the non-primary axes labels
@@ -181,12 +181,12 @@ public:
       ++n_cols;
       //if (n_cols == n_shard_size) {
       //  // add in the shard to the tensor tables
-      //  for (const std::string& table_name : tensor_collection.user_table_names_to_tensor_table_names_.at(user_table_name)) {
+      //  for (const std::string& table_name : tensor_collection->user_table_names_to_tensor_table_names_.at(user_table_name)) {
       //    if (table_name == first_table_name) {
-      //      tensor_collection.tables_.at(table_name)->insertIntoTableFromCsv(labels_new, data_new.at(table_name), device);
+      //      tensor_collection->tables_.at(table_name)->insertIntoTableFromCsv(labels_new, data_new.at(table_name), device);
       //    }
       //    else {
-      //      tensor_collection.tables_.at(table_name)->insertIntoTableFromCsv(data_new.at(table_name), device);
+      //      tensor_collection->tables_.at(table_name)->insertIntoTableFromCsv(data_new.at(table_name), device);
       //    }
       //  }
 
@@ -210,26 +210,26 @@ public:
     //    Eigen::Tensor<std::string, 2> reshape = resized;
     //    labels_map.second = reshape;
     //  }
-    //  for (const std::string& table_name : tensor_collection.user_table_names_to_tensor_table_names_.at(user_table_name)) {
+    //  for (const std::string& table_name : tensor_collection->user_table_names_to_tensor_table_names_.at(user_table_name)) {
     //    Eigen::TensorMap<Eigen::Tensor<std::string, 2>> resized(data_new.at(table_name).data(), Eigen::array<Eigen::Index, 2>({ data_new.at(table_name).dimension(0), n_cols }));
     //    Eigen::Tensor<std::string, 2> reshape = resized;
     //    data_new.at(table_name) = reshape;
     //    if (table_name == first_table_name) {
-    //      tensor_collection.tables_.at(table_name)->insertIntoTableFromCsv(labels_new, data_new.at(table_name), device);
+    //      tensor_collection->tables_.at(table_name)->insertIntoTableFromCsv(labels_new, data_new.at(table_name), device);
     //    }
     //    else {
-    //      tensor_collection.tables_.at(table_name)->insertIntoTableFromCsv(data_new.at(table_name), device);
+    //      tensor_collection->tables_.at(table_name)->insertIntoTableFromCsv(data_new.at(table_name), device);
     //    }
     //  }
     //}
 
     // add in the shard to the tensor tables
-    for (const std::string& table_name : tensor_collection.user_table_names_to_tensor_table_names_.at(user_table_name)) {
+    for (const std::string& table_name : tensor_collection->user_table_names_to_tensor_table_names_.at(user_table_name)) {
       if (table_name == first_table_name) {
-        tensor_collection.tables_.at(table_name)->insertIntoTableFromCsv(labels_new, data_new.at(table_name), device);
+        tensor_collection->tables_.at(table_name)->insertIntoTableFromCsv(labels_new, data_new.at(table_name), device);
       }
       else {
-        tensor_collection.tables_.at(table_name)->insertIntoTableFromCsv(data_new.at(table_name), device);
+        tensor_collection->tables_.at(table_name)->insertIntoTableFromCsv(data_new.at(table_name), device);
       }
     }
 
@@ -237,7 +237,7 @@ public:
   }
 
   template<typename DeviceT>
-  inline bool TensorCollectionFile<DeviceT>::storeTensorCollectionBinary(const std::string & filename, const TensorCollection<DeviceT>& tensor_collection, DeviceT& device)
+  inline bool TensorCollectionFile<DeviceT>::storeTensorCollectionBinary(const std::string & filename, const std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
   {
     // Store the serialized metadata
     std::ofstream ofs(filename, std::ios::binary);
@@ -248,7 +248,7 @@ public:
     //}// Lines check to make sure the file is not already created
 
     // Store the binarized tensor data
-    for (auto& tensor_table_map : tensor_collection.tables_) {
+    for (auto& tensor_table_map : tensor_collection->tables_) {
       tensor_table_map.second->storeTensorTableAxesBinary(tensor_table_map.second->getDir(), device);
       tensor_table_map.second->storeTensorTableBinary(tensor_table_map.second->getDir(), device);
     }
@@ -256,7 +256,7 @@ public:
   }
 
   template<typename DeviceT>
-  inline bool TensorCollectionFile<DeviceT>::storeTensorTableAsCsv(const std::string & filename, const std::string & user_table_name, TensorCollection<DeviceT>& tensor_collection, DeviceT & device)
+  inline bool TensorCollectionFile<DeviceT>::storeTensorTableAsCsv(const std::string & filename, const std::string & user_table_name, std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT & device)
   {
     CSVWriter csvwriter(filename);
 
@@ -278,16 +278,16 @@ public:
     csvwriter.writeDataInRow(headers_line.begin(), headers_line.end());
 
     // Calculate the number of columns of the .csv file
-    const std::string first_table_name = *(tensor_collection.user_table_names_to_tensor_table_names_.at(user_table_name).begin());
-    Eigen::array<Eigen::Index, 2> data_dimensions = tensor_collection.tables_.at(first_table_name)->getCsvDataDimensions();
+    const std::string first_table_name = *(tensor_collection->user_table_names_to_tensor_table_names_.at(user_table_name).begin());
+    Eigen::array<Eigen::Index, 2> data_dimensions = tensor_collection->tables_.at(first_table_name)->getCsvDataDimensions();
 
     // Write the rows
     for (int i = 0; i < data_dimensions.at(1); ++i) {
       std::vector<std::string> row_line;
-      for (const std::string& table_name : tensor_collection.user_table_names_to_tensor_table_names_.at(user_table_name)) {
+      for (const std::string& table_name : tensor_collection->user_table_names_to_tensor_table_names_.at(user_table_name)) {
         // Get the .csv data for each axis row
         if (table_name == first_table_name) {
-          std::map<std::string, std::vector<std::string>> axes_row_data = tensor_collection.tables_.at(table_name)->getCsvAxesLabelsRow(i);
+          std::map<std::string, std::vector<std::string>> axes_row_data = tensor_collection->tables_.at(table_name)->getCsvAxesLabelsRow(i);
           for (const auto& non_primary_data : axes_row_data) {
             for (const std::string& data : non_primary_data.second) {
               row_line.push_back(data);
@@ -296,7 +296,7 @@ public:
         }
 
         // Get the .csv data for each table
-        std::vector<std::string> row_data = tensor_collection.tables_.at(table_name)->getCsvDataRow(i);
+        std::vector<std::string> row_data = tensor_collection->tables_.at(table_name)->getCsvDataRow(i);
         for (const std::string& data : row_data) {
           row_line.push_back(data);
         }
@@ -308,21 +308,21 @@ public:
   }
 
   template<typename DeviceT>
-  inline std::pair<std::map<std::string, std::vector<std::string>>, std::map<std::string, std::vector<std::string>>> TensorCollectionFile<DeviceT>::getTensorTableHeaders(const std::string & user_table_name, TensorCollection<DeviceT>& tensor_collection, DeviceT & device)
+  inline std::pair<std::map<std::string, std::vector<std::string>>, std::map<std::string, std::vector<std::string>>> TensorCollectionFile<DeviceT>::getTensorTableHeaders(const std::string & user_table_name, std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT & device)
   {
     // Make the expected headers
     std::map<std::string, std::vector<std::string>> non_primary_headers, primary_headers;
     bool is_first_table = true;
-    for (const std::string& table_name : tensor_collection.user_table_names_to_tensor_table_names_.at(user_table_name)) {
-      for (const auto& axes_map : tensor_collection.tables_.at(table_name)->getAxes()) {
+    for (const std::string& table_name : tensor_collection->user_table_names_to_tensor_table_names_.at(user_table_name)) {
+      for (const auto& axes_map : tensor_collection->tables_.at(table_name)->getAxes()) {
         // use the dimension names to create the non primary axis headers
-        if (tensor_collection.tables_.at(table_name)->getDimFromAxisName(axes_map.first) != 0 && is_first_table) {
+        if (tensor_collection->tables_.at(table_name)->getDimFromAxisName(axes_map.first) != 0 && is_first_table) {
           Eigen::TensorMap<Eigen::Tensor<std::string, 1>>& dimensions = axes_map.second->getDimensions();
           std::vector<std::string> dimension_names(dimensions.data(), dimensions.data() + dimensions.size());
           non_primary_headers.emplace(axes_map.first, dimension_names);
         }
         // use the axis labels to create the primary axis headers
-        else if (tensor_collection.tables_.at(table_name)->getDimFromAxisName(axes_map.first) == 0) {
+        else if (tensor_collection->tables_.at(table_name)->getDimFromAxisName(axes_map.first) == 0) {
           assert(axes_map.second->getDimensions().size() == 1);
           std::vector<std::string> labels = axes_map.second->getLabelsAsStrings(device);
           primary_headers.emplace(table_name, labels);

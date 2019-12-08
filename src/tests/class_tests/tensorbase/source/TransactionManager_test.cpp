@@ -580,8 +580,10 @@ BOOST_AUTO_TEST_CASE(CommitDefaultDevice)
   }
 
   // Test Commit
-  transactionManager.commit();
+  transactionManager.commit(device);
   BOOST_CHECK_EQUAL(transactionManager.getCurrentIndex(), -1);
+
+
 }
 
 BOOST_AUTO_TEST_SUITE_END()

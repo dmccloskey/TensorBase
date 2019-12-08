@@ -90,25 +90,26 @@ BOOST_AUTO_TEST_CASE(storeAndLoadBinaryDefaultDevice)
   tensorCollection.addTensorTable(tensorTable1_ptr, "1");
   tensorCollection.addTensorTable(tensorTable2_ptr, "1");
   tensorCollection.addTensorTable(tensorTable3_ptr, "1");
+  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> tensorCollectionPtr = std::make_shared<TensorCollectionDefaultDevice>(tensorCollection);
 
   // Store the Tensor Collection
   Eigen::DefaultDevice device;
   TensorCollectionFile<Eigen::DefaultDevice> data;
-  std::string filename = "TensorCollectionFile<Eigen::DefaultDevice>Test.dat";
-  data.storeTensorCollectionBinary(filename, tensorCollection, device);
+  std::string filename = "TensorCollectionFileTest.dat";
+  data.storeTensorCollectionBinary(filename, tensorCollectionPtr, device);
 
   // Load the Tensor Collection
-  TensorCollectionDefaultDevice tensorCollection_test;
-  data.loadTensorCollectionBinary(filename, tensorCollection_test, device);
+  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> tensorCollectionTestPtr;
+  data.loadTensorCollectionBinary(filename, tensorCollectionTestPtr, device);
 
   // Test the serialized metadata
-  BOOST_CHECK(tensorCollection == tensorCollection_test);
+  BOOST_CHECK(*(tensorCollectionPtr.get()) == *(tensorCollectionTestPtr.get()));
 
   // Test the binarized tensor axes data and tensor data
   // NOTE: tests only work on the DefaultDevice
   {// Table 1 Axis 1
     std::shared_ptr<int[]> labels_ptr;
-    tensorCollection_test.tables_.at("1")->getAxes().at("1")->getLabelsDataPointer(labels_ptr);
+    tensorCollectionTestPtr->tables_.at("1")->getAxes().at("1")->getLabelsDataPointer(labels_ptr);
     Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_values(labels_ptr.get(), 1, nlabels1);
     for (int j = 0; j < nlabels1; ++j) {
       BOOST_CHECK_EQUAL(labels_values(0, j), labels1(0, j));
@@ -116,7 +117,7 @@ BOOST_AUTO_TEST_CASE(storeAndLoadBinaryDefaultDevice)
   }
   {// Table 1 Axis 2
     std::shared_ptr<int[]> labels_ptr;
-    tensorCollection_test.tables_.at("1")->getAxes().at("2")->getLabelsDataPointer(labels_ptr);
+    tensorCollectionTestPtr->tables_.at("1")->getAxes().at("2")->getLabelsDataPointer(labels_ptr);
     Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_values(labels_ptr.get(), 1, nlabels2);
     for (int j = 0; j < nlabels2; ++j) {
       BOOST_CHECK_EQUAL(labels_values(0, j), labels2(0, j));
@@ -124,7 +125,7 @@ BOOST_AUTO_TEST_CASE(storeAndLoadBinaryDefaultDevice)
   }
   {// Table 1 Axis 3
     std::shared_ptr<int[]> labels_ptr;
-    tensorCollection_test.tables_.at("1")->getAxes().at("3")->getLabelsDataPointer(labels_ptr);
+    tensorCollectionTestPtr->tables_.at("1")->getAxes().at("3")->getLabelsDataPointer(labels_ptr);
     Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_values(labels_ptr.get(), 1, nlabels3);
     for (int j = 0; j < nlabels3; ++j) {
       BOOST_CHECK_EQUAL(labels_values(0, j), labels3(0, j));
@@ -132,7 +133,7 @@ BOOST_AUTO_TEST_CASE(storeAndLoadBinaryDefaultDevice)
   }
   {// Table 1 Data
     std::shared_ptr<float[]> labels_ptr;
-    tensorCollection_test.tables_.at("1")->getDataPointer(labels_ptr);
+    tensorCollectionTestPtr->tables_.at("1")->getDataPointer(labels_ptr);
     Eigen::TensorMap<Eigen::Tensor<float, 3>> data_values(labels_ptr.get(), Eigen::array<Eigen::Index, 3>({ nlabels1, nlabels2, nlabels3 }));
     for (int k = 0; k < nlabels3; ++k) {
       for (int j = 0; j < nlabels2; ++j) {
@@ -145,7 +146,7 @@ BOOST_AUTO_TEST_CASE(storeAndLoadBinaryDefaultDevice)
 
   {// Table 2 Axis 1
     std::shared_ptr<int[]> labels_ptr;
-    tensorCollection_test.tables_.at("2")->getAxes().at("1")->getLabelsDataPointer(labels_ptr);
+    tensorCollectionTestPtr->tables_.at("2")->getAxes().at("1")->getLabelsDataPointer(labels_ptr);
     Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_values(labels_ptr.get(), 1, nlabels1);
     for (int j = 0; j < nlabels1; ++j) {
       BOOST_CHECK_EQUAL(labels_values(0, j), labels1(0, j));
@@ -153,7 +154,7 @@ BOOST_AUTO_TEST_CASE(storeAndLoadBinaryDefaultDevice)
   }
   {// Table 2 Axis 2
     std::shared_ptr<int[]> labels_ptr;
-    tensorCollection_test.tables_.at("2")->getAxes().at("2")->getLabelsDataPointer(labels_ptr);
+    tensorCollectionTestPtr->tables_.at("2")->getAxes().at("2")->getLabelsDataPointer(labels_ptr);
     Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_values(labels_ptr.get(), 1, nlabels2);
     for (int j = 0; j < nlabels2; ++j) {
       BOOST_CHECK_EQUAL(labels_values(0, j), labels2(0, j));
@@ -161,7 +162,7 @@ BOOST_AUTO_TEST_CASE(storeAndLoadBinaryDefaultDevice)
   }
   {// Table 2 Data
     std::shared_ptr<int[]> labels_ptr;
-    tensorCollection_test.tables_.at("2")->getDataPointer(labels_ptr);
+    tensorCollectionTestPtr->tables_.at("2")->getDataPointer(labels_ptr);
     Eigen::TensorMap<Eigen::Tensor<int, 2>> data_values(labels_ptr.get(), Eigen::array<Eigen::Index, 2>({ nlabels1, nlabels2 }));
     for (int j = 0; j < nlabels2; ++j) {
       for (int i = 0; i < nlabels1; ++i) {
@@ -172,7 +173,7 @@ BOOST_AUTO_TEST_CASE(storeAndLoadBinaryDefaultDevice)
 
   {// Table 3 Axis 1
     std::shared_ptr<int[]> labels_ptr;
-    tensorCollection_test.tables_.at("3")->getAxes().at("1")->getLabelsDataPointer(labels_ptr);
+    tensorCollectionTestPtr->tables_.at("3")->getAxes().at("1")->getLabelsDataPointer(labels_ptr);
     Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_values(labels_ptr.get(), 1, nlabels1);
     for (int j = 0; j < nlabels1; ++j) {
       BOOST_CHECK_EQUAL(labels_values(0, j), labels1(0, j));
@@ -180,7 +181,7 @@ BOOST_AUTO_TEST_CASE(storeAndLoadBinaryDefaultDevice)
   }
   {// Table 3 Axis 2
     std::shared_ptr<int[]> labels_ptr;
-    tensorCollection_test.tables_.at("3")->getAxes().at("2")->getLabelsDataPointer(labels_ptr);
+    tensorCollectionTestPtr->tables_.at("3")->getAxes().at("2")->getLabelsDataPointer(labels_ptr);
     Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_values(labels_ptr.get(), 1, nlabels2);
     for (int j = 0; j < nlabels2; ++j) {
       BOOST_CHECK_EQUAL(labels_values(0, j), labels2(0, j));
@@ -188,7 +189,7 @@ BOOST_AUTO_TEST_CASE(storeAndLoadBinaryDefaultDevice)
   }
   {// Table 3 Axis 3
     std::shared_ptr<int[]> labels_ptr;
-    tensorCollection_test.tables_.at("3")->getAxes().at("3")->getLabelsDataPointer(labels_ptr);
+    tensorCollectionTestPtr->tables_.at("3")->getAxes().at("3")->getLabelsDataPointer(labels_ptr);
     Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_values(labels_ptr.get(), 1, nlabels3);
     for (int j = 0; j < nlabels3; ++j) {
       BOOST_CHECK_EQUAL(labels_values(0, j), labels3(0, j));
@@ -196,7 +197,7 @@ BOOST_AUTO_TEST_CASE(storeAndLoadBinaryDefaultDevice)
   }
   {// Table 3 Data
     std::shared_ptr<char[]> labels_ptr;
-    tensorCollection_test.tables_.at("3")->getDataPointer(labels_ptr);
+    tensorCollectionTestPtr->tables_.at("3")->getDataPointer(labels_ptr);
     Eigen::TensorMap<Eigen::Tensor<char, 3>> data_values(labels_ptr.get(), Eigen::array<Eigen::Index, 3>({ nlabels1, nlabels2, nlabels3 }));
     for (int k = 0; k < nlabels3; ++k) {
       for (int j = 0; j < nlabels2; ++j) {
@@ -278,11 +279,12 @@ BOOST_AUTO_TEST_CASE(getTensorTableHeadersDefaultDevice)
   tensorCollection.addTensorTable(tensorTable1_ptr, "1");
   tensorCollection.addTensorTable(tensorTable2_ptr, "1");
   tensorCollection.addTensorTable(tensorTable3_ptr, "1");
+  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> tensorCollectionPtr = std::make_shared<TensorCollectionDefaultDevice>(tensorCollection);
 
   // Test making the output header names
   Eigen::DefaultDevice device;
   TensorCollectionFile<Eigen::DefaultDevice> data;
-  std::pair<std::map<std::string, std::vector<std::string>>, std::map<std::string, std::vector<std::string>>> headers = data.getTensorTableHeaders("1", tensorCollection, device);
+  std::pair<std::map<std::string, std::vector<std::string>>, std::map<std::string, std::vector<std::string>>> headers = data.getTensorTableHeaders("1", tensorCollectionPtr, device);
   BOOST_CHECK(headers.first.at("2") == std::vector<std::string>({ "y" }));
   BOOST_CHECK(headers.first.at("3") == std::vector<std::string>({ "z" }));
   BOOST_CHECK(headers.second.at("1") == std::vector<std::string>({ "0", "1" }));
@@ -290,7 +292,7 @@ BOOST_AUTO_TEST_CASE(getTensorTableHeadersDefaultDevice)
   BOOST_CHECK(headers.second.at("3") == std::vector<std::string>({ "4", "5" }));
 
   // Test writing to disk
-  data.storeTensorTableAsCsv("Table1.csv", "1", tensorCollection, device);
+  data.storeTensorTableAsCsv("Table1.csv", "1", tensorCollectionPtr, device);
 
   // Make the minimal tensorCollection for reading from .csv
   std::map<std::string, int> shard_span = {
@@ -337,12 +339,13 @@ BOOST_AUTO_TEST_CASE(getTensorTableHeadersDefaultDevice)
   tensorCollection_min.addTensorTable(tensorTable1_min_ptr, "1");
   tensorCollection_min.addTensorTable(tensorTable2_min_ptr, "1");
   tensorCollection_min.addTensorTable(tensorTable3_min_ptr, "1");
+  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> tensorCollectionMinPtr = std::make_shared<TensorCollectionDefaultDevice>(tensorCollection_min);
 
   // Test reading from disk
-  data.loadTensorTableFromCsv("Table1.csv", "1", tensorCollection_min, device);
+  data.loadTensorTableFromCsv("Table1.csv", "1", tensorCollectionMinPtr, device);
 
   // Check the metadata
-  BOOST_CHECK(tensorCollection_min == tensorCollection);
+  BOOST_CHECK(*(tensorCollectionMinPtr.get()) == *(tensorCollectionPtr.get()));
 
   // Check the table data
   for (int k = 0; k < nlabels3; ++k) {

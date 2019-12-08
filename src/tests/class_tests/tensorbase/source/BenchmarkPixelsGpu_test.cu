@@ -43,8 +43,8 @@ void test_InsertUpdateDelete0DGpu()
   assert(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize() == 0);
 
   // Make the expected tensor axes labels and tensor data
-  Eigen::Tensor<TensorArray8<char>, 2> labels_xyztv(1, 5);
-  labels_xyztv.setValues({ { TensorArray8<char>("x"), TensorArray8<char>("y"), TensorArray8<char>("z"), TensorArray8<char>("t"), TensorArray8<char>("v")} });
+  Eigen::Tensor<TensorArrayGpu8<char>, 2> labels_xyztv(1, 5);
+  labels_xyztv.setValues({ { TensorArrayGpu8<char>("x"), TensorArrayGpu8<char>("y"), TensorArrayGpu8<char>("z"), TensorArrayGpu8<char>("t"), TensorArrayGpu8<char>("v")} });
   Eigen::Tensor<int, 2> values(data_size, 5);
   Eigen::Tensor<int, 2> labels_indices(1, data_size);
   for (int i = 0; i < data_size; ++i) {
@@ -67,9 +67,9 @@ void test_InsertUpdateDelete0DGpu()
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNLabels() == 5);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNLabels() == 1296);
-  std::shared_ptr<TensorArray8<char>[]> labels_xyztv_insert_data;
+  std::shared_ptr<TensorArrayGpu8<char>[]> labels_xyztv_insert_data;
   n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getLabelsDataPointer(labels_xyztv_insert_data);
-  Eigen::TensorMap<Eigen::Tensor<TensorArray8<char>, 2>> labels_xyztv_insert_values(labels_xyztv_insert_data.get(), 5, 1);
+  Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 2>> labels_xyztv_insert_values(labels_xyztv_insert_data.get(), 5, 1);
   for (int i = 0; i < 5; ++i) {
     for (int j = 0; j < 1; ++j) {
       assert(labels_xyztv_insert_values(i, j) == labels_xyztv(i, j));
@@ -136,9 +136,9 @@ void test_InsertUpdateDelete0DGpu()
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNLabels() == 5);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNLabels() == 1296);
-  std::shared_ptr<TensorArray8<char>[]> labels_xyztv_update_data;
+  std::shared_ptr<TensorArrayGpu8<char>[]> labels_xyztv_update_data;
   n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getLabelsDataPointer(labels_xyztv_update_data);
-  Eigen::TensorMap<Eigen::Tensor<TensorArray8<char>, 2>> labels_xyztv_update_values(labels_xyztv_update_data.get(), 5, 1);
+  Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 2>> labels_xyztv_update_values(labels_xyztv_update_data.get(), 5, 1);
   for (int i = 0; i < 5; ++i) {
     for (int j = 0; j < 1; ++j) {
       assert(labels_xyztv_update_values(i, j) == labels_xyztv(i, j));
@@ -301,8 +301,8 @@ void test_InsertUpdateDelete1DGpu()
     assert(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("xyzt")->getData()(i) == i + 1);
     assert(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("xyzt")->getData()(i) == 1);
     assert(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("xyzt")->getData()(i) == 0);
-    //assert(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xyzt")->getData()(i) == 1);
-    //assert(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xyzt")->getData()(i) == i + 1);
+    assert(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xyzt")->getData()(i) == 1);
+    assert(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xyzt")->getData()(i) == i + 1);
   }
 
   // Test the expected data after insert
@@ -362,8 +362,8 @@ void test_InsertUpdateDelete1DGpu()
     assert(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("xyzt")->getData()(i) == i + 1);
     assert(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("xyzt")->getData()(i) == 1);
     assert(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("xyzt")->getData()(i) == 0);
-    //assert(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xyzt")->getData()(i) == 1);
-    //assert(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xyzt")->getData()(i) == i + 1);
+    assert(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xyzt")->getData()(i) == 1);
+    assert(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xyzt")->getData()(i) == i + 1);
   }
 
   // Test the expected data after update

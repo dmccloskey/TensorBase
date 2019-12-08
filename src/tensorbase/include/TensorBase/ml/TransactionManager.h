@@ -6,6 +6,7 @@
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/ml/TensorOperation.h>
 #include <deque>
+#include <TensorBase/io/TensorCollectionFile.h>
 
 namespace TensorBase
 {
@@ -78,7 +79,7 @@ namespace TensorBase
 
     @returns True if successfull
     */
-    bool commit();
+    bool commit(DeviceT& device);
 
     /*
     @brief Undoes all changes made to the tensor collection in memory
@@ -173,10 +174,14 @@ namespace TensorBase
     }
   }
   template<typename DeviceT>
-  inline bool TransactionManager<DeviceT>::commit()
+  inline bool TransactionManager<DeviceT>::commit(DeviceT& device)
   {
     // Write the current tensor_collection to disk
-    // TODO...
+    TensorCollectionFile<DeviceT> data;
+    std::string filename = tensor_collection_->getName() + ".TensorCollection";
+    data.storeTensorCollectionBinary(filename, tensor_collection_, device);
+
+    // Clear the operations
     clear();
     return true;
   }

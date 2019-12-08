@@ -607,8 +607,8 @@ namespace TensorBaseBenchmarks
 		}
 		else if (n_dims == 1) {
 			std::map<std::string, int> shard_span;
-			shard_span.emplace("xyzt", 4);
-			shard_span.emplace("values", data_size * shard_span_perc);
+			shard_span.emplace("xyzt", data_size * shard_span_perc);
+			shard_span.emplace("values", 1);
 			return make1DTensorCollection(data_size, shard_span, is_columnar);
 		}
 		else if (n_dims == 2) {
