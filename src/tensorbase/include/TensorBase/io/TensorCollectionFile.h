@@ -104,7 +104,7 @@ public:
 
     // Load in the binarized tensor data
     for (auto& tensor_table_map : tensor_collection->tables_) {
-      tensor_table_map.second->setAxes(); // initialize the axes
+      tensor_table_map.second->setAxes(); // initialize the axes (NOTE: this resets all indices to their default values!)
       for (auto& axis_map : tensor_table_map.second->getAxes()) {
         axis_map.second->setLabels(); // initialize the axes labels host/device memory
       }

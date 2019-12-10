@@ -181,6 +181,14 @@ namespace TensorBase
     std::string filename = tensor_collection_->getName() + ".TensorCollection";
     data.storeTensorCollectionBinary(filename, tensor_collection_, device);
 
+    // Reset all is_modified attributes to false
+    for (auto& table_map : tensor_collection_->tables_) {
+      for (auto& is_modified_map : table_map.second->getIsModified()) {        
+        Eigen::TensorMap<Eigen::Tensor<int, 1>> is_modified_values(is_modified_map.second->getDataPointer().get(), is_modified_map.second->getTensorSize());
+        is_modified_values.device(device) = is_modified_values.constant(0);
+      }
+    }
+
     // Clear the operations
     clear();
     return true;
