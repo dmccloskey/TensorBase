@@ -138,76 +138,76 @@ namespace TensorBaseBenchmarks
 	template<typename LabelsT, typename TensorT>
 	class Benchmark1TimePointGpu : public Benchmark1TimePoint<LabelsT, TensorT, Eigen::GpuDevice> {
 	protected:
-		void insert1TimePoint0D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `insert1TimePoint0D`
-		void insert1TimePoint1D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `insert1TimePoint1D`
-		void insert1TimePoint2D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `insert1TimePoint2D`
-		void insert1TimePoint3D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `insert1TimePoint3D`
-		void insert1TimePoint4D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `insert1TimePoint4D`
+		void insert1TimePoint0D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `insert1TimePoint0D`
+		void insert1TimePoint1D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `insert1TimePoint1D`
+		void insert1TimePoint2D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `insert1TimePoint2D`
+		void insert1TimePoint3D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `insert1TimePoint3D`
+		void insert1TimePoint4D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `insert1TimePoint4D`
 
-		void update1TimePoint0D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `update1TimePoint0D`
-		void update1TimePoint1D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `update1TimePoint1D`
-		void update1TimePoint2D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `update1TimePoint2D`
-		void update1TimePoint3D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `update1TimePoint3D`
-		void update1TimePoint4D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `update1TimePoint4D`
+		void update1TimePoint0D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `update1TimePoint0D`
+		void update1TimePoint1D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `update1TimePoint1D`
+		void update1TimePoint2D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `update1TimePoint2D`
+		void update1TimePoint3D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `update1TimePoint3D`
+		void update1TimePoint4D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `update1TimePoint4D`
 
-		void delete1TimePoint0D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `delete1TimePoint0D`
-		void delete1TimePoint1D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `delete1TimePoint1D`
-		void delete1TimePoint2D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `delete1TimePoint2D`
-		void delete1TimePoint3D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `delete1TimePoint3D`
-		void delete1TimePoint4D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `delete1TimePoint4D`
+		void delete1TimePoint0D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `delete1TimePoint0D`
+		void delete1TimePoint1D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `delete1TimePoint1D`
+		void delete1TimePoint2D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `delete1TimePoint2D`
+		void delete1TimePoint3D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `delete1TimePoint3D`
+		void delete1TimePoint4D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `delete1TimePoint4D`
 	};
 	template<typename LabelsT, typename TensorT>
-	void Benchmark1TimePointGpu<LabelsT, TensorT>::insert1TimePoint0D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, Eigen::GpuDevice& device) const {
+	void Benchmark1TimePointGpu<LabelsT, TensorT>::insert1TimePoint0D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const {
 		PixelManager0DGpu<LabelsT, TensorT> pixel_manager(data_size, false);
-		this->insert1TimePoint0D_(pixel_manager, transaction_manager, data_size, device);
+		this->insert1TimePoint0D_(pixel_manager, transaction_manager, data_size, in_memory, device);
 	}
 	template<typename LabelsT, typename TensorT>
-	void Benchmark1TimePointGpu<LabelsT, TensorT>::insert1TimePoint1D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, Eigen::GpuDevice& device) const {
+	void Benchmark1TimePointGpu<LabelsT, TensorT>::insert1TimePoint1D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const {
 		PixelManager1DGpu<LabelsT, TensorT> pixel_manager(data_size, false);
-		this->insert1TimePoint1D_(pixel_manager, transaction_manager, data_size, device);
+		this->insert1TimePoint1D_(pixel_manager, transaction_manager, data_size, in_memory, device);
 	}
 	template<typename LabelsT, typename TensorT>
-	void Benchmark1TimePointGpu<LabelsT, TensorT>::insert1TimePoint2D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, Eigen::GpuDevice& device) const {
+	void Benchmark1TimePointGpu<LabelsT, TensorT>::insert1TimePoint2D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const {
 		PixelManager2DGpu<LabelsT, TensorT> pixel_manager(data_size, false);
-		this->insert1TimePoint2D_(pixel_manager, transaction_manager, data_size, device);
+		this->insert1TimePoint2D_(pixel_manager, transaction_manager, data_size, in_memory, device);
 	}
 	template<typename LabelsT, typename TensorT>
-	void Benchmark1TimePointGpu<LabelsT, TensorT>::insert1TimePoint3D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, Eigen::GpuDevice& device) const {
+	void Benchmark1TimePointGpu<LabelsT, TensorT>::insert1TimePoint3D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const {
 		PixelManager3DGpu<LabelsT, TensorT> pixel_manager(data_size, false);
-		this->insert1TimePoint3D_(pixel_manager, transaction_manager, data_size, device);
+		this->insert1TimePoint3D_(pixel_manager, transaction_manager, data_size, in_memory, device);
 	}
 	template<typename LabelsT, typename TensorT>
-	void Benchmark1TimePointGpu<LabelsT, TensorT>::insert1TimePoint4D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, Eigen::GpuDevice& device) const {
+	void Benchmark1TimePointGpu<LabelsT, TensorT>::insert1TimePoint4D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const {
 		PixelManager4DGpu<LabelsT, TensorT> pixel_manager(data_size, false);
-		this->insert1TimePoint4D_(pixel_manager, transaction_manager, data_size, device);
+		this->insert1TimePoint4D_(pixel_manager, transaction_manager, data_size, in_memory, device);
 	}
 	template<typename LabelsT, typename TensorT>
-	void Benchmark1TimePointGpu<LabelsT, TensorT>::update1TimePoint0D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, Eigen::GpuDevice& device) const {
+	void Benchmark1TimePointGpu<LabelsT, TensorT>::update1TimePoint0D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const {
 		PixelManager0DGpu<LabelsT, TensorT> pixel_manager(data_size, true);
-		this->update1TimePoint0D_(pixel_manager, transaction_manager, data_size, device);
+		this->update1TimePoint0D_(pixel_manager, transaction_manager, data_size, in_memory, device);
 	}
 	template<typename LabelsT, typename TensorT>
-	void Benchmark1TimePointGpu<LabelsT, TensorT>::update1TimePoint1D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, Eigen::GpuDevice& device) const {
+	void Benchmark1TimePointGpu<LabelsT, TensorT>::update1TimePoint1D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const {
 		PixelManager1DGpu<LabelsT, TensorT> pixel_manager(data_size, true);
-		this->update1TimePoint1D_(pixel_manager, transaction_manager, data_size, device);
+		this->update1TimePoint1D_(pixel_manager, transaction_manager, data_size, in_memory, device);
 	}
 	template<typename LabelsT, typename TensorT>
-	void Benchmark1TimePointGpu<LabelsT, TensorT>::update1TimePoint2D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, Eigen::GpuDevice& device) const {
+	void Benchmark1TimePointGpu<LabelsT, TensorT>::update1TimePoint2D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const {
 		PixelManager2DGpu<LabelsT, TensorT> pixel_manager(data_size, true);
-		this->update1TimePoint2D_(pixel_manager, transaction_manager, data_size, device);
+		this->update1TimePoint2D_(pixel_manager, transaction_manager, data_size, in_memory, device);
 	}
 	template<typename LabelsT, typename TensorT>
-	void Benchmark1TimePointGpu<LabelsT, TensorT>::update1TimePoint3D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, Eigen::GpuDevice& device) const {
+	void Benchmark1TimePointGpu<LabelsT, TensorT>::update1TimePoint3D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const {
 		PixelManager3DGpu<LabelsT, TensorT> pixel_manager(data_size, true);
-		this->update1TimePoint3D_(pixel_manager, transaction_manager, data_size, device);
+		this->update1TimePoint3D_(pixel_manager, transaction_manager, data_size, in_memory, device);
 	}
 	template<typename LabelsT, typename TensorT>
-	void Benchmark1TimePointGpu<LabelsT, TensorT>::update1TimePoint4D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, Eigen::GpuDevice& device) const {
+	void Benchmark1TimePointGpu<LabelsT, TensorT>::update1TimePoint4D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const {
 		PixelManager4DGpu<LabelsT, TensorT> pixel_manager(data_size, true);
-		this->update1TimePoint4D_(pixel_manager, transaction_manager, data_size, device);
+		this->update1TimePoint4D_(pixel_manager, transaction_manager, data_size, in_memory, device);
 	}
 	template<typename LabelsT, typename TensorT>
-	void Benchmark1TimePointGpu<LabelsT, TensorT>::delete1TimePoint0D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, Eigen::GpuDevice& device) const {
+	void Benchmark1TimePointGpu<LabelsT, TensorT>::delete1TimePoint0D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const {
 		PixelManager0DGpu<LabelsT, TensorT> pixel_manager(data_size, true);
 		std::shared_ptr<TensorData<LabelsT, Eigen::GpuDevice, 2>> labels_ptr;
 		std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 2>> values_ptr;
@@ -220,10 +220,14 @@ namespace TensorBaseBenchmarks
 			TensorDeleteFromAxisGpuPrimitiveT<LabelsT, TensorT, 2> tensorDelete("TTable", "indices", selectClause);
 			std::shared_ptr<TensorOperation<Eigen::GpuDevice>> tensorDelete_ptr = std::make_shared<TensorDeleteFromAxisGpuPrimitiveT<LabelsT, TensorT, 2>>(tensorDelete);
 			transaction_manager.executeOperation(tensorDelete_ptr, device);
+      if (!in_memory) {
+        transaction_manager.commit(device);
+        transaction_manager.initTensorCollectionTensorData();
+      }
 		}
 	}
 	template<typename LabelsT, typename TensorT>
-	void Benchmark1TimePointGpu<LabelsT, TensorT>::delete1TimePoint1D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, Eigen::GpuDevice& device) const {
+	void Benchmark1TimePointGpu<LabelsT, TensorT>::delete1TimePoint1D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const {
 		PixelManager1DGpu<LabelsT, TensorT> pixel_manager(data_size, true);
 		std::shared_ptr<TensorData<LabelsT, Eigen::GpuDevice, 2>> labels_ptr;
 		std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 2>> values_ptr;
@@ -236,10 +240,14 @@ namespace TensorBaseBenchmarks
 			TensorDeleteFromAxisGpuPrimitiveT<LabelsT, TensorT, 2> tensorDelete("TTable", "xyzt", selectClause);
 			std::shared_ptr<TensorOperation<Eigen::GpuDevice>> tensorDelete_ptr = std::make_shared<TensorDeleteFromAxisGpuPrimitiveT<LabelsT, TensorT, 2>>(tensorDelete);
 			transaction_manager.executeOperation(tensorDelete_ptr, device);
+      if (!in_memory) {
+        transaction_manager.commit(device);
+        transaction_manager.initTensorCollectionTensorData();
+      }
 		}
 	}
 	template<typename LabelsT, typename TensorT>
-	void Benchmark1TimePointGpu<LabelsT, TensorT>::delete1TimePoint2D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, Eigen::GpuDevice& device) const {
+	void Benchmark1TimePointGpu<LabelsT, TensorT>::delete1TimePoint2D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const {
 		PixelManager2DGpu<LabelsT, TensorT> pixel_manager(data_size, true);
 		std::shared_ptr<TensorData<LabelsT, Eigen::GpuDevice, 2>> labels_ptr;
 		std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 2>> values_ptr;
@@ -252,10 +260,14 @@ namespace TensorBaseBenchmarks
 			TensorDeleteFromAxisGpuPrimitiveT<LabelsT, TensorT, 2> tensorDelete("TTable", "t", selectClause);
 			std::shared_ptr<TensorOperation<Eigen::GpuDevice>> tensorDelete_ptr = std::make_shared<TensorDeleteFromAxisGpuPrimitiveT<LabelsT, TensorT, 2>>(tensorDelete);
 			transaction_manager.executeOperation(tensorDelete_ptr, device);
+      if (!in_memory) {
+        transaction_manager.commit(device);
+        transaction_manager.initTensorCollectionTensorData();
+      }
 		}
 	}
 	template<typename LabelsT, typename TensorT>
-	void Benchmark1TimePointGpu<LabelsT, TensorT>::delete1TimePoint3D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, Eigen::GpuDevice& device) const {
+	void Benchmark1TimePointGpu<LabelsT, TensorT>::delete1TimePoint3D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const {
 		PixelManager3DGpu<LabelsT, TensorT> pixel_manager(data_size, true);
 		std::shared_ptr<TensorData<LabelsT, Eigen::GpuDevice, 2>> labels_ptr;
 		std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 3>> values_ptr;
@@ -268,10 +280,14 @@ namespace TensorBaseBenchmarks
 			TensorDeleteFromAxisGpuPrimitiveT<LabelsT, TensorT, 3> tensorDelete("TTable", "t", selectClause);
 			std::shared_ptr<TensorOperation<Eigen::GpuDevice>> tensorDelete_ptr = std::make_shared<TensorDeleteFromAxisGpuPrimitiveT<LabelsT, TensorT, 3>>(tensorDelete);
 			transaction_manager.executeOperation(tensorDelete_ptr, device);
+      if (!in_memory) {
+        transaction_manager.commit(device);
+        transaction_manager.initTensorCollectionTensorData();
+      }
 		}
 	}
 	template<typename LabelsT, typename TensorT>
-	void Benchmark1TimePointGpu<LabelsT, TensorT>::delete1TimePoint4D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, Eigen::GpuDevice& device) const {
+	void Benchmark1TimePointGpu<LabelsT, TensorT>::delete1TimePoint4D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const {
 		PixelManager4DGpu<LabelsT, TensorT> pixel_manager(data_size, true);
 		std::shared_ptr<TensorData<LabelsT, Eigen::GpuDevice, 2>> labels_ptr;
 		std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 4>> values_ptr;
@@ -284,6 +300,10 @@ namespace TensorBaseBenchmarks
 			TensorDeleteFromAxisGpuPrimitiveT<LabelsT, TensorT, 4> tensorDelete("TTable", "t", selectClause);
 			std::shared_ptr<TensorOperation<Eigen::GpuDevice>> tensorDelete_ptr = std::make_shared<TensorDeleteFromAxisGpuPrimitiveT<LabelsT, TensorT, 4>>(tensorDelete);
 			transaction_manager.executeOperation(tensorDelete_ptr, device);
+      if (!in_memory) {
+        transaction_manager.commit(device);
+        transaction_manager.initTensorCollectionTensorData();
+      }
 		}
 	}
 

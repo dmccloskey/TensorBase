@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DCpu)
   }
 
   // Test the expected tensor collection after insert
-  benchmark_1_tp.insert1TimePoint(n_dims, transaction_manager, data_size, device);
+  benchmark_1_tp.insert1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
 
   // Test the expected tensor axes after insert
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNDimensions(), 1);
@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DCpu)
   }
 
   // Test the expected tensor collection after update
-  benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, device);
+  benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
 
   // Test the expected tensor axes after update
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNDimensions(), 1);
@@ -193,7 +193,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DCpu)
   }
 
   // Test the expected tensor collection after deletion
-  benchmark_1_tp.delete1TimePoint(n_dims, transaction_manager, data_size, device);
+  benchmark_1_tp.delete1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNLabels(), 5);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNDimensions(), 1);
@@ -248,7 +248,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete1DCpu)
   }
 
   // Test the expected tensor collection after insert
-  benchmark_1_tp.insert1TimePoint(n_dims, transaction_manager, data_size, device);
+  benchmark_1_tp.insert1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
 
   // Test the expected tensor axes after insert
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyzt")->getNDimensions(), 4);
@@ -306,7 +306,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete1DCpu)
   }
 
   // Test the expected tensor collection after update
-  benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, device);
+  benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
 
   // Test the expected tensor axes after update
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyzt")->getNDimensions(), 4);
@@ -364,7 +364,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete1DCpu)
   }
 
   // Test the expected tensor collection after deletion
-  benchmark_1_tp.delete1TimePoint(n_dims, transaction_manager, data_size, device);
+  benchmark_1_tp.delete1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyzt")->getNDimensions(), 4);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyzt")->getNLabels(), 0);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("values")->getNDimensions(), 1);
@@ -427,7 +427,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DCpu)
   }
 
   // Test the expected tensor collection after insert
-  benchmark_1_tp.insert1TimePoint(n_dims, transaction_manager, data_size, device);
+  benchmark_1_tp.insert1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
 
   // Test the expected tensor axes after insert
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyz")->getNDimensions(), 3);
@@ -495,7 +495,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DCpu)
   }
 
   // Test the expected tensor collection after update
-  benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, device);
+  benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
 
   // Test the expected tensor axes after update
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyz")->getNDimensions(), 3);
@@ -561,7 +561,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DCpu)
   }
 
   // Test the expected tensor collection after deletion
-  benchmark_1_tp.delete1TimePoint(n_dims, transaction_manager, data_size, device);
+  benchmark_1_tp.delete1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyz")->getNDimensions(), 3);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyz")->getNLabels(), xyz_dim_size);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNDimensions(), 1);
@@ -630,7 +630,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DCpu)
   }
 
   // Test the expected tensor collection after insert
-  benchmark_1_tp.insert1TimePoint(n_dims, transaction_manager, data_size, device);
+  benchmark_1_tp.insert1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
 
   // Test the expected tensor axes after insert
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xy")->getNDimensions(), 2);
@@ -722,7 +722,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DCpu)
   }
 
   // Test the expected tensor collection after update
-  benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, device);
+  benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
 
   // Test the expected tensor axes after update
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xy")->getNDimensions(), 2);
@@ -814,7 +814,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DCpu)
   }
 
   // Test the expected tensor collection after deletion
-  benchmark_1_tp.delete1TimePoint(n_dims, transaction_manager, data_size, device);
+  benchmark_1_tp.delete1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xy")->getNDimensions(), 2);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xy")->getNLabels(), xy_dim_size);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("z")->getNDimensions(), 1);
@@ -887,7 +887,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DCpu)
   }
 
   // Test the expected tensor collection after insert
-  benchmark_1_tp.insert1TimePoint(n_dims, transaction_manager, data_size, device);
+  benchmark_1_tp.insert1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
 
   // Test the expected tensor axes after insert
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getNDimensions(), 1);
@@ -1005,7 +1005,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DCpu)
   }
 
   // Test the expected tensor collection after update
-  benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, device);
+  benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
 
   // Test the expected tensor axes after update
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getNDimensions(), 1);
@@ -1123,7 +1123,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DCpu)
   }
 
   // Test the expected tensor collection after deletion
-  benchmark_1_tp.delete1TimePoint(n_dims, transaction_manager, data_size, device);
+  benchmark_1_tp.delete1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getNLabels(), x_dim_size);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("y")->getNDimensions(), 1);

@@ -90,6 +90,7 @@ namespace TensorBase
     bool rollback(DeviceT& device);
 
     void clear(); ///< clear the tensor operations, commit indices, and current_index_
+    void initTensorCollectionTensorData(); ///< clears the tensor data
 
   protected:
     std::shared_ptr<TensorCollection<DeviceT>> tensor_collection_; ///< the managed TensorCollection object
@@ -222,6 +223,14 @@ namespace TensorBase
   {
     tensor_operations_.clear();
     current_index_ = -1;
+  }
+
+  template<typename DeviceT>
+  inline void TransactionManager<DeviceT>::initTensorCollectionTensorData()
+  {
+    for (auto& table_map : tensor_collection_->tables_) {
+      table_map.second->initData();
+    }
   }
 };
 #endif //TENSORBASE_TRANSACTIONMANAGER_H

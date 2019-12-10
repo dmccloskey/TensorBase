@@ -110,7 +110,7 @@ namespace TensorBase
     Eigen::array<Eigen::Index, TDim> getDimensions() const { return dimensions_; }  ///< dimensions getter
     int getDimFromAxisName(const std::string& axis_name) const { return axes_to_dims_.at(axis_name); }
 		std::map<std::string, int> getAxesToDims() const { return axes_to_dims_; }  ///< axes_to_dims getter
-    void clear();  ///< clears the axes and all associated data
+    void clear(const bool& clear_shard_spans = true);  ///< clears the axes and all associated data
 
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> getData() { return data_->getData(); } ///< data_->getData() wrapper
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> getData() const { return data_->getData(); } ///< data_->getData() wrapper
@@ -831,7 +831,7 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
-  void TensorTable<TensorT, DeviceT, TDim>::clear() {
+  void TensorTable<TensorT, DeviceT, TDim>::clear(const bool& clear_shard_spans) {
     axes_.clear();
     for (auto& axis_to_dim: axes_to_dims_) {
       dimensions_.at(axis_to_dim.second) = 0;
@@ -844,7 +844,7 @@ namespace TensorBase
     shard_id_.clear();
     shard_indices_.clear();
     data_.reset();
-    shard_spans_.clear();
+    if (clear_shard_spans) shard_spans_.clear();
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
