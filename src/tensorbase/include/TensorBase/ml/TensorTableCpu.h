@@ -119,17 +119,20 @@ namespace TensorBase
 
 			// Set the shard_id defaults
 			TensorDataCpu<int, 1> shard_id(axis_dimensions);
-			shard_id.setData(is_modified_values.constant(1));
+			shard_id.setData();
 			this->shard_id_.emplace(axis.second->getName(), std::make_shared<TensorDataCpu<int, 1>>(shard_id));
 
 			// Set the shard_indices defaults
 			TensorDataCpu<int, 1> shard_indices(axis_dimensions);
-			shard_indices.setData(indices_values);
+			shard_indices.setData();
 			this->shard_indices_.emplace(axis.second->getName(), std::make_shared<TensorDataCpu<int, 1>>(shard_indices));
 
 			// Next iteration
 			++axis_cnt;
 		}
+
+    // Set the shard_id and shard_indices
+    this->reShardIndices();
 
 		// Allocate memory for the tensor
 		this->initData();
