@@ -19803,4 +19803,11 @@ namespace TensorBase
     return std::string(os.str());
   }
 };
+
+//// Register of all array TensorTs
+//CEREAL_REGISTER_TYPE(TensorBase::TensorArray8<char>);
+//CEREAL_REGISTER_TYPE(TensorBase::TensorArray32<char>);
+//CEREAL_REGISTER_TYPE(TensorBase::TensorArray128<char>);
+//CEREAL_REGISTER_TYPE(TensorBase::TensorArray512<char>);
+//CEREAL_REGISTER_TYPE(TensorBase::TensorArray2048<char>);
 #endif //TENSORBASE_TENSORARRAY_H

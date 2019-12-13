@@ -18,4 +18,14 @@ CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisCpu<Ten
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisCpu<TensorBase::TensorArray128<char>>, Eigen::ThreadPoolDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisCpu<TensorBase::TensorArray512<char>>, Eigen::ThreadPoolDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisCpu<TensorBase::TensorArray2048<char>>, Eigen::ThreadPoolDevice>);
+
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxis<int, Eigen::ThreadPoolDevice>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxis<float, Eigen::ThreadPoolDevice>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxis<double, Eigen::ThreadPoolDevice>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxis<char, Eigen::ThreadPoolDevice>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxis<TensorBase::TensorArray8<char>, Eigen::ThreadPoolDevice>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxis<TensorBase::TensorArray32<char>, Eigen::ThreadPoolDevice>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxis<TensorBase::TensorArray128<char>, Eigen::ThreadPoolDevice>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxis<TensorBase::TensorArray512<char>, Eigen::ThreadPoolDevice>, Eigen::ThreadPoolDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxis<TensorBase::TensorArray2048<char>, Eigen::ThreadPoolDevice>, Eigen::ThreadPoolDevice>);
 #endif //TENSORBASE_TENSORAXISCONCEPTCPU_H
