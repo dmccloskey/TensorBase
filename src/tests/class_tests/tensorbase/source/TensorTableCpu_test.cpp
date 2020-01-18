@@ -120,6 +120,7 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersCpu)
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3)));
+  tensorTable.setShardSpans(std::map<std::string, int>()); // reset the shard spans to zero
   tensorTable.setAxes();
 
   // Test expected axes values
@@ -308,7 +309,7 @@ BOOST_AUTO_TEST_CASE(reShardIndicesCpu)
   }
 }
 
-BOOST_AUTO_TEST_CASE(tensorDataWrappersCpu) // TODO: add test to TensorTableGpu_test.cu
+BOOST_AUTO_TEST_CASE(tensorDataWrappersCpu)
 {
   // Set up the tensor table
   TensorTableCpu<float, 3> tensorTable;
@@ -330,45 +331,192 @@ BOOST_AUTO_TEST_CASE(tensorDataWrappersCpu) // TODO: add test to TensorTableGpu_
   Eigen::ThreadPool pool(1);  Eigen::ThreadPoolDevice device(&pool, 2);
 
   // Test indices wrappers
+  std::map<std::string, std::pair<bool, bool>> statuses;
   tensorTable.setIndicesDataStatus(false, false);
-  auto indices_statuses1 = tensorTable.getIndicesDataStatus();
-  for (auto& index_status : indices_statuses1) {
+  statuses = tensorTable.getIndicesDataStatus();
+  for (auto& index_status : statuses) {
     BOOST_CHECK(!index_status.second.first);
     BOOST_CHECK(!index_status.second.second);
   }
   tensorTable.syncIndicesHAndDData(device);
-  auto indices_statuses2 = tensorTable.getIndicesDataStatus();
-  for (auto& index_status : indices_statuses2) {
+  statuses = tensorTable.getIndicesDataStatus();
+  for (auto& index_status : statuses) {
     BOOST_CHECK(index_status.second.first);
     BOOST_CHECK(index_status.second.second);
   }
 
   // Test indices view wrappers
   tensorTable.setIndicesViewDataStatus(false, false);
-  auto indices_view_statuses1 = tensorTable.getIndicesViewDataStatus();
-  for (auto& index_status : indices_view_statuses1) {
+  statuses = tensorTable.getIndicesViewDataStatus();
+  for (auto& index_status : statuses) {
     BOOST_CHECK(!index_status.second.first);
     BOOST_CHECK(!index_status.second.second);
   }
   tensorTable.syncIndicesViewHAndDData(device);
-  auto indices_view_statuses2 = tensorTable.getIndicesViewDataStatus();
-  for (auto& index_status : indices_view_statuses2) {
+  statuses = tensorTable.getIndicesViewDataStatus();
+  for (auto& index_status : statuses) {
     BOOST_CHECK(index_status.second.first);
     BOOST_CHECK(index_status.second.second);
   }
 
-  // TODO: all other wrappers...
+  // Test in memory wrappers
+  tensorTable.setIsModifiedDataStatus(false, false);
+  statuses = tensorTable.getIsModifiedDataStatus();
+  for (auto& index_status : statuses) {
+    BOOST_CHECK(!index_status.second.first);
+    BOOST_CHECK(!index_status.second.second);
+  }
+  tensorTable.syncIsModifiedHAndDData(device);
+  statuses = tensorTable.getIsModifiedDataStatus();
+  for (auto& index_status : statuses) {
+    BOOST_CHECK(index_status.second.first);
+    BOOST_CHECK(index_status.second.second);
+  }
+
+  // Test indices view wrappers
+  tensorTable.setNotInMemoryDataStatus(false, false);
+  statuses = tensorTable.getNotInMemoryDataStatus();
+  for (auto& index_status : statuses) {
+    BOOST_CHECK(!index_status.second.first);
+    BOOST_CHECK(!index_status.second.second);
+  }
+  tensorTable.syncNotInMemoryHAndDData(device);
+  statuses = tensorTable.getNotInMemoryDataStatus();
+  for (auto& index_status : statuses) {
+    BOOST_CHECK(index_status.second.first);
+    BOOST_CHECK(index_status.second.second);
+  }
+
+  // Test indices view wrappers
+  tensorTable.setShardIdDataStatus(false, false);
+  statuses = tensorTable.getShardIdDataStatus();
+  for (auto& index_status : statuses) {
+    BOOST_CHECK(!index_status.second.first);
+    BOOST_CHECK(!index_status.second.second);
+  }
+  tensorTable.syncShardIdHAndDData(device);
+  statuses = tensorTable.getShardIdDataStatus();
+  for (auto& index_status : statuses) {
+    BOOST_CHECK(index_status.second.first);
+    BOOST_CHECK(index_status.second.second);
+  }
+
+  // Test indices view wrappers
+  tensorTable.setShardIndicesDataStatus(false, false);
+  statuses = tensorTable.getShardIndicesDataStatus();
+  for (auto& index_status : statuses) {
+    BOOST_CHECK(!index_status.second.first);
+    BOOST_CHECK(!index_status.second.second);
+  }
+  tensorTable.syncShardIndicesHAndDData(device);
+  statuses = tensorTable.getShardIndicesDataStatus();
+  for (auto& index_status : statuses) {
+    BOOST_CHECK(index_status.second.first);
+    BOOST_CHECK(index_status.second.second);
+  }
 
   // Test axes wrappers
   tensorTable.setAxesDataStatus(false, false);
-  auto axes_statuses1 = tensorTable.getAxesDataStatus();
-  for (auto& axis_status : axes_statuses1) {
+  statuses = tensorTable.getAxesDataStatus();
+  for (auto& axis_status : statuses) {
     BOOST_CHECK(!axis_status.second.first);
     BOOST_CHECK(!axis_status.second.second);
   }
   tensorTable.syncAxesHAndDData(device);
-  auto axes_statuses2 = tensorTable.getAxesDataStatus();
-  for (auto& axis_status : axes_statuses2) {
+  statuses = tensorTable.getAxesDataStatus();
+  for (auto& axis_status : statuses) {
+    BOOST_CHECK(axis_status.second.first);
+    BOOST_CHECK(axis_status.second.second);
+  }
+
+  // Test bulk host/device transfers
+  tensorTable.setIndicesDataStatus(false, false);
+  tensorTable.setIndicesViewDataStatus(false, false);
+  tensorTable.setIsModifiedDataStatus(false, false);
+  tensorTable.setNotInMemoryDataStatus(false, false);
+  tensorTable.setShardIdDataStatus(false, false);
+  tensorTable.setShardIndicesDataStatus(false, false);
+  tensorTable.setAxesDataStatus(false, false);
+
+  // Test to Device
+  tensorTable.syncAxesAndIndicesDData(device);
+  statuses = tensorTable.getIndicesDataStatus();
+  for (auto& index_status : statuses) {
+    BOOST_CHECK(index_status.second.first);
+    BOOST_CHECK(index_status.second.second);
+  }
+  statuses = tensorTable.getIndicesViewDataStatus();
+  for (auto& index_status : statuses) {
+    BOOST_CHECK(index_status.second.first);
+    BOOST_CHECK(index_status.second.second);
+  }
+  statuses = tensorTable.getIsModifiedDataStatus();
+  for (auto& index_status : statuses) {
+    BOOST_CHECK(index_status.second.first);
+    BOOST_CHECK(index_status.second.second);
+  }
+  statuses = tensorTable.getNotInMemoryDataStatus();
+  for (auto& index_status : statuses) {
+    BOOST_CHECK(index_status.second.first);
+    BOOST_CHECK(index_status.second.second);
+  }
+  statuses = tensorTable.getShardIdDataStatus();
+  for (auto& index_status : statuses) {
+    BOOST_CHECK(index_status.second.first);
+    BOOST_CHECK(index_status.second.second);
+  }
+  statuses = tensorTable.getShardIndicesDataStatus();
+  for (auto& index_status : statuses) {
+    BOOST_CHECK(index_status.second.first);
+    BOOST_CHECK(index_status.second.second);
+  }
+  statuses = tensorTable.getAxesDataStatus();
+  for (auto& axis_status : statuses) {
+    BOOST_CHECK(axis_status.second.first);
+    BOOST_CHECK(axis_status.second.second);
+  }
+
+  // Test to host
+  tensorTable.setIndicesDataStatus(false, false);
+  tensorTable.setIndicesViewDataStatus(false, false);
+  tensorTable.setIsModifiedDataStatus(false, false);
+  tensorTable.setNotInMemoryDataStatus(false, false);
+  tensorTable.setShardIdDataStatus(false, false);
+  tensorTable.setShardIndicesDataStatus(false, false);
+  tensorTable.setAxesDataStatus(false, false);
+  tensorTable.syncAxesAndIndicesHData(device);
+  statuses = tensorTable.getIndicesDataStatus();
+  for (auto& index_status : statuses) {
+    BOOST_CHECK(index_status.second.first);
+    BOOST_CHECK(index_status.second.second);
+  }
+  statuses = tensorTable.getIndicesViewDataStatus();
+  for (auto& index_status : statuses) {
+    BOOST_CHECK(index_status.second.first);
+    BOOST_CHECK(index_status.second.second);
+  }
+  statuses = tensorTable.getIsModifiedDataStatus();
+  for (auto& index_status : statuses) {
+    BOOST_CHECK(index_status.second.first);
+    BOOST_CHECK(index_status.second.second);
+  }
+  statuses = tensorTable.getNotInMemoryDataStatus();
+  for (auto& index_status : statuses) {
+    BOOST_CHECK(index_status.second.first);
+    BOOST_CHECK(index_status.second.second);
+  }
+  statuses = tensorTable.getShardIdDataStatus();
+  for (auto& index_status : statuses) {
+    BOOST_CHECK(index_status.second.first);
+    BOOST_CHECK(index_status.second.second);
+  }
+  statuses = tensorTable.getShardIndicesDataStatus();
+  for (auto& index_status : statuses) {
+    BOOST_CHECK(index_status.second.first);
+    BOOST_CHECK(index_status.second.second);
+  }
+  statuses = tensorTable.getAxesDataStatus();
+  for (auto& axis_status : statuses) {
     BOOST_CHECK(axis_status.second.first);
     BOOST_CHECK(axis_status.second.second);
   }
@@ -975,7 +1123,7 @@ BOOST_AUTO_TEST_CASE(sliceTensorForSortCpu)
   }
 }
 
-BOOST_AUTO_TEST_CASE(sortIndicesViewDataCpu)
+BOOST_AUTO_TEST_CASE(sortIndicesViewData1Cpu)
 {
   // setup the table
   TensorTableCpu<float, 3> tensorTable;
@@ -1052,6 +1200,90 @@ BOOST_AUTO_TEST_CASE(sortIndicesViewDataCpu)
 
   // test sort DESC
   tensorTable.sortIndicesView("1", 0, select_labels_ptr, sortOrder::DESC, device);
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(i), nlabels - i);
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("3")->getData()(i), nlabels - i);
+  }
+}
+
+BOOST_AUTO_TEST_CASE(sortIndicesViewData2Cpu)
+{
+  // setup the table
+  TensorTableCpu<float, 3> tensorTable;
+  Eigen::ThreadPool pool(1);  Eigen::ThreadPoolDevice device(&pool, 2);
+
+  // setup the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels = 3;
+  Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels), labels3(1, nlabels);
+  labels1.setValues({ {0, 1, 2} });
+  labels2.setValues({ {0, 1, 2} });
+  labels3.setValues({ {0, 1, 2} });
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3)));
+  tensorTable.setAxes();
+
+  // setup the tensor data
+  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  int iter = 0;
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        tensor_values(i, j, k) = float(iter);
+        ++iter;
+      }
+    }
+  }
+  tensorTable.setData(tensor_values);
+
+  // set up the selection labels
+  Eigen::Tensor<int, 2> select_labels_values(1,1);
+  select_labels_values(0,0) = 1;
+  TensorDataCpu<int, 2> select_labels(Eigen::array<Eigen::Index, 2>({ 1,1 }));
+  select_labels.setData(select_labels_values);
+  std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>> select_labels_ptr = std::make_shared<TensorDataCpu<int, 2>>(select_labels);
+
+  // test sort ASC
+  tensorTable.sortIndicesView("1", select_labels_ptr, sortOrder::ASC, device);
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("3")->getData()(i), i + 1);
+  }
+
+  // test sort DESC
+  tensorTable.sortIndicesView("1", select_labels_ptr, sortOrder::DESC, device);
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(i), nlabels - i);
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("3")->getData()(i), nlabels - i);
+  }
+
+  // Write the original data to disk, clear the data, and repeat the tests
+  tensorTable.clear();
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3)));
+  tensorTable.setAxes();
+  tensorTable.setData(tensor_values);
+  tensorTable.storeTensorTableBinary("", device);
+  tensorTable.setData();
+
+  // test sort ASC
+  tensorTable.sortIndicesView("1", select_labels_ptr, sortOrder::ASC, device);
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("3")->getData()(i), i + 1);
+  }
+
+  // test sort DESC
+  tensorTable.sortIndicesView("1", select_labels_ptr, sortOrder::DESC, device);
   for (int i = 0; i < nlabels; ++i) {
     BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(i), nlabels - i);
@@ -1845,7 +2077,8 @@ BOOST_AUTO_TEST_CASE(makeAppendIndicesCpu)
   labels3.setValues({ {0, 1, 2} });
   auto axis_1_ptr = std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1));
   auto axis_2_ptr = std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2));
-  auto axis_3_ptr = std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3));
+  auto axis_3_ptr = std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", 1, 0));
+  axis_3_ptr->setDimensions(dimensions3);
   tensorTable.addTensorAxis(axis_1_ptr);
   tensorTable.addTensorAxis(axis_2_ptr);
   tensorTable.addTensorAxis(axis_3_ptr);
@@ -1856,6 +2089,13 @@ BOOST_AUTO_TEST_CASE(makeAppendIndicesCpu)
   tensorTable.makeAppendIndices("1", nlabels, indices_ptr, device);
   for (int i = 0; i < nlabels; ++i) {
     BOOST_CHECK_EQUAL(indices_ptr->getData()(i), nlabels + i + 1);
+  }
+
+  // test the making the append indices
+  indices_ptr.reset();
+  tensorTable.makeAppendIndices("3", nlabels, indices_ptr, device);
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_EQUAL(indices_ptr->getData()(i), i + 1);
   }
 }
 

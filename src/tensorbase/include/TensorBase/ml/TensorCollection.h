@@ -80,21 +80,6 @@ namespace TensorBase
     */
     std::string getUserNameFromTableName(const std::string& table_name) const;
 
-    /*
-    @brief write modified table shards to disk
-
-    @returns true if successful, false otherwise
-    */
-    bool writeShardsToDisk();
-
-    /*
-    @brief reads shards from disk and updates
-      the tensors in the collection
-
-    @returns true if successful, false otherwise
-    */
-    bool readShardsFromDisk();
-
     std::map<std::string, std::shared_ptr<TensorTableConcept<DeviceT>>> tables_; ///< map of Tensor tables
     std::map<std::string, std::set<std::string>> user_table_names_to_tensor_table_names_; ///< map of user names to tensor names split based on type
 

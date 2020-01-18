@@ -23,5 +23,15 @@ CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisGpuClas
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisGpuClassT<TensorBase::TensorArrayGpu128, char>, Eigen::GpuDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisGpuClassT<TensorBase::TensorArrayGpu512, char>, Eigen::GpuDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisGpuClassT<TensorBase::TensorArrayGpu2048, char>, Eigen::GpuDevice>);
+
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxis<int, Eigen::GpuDevice>, Eigen::GpuDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxis<float, Eigen::GpuDevice>, Eigen::GpuDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxis<double, Eigen::GpuDevice>, Eigen::GpuDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxis<char, Eigen::GpuDevice>, Eigen::GpuDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxis<TensorBase::TensorArrayGpu8<char>, Eigen::GpuDevice>, Eigen::GpuDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxis<TensorBase::TensorArrayGpu32<char>, Eigen::GpuDevice>, Eigen::GpuDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxis<TensorBase::TensorArrayGpu128<char>, Eigen::GpuDevice>, Eigen::GpuDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxis<TensorBase::TensorArrayGpu512<char>, Eigen::GpuDevice>, Eigen::GpuDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxis<TensorBase::TensorArrayGpu2048<char>, Eigen::GpuDevice>, Eigen::GpuDevice>);
 #endif
 #endif //TENSORBASE_TENSORAXISCONCEPTGPU_H

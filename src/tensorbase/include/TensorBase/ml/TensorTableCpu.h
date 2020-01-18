@@ -3,6 +3,7 @@
 #ifndef TENSORBASE_TENSORTABLECPU_H
 #define TENSORBASE_TENSORTABLECPU_H
 
+#define EIGEN_USE_THREADS
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/ml/TensorTable.h>
 #include <TensorBase/ml/TensorAxisConceptCpu.h>
@@ -72,7 +73,11 @@ namespace TensorBase
 		this->not_in_memory_.clear();
 		this->shard_id_.clear();
 		this->shard_indices_.clear();
-		this->shard_spans_.clear();
+    bool update_shard_spans = false;
+    if (this->shard_spans_.size() == 0) {
+      this->shard_spans_.clear();
+      update_shard_spans = true;
+    }
 
 		// Determine the overall dimensions of the tensor
 		int axis_cnt = 0;
@@ -84,7 +89,7 @@ namespace TensorBase
 			this->axes_to_dims_.emplace(axis.second->getName(), axis_cnt);
 
 			// Set the initial shard size
-			this->shard_spans_.emplace(axis.second->getName(), axis.second->getNLabels());
+      if (update_shard_spans) this->shard_spans_.emplace(axis.second->getName(), axis.second->getNLabels());
 
 			// Set the indices
 			Eigen::Tensor<int, 1> indices_values(axis.second->getNLabels());
@@ -114,17 +119,20 @@ namespace TensorBase
 
 			// Set the shard_id defaults
 			TensorDataCpu<int, 1> shard_id(axis_dimensions);
-			shard_id.setData(is_modified_values.constant(1));
+			shard_id.setData();
 			this->shard_id_.emplace(axis.second->getName(), std::make_shared<TensorDataCpu<int, 1>>(shard_id));
 
 			// Set the shard_indices defaults
 			TensorDataCpu<int, 1> shard_indices(axis_dimensions);
-			shard_indices.setData(indices_values);
+			shard_indices.setData();
 			this->shard_indices_.emplace(axis.second->getName(), std::make_shared<TensorDataCpu<int, 1>>(shard_indices));
 
 			// Next iteration
 			++axis_cnt;
 		}
+
+    // Set the shard_id and shard_indices
+    this->reShardIndices();
 
 		// Allocate memory for the tensor
 		this->initData();
@@ -403,8 +411,8 @@ namespace TensorBase
 		Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_values(indices_tmp.getDataPointer().get(), n_labels);
 		if (this->indices_view_.at(axis_name)->getTensorSize() > 0) {
 			// Determine the maximum index value
-			Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_view_values(this->indices_view_.at(axis_name)->getDataPointer().get(), this->indices_view_.at(axis_name)->getTensorSize(), 1);
-			auto max_bcast = indices_view_values.maximum(Eigen::array<Eigen::Index, 1>({ 0 })).broadcast(Eigen::array<Eigen::Index, 1>({ n_labels }));
+      Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_view_values(this->indices_view_.at(axis_name)->getDataPointer().get(), 1, this->indices_view_.at(axis_name)->getTensorSize());
+      auto max_bcast = indices_view_values.maximum(Eigen::array<Eigen::Index, 1>({ 1 })).eval().broadcast(Eigen::array<Eigen::Index, 1>({ n_labels })).eval();
 
 			// Make the extended axis indices
 			auto tmp = indices_values.constant(1).cumsum(0, false);

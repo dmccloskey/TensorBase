@@ -20,12 +20,10 @@
 
 namespace TensorBase
 {
-  /**
-    @brief Class for managing heterogenous Tensors
-  */
-  template<typename DeviceT>
-  class TensorCollectionGpu: public TensorCollection<Eigen::GpuDevice>
+  class TensorCollectionGpu : public TensorCollection<Eigen::GpuDevice>
   {
+  public:
+    using TensorCollection<Eigen::GpuDevice>::TensorCollection;
   private:
     friend class cereal::access;
     template<class Archive>

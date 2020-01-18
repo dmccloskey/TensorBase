@@ -160,8 +160,6 @@ namespace TensorBase
     
     If the tensor is of TDims > 2, then the values in the first index of 
     all non-target sort axis will be used.
-
-  [TODO: implement a means to sort by the labels]
   */
   template<typename LabelsT, typename DeviceT>
   class SortClause: public SelectClause<LabelsT, DeviceT> {

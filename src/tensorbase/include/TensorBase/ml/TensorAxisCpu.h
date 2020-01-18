@@ -3,6 +3,7 @@
 #ifndef TENSORBASE_TENSORAXISCPU_H
 #define TENSORBASE_TENSORAXISCPU_H
 
+#define EIGEN_USE_THREADS
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/ml/TensorDataCpu.h>
 #include <TensorBase/ml/TensorAxis.h>

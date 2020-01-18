@@ -3,7 +3,8 @@
 #define BOOST_TEST_MODULE TransactionManager test suite 
 #include <boost/test/included/unit_test.hpp>
 #include <TensorBase/ml/TransactionManager.h>
-#include <TensorBase/ml/TensorTableDefaultDevice.h>
+#include <TensorBase/ml/TensorCollectionDefaultDevice.h>
+#include <TensorBase/ml/TensorOperationDefaultDevice.h>
 #include <TensorBase/ml/TensorSelect.h>
 
 using namespace TensorBase;
@@ -500,7 +501,7 @@ BOOST_AUTO_TEST_CASE(CommitDefaultDevice)
   std::shared_ptr<TensorTableDefaultDevice<char, 1>> tensorTable3_ptr = std::make_shared<TensorTableDefaultDevice<char, 1>>(tensorTable3);
 
   // Setup the tensor collection
-  TensorCollectionDefaultDevice tensorCollection;
+  TensorCollectionDefaultDevice tensorCollection("tensorCollection1");
   tensorCollection.addTensorTable(tensorTable1_ptr, "1");
   tensorCollection.addTensorTable(tensorTable2_ptr, "1");
   tensorCollection.addTensorTable(tensorTable3_ptr, "1");
@@ -509,7 +510,6 @@ BOOST_AUTO_TEST_CASE(CommitDefaultDevice)
   // Setup the transaction manager
   TransactionManager<Eigen::DefaultDevice> transactionManager;
   transactionManager.setTensorCollection(tensorCollection_ptr);
-
 
   // Operation #1: add
   // Set up the new labels
@@ -579,8 +579,69 @@ BOOST_AUTO_TEST_CASE(CommitDefaultDevice)
   }
 
   // Test Commit
-  transactionManager.commit();
+  transactionManager.commit(device);
   BOOST_CHECK_EQUAL(transactionManager.getCurrentIndex(), -1);
+
+  // Re-test that the is modified attribute was changed
+  for (int i = 0; i < nlabels2 + nlabels2; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
+  }
+
+  // Make a new tensor collection
+  TensorCollectionDefaultDevice tensorCollectionCommit;
+  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> tensorCollectionCommit_ptr = std::make_shared<TensorCollectionDefaultDevice>(tensorCollection);
+
+  // Reload the committed data into a new tensor collection
+  TensorCollectionFile<Eigen::DefaultDevice> data;
+  data.loadTensorCollectionBinary(tensorCollection_ptr->getName() + ".TensorCollection", tensorCollectionCommit_ptr, device);
+  
+  // Test for the expected metadata 
+  BOOST_CHECK(*(tensorCollection_ptr.get()) == *(tensorCollectionCommit_ptr.get()));
+
+  // Test for the expected table data
+  std::shared_ptr<float[]> table_1_data;
+  tensorCollectionCommit_ptr->tables_.at("1")->getDataPointer(table_1_data);
+  Eigen::TensorMap<Eigen::Tensor<float, 3>> table_1_values(table_1_data.get(), nlabels1, 2 * nlabels2, nlabels3);
+  for (int i = 0; i < nlabels1; ++i) {
+    for (int j = 0; j < nlabels2; ++j) {
+      for (int k = 0; k < nlabels3; ++k) {
+        BOOST_CHECK_EQUAL(table_1_values(i, j, k), tensor_values1(i, j, k));
+      }
+    }
+  }
+  for (int i = 0; i < nlabels1; ++i) {
+    for (int j = 0; j < nlabels2; ++j) {
+      for (int k = 0; k < nlabels3; ++k) {
+        BOOST_CHECK_EQUAL(table_1_values(i, j + nlabels2, k), tensor_values_new(i, j, k));
+      }
+    }
+  }
+
+  // Test for the expected axis data
+  std::shared_ptr<int[]> table_1_axis2_data;
+  tensorCollectionCommit_ptr->tables_.at("1")->getAxes().at("2")->getLabelsDataPointer(table_1_axis2_data);
+  Eigen::TensorMap<Eigen::Tensor<int, 2>> table_1_axis2_values(table_1_axis2_data.get(), labels1.dimensions());
+  BOOST_CHECK_EQUAL(table_1_axis_2_ptr->getNLabels(), nlabels2 + nlabels2);
+  for (int i = 0; i < nlabels2 + nlabels2; ++i) {
+    BOOST_CHECK_EQUAL(table_1_axis2_values(0, i), i);
+  }
+
+  // Test for the expected indices data
+  for (int i = 0; i < nlabels2 + nlabels2; ++i) {
+    BOOST_CHECK_EQUAL(tensorCollectionCommit_ptr->tables_.at("1")->getIndices().at("2")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorCollectionCommit_ptr->tables_.at("1")->getIndicesView().at("2")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorCollectionCommit_ptr->tables_.at("1")->getIsModified().at("2")->getData()(i), 0); // This is correct (i.e., should not be modified)
+    BOOST_CHECK_EQUAL(tensorCollectionCommit_ptr->tables_.at("1")->getNotInMemory().at("2")->getData()(i), 0);
+    if (i < nlabels2) {
+      BOOST_CHECK_EQUAL(tensorCollectionCommit_ptr->tables_.at("1")->getShardId().at("2")->getData()(i), 1);
+      BOOST_CHECK_EQUAL(tensorCollectionCommit_ptr->tables_.at("1")->getShardIndices().at("2")->getData()(i), i + 1);
+    }
+    else {
+      BOOST_CHECK_EQUAL(tensorCollectionCommit_ptr->tables_.at("1")->getShardId().at("2")->getData()(i), 2);
+      BOOST_CHECK_EQUAL(tensorCollectionCommit_ptr->tables_.at("1")->getShardIndices().at("2")->getData()(i), i - nlabels2 + 1);
+    }
+  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()

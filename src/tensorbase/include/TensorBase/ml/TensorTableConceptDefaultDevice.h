@@ -44,4 +44,42 @@ CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableDefau
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray2048<char>, 2>, Eigen::DefaultDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray2048<char>, 3>, Eigen::DefaultDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTableDefaultDevice<TensorBase::TensorArray2048<char>, 4>, Eigen::DefaultDevice>);
+
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<int, Eigen::DefaultDevice, 1>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<float, Eigen::DefaultDevice, 1>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<double, Eigen::DefaultDevice, 1>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<char, Eigen::DefaultDevice, 1>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<int, Eigen::DefaultDevice, 2>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<float, Eigen::DefaultDevice, 2>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<double, Eigen::DefaultDevice, 2>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<char, Eigen::DefaultDevice, 2>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<int, Eigen::DefaultDevice, 3>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<float, Eigen::DefaultDevice, 3>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<double, Eigen::DefaultDevice, 3>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<char, Eigen::DefaultDevice, 3>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<int, Eigen::DefaultDevice, 4>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<float, Eigen::DefaultDevice, 4>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<double, Eigen::DefaultDevice, 4>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<char, Eigen::DefaultDevice, 4>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<TensorBase::TensorArray8<char>, Eigen::DefaultDevice, 1>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<TensorBase::TensorArray8<char>, Eigen::DefaultDevice, 2>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<TensorBase::TensorArray8<char>, Eigen::DefaultDevice, 3>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<TensorBase::TensorArray8<char>, Eigen::DefaultDevice, 4>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<TensorBase::TensorArray32<char>, Eigen::DefaultDevice, 1>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<TensorBase::TensorArray32<char>, Eigen::DefaultDevice, 2>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<TensorBase::TensorArray32<char>, Eigen::DefaultDevice, 3>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<TensorBase::TensorArray32<char>, Eigen::DefaultDevice, 4>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<TensorBase::TensorArray128<char>, Eigen::DefaultDevice, 1>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<TensorBase::TensorArray128<char>, Eigen::DefaultDevice, 2>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<TensorBase::TensorArray128<char>, Eigen::DefaultDevice, 3>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<TensorBase::TensorArray128<char>, Eigen::DefaultDevice, 4>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<TensorBase::TensorArray512<char>, Eigen::DefaultDevice, 1>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<TensorBase::TensorArray512<char>, Eigen::DefaultDevice, 2>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<TensorBase::TensorArray512<char>, Eigen::DefaultDevice, 3>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<TensorBase::TensorArray512<char>, Eigen::DefaultDevice, 4>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<TensorBase::TensorArray2048<char>, Eigen::DefaultDevice, 1>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<TensorBase::TensorArray2048<char>, Eigen::DefaultDevice, 2>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<TensorBase::TensorArray2048<char>, Eigen::DefaultDevice, 3>, Eigen::DefaultDevice>);
+CEREAL_REGISTER_TYPE(TensorBase::TensorTableWrapper<TensorBase::TensorTable<TensorBase::TensorArray2048<char>, Eigen::DefaultDevice, 4>, Eigen::DefaultDevice>);
+
 #endif //TENSORBASE_TENSORTABLECONCEPTDEFAULTDEVICE_H

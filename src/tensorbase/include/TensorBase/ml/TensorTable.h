@@ -110,7 +110,7 @@ namespace TensorBase
     Eigen::array<Eigen::Index, TDim> getDimensions() const { return dimensions_; }  ///< dimensions getter
     int getDimFromAxisName(const std::string& axis_name) const { return axes_to_dims_.at(axis_name); }
 		std::map<std::string, int> getAxesToDims() const { return axes_to_dims_; }  ///< axes_to_dims getter
-    void clear();  ///< clears the axes and all associated data
+    void clear(const bool& clear_shard_spans = true);  ///< clears the axes and all associated data
 
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> getData() { return data_->getData(); } ///< data_->getData() wrapper
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> getData() const { return data_->getData(); } ///< data_->getData() wrapper
@@ -155,6 +155,11 @@ namespace TensorBase
     void setDataStatus(const bool& h_data_updated, const bool& d_data_updated) { data_->setDataStatus(h_data_updated, d_data_updated); } ///< Set the status of the host and device tensor data
     std::pair<bool, bool> getDataStatus() { return data_->getDataStatus(); };   ///< Get the status of the host and device tensor data
 
+    bool syncAxesAndIndicesDData(DeviceT& device); ///< Transfer all axes and indices data to the device (if not already)
+    bool syncAxesAndIndicesHData(DeviceT& device); ///< Transfer all axes and indices data to the host (if not already)
+    bool syncDData(DeviceT& device); ///< Transfer tensor data to the device (if not already)
+    bool syncHData(DeviceT& device); ///< Transfer tensor data to the host (if not already)
+
     template<typename T>
     void getDataPointer(std::shared_ptr<T[]>& data_copy); ///< TensorTableConcept data getter
 
@@ -162,11 +167,13 @@ namespace TensorBase
     std::map<std::string, int> getShardSpans() const { return shard_spans_; }; ///< shard_span getter
 
     /*
-    @brief Reset the shard indices based on the current `shard_span`
+    @brief Reset the shard indices based on the current `shard_span`.
+      Overloads are provided that perform the update on or off the device
 
     @param[in] device
     */
     void reShardIndices(DeviceT& device);
+    void reShardIndices();
 
     /*
     @brief Select Tensor Axis that will be included in the view
@@ -218,6 +225,9 @@ namespace TensorBase
     */
     template<typename LabelsT>
     void sortIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT& device);
+    template<typename LabelsT>
+    void sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device);
+    void sortIndicesView_(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices_view_copy, const sortOrder::order& order_by, DeviceT& device);
 
     virtual int getFirstIndexFromIndicesView(const std::string& axis_name, DeviceT& device) = 0; ///< Helper method to get the first index
 
@@ -821,7 +831,7 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
-  void TensorTable<TensorT, DeviceT, TDim>::clear() {
+  void TensorTable<TensorT, DeviceT, TDim>::clear(const bool& clear_shard_spans) {
     axes_.clear();
     for (auto& axis_to_dim: axes_to_dims_) {
       dimensions_.at(axis_to_dim.second) = 0;
@@ -834,7 +844,7 @@ namespace TensorBase
     shard_id_.clear();
     shard_indices_.clear();
     data_.reset();
-    shard_spans_.clear();
+    if (clear_shard_spans) shard_spans_.clear();
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
@@ -1080,6 +1090,142 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
+  inline bool TensorTable<TensorT, DeviceT, TDim>::syncAxesAndIndicesDData(DeviceT& device)
+  {
+    bool synced = true;
+    // transfer axis data to the device from the host
+    for (auto& axis_map : axes_) {
+      std::pair<bool, bool> statuses = axis_map.second->getDataStatus();
+      if (!statuses.second) {
+        bool synced_tmp = axis_map.second->syncHAndDData(device);
+        if (!synced_tmp) synced = false;
+      }
+    }
+    // transfer indices data to the device from the host
+    for (auto& index_map : indices_) {
+      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
+      if (!statuses.second) {
+        bool synced_tmp = index_map.second->syncHAndDData(device);
+        if (!synced_tmp) synced = false;
+      }
+    }
+    for (auto& index_map : indices_view_) {
+      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
+      if (!statuses.second) {
+        bool synced_tmp = index_map.second->syncHAndDData(device);
+        if (!synced_tmp) synced = false;
+      }
+    }
+    for (auto& index_map : is_modified_) {
+      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
+      if (!statuses.second) {
+        bool synced_tmp = index_map.second->syncHAndDData(device);
+        if (!synced_tmp) synced = false;
+      }
+    }
+    for (auto& index_map : not_in_memory_) {
+      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
+      if (!statuses.second) {
+        bool synced_tmp = index_map.second->syncHAndDData(device);
+        if (!synced_tmp) synced = false;
+      }
+    }
+    for (auto& index_map : shard_id_) {
+      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
+      if (!statuses.second) {
+        bool synced_tmp = index_map.second->syncHAndDData(device);
+        if (!synced_tmp) synced = false;
+      }
+    }
+    for (auto& index_map : shard_indices_) {
+      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
+      if (!statuses.second) {
+        bool synced_tmp = index_map.second->syncHAndDData(device);
+        if (!synced_tmp) synced = false;
+      }
+    }
+    return synced;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline bool TensorTable<TensorT, DeviceT, TDim>::syncAxesAndIndicesHData(DeviceT& device)
+  {
+    bool synced = true;
+    // transfer axis data to the device from the host
+    for (auto& axis_map : axes_) {
+      std::pair<bool, bool> statuses = axis_map.second->getDataStatus();
+      if (!statuses.first) {
+        bool synced_tmp = axis_map.second->syncHAndDData(device);
+        if (!synced_tmp) synced = false;
+      }
+    }
+    // transfer indices data to the device from the host
+    for (auto& index_map : indices_) {
+      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
+      if (!statuses.first) {
+        bool synced_tmp = index_map.second->syncHAndDData(device);
+        if (!synced_tmp) synced = false;
+      }
+    }
+    for (auto& index_map : indices_view_) {
+      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
+      if (!statuses.first) {
+        bool synced_tmp = index_map.second->syncHAndDData(device);
+        if (!synced_tmp) synced = false;
+      }
+    }
+    for (auto& index_map : is_modified_) {
+      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
+      if (!statuses.first) {
+        bool synced_tmp = index_map.second->syncHAndDData(device);
+        if (!synced_tmp) synced = false;
+      }
+    }
+    for (auto& index_map : not_in_memory_) {
+      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
+      if (!statuses.first) {
+        bool synced_tmp = index_map.second->syncHAndDData(device);
+        if (!synced_tmp) synced = false;
+      }
+    }
+    for (auto& index_map : shard_id_) {
+      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
+      if (!statuses.first) {
+        bool synced_tmp = index_map.second->syncHAndDData(device);
+        if (!synced_tmp) synced = false;
+      }
+    }
+    for (auto& index_map : shard_indices_) {
+      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
+      if (!statuses.first) {
+        bool synced_tmp = index_map.second->syncHAndDData(device);
+        if (!synced_tmp) synced = false;
+      }
+    }
+    return synced;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline bool TensorTable<TensorT, DeviceT, TDim>::syncDData(DeviceT& device)
+  {
+    bool synced = true;
+    std::pair<bool, bool> statuses = getDataStatus();
+    if (!statuses.second)
+      synced = syncHAndDData(device);
+    return synced;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline bool TensorTable<TensorT, DeviceT, TDim>::syncHData(DeviceT& device)
+  {
+    bool synced = true;
+    std::pair<bool, bool> statuses = getDataStatus();
+    if (!statuses.first)
+      synced = syncHAndDData(device);
+    return synced;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorTable<TensorT, DeviceT, TDim>::reShardIndices(DeviceT& device)
   {
     for (const auto& shard_span_map : shard_spans_) {
@@ -1101,6 +1247,32 @@ namespace TensorBase
         Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_indices_values(shard_indices_.at(shard_span_map.first)->getDataPointer().get(), (int)shard_indices_.at(shard_span_map.first)->getTensorSize());
         Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_values(indices_.at(shard_span_map.first)->getDataPointer().get(), (int)indices_.at(shard_span_map.first)->getTensorSize());
         shard_indices_values.slice(offset, span).device(device) = indices_values.slice(Eigen::array<Eigen::Index, 1>({0}), span);
+      }
+    }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::reShardIndices()
+  {
+    for (const auto& shard_span_map : shard_spans_) {
+      // Determine the max shard id value
+      int shard_id = 0;
+      int max_shard_id = ceil(float(axes_.at(shard_span_map.first)->getNLabels()) / float(shard_span_map.second));
+      for (; shard_id < max_shard_id; ++shard_id) {
+        // Determine the offsets and span for slicing
+        Eigen::array<Eigen::Index, 1> offset, span;
+        offset.at(0) = shard_id * shard_span_map.second;
+        int remaining_length = axes_.at(shard_span_map.first)->getNLabels() - shard_id * shard_span_map.second;
+        span.at(0) = (shard_span_map.second <= remaining_length) ? shard_span_map.second : remaining_length;
+
+        // Update the shard id
+        Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_id_values(shard_id_.at(shard_span_map.first)->getHDataPointer().get(), (int)shard_id_.at(shard_span_map.first)->getTensorSize());
+        shard_id_values.slice(offset, span) = shard_id_values.slice(offset, span).constant(shard_id + 1);
+
+        // Update the shard indices using the indices as a template
+        Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_indices_values(shard_indices_.at(shard_span_map.first)->getHDataPointer().get(), (int)shard_indices_.at(shard_span_map.first)->getTensorSize());
+        Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_values(indices_.at(shard_span_map.first)->getHDataPointer().get(), (int)indices_.at(shard_span_map.first)->getTensorSize());
+        shard_indices_values.slice(offset, span) = indices_values.slice(Eigen::array<Eigen::Index, 1>({ 0 }), span);
       }
     }
   }
@@ -1133,7 +1305,7 @@ namespace TensorBase
 
     // select the indices and reduce back to a 1D Tensor
     auto selected = (labels_bcast == labels_names_selected_bcast).select(indices_bcast, indices_bcast.constant(0));
-    auto selected_sum = selected.sum(Eigen::array<Eigen::Index, 1>({ 1 })).clip(0, 1);
+    auto selected_sum = selected.clip(0, 1).sum(Eigen::array<Eigen::Index, 1>({ 1 })).clip(0, 1);
 
     // update the indices view based on the selection
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_name)->getDataPointer().get(), (int)axes_.at(axis_name)->getNLabels());
@@ -1144,23 +1316,24 @@ namespace TensorBase
   template<typename LabelsT>
   inline void TensorTable<TensorT, DeviceT, TDim>::selectIndicesView(const std::string & axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels, DeviceT & device)
   {
+    assert(axes_.at(axis_name)->getNDimensions() == select_labels->getDimensions().at(0));
     // reshape to match the axis labels shape and broadcast the length of the labels
-    Eigen::TensorMap<Eigen::Tensor<LabelsT, 4>> labels_names_selected_reshape(select_labels->getDataPointer().get(), 1, 1, select_labels->getDimensions().at(0), select_labels->getDimensions().at(1));
-    auto labels_names_selected_bcast = labels_names_selected_reshape.broadcast(Eigen::array<Eigen::Index, 4>({ (int)axes_.at(axis_name)->getNDimensions(), (int)axes_.at(axis_name)->getNLabels(), 1, 1 }));
+    Eigen::TensorMap<Eigen::Tensor<LabelsT, 3>> labels_names_selected_reshape(select_labels->getDataPointer().get(), select_labels->getDimensions().at(0), 1, select_labels->getDimensions().at(1));
+    auto labels_names_selected_bcast = labels_names_selected_reshape.broadcast(Eigen::array<Eigen::Index, 3>({ 1, (int)axes_.at(axis_name)->getNLabels(), 1 }));
     
     // broadcast the axis labels the size of the labels queried
     std::shared_ptr<LabelsT[]> labels_data;
     axes_.at(axis_name)->getLabelsDataPointer(labels_data);
-    Eigen::TensorMap<Eigen::Tensor<LabelsT, 4>> labels_reshape(labels_data.get(), (int)axes_.at(axis_name)->getNDimensions(), (int)axes_.at(axis_name)->getNLabels(), 1, 1);
-    auto labels_bcast = labels_reshape.broadcast(Eigen::array<Eigen::Index, 4>({ 1, 1, select_labels->getDimensions().at(0), select_labels->getDimensions().at(1) }));
+    Eigen::TensorMap<Eigen::Tensor<LabelsT, 3>> labels_reshape(labels_data.get(), (int)axes_.at(axis_name)->getNDimensions(), (int)axes_.at(axis_name)->getNLabels(), 1);
+    auto labels_bcast = labels_reshape.broadcast(Eigen::array<Eigen::Index, 3>({ 1, 1, select_labels->getDimensions().at(1) }));
 
     // broadcast the tensor indices the size of the labels queried
-    Eigen::TensorMap<Eigen::Tensor<int, 4>> indices_reshape(indices_.at(axis_name)->getDataPointer().get(), 1, (int)axes_.at(axis_name)->getNLabels(), 1, 1);
-    auto indices_bcast = indices_reshape.broadcast(Eigen::array<Eigen::Index, 4>({ (int)axes_.at(axis_name)->getNDimensions(), 1, select_labels->getDimensions().at(0), select_labels->getDimensions().at(1) }));
+    Eigen::TensorMap<Eigen::Tensor<int, 3>> indices_reshape(indices_.at(axis_name)->getDataPointer().get(), 1, (int)axes_.at(axis_name)->getNLabels(), 1);
+    auto indices_bcast = indices_reshape.broadcast(Eigen::array<Eigen::Index, 3>({ (int)axes_.at(axis_name)->getNDimensions(), 1, select_labels->getDimensions().at(1) }));
 
     // select the indices and reduce back to a 1D Tensor
-    auto selected = (labels_bcast == labels_names_selected_bcast).select(indices_bcast, indices_bcast.constant(0)).sum(
-      Eigen::array<Eigen::Index, 2>({ 2, 3 })).prod(Eigen::array<Eigen::Index, 1>({ 0 })).clip(0, 1); // matched = 1, not-matched = 0;
+    auto selected = (labels_bcast == labels_names_selected_bcast).select(indices_bcast, indices_bcast.constant(0)).clip(0, 1).sum(
+      Eigen::array<Eigen::Index, 1>({ 2 })).clip(0, 1).prod(Eigen::array<Eigen::Index, 1>({ 0 })).clip(0, 1); // matched = 1, not-matched = 0;
 
     // update the indices view based on the selection
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_name)->getDataPointer().get(), (int)axes_.at(axis_name)->getNLabels());
@@ -1178,6 +1351,28 @@ namespace TensorBase
     // select the `labels` indices from the axis labels and store in the current indices view
     selectIndicesView(axis_name, dimension_index, select_labels, device);
 
+    // sort the indices view
+    sortIndicesView_(axis_name, indices_view_copy, order_by, device);
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  template<typename LabelsT>
+  inline void TensorTable<TensorT, DeviceT, TDim>::sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device)
+  {
+    // create a copy of the indices view
+    std::shared_ptr<TensorData<int, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copy(device);
+    assert(indices_view_copy->syncHAndDData(device));
+
+    // select the `labels` indices from the axis labels and store in the current indices view
+    selectIndicesView(axis_name, select_labels, device);
+
+    // sort the indices view
+    sortIndicesView_(axis_name, indices_view_copy, order_by, device);
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::sortIndicesView_(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices_view_copy, const sortOrder::order& order_by, DeviceT& device)
+  {
     // sort the indices view
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_values(indices_view_.at(axis_name)->getDataPointer().get(), indices_view_.at(axis_name)->getDimensions());
     auto indices_view_selected = (indices_view_values != indices_view_values.constant(0)).select(indices_view_values, indices_view_values.constant(MAX_INT));
@@ -1203,7 +1398,7 @@ namespace TensorBase
       // Slice out the tensor that will be used for sorting
       std::shared_ptr<TensorData<TensorT, DeviceT, 1>> tensor_sort;
       sliceTensorDataForSort(tensor_sort, axis_name, label_index, axis_to_name.first, device);
-      
+
       // Sort the axis index view
       sortTensorDataSlice(tensor_sort, axis_to_name.first, order_by, device);
     }
@@ -1873,22 +2068,22 @@ namespace TensorBase
     new_dimensions.at(0) += indices->getDimensions().at(0);
     indices_.at(axis_name)->setDimensions(new_dimensions); 
     indices_.at(axis_name)->setData();
-    indices_.at(axis_name)->syncHAndDData(device);
+    indices_.at(axis_name)->setDataStatus(false, true);
     indices_view_.at(axis_name)->setDimensions(new_dimensions); 
     indices_view_.at(axis_name)->setData();
-    indices_view_.at(axis_name)->syncHAndDData(device);
+    indices_view_.at(axis_name)->setDataStatus(false, true);
     is_modified_.at(axis_name)->setDimensions(new_dimensions); 
     is_modified_.at(axis_name)->setData();
-    is_modified_.at(axis_name)->syncHAndDData(device);
+    is_modified_.at(axis_name)->setDataStatus(false, true);
     not_in_memory_.at(axis_name)->setDimensions(new_dimensions); 
     not_in_memory_.at(axis_name)->setData();
-    not_in_memory_.at(axis_name)->syncHAndDData(device);
+    not_in_memory_.at(axis_name)->setDataStatus(false, true);
     shard_id_.at(axis_name)->setDimensions(new_dimensions); 
     shard_id_.at(axis_name)->setData();
-    shard_id_.at(axis_name)->syncHAndDData(device);
+    shard_id_.at(axis_name)->setDataStatus(false, true);
     shard_indices_.at(axis_name)->setDimensions(new_dimensions);
     shard_indices_.at(axis_name)->setData();
-    shard_indices_.at(axis_name)->syncHAndDData(device);
+    shard_indices_.at(axis_name)->setDataStatus(false, true);
 
     // concatenate the new indices
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_new_values(indices->getDataPointer().get(), (int)indices->getTensorSize());
@@ -2001,14 +2196,13 @@ namespace TensorBase
 
     // Select and reduce
     if (invert_selection) {
-      auto indices_selected_2d = (indices_view_bcast == indices_bcast).select(indices_view_bcast.constant(0), indices_view_bcast);
-      auto indices_selected = indices_selected_2d.prod(Eigen::array<Eigen::Index, 1>({ 1 })).clip(0, 1);
-      indices_select_values.device(device) = indices_selected;
+      auto indices_selected_2d = (indices_view_bcast != indices_bcast).select(indices_view_bcast, indices_view_bcast.constant(0));
+      //NOTE: product of many #s can result in overflow which will then be converted to 0 erroneously by clip
+      indices_select_values.device(device) = indices_selected_2d.clip(0, 1).prod(Eigen::array<Eigen::Index, 1>({ 1 })).clip(0, 1);
     }
     else {
       auto indices_selected_2d = (indices_view_bcast == indices_bcast).select(indices_view_bcast, indices_view_bcast.constant(0));
-      auto indices_selected = indices_selected_2d.sum(Eigen::array<Eigen::Index, 1>({ 1 })).clip(0, 1);
-      indices_select_values.device(device) = indices_selected;
+      indices_select_values.device(device) = indices_selected_2d.clip(0, 1).sum(Eigen::array<Eigen::Index, 1>({ 1 })).clip(0, 1);
     }
   }
 

@@ -94,7 +94,7 @@ namespace TensorBaseBenchmarks
 		virtual void setDimSizes() = 0;
 		virtual void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, NDim>>& values_ptr) = 0;
 		virtual void makeLabelsPtr(const Eigen::Tensor<int, 2>& labels, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr) = 0;
-		virtual void makeValuesPtr(const Eigen::Tensor<float, NDim>& values, std::shared_ptr<TensorData<TensorT, DeviceT, NDim>>& values_ptr) = 0;
+		virtual void makeValuesPtr(const Eigen::Tensor<TensorT, NDim>& values, std::shared_ptr<TensorData<TensorT, DeviceT, NDim>>& values_ptr) = 0;
 
 		/*
 		@brief Generate a random value
@@ -135,15 +135,15 @@ namespace TensorBaseBenchmarks
 		setDimSizes();
 		// Make the labels and values
 		Eigen::Tensor<LabelsT, 2> labels(1, span);
-		Eigen::Tensor<TensorT, 2> values(5, span);
+		Eigen::Tensor<TensorT, 2> values(span, 5);
 		for (int i = offset; i < offset + span; ++i) {
 			labels(0, i - offset) = LabelsT(i);
-			values(0, i - offset) = int(floor(float(i) / float(std::pow(this->dim_span_, 0)))) % this->dim_span_ + 1;
-			values(1, i - offset) = int(floor(float(i) / float(std::pow(this->dim_span_, 1)))) % this->dim_span_ + 1;
-			values(2, i - offset) = int(floor(float(i) / float(std::pow(this->dim_span_, 2)))) % this->dim_span_ + 1;
-			values(3, i - offset) = int(floor(float(i) / float(std::pow(this->dim_span_, 3)))) % this->dim_span_ + 1;
-			if (this->use_random_values_) values(4, i - offset) = this->getRandomValue();
-			else values(4, i - offset) = TensorT(i);
+			values(i - offset, 0) = int(floor(float(i) / float(std::pow(this->dim_span_, 0)))) % this->dim_span_ + 1;
+			values(i - offset, 1) = int(floor(float(i) / float(std::pow(this->dim_span_, 1)))) % this->dim_span_ + 1;
+			values(i - offset, 2) = int(floor(float(i) / float(std::pow(this->dim_span_, 2)))) % this->dim_span_ + 1;
+			values(i - offset, 3) = int(floor(float(i) / float(std::pow(this->dim_span_, 3)))) % this->dim_span_ + 1;
+      if (this->use_random_values_) values(i - offset, 4) = TensorT(-1); // this->getRandomValue();
+			else values(i - offset, 4) = TensorT(i);
 		}
 		this->makeLabelsPtr(labels, labels_ptr);
 		this->makeValuesPtr(values, values_ptr);
@@ -178,7 +178,7 @@ namespace TensorBaseBenchmarks
 			labels(1, i - offset) = int(floor(float(i) / float(std::pow(this->dim_span_, 1)))) % this->dim_span_ + 1;
 			labels(2, i - offset) = int(floor(float(i) / float(std::pow(this->dim_span_, 2)))) % this->dim_span_ + 1;
 			labels(3, i - offset) = int(floor(float(i) / float(std::pow(this->dim_span_, 3)))) % this->dim_span_ + 1;
-			if (this->use_random_values_) values(0, i - offset) = this->getRandomValue();
+			if (this->use_random_values_) values(0, i - offset) = TensorT(-1); // this->getRandomValue();
 			else values(0, i - offset) = TensorT(i);
 		}
 		this->makeLabelsPtr(labels, labels_ptr);
@@ -214,9 +214,13 @@ namespace TensorBaseBenchmarks
 		for (int i = 0; i < span; ++i) {
 			labels(0, i) = int(floor(float(i + offset) / float(std::pow(this->dim_span_, 0)))) % this->dim_span_ + 1;
 			Eigen::Tensor<TensorT, 1> new_values(this->xyz_dim_size_);
-			if (this->use_random_values_) new_values.setRandom();
-			else new_values.setConstant(offset);
-			new_values = new_values.cumsum(0);
+      if (this->use_random_values_) {
+        new_values.setConstant(TensorT(-1)); // new_values.setRandom();
+      }
+      else {
+        new_values.setConstant((i + offset) * this->xyz_dim_size_ + 1);
+        new_values = new_values.cumsum(0);
+      }
 			values.slice(Eigen::array<Eigen::Index, 2>({ 0, i }), Eigen::array<Eigen::Index, 2>({ this->xyz_dim_size_, 1 })) = new_values.reshape(Eigen::array<Eigen::Index, 2>({ this->xyz_dim_size_, 1 }));
 		}
 		this->makeLabelsPtr(labels, labels_ptr);
@@ -254,9 +258,13 @@ namespace TensorBaseBenchmarks
 		for (int i = 0; i < span; ++i) {
 			labels(0, i) = int(floor(float(i + offset) / float(std::pow(this->dim_span_, 0)))) % this->dim_span_ + 1;
 			Eigen::Tensor<TensorT, 1> new_values(this->xy_dim_size_ * this->z_dim_size_);
-			if (this->use_random_values_) new_values.setRandom();
-			else new_values.setConstant(offset);
-			new_values = new_values.cumsum(0);
+      if (this->use_random_values_) {
+        new_values.setConstant(TensorT(-1)); // new_values.setRandom();
+      }
+      else {
+        new_values.setConstant((i + offset) * this->xy_dim_size_ * this->z_dim_size_ + 1);
+        new_values = new_values.cumsum(0);
+      }
 			values.slice(Eigen::array<Eigen::Index, 3>({ 0, 0, i }), Eigen::array<Eigen::Index, 3>({ this->xy_dim_size_, this->z_dim_size_, 1 })) = new_values.reshape(Eigen::array<Eigen::Index, 3>({ this->xy_dim_size_, this->z_dim_size_, 1 }));
 		}
 		this->makeLabelsPtr(labels, labels_ptr);
@@ -296,9 +304,13 @@ namespace TensorBaseBenchmarks
 		for (int i = 0; i < span; ++i) {
 			labels(0, i) = int(floor(float(i + offset) / float(std::pow(this->dim_span_, 0)))) % this->dim_span_ + 1;
 			Eigen::Tensor<TensorT, 1> new_values(this->x_dim_size_ * this->y_dim_size_ * this->z_dim_size_);
-			if (this->use_random_values_) new_values.setRandom();
-			else new_values.setConstant(offset);
-			new_values = new_values.cumsum(0);
+      if (this->use_random_values_) {
+        new_values.setConstant(TensorT(-1)); // new_values.setRandom();
+      }
+      else {
+        new_values.setConstant((i + offset) * this->x_dim_size_ * this->y_dim_size_ * this->z_dim_size_ + 1);
+        new_values = new_values.cumsum(0);
+      }
 			values.slice(Eigen::array<Eigen::Index, 4>({ 0, 0, 0, i }), Eigen::array<Eigen::Index, 4>({ this->x_dim_size_, this->y_dim_size_, this->z_dim_size_, 1 })) = new_values.reshape(Eigen::array<Eigen::Index, 4>({ this->x_dim_size_, this->y_dim_size_, this->z_dim_size_, 1 }));
 		}
 		this->makeLabelsPtr(labels, labels_ptr);
@@ -324,51 +336,51 @@ namespace TensorBaseBenchmarks
 
 		@returns A string with the total time of the benchmark in milliseconds
 		*/
-		std::string insert1TimePoint(const int& n_dims, TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const;
-		std::string update1TimePoint(const int& n_dims, TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const;
-		std::string delete1TimePoint(const int& n_dims, TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const;
+		std::string insert1TimePoint(const int& n_dims, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const;
+		std::string update1TimePoint(const int& n_dims, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const;
+		std::string delete1TimePoint(const int& n_dims, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const;
 	protected:
-		virtual void insert1TimePoint0D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const = 0; ///< Device specific interface to call `insert1TimePoint0D`
-		virtual void insert1TimePoint1D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const = 0; ///< Device specific interface to call `insert1TimePoint1D`
-		virtual void insert1TimePoint2D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const = 0; ///< Device specific interface to call `insert1TimePoint2D`
-		virtual void insert1TimePoint3D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const = 0; ///< Device specific interface to call `insert1TimePoint3D`
-		virtual void insert1TimePoint4D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const = 0; ///< Device specific interface to call `insert1TimePoint4D`
+		virtual void insert1TimePoint0D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const = 0; ///< Device specific interface to call `insert1TimePoint0D`
+		virtual void insert1TimePoint1D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const = 0; ///< Device specific interface to call `insert1TimePoint1D`
+		virtual void insert1TimePoint2D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const = 0; ///< Device specific interface to call `insert1TimePoint2D`
+		virtual void insert1TimePoint3D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const = 0; ///< Device specific interface to call `insert1TimePoint3D`
+		virtual void insert1TimePoint4D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const = 0; ///< Device specific interface to call `insert1TimePoint4D`
 
-		void insert1TimePoint0D_(PixelManager0D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const; ///< Device agnostic implementation of `insert1TimePoint0D`
-		void insert1TimePoint1D_(PixelManager1D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const; ///< Device agnostic implementation of `insert1TimePoint1D`
-		void insert1TimePoint2D_(PixelManager2D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const; ///< Device agnostic implementation of `insert1TimePoint2D`
-		void insert1TimePoint3D_(PixelManager3D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const; ///< Device agnostic implementation of `insert1TimePoint3D`
-		void insert1TimePoint4D_(PixelManager4D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const; ///< Device agnostic implementation of `insert1TimePoint4D`
+		void insert1TimePoint0D_(PixelManager0D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const; ///< Device agnostic implementation of `insert1TimePoint0D`
+		void insert1TimePoint1D_(PixelManager1D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const; ///< Device agnostic implementation of `insert1TimePoint1D`
+		void insert1TimePoint2D_(PixelManager2D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const; ///< Device agnostic implementation of `insert1TimePoint2D`
+		void insert1TimePoint3D_(PixelManager3D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const; ///< Device agnostic implementation of `insert1TimePoint3D`
+		void insert1TimePoint4D_(PixelManager4D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const; ///< Device agnostic implementation of `insert1TimePoint4D`
 
-		virtual void update1TimePoint0D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const = 0; ///< Device specific interface to call `update1TimePoint0D`
-		virtual void update1TimePoint1D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const = 0; ///< Device specific interface to call `update1TimePoint1D`
-		virtual void update1TimePoint2D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const = 0; ///< Device specific interface to call `update1TimePoint2D`
-		virtual void update1TimePoint3D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const = 0; ///< Device specific interface to call `update1TimePoint3D`
-		virtual void update1TimePoint4D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const = 0; ///< Device specific interface to call `update1TimePoint4D`
+		virtual void update1TimePoint0D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const = 0; ///< Device specific interface to call `update1TimePoint0D`
+		virtual void update1TimePoint1D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const = 0; ///< Device specific interface to call `update1TimePoint1D`
+		virtual void update1TimePoint2D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const = 0; ///< Device specific interface to call `update1TimePoint2D`
+		virtual void update1TimePoint3D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const = 0; ///< Device specific interface to call `update1TimePoint3D`
+		virtual void update1TimePoint4D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const = 0; ///< Device specific interface to call `update1TimePoint4D`
 
-		void update1TimePoint0D_(PixelManager0D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const; ///< Device agnostic implementation of `update1TimePoint0D`
-		void update1TimePoint1D_(PixelManager1D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const; ///< Device agnostic implementation of `update1TimePoint1D`
-		void update1TimePoint2D_(PixelManager2D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const; ///< Device agnostic implementation of `update1TimePoint2D`
-		void update1TimePoint3D_(PixelManager3D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const; ///< Device agnostic implementation of `update1TimePoint3D`
-		void update1TimePoint4D_(PixelManager4D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const; ///< Device agnostic implementation of `update1TimePoint4D`
+		void update1TimePoint0D_(PixelManager0D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const; ///< Device agnostic implementation of `update1TimePoint0D`
+		void update1TimePoint1D_(PixelManager1D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const; ///< Device agnostic implementation of `update1TimePoint1D`
+		void update1TimePoint2D_(PixelManager2D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const; ///< Device agnostic implementation of `update1TimePoint2D`
+		void update1TimePoint3D_(PixelManager3D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const; ///< Device agnostic implementation of `update1TimePoint3D`
+		void update1TimePoint4D_(PixelManager4D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const; ///< Device agnostic implementation of `update1TimePoint4D`
 
-		virtual void delete1TimePoint0D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const = 0; ///< Device specific interface to call `delete1TimePoint0D`
-		virtual void delete1TimePoint1D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const = 0; ///< Device specific interface to call `delete1TimePoint1D`
-		virtual void delete1TimePoint2D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const = 0; ///< Device specific interface to call `delete1TimePoint2D`
-		virtual void delete1TimePoint3D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const = 0; ///< Device specific interface to call `delete1TimePoint3D`
-		virtual void delete1TimePoint4D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const = 0; ///< Device specific interface to call `delete1TimePoint4D`
+		virtual void delete1TimePoint0D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const = 0; ///< Device specific interface to call `delete1TimePoint0D`
+		virtual void delete1TimePoint1D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const = 0; ///< Device specific interface to call `delete1TimePoint1D`
+		virtual void delete1TimePoint2D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const = 0; ///< Device specific interface to call `delete1TimePoint2D`
+		virtual void delete1TimePoint3D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const = 0; ///< Device specific interface to call `delete1TimePoint3D`
+		virtual void delete1TimePoint4D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const = 0; ///< Device specific interface to call `delete1TimePoint4D`
 	};
 	template<typename LabelsT, typename TensorT, typename DeviceT>
-	std::string Benchmark1TimePoint<LabelsT, TensorT, DeviceT>::insert1TimePoint(const int& n_dims, TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const
+	std::string Benchmark1TimePoint<LabelsT, TensorT, DeviceT>::insert1TimePoint(const int& n_dims, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
 	{
 		// Start the timer
 		auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
-		if (n_dims == 0) insert1TimePoint0D(transaction_manager, data_size, device);
-		else if (n_dims == 1) insert1TimePoint1D(transaction_manager, data_size, device);
-		else if (n_dims == 2) insert1TimePoint2D(transaction_manager, data_size, device);
-		else if (n_dims == 3) insert1TimePoint3D(transaction_manager, data_size, device);
-		else if (n_dims == 4) insert1TimePoint4D(transaction_manager, data_size, device);
+		if (n_dims == 0) insert1TimePoint0D(transaction_manager, data_size, in_memory, device);
+		else if (n_dims == 1) insert1TimePoint1D(transaction_manager, data_size, in_memory, device);
+		else if (n_dims == 2) insert1TimePoint2D(transaction_manager, data_size, in_memory, device);
+		else if (n_dims == 3) insert1TimePoint3D(transaction_manager, data_size, in_memory, device);
+		else if (n_dims == 4) insert1TimePoint4D(transaction_manager, data_size, in_memory, device);
 		else std::cout << "The given number of dimensions " << n_dims << " is not within the range of 0 to 4." << std::endl;
 
 		// Stop the timer
@@ -377,16 +389,16 @@ namespace TensorBaseBenchmarks
 		return milli_time;
 	}
 	template<typename LabelsT, typename TensorT, typename DeviceT>
-	std::string Benchmark1TimePoint<LabelsT, TensorT, DeviceT>::update1TimePoint(const int& n_dims, TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const
+	std::string Benchmark1TimePoint<LabelsT, TensorT, DeviceT>::update1TimePoint(const int& n_dims, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
 	{
 		// Start the timer
 		auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
-		if (n_dims == 0) update1TimePoint0D(transaction_manager, data_size, device);
-		else if (n_dims == 1) update1TimePoint1D(transaction_manager, data_size, device);
-		else if (n_dims == 2) update1TimePoint2D(transaction_manager, data_size, device);
-		else if (n_dims == 3) update1TimePoint3D(transaction_manager, data_size, device);
-		else if (n_dims == 4) update1TimePoint4D(transaction_manager, data_size, device);
+		if (n_dims == 0) update1TimePoint0D(transaction_manager, data_size, in_memory, device);
+		else if (n_dims == 1) update1TimePoint1D(transaction_manager, data_size, in_memory, device);
+		else if (n_dims == 2) update1TimePoint2D(transaction_manager, data_size, in_memory, device);
+		else if (n_dims == 3) update1TimePoint3D(transaction_manager, data_size, in_memory, device);
+		else if (n_dims == 4) update1TimePoint4D(transaction_manager, data_size, in_memory, device);
 		else std::cout << "The given number of dimensions " << n_dims << " is not within the range of 0 to 4." << std::endl;
 
 		// Stop the timer
@@ -395,16 +407,16 @@ namespace TensorBaseBenchmarks
 		return milli_time;
 	}
 	template<typename LabelsT, typename TensorT, typename DeviceT>
-	std::string Benchmark1TimePoint<LabelsT, TensorT, DeviceT>::delete1TimePoint(const int& n_dims, TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const
+	std::string Benchmark1TimePoint<LabelsT, TensorT, DeviceT>::delete1TimePoint(const int& n_dims, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
 	{
 		// Start the timer
 		auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
-		if (n_dims == 0) delete1TimePoint0D(transaction_manager, data_size, device);
-		else if (n_dims == 1) delete1TimePoint1D(transaction_manager, data_size, device);
-		else if (n_dims == 2) delete1TimePoint2D(transaction_manager, data_size, device);
-		else if (n_dims == 3) delete1TimePoint3D(transaction_manager, data_size, device);
-		else if (n_dims == 4) delete1TimePoint4D(transaction_manager, data_size, device);
+		if (n_dims == 0) delete1TimePoint0D(transaction_manager, data_size, in_memory, device);
+		else if (n_dims == 1) delete1TimePoint1D(transaction_manager, data_size, in_memory, device);
+		else if (n_dims == 2) delete1TimePoint2D(transaction_manager, data_size, in_memory, device);
+		else if (n_dims == 3) delete1TimePoint3D(transaction_manager, data_size, in_memory, device);
+		else if (n_dims == 4) delete1TimePoint4D(transaction_manager, data_size, in_memory, device);
 		else std::cout << "The given number of dimensions " << n_dims << " is not within the range of 0 to 4." << std::endl;
 
 		// Stop the timer
@@ -413,39 +425,45 @@ namespace TensorBaseBenchmarks
 		return milli_time;
 	}
 	template<typename LabelsT, typename TensorT, typename DeviceT>
-	void Benchmark1TimePoint<LabelsT, TensorT, DeviceT>::insert1TimePoint0D_(PixelManager0D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const
+	void Benchmark1TimePoint<LabelsT, TensorT, DeviceT>::insert1TimePoint0D_(PixelManager0D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
 	{
 		std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> labels_ptr;
 		std::shared_ptr<TensorData<TensorT, DeviceT, 2>> values_ptr;
-		//int span = data_size / std::pow(data_size, 0.25);  // BUG: breaks auto max_bcast = indices_view_values.maximum(Eigen::array<Eigen::Index, 1>({ 0 })).broadcast(Eigen::array<Eigen::Index, 1>({ n_labels })); in TensorTableDefaultDevice<TensorT, TDim>::makeAppendIndices
-		int span = 2;
+		int span = data_size / std::pow(data_size, 0.25);  // BUG: breaks auto max_bcast = indices_view_values.maximum(Eigen::array<Eigen::Index, 1>({ 0 })).broadcast(Eigen::array<Eigen::Index, 1>({ n_labels })); in TensorTableDefaultDevice<TensorT, TDim>::makeAppendIndices
 		for (int i = 0; i < data_size; i += span) {
 			labels_ptr.reset();
 			values_ptr.reset();
 			pixel_manager.getInsertData(i, span, labels_ptr, values_ptr);
-			TensorAppendToAxis<LabelsT, TensorT, DeviceT, 2> appendToAxis("TTable", "index", labels_ptr, values_ptr);
+			TensorAppendToAxis<LabelsT, TensorT, DeviceT, 2> appendToAxis("TTable", "indices", labels_ptr, values_ptr);
 			std::shared_ptr<TensorOperation<DeviceT>> appendToAxis_ptr = std::make_shared<TensorAppendToAxis<LabelsT, TensorT, DeviceT, 2>>(appendToAxis);
 			transaction_manager.executeOperation(appendToAxis_ptr, device);
+      if (!in_memory) {
+        transaction_manager.commit(device);
+        transaction_manager.initTensorCollectionTensorData();
+      }
 		}
 	}
 	template<typename LabelsT, typename TensorT, typename DeviceT>
-	void Benchmark1TimePoint<LabelsT, TensorT, DeviceT>::insert1TimePoint1D_(PixelManager1D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const
+	void Benchmark1TimePoint<LabelsT, TensorT, DeviceT>::insert1TimePoint1D_(PixelManager1D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
 	{
 		std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> labels_ptr;
 		std::shared_ptr<TensorData<TensorT, DeviceT, 2>> values_ptr;
-		//int span = data_size / std::pow(data_size, 0.25);  // BUG: breaks auto max_bcast = indices_view_values.maximum(Eigen::array<Eigen::Index, 1>({ 0 })).broadcast(Eigen::array<Eigen::Index, 1>({ n_labels })); in TensorTableDefaultDevice<TensorT, TDim>::makeAppendIndices
-		int span = 2;
-		for (int i = 0; i < data_size; i += span) {
+		int span = data_size / std::pow(data_size, 0.25);
+    for (int i = 0; i < data_size; i += span) {
 			labels_ptr.reset();
 			values_ptr.reset();
 			pixel_manager.getInsertData(i, span, labels_ptr, values_ptr);
 			TensorAppendToAxis<LabelsT, TensorT, DeviceT, 2> appendToAxis("TTable", "xyzt", labels_ptr, values_ptr);
 			std::shared_ptr<TensorOperation<DeviceT>> appendToAxis_ptr = std::make_shared<TensorAppendToAxis<LabelsT, TensorT, DeviceT, 2>>(appendToAxis);
 			transaction_manager.executeOperation(appendToAxis_ptr, device);
+      if (!in_memory) {
+        transaction_manager.commit(device);
+        transaction_manager.initTensorCollectionTensorData();
+      }
 		}
 	}
 	template<typename LabelsT, typename TensorT, typename DeviceT>
-	void Benchmark1TimePoint<LabelsT, TensorT, DeviceT>::insert1TimePoint2D_(PixelManager2D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const
+	void Benchmark1TimePoint<LabelsT, TensorT, DeviceT>::insert1TimePoint2D_(PixelManager2D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
 	{
 		std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> labels_ptr;
 		std::shared_ptr<TensorData<TensorT, DeviceT, 2>> values_ptr;
@@ -457,10 +475,14 @@ namespace TensorBaseBenchmarks
 			TensorAppendToAxis<LabelsT, TensorT, DeviceT, 2> appendToAxis("TTable", "t", labels_ptr, values_ptr);
 			std::shared_ptr<TensorOperation<DeviceT>> appendToAxis_ptr = std::make_shared<TensorAppendToAxis<LabelsT, TensorT, DeviceT, 2>>(appendToAxis);
 			transaction_manager.executeOperation(appendToAxis_ptr, device);
+      if (!in_memory) {
+        transaction_manager.commit(device);
+        transaction_manager.initTensorCollectionTensorData();
+      }
 		}
 	}
 	template<typename LabelsT, typename TensorT, typename DeviceT>
-	void Benchmark1TimePoint<LabelsT, TensorT, DeviceT>::insert1TimePoint3D_(PixelManager3D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const
+	void Benchmark1TimePoint<LabelsT, TensorT, DeviceT>::insert1TimePoint3D_(PixelManager3D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
 	{
 		std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> labels_ptr;
 		std::shared_ptr<TensorData<TensorT, DeviceT, 3>> values_ptr;
@@ -472,10 +494,14 @@ namespace TensorBaseBenchmarks
 			TensorAppendToAxis<LabelsT, TensorT, DeviceT, 3> appendToAxis("TTable", "t", labels_ptr, values_ptr);
 			std::shared_ptr<TensorOperation<DeviceT>> appendToAxis_ptr = std::make_shared<TensorAppendToAxis<LabelsT, TensorT, DeviceT, 3>>(appendToAxis);
 			transaction_manager.executeOperation(appendToAxis_ptr, device);
+      if (!in_memory) {
+        transaction_manager.commit(device);
+        transaction_manager.initTensorCollectionTensorData();
+      }
 		}
 	}
 	template<typename LabelsT, typename TensorT, typename DeviceT>
-	void Benchmark1TimePoint<LabelsT, TensorT, DeviceT>::insert1TimePoint4D_(PixelManager4D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const
+	void Benchmark1TimePoint<LabelsT, TensorT, DeviceT>::insert1TimePoint4D_(PixelManager4D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
 	{
 		std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> labels_ptr;
 		std::shared_ptr<TensorData<TensorT, DeviceT, 4>> values_ptr;
@@ -487,15 +513,18 @@ namespace TensorBaseBenchmarks
 			TensorAppendToAxis<LabelsT, TensorT, DeviceT, 4> appendToAxis("TTable", "t", labels_ptr, values_ptr);
 			std::shared_ptr<TensorOperation<DeviceT>> appendToAxis_ptr = std::make_shared<TensorAppendToAxis<LabelsT, TensorT, DeviceT, 4>>(appendToAxis);
 			transaction_manager.executeOperation(appendToAxis_ptr, device);
+      if (!in_memory) {
+        transaction_manager.commit(device);
+        transaction_manager.initTensorCollectionTensorData();
+      }
 		}
 	}
 	template<typename LabelsT, typename TensorT, typename DeviceT>
-	void Benchmark1TimePoint<LabelsT, TensorT, DeviceT>::update1TimePoint0D_(PixelManager0D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const
+	void Benchmark1TimePoint<LabelsT, TensorT, DeviceT>::update1TimePoint0D_(PixelManager0D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
 	{
 		std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> labels_ptr;
 		std::shared_ptr<TensorData<TensorT, DeviceT, 2>> values_ptr;
-		//int span = data_size / std::pow(data_size, 0.25);  // BUG: breaks auto max_bcast = indices_view_values.maximum(Eigen::array<Eigen::Index, 1>({ 0 })).broadcast(Eigen::array<Eigen::Index, 1>({ n_labels })); in TensorTableDefaultDevice<TensorT, TDim>::makeAppendIndices
-		int span = 2;
+		int span = data_size / std::pow(data_size, 0.25);
 		for (int i = 0; i < data_size; i += span) {
 			labels_ptr.reset();
 			values_ptr.reset();
@@ -504,15 +533,18 @@ namespace TensorBaseBenchmarks
 			TensorUpdateValues<TensorT, DeviceT, 2> tensorUpdate("TTable", selectClause, values_ptr);
 			std::shared_ptr<TensorOperation<DeviceT>> tensorUpdate_ptr = std::make_shared<TensorUpdateValues<TensorT, DeviceT, 2>>(tensorUpdate);
 			transaction_manager.executeOperation(tensorUpdate_ptr, device);
+      if (!in_memory) {
+        transaction_manager.commit(device);
+        transaction_manager.initTensorCollectionTensorData();
+      }
 		}
 	}
 	template<typename LabelsT, typename TensorT, typename DeviceT>
-	void Benchmark1TimePoint<LabelsT, TensorT, DeviceT>::update1TimePoint1D_(PixelManager1D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const
+	void Benchmark1TimePoint<LabelsT, TensorT, DeviceT>::update1TimePoint1D_(PixelManager1D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
 	{
 		std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> labels_ptr;
 		std::shared_ptr<TensorData<TensorT, DeviceT, 2>> values_ptr;
-		//int span = data_size / std::pow(data_size, 0.25);  // BUG: breaks auto max_bcast = indices_view_values.maximum(Eigen::array<Eigen::Index, 1>({ 0 })).broadcast(Eigen::array<Eigen::Index, 1>({ n_labels })); in TensorTableDefaultDevice<TensorT, TDim>::makeAppendIndices
-		int span = 2;
+		int span = data_size / std::pow(data_size, 0.25);
 		for (int i = 0; i < data_size; i += span) {
 			labels_ptr.reset();
 			values_ptr.reset();
@@ -521,10 +553,14 @@ namespace TensorBaseBenchmarks
 			TensorUpdateValues<TensorT, DeviceT, 2> tensorUpdate("TTable", selectClause, values_ptr);
 			std::shared_ptr<TensorOperation<DeviceT>> tensorUpdate_ptr = std::make_shared<TensorUpdateValues<TensorT, DeviceT, 2>>(tensorUpdate);
 			transaction_manager.executeOperation(tensorUpdate_ptr, device);
+      if (!in_memory) {
+        transaction_manager.commit(device);
+        transaction_manager.initTensorCollectionTensorData();
+      }
 		}
 	}
 	template<typename LabelsT, typename TensorT, typename DeviceT>
-	void Benchmark1TimePoint<LabelsT, TensorT, DeviceT>::update1TimePoint2D_(PixelManager2D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const
+	void Benchmark1TimePoint<LabelsT, TensorT, DeviceT>::update1TimePoint2D_(PixelManager2D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
 	{
 		std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> labels_ptr;
 		std::shared_ptr<TensorData<TensorT, DeviceT, 2>> values_ptr;
@@ -537,10 +573,14 @@ namespace TensorBaseBenchmarks
 			TensorUpdateValues<TensorT, DeviceT, 2> tensorUpdate("TTable", selectClause, values_ptr);
 			std::shared_ptr<TensorOperation<DeviceT>> tensorUpdate_ptr = std::make_shared<TensorUpdateValues<TensorT, DeviceT, 2>>(tensorUpdate);
 			transaction_manager.executeOperation(tensorUpdate_ptr, device);
+      if (!in_memory) {
+        transaction_manager.commit(device);
+        transaction_manager.initTensorCollectionTensorData();
+      }
 		}
 	}
 	template<typename LabelsT, typename TensorT, typename DeviceT>
-	void Benchmark1TimePoint<LabelsT, TensorT, DeviceT>::update1TimePoint3D_(PixelManager3D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const
+	void Benchmark1TimePoint<LabelsT, TensorT, DeviceT>::update1TimePoint3D_(PixelManager3D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
 	{
 		std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> labels_ptr;
 		std::shared_ptr<TensorData<TensorT, DeviceT, 3>> values_ptr;
@@ -553,10 +593,14 @@ namespace TensorBaseBenchmarks
 			TensorUpdateValues<TensorT, DeviceT, 3> tensorUpdate("TTable", selectClause, values_ptr);
 			std::shared_ptr<TensorOperation<DeviceT>> tensorUpdate_ptr = std::make_shared<TensorUpdateValues<TensorT, DeviceT, 3>>(tensorUpdate);
 			transaction_manager.executeOperation(tensorUpdate_ptr, device);
+      if (!in_memory) {
+        transaction_manager.commit(device);
+        transaction_manager.initTensorCollectionTensorData();
+      }
 		}
 	}
 	template<typename LabelsT, typename TensorT, typename DeviceT>
-	void Benchmark1TimePoint<LabelsT, TensorT, DeviceT>::update1TimePoint4D_(PixelManager4D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, DeviceT& device) const
+	void Benchmark1TimePoint<LabelsT, TensorT, DeviceT>::update1TimePoint4D_(PixelManager4D<LabelsT, TensorT, DeviceT>& pixel_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
 	{
 		std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> labels_ptr;
 		std::shared_ptr<TensorData<TensorT, DeviceT, 4>> values_ptr;
@@ -569,6 +613,10 @@ namespace TensorBaseBenchmarks
 			TensorUpdateValues<TensorT, DeviceT, 4> tensorUpdate("TTable", selectClause, values_ptr);
 			std::shared_ptr<TensorOperation<DeviceT>> tensorUpdate_ptr = std::make_shared<TensorUpdateValues<TensorT, DeviceT, 4>>(tensorUpdate);
 			transaction_manager.executeOperation(tensorUpdate_ptr, device);
+      if (!in_memory) {
+        transaction_manager.commit(device);
+        transaction_manager.initTensorCollectionTensorData();
+      }
 		}
 	}
 
@@ -599,8 +647,8 @@ namespace TensorBaseBenchmarks
 		}
 		else if (n_dims == 1) {
 			std::map<std::string, int> shard_span;
-			shard_span.emplace("xyzt", 4);
-			shard_span.emplace("values", data_size * shard_span_perc);
+			shard_span.emplace("xyzt", data_size * shard_span_perc);
+			shard_span.emplace("values", 1);
 			return make1DTensorCollection(data_size, shard_span, is_columnar);
 		}
 		else if (n_dims == 2) {
@@ -644,37 +692,43 @@ namespace TensorBaseBenchmarks
 
 		// Run the table through the benchmarks
 		transaction_manager.setTensorCollection(n_dim_tensor_collection);
-		std::cout << n_dims << "D Tensor Table time-point insertion took " << benchmark_1_tp.insert1TimePoint(n_dims, transaction_manager, data_size, device) << " milliseconds." << std::endl;
-		std::cout << n_dims << "D Tensor Table time-point update took " << benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, device) << " milliseconds." << std::endl;
-		std::cout << n_dims << "D Tensor Table time-point deletion took " << benchmark_1_tp.delete1TimePoint(n_dims, transaction_manager, data_size, device) << " milliseconds." << std::endl;
+		std::cout << n_dims << "D Tensor Table time-point insertion took " << benchmark_1_tp.insert1TimePoint(n_dims, transaction_manager, data_size, in_memory, device) << " milliseconds." << std::endl;
+		std::cout << n_dims << "D Tensor Table time-point update took " << benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device) << " milliseconds." << std::endl;
+		std::cout << n_dims << "D Tensor Table time-point deletion took " << benchmark_1_tp.delete1TimePoint(n_dims, transaction_manager, data_size, in_memory, device) << " milliseconds." << std::endl;
 	}
 
 	///Parse the command line arguments
-	static void parseCmdArgs(const int& argc, char** argv, std::string& data_dir, int& n_dims, int& data_size, bool& in_memory, double& shard_span_perc) {
+	static void parseCmdArgs(const int& argc, char** argv, std::string& data_dir, int& n_dims, int& data_size, bool& in_memory, double& shard_span_perc, int& n_engines) {
 		if (argc >= 2) {
 			data_dir = argv[1];
 		}
 		if (argc >= 3) {
 			try {
-				n_dims = (std::stoi(argv[2]) > 0 && std::stoi(argv[2]) <= 4) ? std::stoi(argv[2]) : 4;
+				n_dims = (std::stoi(argv[2]) >= 0 && std::stoi(argv[2]) <= 4) ? std::stoi(argv[2]) : 4;
 			}
 			catch (std::exception & e) {
 				std::cout << e.what() << std::endl;
 			}
 		}
 		if (argc >= 4) {
-			if (argv[3] == std::string("small")) {
+			if (argv[3] == std::string("XS")) {
 				data_size = 1296;
 			}
-			if (argv[3] == std::string("medium")) {
+      else if (argv[3] == std::string("S")) {
+        data_size = 104976;
+      }
+			else if (argv[3] == std::string("M")) {
 				data_size = 1048576;
 			}
-			if (argv[3] == std::string("large")) {
+			else if (argv[3] == std::string("L")) {
+				data_size = 10556001;
+			}
+			else if (argv[3] == std::string("XL")) {
 				data_size = 1003875856;
 			}
-			if (argv[3] == std::string("XL")) {
-				data_size = 1e12;
-			}
+      else if (argv[3] == std::string("XXL")) {
+        data_size = 1e12;
+      }
 		}
 		if (argc >= 5) {
 			in_memory = (argv[4] == std::string("true")) ? true : false;
@@ -689,6 +743,14 @@ namespace TensorBaseBenchmarks
 				std::cout << e.what() << std::endl;
 			}
 		}
+    if (argc >= 7) {
+      try {
+        n_engines = std::stoi(argv[6]);
+      }
+      catch (std::exception & e) {
+        std::cout << e.what() << std::endl;
+      }
+    }
 	}
 };
 #endif //TENSORBASE_BENCHMARKPIXELS_H

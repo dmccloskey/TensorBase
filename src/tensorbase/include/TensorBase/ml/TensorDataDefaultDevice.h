@@ -6,6 +6,7 @@
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/ml/TensorArray.h>
 #include <TensorBase/ml/TensorData.h>
+#include <numeric> // std::adjacent_difference for histogram
 
 #include <cereal/access.hpp>  // serialiation of private members
 #undef min // clashes with std::limit on windows in polymorphic.hpp

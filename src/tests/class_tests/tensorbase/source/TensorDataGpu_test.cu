@@ -45,7 +45,7 @@ void test_assignmentGpuPrimitiveT()
 
 void test_copyGpuPrimitiveT()
 {
-  TensorDataGpuPrimitiveT<float, 3> tensordata_test(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+  TensorDataGpuPrimitiveT<float, 3> tensordata_test(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }), false, TensorDataGpuPinnedFlags::HostAllocPortable);
   Eigen::Tensor<float, 3> data(2, 3, 4);
   data.setConstant(1);
   tensordata_test.setData(data);
@@ -57,6 +57,8 @@ void test_copyGpuPrimitiveT()
   assert(tensordata->getDimensions() == tensordata_test.getDimensions());
   assert(tensordata->getTensorSize() == tensordata_test.getTensorSize());
   assert(tensordata->getDeviceName() == tensordata_test.getDeviceName());
+  assert(tensordata->getPinnedMemory() == tensordata_test.getPinnedMemory());
+  assert(tensordata->getPinnedFlag() == tensordata_test.getPinnedFlag());
   assert(tensordata->getData()(0, 0, 0) == 1);
 
   // Check reference change
@@ -115,7 +117,7 @@ void test_selectGpuPrimitiveT()
 
   // Test
   tensordata.syncHAndDData(device);
-  tensorselect_ptr->syncHAndDData(device);
+  tensorselect_ptr->setDataStatus(false, true);
   indices_ptr->syncHAndDData(device);
   tensordata.select(tensorselect_ptr, indices_ptr, device);
   tensordata.syncHAndDData(device);
@@ -412,7 +414,6 @@ void test_histogramGpuPrimitiveT()
 	tensordata.histogram(n_levels, lower_level, upper_level, histogram_bins_ptr, device);
 	histogram_bins_ptr->syncHAndDData(device);
 	assert(cudaStreamSynchronize(stream) == cudaSuccess);
-	std::cout << "histogram_bins_ptr\n" << histogram_bins_ptr->getData() << std::endl;
 	for (int i = 0; i < n_bins; ++i) {
 		assert(histogram_bins_ptr->getData()(i) == 3.0);
 	}
@@ -427,6 +428,8 @@ void test_gettersAndSettersGpuPrimitiveT()
   assert(tensordata.getDimensions().at(2) == 4);
   assert(tensordata.getDims() == 3);
   assert(tensordata.getDeviceName() == typeid(Eigen::GpuDevice).name());
+  assert(!tensordata.getPinnedMemory()); // NOTE: changed default to False
+  assert(tensordata.getPinnedFlag() == TensorDataGpuPinnedFlags::HostAllocDefault);
 
   Eigen::Tensor<float, 3> data(2, 3, 4);
   data.setConstant(0.5);
@@ -478,6 +481,48 @@ void test_syncHAndDGpuPrimitiveT()
   assert(tensordata.getData()(0, 2, 0) == 0.5);
   assert(tensordata.getData()(0, 0, 3) == 0.5);
   assert(tensordata.getData()(1, 2, 3) == 0.5);
+}
+
+void test_memoryModelsGpuPrimitiveT()
+{
+  // Make the dummy data
+  Eigen::Tensor<float, 3> data(2, 3, 4);
+  data.setConstant(1.0);
+
+  // Test pinned default
+  TensorDataGpuPrimitiveT<float, 3> tensordata_0(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }), 
+    true, TensorDataGpuPinnedFlags::HostAllocDefault);
+  tensordata_0.setData(data);
+  assert(tensordata_0.getData()(0, 0, 0) == 1.0);
+  assert(tensordata_0.getData()(1, 2, 3) == 1.0);
+
+  // Test pinned HostAllocPortable
+  TensorDataGpuPrimitiveT<float, 3> tensordata_1(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }), 
+    true, TensorDataGpuPinnedFlags::HostAllocPortable);
+  tensordata_1.setData(data);
+  assert(tensordata_1.getData()(0, 0, 0) == 1.0);
+  assert(tensordata_1.getData()(1, 2, 3) == 1.0);
+
+  //// Test pinned HostAllocMapped [TODO: bug]
+  //TensorDataGpuPrimitiveT<float, 3> tensordata_2(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }), 
+  //  true, TensorDataGpuPinnedFlags::HostAllocMapped);
+  //tensordata_2.setData(data);
+  //assert(tensordata_2.getData()(0, 0, 0) == 1.0);
+  //assert(tensordata_2.getData()(1, 2, 3) == 1.0);
+
+  // Test pinned HostAllocWriteCombined
+  TensorDataGpuPrimitiveT<float, 3> tensordata_3(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }), 
+    true, TensorDataGpuPinnedFlags::HostAllocWriteCombined);
+  tensordata_3.setData(data);
+  assert(tensordata_3.getData()(0, 0, 0) == 1.0);
+  assert(tensordata_3.getData()(1, 2, 3) == 1.0);
+
+  // Test pageable
+  TensorDataGpuPrimitiveT<float, 3> tensordata_4(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }),
+    false, TensorDataGpuPinnedFlags::HostAllocDefault);
+  tensordata_4.setData(data);
+  assert(tensordata_4.getData()(0, 0, 0) == 1.0);
+  assert(tensordata_4.getData()(1, 2, 3) == 1.0);
 }
 
 void test_convertFromStringToTensorTGpuPrimitiveT()
@@ -996,6 +1041,7 @@ int main(int argc, char** argv)
   test_destructorGpuPrimitiveT();
   test_gettersAndSettersGpuPrimitiveT();
   test_syncHAndDGpuPrimitiveT();
+  test_memoryModelsGpuPrimitiveT();
   test_assignmentGpuPrimitiveT();
   test_copyGpuPrimitiveT();
   test_selectGpuPrimitiveT();

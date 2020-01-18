@@ -3,6 +3,7 @@
 #define BOOST_TEST_MODULE TensorClauses test suite 
 #include <boost/test/included/unit_test.hpp>
 #include <TensorBase/ml/TensorClauses.h>
+#include <TensorBase/ml/TensorDataDefaultDevice.h>
 
 using namespace TensorBase;
 using namespace std;

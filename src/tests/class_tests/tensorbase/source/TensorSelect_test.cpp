@@ -3,7 +3,7 @@
 #define BOOST_TEST_MODULE TensorSelect1 test suite 
 #include <boost/test/included/unit_test.hpp>
 #include <TensorBase/ml/TensorSelect.h>
-#include <TensorBase/ml/TensorTableDefaultDevice.h>
+#include <TensorBase/ml/TensorCollectionDefaultDevice.h>
 
 using namespace TensorBase;
 using namespace std;
@@ -307,7 +307,7 @@ BOOST_AUTO_TEST_CASE(whereClauseDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 3);
 }
 
-BOOST_AUTO_TEST_CASE(sortClauseDefaultDevice)
+BOOST_AUTO_TEST_CASE(sortClause1DefaultDevice)
 {
   Eigen::DefaultDevice device;
 
@@ -379,6 +379,132 @@ BOOST_AUTO_TEST_CASE(sortClauseDefaultDevice)
   labels_values2.setValues({ 0 });
   select_labels2->setData(labels_values2);
   SortClause<int, Eigen::DefaultDevice> sort_clause_2("2", "1", "x", select_labels2, sortOrder::order::DESC);
+
+  // Test the expected view indices after the select command
+  TensorSelect tensorSelect;
+  tensorSelect.sortClause(collection_1_ptr, sort_clause_1, device);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("1")->getData()(0), 2);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("1")->getData()(1), 1);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(0), 1); // unchanged
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(1), 2); // unchanged
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(2), 3); // unchanged
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(0), 5);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(1), 4);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(2), 3);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(3), 2);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(4), 1);
+
+  tensorSelect.sortClause(collection_1_ptr, sort_clause_2, device);
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("1")->getData()(0), 1); // unchanged
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("1")->getData()(1), 2); // unchanged
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 3);
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(1), 2);
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 1);
+
+  // Apply the select clause
+  tensorSelect.applySort(collection_1_ptr, { "1", "2" }, device);
+
+  // Test for the expected table attributes
+  Eigen::array<Eigen::Index, 3> dimensions1_test = { nlabels1, nlabels2, nlabels3 };
+  for (int i = 0; i < 3; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getDimensions().at(i), dimensions1_test.at(i));
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getDataDimensions().at(i), dimensions1_test.at(i));
+  }
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("1")->getData()(0), 1);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("1")->getData()(1), 2);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(0), 1);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(1), 2);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(2), 3);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(0), 1);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(1), 2);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(2), 3);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(3), 4);
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(4), 5);
+
+  Eigen::array<Eigen::Index, 2> dimensions2_test = { nlabels1, nlabels2 };
+  for (int i = 0; i < 2; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable2_ptr->getDimensions().at(i), dimensions2_test.at(i));
+    BOOST_CHECK_EQUAL(tensorTable2_ptr->getDataDimensions().at(i), dimensions2_test.at(i));
+  }
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("1")->getData()(0), 1);
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("1")->getData()(1), 2);
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 1);
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(1), 2);
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 3);
+}
+
+BOOST_AUTO_TEST_CASE(sortClause2DefaultDevice)
+{
+  Eigen::DefaultDevice device;
+
+  // Set up the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels1 = 2, nlabels2 = 3, nlabels3 = 5;
+  Eigen::Tensor<int, 2> labels1(1, nlabels1), labels2(1, nlabels2), labels3(1, nlabels3);
+  labels1.setValues({ { 0, 1} });
+  labels2.setValues({ { 0, 1, 2 } });
+  labels3.setValues({ { 0, 1, 2, 3, 4 } });
+
+  // Setup table 1 axes
+  TensorTableDefaultDevice<float, 3> tensorTable1("1");
+  tensorTable1.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
+  tensorTable1.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
+  tensorTable1.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3)));
+  tensorTable1.setAxes();
+
+  // setup the table 1 tensor data
+  Eigen::Tensor<float, 3> tensor_values1(Eigen::array<Eigen::Index, 3>({ nlabels1, nlabels2, nlabels3 }));
+  int iter = 0;
+  for (int i = 0; i < nlabels1; ++i) {
+    for (int j = 0; j < nlabels2; ++j) {
+      for (int k = 0; k < nlabels3; ++k) {
+        tensor_values1(i, j, k) = float(iter);
+        ++iter;
+      }
+    }
+  }
+  tensorTable1.setData(tensor_values1);
+  std::shared_ptr<TensorTableDefaultDevice<float, 3>> tensorTable1_ptr = std::make_shared<TensorTableDefaultDevice<float, 3>>(tensorTable1);
+
+  // Setup table 2 axes
+  TensorTableDefaultDevice<double, 2> tensorTable2("2");
+  tensorTable2.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
+  tensorTable2.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
+  tensorTable2.setAxes();
+
+  // setup the table 2 tensor data
+  Eigen::Tensor<double, 2> tensor_values2(Eigen::array<Eigen::Index, 2>({ nlabels1, nlabels2 }));
+  iter = 0;
+  for (int i = 0; i < nlabels1; ++i) {
+    for (int j = 0; j < nlabels2; ++j) {
+      tensor_values2(i, j) = double(iter);
+      ++iter;
+    }
+  }
+  tensorTable2.setData(tensor_values2);
+  std::shared_ptr<TensorTableDefaultDevice<double, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<double, 2>>(tensorTable2);
+
+  // Set up the collection
+  TensorCollectionDefaultDevice collection_1;
+  collection_1.addTensorTable(tensorTable1_ptr, "1");
+  collection_1.addTensorTable(tensorTable2_ptr, "1");
+  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> collection_1_ptr = std::make_shared<TensorCollectionDefaultDevice>(collection_1);
+
+  // setup the sort clauses
+  std::shared_ptr<TensorDataDefaultDevice<int, 2>> select_labels1 = std::make_shared<TensorDataDefaultDevice<int, 2>>(Eigen::array<Eigen::Index, 2>({ 1, 1 }));
+  Eigen::Tensor<int, 2> labels_values1(1, 1);
+  labels_values1.setValues({ {1} });
+  select_labels1->setData(labels_values1);
+  SortClause<int, Eigen::DefaultDevice> sort_clause_1("1", "2", select_labels1, sortOrder::order::DESC);
+
+  std::shared_ptr<TensorDataDefaultDevice<int, 2>> select_labels2 = std::make_shared<TensorDataDefaultDevice<int, 2>>(Eigen::array<Eigen::Index, 2>({ 1, 1 }));
+  Eigen::Tensor<int, 2> labels_values2(1, 1);
+  labels_values2.setValues({ {0} });
+  select_labels2->setData(labels_values2);
+  SortClause<int, Eigen::DefaultDevice> sort_clause_2("2", "1", select_labels2, sortOrder::order::DESC);
 
   // Test the expected view indices after the select command
   TensorSelect tensorSelect;

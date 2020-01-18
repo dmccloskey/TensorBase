@@ -6,6 +6,7 @@
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/ml/TensorOperation.h>
 #include <deque>
+#include <TensorBase/io/TensorCollectionFile.h>
 
 namespace TensorBase
 {
@@ -78,7 +79,7 @@ namespace TensorBase
 
     @returns True if successfull
     */
-    bool commit();
+    bool commit(DeviceT& device);
 
     /*
     @brief Undoes all changes made to the tensor collection in memory
@@ -89,6 +90,7 @@ namespace TensorBase
     bool rollback(DeviceT& device);
 
     void clear(); ///< clear the tensor operations, commit indices, and current_index_
+    void initTensorCollectionTensorData(); ///< clears the tensor data
 
   protected:
     std::shared_ptr<TensorCollection<DeviceT>> tensor_collection_; ///< the managed TensorCollection object
@@ -173,10 +175,22 @@ namespace TensorBase
     }
   }
   template<typename DeviceT>
-  inline bool TransactionManager<DeviceT>::commit()
+  inline bool TransactionManager<DeviceT>::commit(DeviceT& device)
   {
     // Write the current tensor_collection to disk
-    // TODO...
+    TensorCollectionFile<DeviceT> data;
+    std::string filename = tensor_collection_->getName() + ".TensorCollection";
+    data.storeTensorCollectionBinary(filename, tensor_collection_, device);
+
+    // Reset all is_modified attributes to false
+    for (auto& table_map : tensor_collection_->tables_) {
+      for (auto& is_modified_map : table_map.second->getIsModified()) {        
+        Eigen::TensorMap<Eigen::Tensor<int, 1>> is_modified_values(is_modified_map.second->getDataPointer().get(), is_modified_map.second->getTensorSize());
+        is_modified_values.device(device) = is_modified_values.constant(0);
+      }
+    }
+
+    // Clear the operations
     clear();
     return true;
   }
@@ -209,6 +223,14 @@ namespace TensorBase
   {
     tensor_operations_.clear();
     current_index_ = -1;
+  }
+
+  template<typename DeviceT>
+  inline void TransactionManager<DeviceT>::initTensorCollectionTensorData()
+  {
+    for (auto& table_map : tensor_collection_->tables_) {
+      table_map.second->initData();
+    }
   }
 };
 #endif //TENSORBASE_TRANSACTIONMANAGER_H

@@ -6,6 +6,7 @@
 #define EIGEN_USE_THREADS
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <execution>
+#include <numeric> // std::adjacent_difference for histogram
 #include <TensorBase/ml/TensorArray.h>
 #include <TensorBase/ml/TensorData.h>
 

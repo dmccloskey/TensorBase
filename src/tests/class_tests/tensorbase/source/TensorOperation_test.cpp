@@ -2,9 +2,9 @@
 
 #define BOOST_TEST_MODULE TensorOperation1 test suite 
 #include <boost/test/included/unit_test.hpp>
-#include <TensorBase/ml/TensorOperation.h>
 #include <TensorBase/ml/TensorSelect.h>
-#include <TensorBase/ml/TensorTableDefaultDevice.h>
+#include <TensorBase/ml/TensorOperationDefaultDevice.h>
+#include <TensorBase/ml/TensorCollectionDefaultDevice.h>
 
 using namespace TensorBase;
 using namespace std;
@@ -208,6 +208,26 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorAppendToAxis)
     }
   }
 
+  // Test for the expected redo/undo log data
+  BOOST_CHECK_EQUAL(appendToAxis.getRedoLog().n_labels_deleted_, 0);
+  BOOST_CHECK_EQUAL(appendToAxis.getRedoLog().n_labels_updated_, 0);
+  BOOST_CHECK_EQUAL(appendToAxis.getRedoLog().n_labels_inserted_, 3);
+  BOOST_CHECK_EQUAL(appendToAxis.getRedoLog().n_indices_deleted_, 0);
+  BOOST_CHECK_EQUAL(appendToAxis.getRedoLog().n_indices_updated_, 0);
+  BOOST_CHECK_EQUAL(appendToAxis.getRedoLog().n_indices_inserted_, 3);
+  BOOST_CHECK_EQUAL(appendToAxis.getRedoLog().n_data_deleted_, 0);
+  BOOST_CHECK_EQUAL(appendToAxis.getRedoLog().n_data_updated_, 0);
+  BOOST_CHECK_EQUAL(appendToAxis.getRedoLog().n_data_inserted_, 30);
+  BOOST_CHECK_EQUAL(appendToAxis.getUndoLog().n_labels_deleted_, 0);
+  BOOST_CHECK_EQUAL(appendToAxis.getUndoLog().n_labels_updated_, 0);
+  BOOST_CHECK_EQUAL(appendToAxis.getUndoLog().n_labels_inserted_, 0);
+  BOOST_CHECK_EQUAL(appendToAxis.getUndoLog().n_indices_deleted_, 0);
+  BOOST_CHECK_EQUAL(appendToAxis.getUndoLog().n_indices_updated_, 0);
+  BOOST_CHECK_EQUAL(appendToAxis.getUndoLog().n_indices_inserted_, 0);
+  BOOST_CHECK_EQUAL(appendToAxis.getUndoLog().n_data_deleted_, 0);
+  BOOST_CHECK_EQUAL(appendToAxis.getUndoLog().n_data_updated_, 0);
+  BOOST_CHECK_EQUAL(appendToAxis.getUndoLog().n_data_inserted_, 0);
+
   // Test undo to remove the appended values
   appendToAxis.undo(collection_1_ptr, device);
 
@@ -236,6 +256,26 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorAppendToAxis)
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 1);
   }
+
+  // Test for the expected redo/undo log data
+  BOOST_CHECK_EQUAL(appendToAxis.getRedoLog().n_labels_deleted_, 0);
+  BOOST_CHECK_EQUAL(appendToAxis.getRedoLog().n_labels_updated_, 0);
+  BOOST_CHECK_EQUAL(appendToAxis.getRedoLog().n_labels_inserted_, 3);
+  BOOST_CHECK_EQUAL(appendToAxis.getRedoLog().n_indices_deleted_, 0);
+  BOOST_CHECK_EQUAL(appendToAxis.getRedoLog().n_indices_updated_, 0);
+  BOOST_CHECK_EQUAL(appendToAxis.getRedoLog().n_indices_inserted_, 3);
+  BOOST_CHECK_EQUAL(appendToAxis.getRedoLog().n_data_deleted_, 0);
+  BOOST_CHECK_EQUAL(appendToAxis.getRedoLog().n_data_updated_, 0);
+  BOOST_CHECK_EQUAL(appendToAxis.getRedoLog().n_data_inserted_, 30);
+  BOOST_CHECK_EQUAL(appendToAxis.getUndoLog().n_labels_deleted_, 3);
+  BOOST_CHECK_EQUAL(appendToAxis.getUndoLog().n_labels_updated_, 0);
+  BOOST_CHECK_EQUAL(appendToAxis.getUndoLog().n_labels_inserted_, 0);
+  BOOST_CHECK_EQUAL(appendToAxis.getUndoLog().n_indices_deleted_, 3);
+  BOOST_CHECK_EQUAL(appendToAxis.getUndoLog().n_indices_updated_, 0);
+  BOOST_CHECK_EQUAL(appendToAxis.getUndoLog().n_indices_inserted_, 0);
+  BOOST_CHECK_EQUAL(appendToAxis.getUndoLog().n_data_deleted_, 30);
+  BOOST_CHECK_EQUAL(appendToAxis.getUndoLog().n_data_updated_, 0);
+  BOOST_CHECK_EQUAL(appendToAxis.getUndoLog().n_data_inserted_, 0);
 }
 
 /*TensorDeleteFromAxis Tests*/
@@ -371,6 +411,26 @@ BOOST_AUTO_TEST_CASE(redoAndTensorDeleteFromAxis)
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1);
   }
 
+  // Test for the expected redo/undo log data
+  BOOST_CHECK_EQUAL(deleteFromAxis.getRedoLog().n_labels_deleted_, 1);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getRedoLog().n_labels_updated_, 0);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getRedoLog().n_labels_inserted_, 0);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getRedoLog().n_indices_deleted_, 1);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getRedoLog().n_indices_updated_, 0);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getRedoLog().n_indices_inserted_, 0);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getRedoLog().n_data_deleted_, 10);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getRedoLog().n_data_updated_, 0);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getRedoLog().n_data_inserted_, 0);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getUndoLog().n_labels_deleted_, 0);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getUndoLog().n_labels_updated_, 0);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getUndoLog().n_labels_inserted_, 0);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getUndoLog().n_indices_deleted_, 0);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getUndoLog().n_indices_updated_, 0);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getUndoLog().n_indices_inserted_, 0);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getUndoLog().n_data_deleted_, 0);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getUndoLog().n_data_updated_, 0);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getUndoLog().n_data_inserted_, 0);
+
   // Test redo to restore the deleted values
   deleteFromAxis.undo(collection_1_ptr, device);
 
@@ -404,6 +464,26 @@ BOOST_AUTO_TEST_CASE(redoAndTensorDeleteFromAxis)
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 1);
   }
+
+  // Test for the expected redo/undo log data
+  BOOST_CHECK_EQUAL(deleteFromAxis.getRedoLog().n_labels_deleted_, 1);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getRedoLog().n_labels_updated_, 0);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getRedoLog().n_labels_inserted_, 0);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getRedoLog().n_indices_deleted_, 1);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getRedoLog().n_indices_updated_, 0);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getRedoLog().n_indices_inserted_, 0);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getRedoLog().n_data_deleted_, 10);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getRedoLog().n_data_updated_, 0);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getRedoLog().n_data_inserted_, 0);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getUndoLog().n_labels_deleted_, 0);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getUndoLog().n_labels_updated_, 0);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getUndoLog().n_labels_inserted_, 1);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getUndoLog().n_indices_deleted_, 0);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getUndoLog().n_indices_updated_, 0);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getUndoLog().n_indices_inserted_, 1);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getUndoLog().n_data_deleted_, 0);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getUndoLog().n_data_updated_, 0);
+  BOOST_CHECK_EQUAL(deleteFromAxis.getUndoLog().n_data_inserted_, 10);
 }
 
 /*TensorUpdateSelectValues Tests*/
@@ -514,6 +594,26 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateSelectValues)
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("1")->getData()(i), i + 1);
   }
 
+  // Test for the expected redo/undo log data
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_labels_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_labels_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_labels_inserted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_indices_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_indices_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_indices_inserted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_updated_, 2);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_inserted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_labels_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_labels_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_labels_inserted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_indices_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_indices_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_indices_inserted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_data_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_data_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_data_inserted_, 0);
+
   // Test undo
   tensorUpdate.undo(collection_1_ptr, device);
   for (int i = 0; i < nlabels1; ++i) {
@@ -533,6 +633,26 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateSelectValues)
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("1")->getData()(i), 1);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("1")->getData()(i), i + 1);
   }
+
+  // Test for the expected redo/undo log data
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_labels_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_labels_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_labels_inserted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_indices_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_indices_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_indices_inserted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_updated_, 2);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_inserted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_labels_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_labels_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_labels_inserted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_indices_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_indices_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_indices_inserted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_data_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_data_updated_, 2);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_data_inserted_, 0);
 }
 
 /*TensorUpdateValues Tests*/
@@ -624,7 +744,6 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateValues)
 		}
 	}
 
-
 	// Test redo
 	tensorUpdate.redo(collection_1_ptr, device);
 	for (int i = 0; i < nlabels1; ++i) {
@@ -669,6 +788,26 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateValues)
 		BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("3")->getData()(i), i + 1);
 	}
 
+  // Test for the expected redo/undo log data
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_labels_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_labels_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_labels_inserted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_indices_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_indices_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_indices_inserted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_updated_, 2);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_inserted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_labels_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_labels_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_labels_inserted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_indices_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_indices_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_indices_inserted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_data_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_data_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_data_inserted_, 0);
+
 	// Test undo
 	tensorUpdate.undo(collection_1_ptr, device);
 	for (int i = 0; i < nlabels1; ++i) {
@@ -708,6 +847,26 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateValues)
 		BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("3")->getData()(i), 1);
 		BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("3")->getData()(i), i + 1);
 	}
+
+  // Test for the expected redo/undo log data
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_labels_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_labels_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_labels_inserted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_indices_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_indices_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_indices_inserted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_updated_, 2);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_inserted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_labels_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_labels_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_labels_inserted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_indices_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_indices_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_indices_inserted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_data_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_data_updated_, 2);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_data_inserted_, 0);
 }
 
 /*TensorUpdateConstant Tests*/
@@ -843,6 +1002,26 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateConstant)
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("3")->getData()(i), i + 1);
   }
 
+  // Test for the expected redo/undo log data
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_labels_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_labels_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_labels_inserted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_indices_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_indices_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_indices_inserted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_updated_, 2);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_inserted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_labels_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_labels_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_labels_inserted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_indices_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_indices_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_indices_inserted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_data_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_data_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_data_inserted_, 0);
+
   // Test undo
   tensorUpdate.undo(collection_1_ptr, device);
   for (int i = 0; i < nlabels1; ++i) {
@@ -882,6 +1061,26 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorUpdateConstant)
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("3")->getData()(i), 1);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("3")->getData()(i), i + 1);
   }
+
+  // Test for the expected redo/undo log data
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_labels_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_labels_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_labels_inserted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_indices_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_indices_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_indices_inserted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_updated_, 2);
+  BOOST_CHECK_EQUAL(tensorUpdate.getRedoLog().n_data_inserted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_labels_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_labels_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_labels_inserted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_indices_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_indices_updated_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_indices_inserted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_data_deleted_, 0);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_data_updated_, 2);
+  BOOST_CHECK_EQUAL(tensorUpdate.getUndoLog().n_data_inserted_, 0);
 }
 
 /*TensorAddTable Tests*/
