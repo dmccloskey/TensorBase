@@ -642,6 +642,82 @@ BOOST_AUTO_TEST_CASE(CommitDefaultDevice)
       BOOST_CHECK_EQUAL(tensorCollectionCommit_ptr->tables_.at("1")->getShardIndices().at("2")->getData()(i), i - nlabels2 + 1);
     }
   }
+
+  // test re-initializing the TensorTable data and adding additional data
+  transactionManager.initTensorCollectionTensorData();
+
+  // Operation #2: add
+  // Set up the new labels
+  Eigen::Tensor<int, 2> labels_new_values2(1, nlabels2);
+  labels_new_values2.setValues({ {6, 7, 8} });
+  TensorDataDefaultDevice<int, 2> labels_new2(Eigen::array<Eigen::Index, 2>({ 1, 3 }));
+  labels_new2.setData(labels_new_values2);
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_new2_ptr = std::make_shared<TensorDataDefaultDevice<int, 2>>(labels_new2);
+
+  // Set up the new values
+  Eigen::Tensor<float, 3> tensor_values_new2(Eigen::array<Eigen::Index, 3>({ nlabels1, nlabels2, nlabels3 }));
+  for (int i = 0; i < nlabels1; ++i) {
+    for (int j = 0; j < nlabels2; ++j) {
+      for (int k = 0; k < nlabels3; ++k) {
+        tensor_values_new2(i, j, k) = i + j * nlabels1 + k * nlabels1*nlabels2 + 2*(nlabels1 + nlabels2 * nlabels1 + nlabels3 * nlabels1 * nlabels2);
+      }
+    }
+  }
+  std:cout << "tensor_values_new2\n" << tensor_values_new2 << std::endl;
+  TensorDataDefaultDevice<float, 3> values_new2(Eigen::array<Eigen::Index, 3>({ nlabels1, nlabels2, nlabels3 }));
+  values_new2.setData(tensor_values_new2);
+  std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 3>> values_new2_ptr = std::make_shared<TensorDataDefaultDevice<float, 3>>(values_new2);
+
+  // Test the AppendToAxis execution
+  TensorAppendToAxis<int, float, Eigen::DefaultDevice, 3> appendToAxis2("1", "2", labels_new2_ptr, values_new2_ptr);
+  std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> appendToAxis2_ptr = std::make_shared<TensorAppendToAxis<int, float, Eigen::DefaultDevice, 3>>(appendToAxis2);
+  transactionManager.executeOperation(appendToAxis2_ptr, device);
+
+  // Test for the expected table data
+  for (int i = 0; i < nlabels1; ++i) {
+    for (int j = 0; j < nlabels2; ++j) {
+      for (int k = 0; k < nlabels3; ++k) {
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j, k), tensor_values1(i, j, k));
+      }
+    }
+  }
+  for (int i = 0; i < nlabels1; ++i) {
+    for (int j = 0; j < nlabels2; ++j) {
+      for (int k = 0; k < nlabels3; ++k) {
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j + nlabels2, k), tensor_values_new(i, j, k));
+      }
+    }
+  }
+  for (int i = 0; i < nlabels1; ++i) {
+    for (int j = 0; j < nlabels2; ++j) {
+      for (int k = 0; k < nlabels3; ++k) {
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j + 2*nlabels2, k), tensor_values_new2(i, j, k));
+      }
+    }
+  }
+
+  // Test for the expected axis data
+  BOOST_CHECK_EQUAL(table_1_axis_2_ptr->getNLabels(), nlabels2 + nlabels2 + nlabels2);
+  for (int i = 0; i < nlabels2 + nlabels2 + nlabels2; ++i) {
+    BOOST_CHECK_EQUAL(table_1_axis_2_ptr->getLabels()(0, i), i);
+  }
+
+  // Test for the expected indices data
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getDimensions().at(tensorTable1_ptr->getDimFromAxisName("2")), nlabels2 + nlabels2);
+  for (int i = 0; i < nlabels2 + nlabels2 + nlabels2; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
+    if (i < nlabels2) {
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 1);
+    }
+    else {
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 2);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i - nlabels2 + 1);
+    }
+  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
