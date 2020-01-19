@@ -2157,7 +2157,7 @@ BOOST_AUTO_TEST_CASE(appendToIndicesDefaultDevice)
     BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable.getShardId().at("2")->getData()(i), 1);
     BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("2")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("2")->getData()(i), 0);
     BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("2")->getData()(i), i + 1);
   }
   for (int i = 0; i < nlabels; ++i) {
@@ -2165,7 +2165,7 @@ BOOST_AUTO_TEST_CASE(appendToIndicesDefaultDevice)
     BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("3")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable.getShardId().at("3")->getData()(i), 1);
     BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("3")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("3")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("3")->getData()(i), 0);
     BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("3")->getData()(i), i + 1);
   }
 }

@@ -2119,7 +2119,7 @@ namespace TensorBase
         Eigen::TensorMap<Eigen::Tensor<int, 1>> is_modified_values(is_modified_.at(axis_to_dim.first)->getDataPointer().get(), dimensions_.at(axis_to_dim.second));
         Eigen::TensorMap<Eigen::Tensor<int, 1>> in_memory_values(not_in_memory_.at(axis_to_dim.first)->getDataPointer().get(), dimensions_.at(axis_to_dim.second));
         is_modified_values.device(device) = is_modified_values.constant(1);
-        in_memory_values.device(device) = in_memory_values.constant(1);
+        in_memory_values.device(device) = in_memory_values.constant(0);
       }
     }
 
