@@ -2281,7 +2281,30 @@ BOOST_AUTO_TEST_CASE(appendToAxisDefaultDevice)
   }
   BOOST_CHECK_EQUAL(indices_new_ptr->getData()(0), nlabels + 1);
 
-  // TODO: check that the shards can be read back in
+  // Check that the binarized data was written correctly [NEW]
+  tensorTable.storeTensorTableBinary("", device);
+  tensorTable.setData();
+
+  // Reset the in_memory values
+  for (auto& in_memory_map : tensorTable.getNotInMemory()) {
+    in_memory_map.second->getData() = in_memory_map.second->getData().constant(1);
+  }
+
+  tensorTable.loadTensorTableBinary("", device);
+  // Test the new TensorTable
+  iter = 0;
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        BOOST_CHECK_EQUAL(tensorTable.getData()(i, j, k), tensor_values(i, j, k));
+      }
+    }
+  }
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      BOOST_CHECK_EQUAL(tensorTable.getData()(nlabels, i, j), update_values(0, i, j));
+    }
+  }
 }
 
 BOOST_AUTO_TEST_CASE(makeIndicesViewSelectFromIndicesDefaultDevice)
