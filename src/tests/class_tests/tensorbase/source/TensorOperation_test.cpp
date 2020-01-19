@@ -207,6 +207,22 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorAppendToAxis)
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i - nlabels2 + 1);
     }
   }
+  for (int i = 0; i < nlabels1; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("1")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("1")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("1")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("1")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("1")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("1")->getData()(i), i + 1);
+  }
+  for (int i = 0; i < nlabels3; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("3")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("3")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("3")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("3")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("3")->getData()(i), i + 1);
+  }
 
   // Test for the expected redo/undo log data
   BOOST_CHECK_EQUAL(appendToAxis.getRedoLog().n_labels_deleted_, 0);
@@ -255,6 +271,22 @@ BOOST_AUTO_TEST_CASE(redoAndUndoTensorAppendToAxis)
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 1);
+  }
+  for (int i = 0; i < nlabels1; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("1")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("1")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("1")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("1")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("1")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("1")->getData()(i), i + 1);
+  }
+  for (int i = 0; i < nlabels3; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("3")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("3")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("3")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("3")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("3")->getData()(i), i + 1);
   }
 
   // Test for the expected redo/undo log data
