@@ -2132,6 +2132,8 @@ BOOST_AUTO_TEST_CASE(appendToIndicesDefaultDevice)
 
   // test appendToIndices
   tensorTable.appendToIndices("1", indices_new_ptr, device);
+
+  // check the new indices [MODIFIED]
   BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(tensorTable.getDimFromAxisName("1")), nlabels + nlabels - 1);
   for (int i = 0; i < nlabels + nlabels - 1; ++i) {
     BOOST_CHECK_EQUAL(tensorTable.getIndices().at("1")->getData()(i), i + 1);
@@ -2147,6 +2149,24 @@ BOOST_AUTO_TEST_CASE(appendToIndicesDefaultDevice)
       BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("1")->getData()(i), 0);
       BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("1")->getData()(i), 0);
     }
+  }
+
+  // check the existing indices [NEW]
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable.getIndices().at("2")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable.getShardId().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("2")->getData()(i), i + 1);
+  }
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable.getIndices().at("3")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("3")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable.getShardId().at("3")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("3")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("3")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("3")->getData()(i), i + 1);
   }
 }
 
@@ -2260,6 +2280,8 @@ BOOST_AUTO_TEST_CASE(appendToAxisDefaultDevice)
     }
   }
   BOOST_CHECK_EQUAL(indices_new_ptr->getData()(0), nlabels + 1);
+
+  // TODO: check that the shards can be read back in
 }
 
 BOOST_AUTO_TEST_CASE(makeIndicesViewSelectFromIndicesDefaultDevice)

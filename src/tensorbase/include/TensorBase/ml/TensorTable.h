@@ -2113,6 +2113,16 @@ namespace TensorBase
     shard_indices_values.device(device) = shard_indices_copy_values.pad(padding_1) + indices_new_values.constant(0).pad(padding_2);
     reShardIndices(device);
 
+    // update the `in_memory` and `is_modified` for all other dimensions
+    for (const auto& axis_to_dim : axes_to_dims_) {
+      if (axis_to_dim.first != axis_name) {
+        Eigen::TensorMap<Eigen::Tensor<int, 1>> is_modified_values(is_modified_.at(axis_to_dim.first)->getDataPointer().get(), dimensions_.at(axis_to_dim.second));
+        Eigen::TensorMap<Eigen::Tensor<int, 1>> in_memory_values(not_in_memory_.at(axis_to_dim.first)->getDataPointer().get(), dimensions_.at(axis_to_dim.second));
+        is_modified_values.device(device) = is_modified_values.constant(1);
+        in_memory_values.device(device) = in_memory_values.constant(1);
+      }
+    }
+
     // update the dimensions
     dimensions_.at(axes_to_dims_.at(axis_name)) += indices->getTensorSize();
   }
