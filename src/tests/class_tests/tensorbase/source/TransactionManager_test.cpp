@@ -663,7 +663,6 @@ BOOST_AUTO_TEST_CASE(CommitDefaultDevice)
       }
     }
   }
-  std:cout << "tensor_values_new2\n" << tensor_values_new2 << std::endl;
   TensorDataDefaultDevice<float, 3> values_new2(Eigen::array<Eigen::Index, 3>({ nlabels1, nlabels2, nlabels3 }));
   values_new2.setData(tensor_values_new2);
   std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 3>> values_new2_ptr = std::make_shared<TensorDataDefaultDevice<float, 3>>(values_new2);
@@ -697,25 +696,40 @@ BOOST_AUTO_TEST_CASE(CommitDefaultDevice)
   }
 
   // Test for the expected axis data
-  BOOST_CHECK_EQUAL(table_1_axis_2_ptr->getNLabels(), nlabels2 + nlabels2 + nlabels2);
-  for (int i = 0; i < nlabels2 + nlabels2 + nlabels2; ++i) {
+  BOOST_CHECK_EQUAL(table_1_axis_2_ptr->getNLabels(), 3 * nlabels2);
+  for (int i = 0; i < 3 * nlabels2; ++i) {
     BOOST_CHECK_EQUAL(table_1_axis_2_ptr->getLabels()(0, i), i);
   }
 
   // Test for the expected indices data
-  BOOST_CHECK_EQUAL(tensorTable1_ptr->getDimensions().at(tensorTable1_ptr->getDimFromAxisName("2")), nlabels2 + nlabels2);
-  for (int i = 0; i < nlabels2 + nlabels2 + nlabels2; ++i) {
+  BOOST_CHECK_EQUAL(tensorTable1_ptr->getDimensions().at(tensorTable1_ptr->getDimFromAxisName("2")), 3 * nlabels2);
+  //std::cout << "getIsModified\n"<< tensorTable1_ptr->getIsModified().at("2")->getData() <<std::endl;
+  //std::cout << "getNotInMemory\n" << tensorTable1_ptr->getNotInMemory().at("2")->getData() << std::endl;
+  //std::cout << "getShardId\n" << tensorTable1_ptr->getShardId().at("2")->getData() << std::endl;
+  //std::cout << "getShardIndices\n" << tensorTable1_ptr->getShardIndices().at("2")->getData() << std::endl;
+  for (int i = 0; i < 3*nlabels2; ++i) {
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
-    BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
     BOOST_CHECK_EQUAL(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
+    // Is modified
+    if (i >= 2 * nlabels2) {
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
+    }
+    else {
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
+    }
+    // Shard ID and Shard Indices
     if (i < nlabels2) {
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1);
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 1);
     }
-    else {
+    else if (i >= nlabels2 && i<2* nlabels2) {
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 2);
       BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i - nlabels2 + 1);
+    }
+    else {
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardId().at("2")->getData()(i), 3);
+      BOOST_CHECK_EQUAL(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i - 2*nlabels2 + 1);
     }
   }
 }

@@ -229,7 +229,8 @@ namespace TensorBase
   inline void TransactionManager<DeviceT>::initTensorCollectionTensorData()
   {
     for (auto& table_map : tensor_collection_->tables_) {
-      table_map.second->initData();
+      //table_map.second->initData();
+      table_map.second->setData();
     }
   }
 };

@@ -378,8 +378,8 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DDefaultDevice)
   std::string data_dir = "";
   const int n_dims = 2;
   const int data_size = 1296;
-  const bool in_memory = true;
-  const double shard_span_perc = 1;
+  const bool in_memory = false;// true;
+  const double shard_span_perc = 0.2; // 1;
   const int n_engines = 1;
   const int dim_span = std::pow(data_size, 0.25);
   const int xyz_dim_size = std::pow(dim_span, 3);
