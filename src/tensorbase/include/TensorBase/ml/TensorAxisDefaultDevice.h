@@ -160,9 +160,11 @@ namespace TensorBase
   inline bool TensorAxisDefaultDevice<TensorT>::storeLabelsBinary(const std::string & filename, Eigen::DefaultDevice & device)
   {
     // Store the labels
-    this->syncHAndDData(device); // D to H
-    DataFile::storeDataBinary<TensorT, 2>(filename + ".ta", this->getLabels());
-    this->setDataStatus(false, true);
+    if (this->getNLabels()*this->getNLabels() > 0) {
+      this->syncHAndDData(device); // D to H
+      DataFile::storeDataBinary<TensorT, 2>(filename + ".ta", this->getLabels());
+      this->setDataStatus(false, true);
+    }
     return true;
   }
 
