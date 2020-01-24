@@ -89,6 +89,7 @@ namespace TensorBase
     virtual bool syncDData(DeviceT& device) = 0;
     virtual bool syncHData(DeviceT& device) = 0;
     virtual void initData() = 0;
+    virtual std::map<std::string, int> getShardSpans() const = 0;
 
     // All TensorT combos of `getLabelsDatapointer`
     virtual void getDataPointer(std::shared_ptr<int[]>& data_copy) = 0;
@@ -1027,6 +1028,7 @@ namespace TensorBase
     bool syncDData(DeviceT& device) { return tensor_table_->syncDData(device); }
     bool syncHData(DeviceT& device) { return tensor_table_->syncHData(device); }
     void initData() { tensor_table_->initData(); }
+    std::map<std::string, int> getShardSpans() const { return tensor_table_->getShardSpans(); };
 
     void getDataPointer(std::shared_ptr<int[]>& data_copy) override {
       tensor_table_->getDataPointer(data_copy);

@@ -620,6 +620,26 @@ namespace TensorBaseBenchmarks
 		}
 	}
 
+  /// Helper set of methods for calculating the shard_span, shard_id, and shard_index
+  struct TensorCollectionShardHelper {
+    /// Round to 1 if below 1
+    static int round_1(const int& dim_size, const double& shard_span_perc) {
+      int shard_span = dim_size * shard_span_perc;
+      if (shard_span <= 0) shard_span = 1;
+      return shard_span;
+    };
+    /// Calculate the shard ID
+    static int calc_shard_id(const int& shard_span, const int& i) {
+      int shard_id = i / shard_span + 1;
+      return shard_id;
+    };
+    /// Calculate the shard Index
+    static int calc_shard_index(const int& shard_span, const int& i) {
+      int shard_index = i % shard_span + 1;
+      return shard_index;
+    };
+  };
+
 	/*
 	@brief Simulate a typical database table where one axis will be the headers (x, y, z, and t)
 		and the other axis will be the index starting from 1
@@ -642,34 +662,34 @@ namespace TensorBaseBenchmarks
 		if (n_dims == 0) {
 			std::map<std::string, int> shard_span;
 			shard_span.emplace("xyztv", 5);
-			shard_span.emplace("indices", data_size * shard_span_perc);
+			shard_span.emplace("indices", TensorCollectionShardHelper::round_1(data_size,shard_span_perc));
 			return make0DTensorCollection(data_size, shard_span, is_columnar);
 		}
 		else if (n_dims == 1) {
 			std::map<std::string, int> shard_span;
-			shard_span.emplace("xyzt", data_size * shard_span_perc);
+			shard_span.emplace("xyzt", TensorCollectionShardHelper::round_1(data_size, shard_span_perc));
 			shard_span.emplace("values", 1);
 			return make1DTensorCollection(data_size, shard_span, is_columnar);
 		}
 		else if (n_dims == 2) {
 			std::map<std::string, int> shard_span;
-			shard_span.emplace("xyz", std::pow(std::pow(data_size, 0.25), 3) * shard_span_perc);
-			shard_span.emplace("t", std::pow(data_size, 0.25) * shard_span_perc);
+			shard_span.emplace("xyz", TensorCollectionShardHelper::round_1(std::pow(std::pow(data_size, 0.25), 3), shard_span_perc));
+			shard_span.emplace("t", TensorCollectionShardHelper::round_1(std::pow(data_size, 0.25), shard_span_perc));
 			return make2DTensorCollection(data_size, shard_span, is_columnar);
 		}
 		else if (n_dims == 3) {
 			std::map<std::string, int> shard_span;
-			shard_span.emplace("xy", std::pow(std::pow(data_size, 0.25), 2) * shard_span_perc);
-			shard_span.emplace("z", std::pow(data_size, 0.25) * shard_span_perc);
-			shard_span.emplace("t", std::pow(data_size, 0.25) * shard_span_perc);
+			shard_span.emplace("xy", TensorCollectionShardHelper::round_1(std::pow(std::pow(data_size, 0.25), 2), shard_span_perc));
+			shard_span.emplace("z", TensorCollectionShardHelper::round_1(std::pow(data_size, 0.25), shard_span_perc));
+			shard_span.emplace("t", TensorCollectionShardHelper::round_1(std::pow(data_size, 0.25), shard_span_perc));
 			return make3DTensorCollection(data_size, shard_span, is_columnar);
 		}
 		else if (n_dims == 4) {
 			std::map<std::string, int> shard_span;
-			shard_span.emplace("x", std::pow(data_size, 0.25) * shard_span_perc);
-			shard_span.emplace("y", std::pow(data_size, 0.25) * shard_span_perc);
-			shard_span.emplace("z", std::pow(data_size, 0.25) * shard_span_perc);
-			shard_span.emplace("t", std::pow(data_size, 0.25) * shard_span_perc);
+			shard_span.emplace("x", TensorCollectionShardHelper::round_1(std::pow(data_size, 0.25), shard_span_perc));
+			shard_span.emplace("y", TensorCollectionShardHelper::round_1(std::pow(data_size, 0.25), shard_span_perc));
+			shard_span.emplace("z", TensorCollectionShardHelper::round_1(std::pow(data_size, 0.25), shard_span_perc));
+			shard_span.emplace("t", TensorCollectionShardHelper::round_1(std::pow(data_size, 0.25), shard_span_perc));
 			return make4DTensorCollection(data_size, shard_span, is_columnar);
 		}
 		else {
