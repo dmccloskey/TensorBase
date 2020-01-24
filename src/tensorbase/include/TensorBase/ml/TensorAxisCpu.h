@@ -161,9 +161,11 @@ namespace TensorBase
   inline bool TensorAxisCpu<TensorT>::storeLabelsBinary(const std::string & filename, Eigen::ThreadPoolDevice & device)
   {
     // Store the labels
-    this->syncHAndDData(device); // D to H
-    DataFile::storeDataBinary<TensorT, 2>(filename + ".ta", this->getLabels());
-    this->setDataStatus(false, true);
+    if (this->getNLabels()*this->getNLabels() > 0) {
+      this->syncHAndDData(device); // D to H
+      DataFile::storeDataBinary<TensorT, 2>(filename + ".ta", this->getLabels());
+      this->setDataStatus(false, true);
+    }
     return true;
   }
   template<typename TensorT>
