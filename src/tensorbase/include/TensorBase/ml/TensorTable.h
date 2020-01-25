@@ -83,7 +83,10 @@ namespace TensorBase
 
     /**
       @brief DeviceT specific initializer
+
+      @param[in] new_dimensions An array specifying the new data dimensions
     */
+    virtual void initData(const Eigen::array<Eigen::Index, TDim>& new_dimensions) = 0;
     virtual void initData() = 0;
 
     std::map<std::string, std::shared_ptr<TensorAxisConcept<DeviceT>>>& getAxes() { return axes_; }; ///< axes getter
@@ -121,6 +124,7 @@ namespace TensorBase
 
     void setData(const Eigen::Tensor<TensorT, TDim>& data); ///< data setter (NOTE: must sync the `data` AND `not_in_memory`/`is_modified` attributes!)
     void setData(); ///< data setter (NOTE: must sync the `data` AND `not_in_memory`/`is_modified` attributes!)
+    void setDataShards(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& not_in_memory_shard_ids); ///< data setter that allocates memory only for the specified shards
     void convertDataFromStringToTensorT(const Eigen::Tensor<std::string, TDim>& data_new, DeviceT& device); ///< data setter (NOTE: must sync the `data` AND `not_in_memory`/`is_modified` attributes!)
 
     bool syncIndicesHAndDData(DeviceT& device); ///< Sync the host and device indices data
@@ -869,6 +873,20 @@ namespace TensorBase
     for (auto& is_modified_map : is_modified_) {
       is_modified_map.second->getData() = is_modified_map.second->getData().constant(0); // host
     }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::setDataShards(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& not_in_memory_shard_ids)
+  {
+    // determine the needed data dimensions
+    Eigen::array<Eigen::Index, TDim> data_dimensions;
+    for (const auto& axis_to_dim : axes_to_dims_) {
+      data_dimensions.at(axis_to_dim.second) = not_in_memory_shard_ids->getTensorSize() * shard_spans_.at(axis_to_dim.first);
+    }
+
+    // allocate memory for the data
+    initData(data_dimensions);
+    setData();
   }
 
   template<typename TensorT, typename DeviceT, int TDim>

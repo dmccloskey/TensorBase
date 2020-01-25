@@ -25,6 +25,7 @@ namespace TensorBase
     // Initialization methods
     void setAxes() override;
     void initData() override;
+    void initData(const Eigen::array<Eigen::Index, TDim>& new_dimensions) override;
     // Select methods
     void broadcastSelectIndicesView(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_view_bcast, const std::string& axis_name, Eigen::DefaultDevice& device) override;
     void reduceTensorDataToSelectIndices(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_view_bcast, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, Eigen::DefaultDevice& device) override;
@@ -141,7 +142,12 @@ namespace TensorBase
 
   template<typename TensorT, int TDim>
   void TensorTableDefaultDevice<TensorT, TDim>::initData() {
-    this->data_.reset(new TensorDataDefaultDevice<TensorT, TDim>(this->getDimensions()));
+    this->data_ = std::make_shared<TensorDataDefaultDevice<TensorT, TDim>>(TensorDataDefaultDevice<TensorT, TDim>(this->getDimensions()));
+  }
+
+  template<typename TensorT, int TDim>
+  inline void TensorTableDefaultDevice<TensorT, TDim>::initData(const Eigen::array<Eigen::Index, TDim>& new_dimensions) {
+    this->data_ = std::make_shared<TensorDataDefaultDevice<TensorT, TDim>>(TensorDataDefaultDevice<TensorT, TDim>(new_dimensions));
   }
 
   template<typename TensorT, int TDim>
@@ -740,16 +746,23 @@ namespace TensorBase
   {
     // determine the shards to read from disk
     std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> not_in_memory_shard_ids;
-    makeNotInMemoryShardIDTensor(not_in_memory_shard_ids, device);
+    this->makeNotInMemoryShardIDTensor(not_in_memory_shard_ids, device);
     if (not_in_memory_shard_ids->getTensorSize() == 0) {
       //std::cout << "No shards have been modified." << std::endl; // TODO: Move to logging
       return false;
     }
     std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>> slice_indices;
-    makeSliceIndicesFromShardIndices(not_in_memory_shard_ids, slice_indices, device);
+    this->makeSliceIndicesFromShardIndices(not_in_memory_shard_ids, slice_indices, device);
+
+    // check if enough data is allocated for the slices
+    if (this->getDataTensorSize() <= 0) {
+      this->setDataShards(not_in_memory_shard_ids);
+    }
+    else {
+      this->syncHData(device); // D to H
+    }
 
     // read in the shards and update the TensorTable data asyncronously
-    syncHAndDData(device); // D to H
     for (const auto slice_index : slice_indices) {
       const std::string filename = makeTensorTableShardFilename(dir, getName(), slice_index.first);
       Eigen::Tensor<TensorT, TDim> shard_data(slice_index.second.second);
@@ -766,7 +779,7 @@ namespace TensorBase
         not_in_memory_values.slice(offset, span).device(device) = not_in_memory_values.slice(offset, span).constant(0);
       }
     }
-    syncHAndDData(device); // H to D
+    this->syncDData(device); // H to D
 
     return true;
   }
