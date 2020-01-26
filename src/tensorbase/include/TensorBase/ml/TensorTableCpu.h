@@ -24,8 +24,9 @@ namespace TensorBase
 		TensorTableCpu(const std::string& name, const std::string& dir) : TensorTable(name, dir) {};
 		~TensorTableCpu() = default;
 		// Initialization methods
-		void setAxes() override;
+		void setAxes(Eigen::ThreadPoolDevice& device) override;
 		void initData(Eigen::ThreadPoolDevice& device) override;
+    void initData(const Eigen::array<Eigen::Index, TDim>& new_dimensions, Eigen::ThreadPoolDevice& device) override;
 		// Select methods
 		void broadcastSelectIndicesView(std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices_view_bcast, const std::string& axis_name, Eigen::ThreadPoolDevice& device) override;
 		void reduceTensorDataToSelectIndices(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices_view_bcast, std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, Eigen::ThreadPoolDevice& device) override;
@@ -63,7 +64,7 @@ namespace TensorBase
 	};
 
 	template<typename TensorT, int TDim>
-	void TensorTableCpu<TensorT, TDim>::setAxes() {
+	void TensorTableCpu<TensorT, TDim>::setAxes(Eigen::ThreadPoolDevice& device) {
 		assert(TDim == this->axes_.size()); // "The number of tensor_axes and the template TDim do not match.";
 		// Clear existing data
 		this->dimensions_ = Eigen::array<Eigen::Index, TDim>();
@@ -139,9 +140,24 @@ namespace TensorBase
 	};
 
 	template<typename TensorT, int TDim>
-	void TensorTableCpu<TensorT, TDim>::initData(Eigen::ThreadPoolDevice& device) {
+  inline void TensorTableCpu<TensorT, TDim>::initData(Eigen::ThreadPoolDevice& device) {
 		this->data_ = std::make_shared<TensorDataCpu<TensorT, TDim>>(TensorDataCpu<TensorT, TDim>(this->getDimensions()));
+    // update the not_in_memory
+    for (const auto& axis_to_dim : this->axes_to_dims_) {
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> not_in_memory(this->not_in_memory_.at(axis_to_dim.first)->getDataPointer().get(), (int)this->not_in_memory_.at(axis_to_dim.first)->getTensorSize());
+      not_in_memory.device(device) = not_in_memory.constant(0);
+    }
 	}
+
+  template<typename TensorT, int TDim>
+  inline void TensorTableCpu<TensorT, TDim>::initData(const Eigen::array<Eigen::Index, TDim>& new_dimensions, Eigen::ThreadPoolDevice& device) {
+    this->data_ = std::make_shared<TensorDataCpu<TensorT, TDim>>(TensorDataCpu<TensorT, TDim>(new_dimensions));
+    // update the not_in_memory
+    for (const auto& axis_to_dim : this->axes_to_dims_) {
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> not_in_memory(this->not_in_memory_.at(axis_to_dim.first)->getDataPointer().get(), (int)this->not_in_memory_.at(axis_to_dim.first)->getTensorSize());
+      not_in_memory.device(device) = not_in_memory.constant(0);
+    }
+  }
 
 	template<typename TensorT, int TDim>
 	inline void TensorTableCpu<TensorT, TDim>::broadcastSelectIndicesView(std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices_view_bcast, const std::string& axis_name, Eigen::ThreadPoolDevice& device)
@@ -574,7 +590,7 @@ namespace TensorBase
 		TensorTableCpu<TensorT, 2> tensorTable;
 		tensorTable.addTensorAxis(axis_1_ptr);
 		tensorTable.addTensorAxis(axis_2_ptr);
-		tensorTable.setAxes();
+		tensorTable.setAxes(device);
 
 		// set the data
 		Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> sparse_data_values(sparse_data->getData().data(), sparse_data->getTensorSize(), 1);

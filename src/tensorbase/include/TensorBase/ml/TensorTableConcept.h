@@ -1020,7 +1020,7 @@ namespace TensorBase
     };
     int getDimFromAxisName(const std::string& axis_name) override { return tensor_table_->getDimFromAxisName(axis_name); }
 		std::map<std::string, int> getAxesToDims() const override { return tensor_table_->getAxesToDims(); }
-    void setAxes() override { tensor_table_->setAxes(); }
+    void setAxes() override { tensor_table_->setAxes(device); }
     void setData() override { tensor_table_->setData(); }
 		size_t getDataTensorSize() const override { return tensor_table_->getDataTensorSize(); }
     bool syncAxesAndIndicesDData(DeviceT& device) { return tensor_table_->syncAxesAndIndicesDData(device); }

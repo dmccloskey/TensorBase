@@ -331,7 +331,7 @@ namespace TensorBaseBenchmarks
 		table_1_axis_2_ptr->setDimensions(dimensions_2);
 		table_1_ptr->addTensorAxis(table_1_axis_1_ptr);
 		table_1_ptr->addTensorAxis(table_1_axis_2_ptr);
-		table_1_ptr->setAxes();
+		table_1_ptr->setAxes(device);
 
 		// Setup the table data
 		table_1_ptr->setData();
@@ -359,7 +359,7 @@ namespace TensorBaseBenchmarks
 		table_1_axis_2_ptr->setDimensions(dimensions_2);
 		table_1_ptr->addTensorAxis(table_1_axis_1_ptr);
 		table_1_ptr->addTensorAxis(table_1_axis_2_ptr);
-		table_1_ptr->setAxes();
+		table_1_ptr->setAxes(device);
 
 		// Setup the table data
 		table_1_ptr->setData();
@@ -392,7 +392,7 @@ namespace TensorBaseBenchmarks
 		table_1_axis_2_ptr->setDimensions(dimensions_2);
 		table_1_ptr->addTensorAxis(table_1_axis_1_ptr);
 		table_1_ptr->addTensorAxis(table_1_axis_2_ptr);
-		table_1_ptr->setAxes();
+		table_1_ptr->setAxes(device);
 
 		// Setup the table data
 		table_1_ptr->setData();
@@ -431,7 +431,7 @@ namespace TensorBaseBenchmarks
 		table_1_ptr->addTensorAxis(table_1_axis_1_ptr);
 		table_1_ptr->addTensorAxis(table_1_axis_2_ptr);
 		table_1_ptr->addTensorAxis(table_1_axis_3_ptr);
-		table_1_ptr->setAxes();
+		table_1_ptr->setAxes(device);
 
 		// Setup the table data
 		table_1_ptr->setData();
@@ -472,7 +472,7 @@ namespace TensorBaseBenchmarks
 		table_1_ptr->addTensorAxis(table_1_axis_2_ptr);
 		table_1_ptr->addTensorAxis(table_1_axis_3_ptr);
 		table_1_ptr->addTensorAxis(table_1_axis_4_ptr);
-		table_1_ptr->setAxes();
+		table_1_ptr->setAxes(device);
 
 		// Setup the table data
 		table_1_ptr->setData();

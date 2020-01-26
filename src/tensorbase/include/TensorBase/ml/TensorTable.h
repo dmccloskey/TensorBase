@@ -78,8 +78,10 @@ namespace TensorBase
 
       The method sets the tensor axes and initializes the indices, indices_view, is_modified, not_in_memory,
       shard_id, and shard_indices attributes after all axes have been added
+
+      @param[in] device
     */
-    virtual void setAxes() = 0;
+    virtual void setAxes(DeviceT& device) = 0;
 
     /**
       @brief DeviceT specific initializer
@@ -124,7 +126,7 @@ namespace TensorBase
 
     void setData(const Eigen::Tensor<TensorT, TDim>& data); ///< data setter (NOTE: must sync the `data` AND `not_in_memory`/`is_modified` attributes!)
     void setData(); ///< data setter (NOTE: must sync the `data` AND `not_in_memory`/`is_modified` attributes!)
-    void setDataShards(const std::shared_ptr<TensorData<int, DeviceT, 1>>& not_in_memory_shard_ids); ///< data setter that allocates memory only for the specified shards
+    void setDataShards(const std::shared_ptr<TensorData<int, DeviceT, 1>>& not_in_memory_shard_ids, DeviceT& device); ///< data setter that allocates memory only for the specified shards
     void convertDataFromStringToTensorT(const Eigen::Tensor<std::string, TDim>& data_new, DeviceT& device); ///< data setter (NOTE: must sync the `data` AND `not_in_memory`/`is_modified` attributes!)
 
     bool syncIndicesHAndDData(DeviceT& device); ///< Sync the host and device indices data
@@ -876,7 +878,7 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
-  inline void TensorTable<TensorT, DeviceT, TDim>::setDataShards(const std::shared_ptr<TensorData<int, DeviceT, 1>>& not_in_memory_shard_ids)
+  inline void TensorTable<TensorT, DeviceT, TDim>::setDataShards(const std::shared_ptr<TensorData<int, DeviceT, 1>>& not_in_memory_shard_ids, DeviceT& device)
   {
     // determine the needed data dimensions
     Eigen::array<Eigen::Index, TDim> data_dimensions;
@@ -1682,7 +1684,7 @@ namespace TensorBase
     }
 
     // remake the axes and move over the tensor data
-    setAxes();
+    setAxes(device);
     data_ = tensor_select;
 
     // TODO: does it make sense to move this over to `setAxes()` ?
@@ -2547,7 +2549,7 @@ namespace TensorBase
 
     // Copy the shard indices and set the axes
     std::map<std::string, int> shard_spans_copy = shard_spans_;
-    setAxes(); // NOTE: this will clear the in-memory data
+    setAxes(device); // NOTE: this will clear the in-memory data
     setShardSpans(shard_spans_copy); // set the shard indices back to what they were
 
     // Intialize the new data

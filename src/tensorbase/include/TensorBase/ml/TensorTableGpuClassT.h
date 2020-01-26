@@ -30,8 +30,9 @@ namespace TensorBase
     TensorTableGpuClassT(const std::string& name, const std::string& dir) : TensorTable(name, dir) {};
     ~TensorTableGpuClassT() = default;
     // Initialization methods
-    void setAxes() override;
+    void setAxes(Eigen::GpuDevice& device) override;
     void initData(Eigen::GpuDevice& device) override;
+    void initData(const Eigen::array<Eigen::Index, TDim>& new_dimensions, Eigen::GpuDevice& device) override;
     // Select methods
     void broadcastSelectIndicesView(std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices_view_bcast, const std::string& axis_name, Eigen::GpuDevice& device) override;
     void reduceTensorDataToSelectIndices(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices_view_bcast, std::shared_ptr<TensorData<ArrayT<TensorT>, Eigen::GpuDevice, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, Eigen::GpuDevice& device) override;
@@ -69,7 +70,7 @@ namespace TensorBase
   };
 
   template<template<class> class ArrayT, class TensorT, int TDim>
-  void TensorTableGpuClassT<ArrayT, TensorT, TDim>::setAxes() {
+  void TensorTableGpuClassT<ArrayT, TensorT, TDim>::setAxes(Eigen::GpuDevice& device) {
     assert(TDim == this->axes_.size()); // "The number of tensor_axes and the template TDim do not match.";
     // Clear existing data
     this->dimensions_ = Eigen::array<Eigen::Index, TDim>();
@@ -147,6 +148,16 @@ namespace TensorBase
   template<template<class> class ArrayT, class TensorT, int TDim>
   void TensorTableGpuClassT<ArrayT, TensorT, TDim>::initData(Eigen::GpuDevice& device) {
     this->data_= std::make_shared<TensorDataGpuClassT<ArrayT, TensorT, TDim>>(TensorDataGpuClassT<ArrayT, TensorT, TDim>(this->getDimensions()));
+    // update the not_in_memory
+    for (const auto& axis_to_dim : this->axes_to_dims_) {
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> not_in_memory(this->not_in_memory_.at(axis_to_dim.first)->getDataPointer().get(), (int)this->not_in_memory_.at(axis_to_dim.first)->getTensorSize());
+      not_in_memory.device(device) = not_in_memory.constant(0);
+    }
+  }
+
+  template<template<class> class ArrayT, class TensorT, int TDim>
+  void TensorTableGpuClassT<ArrayT, TensorT, TDim>::initData(const Eigen::array<Eigen::Index, TDim>& new_dimensions, Eigen::GpuDevice& device) {
+    this->data_ = std::make_shared<TensorDataGpuClassT<ArrayT, TensorT, TDim>>(TensorDataGpuClassT<ArrayT, TensorT, TDim>(new_dimensions));
     // update the not_in_memory
     for (const auto& axis_to_dim : this->axes_to_dims_) {
       Eigen::TensorMap<Eigen::Tensor<int, 1>> not_in_memory(this->not_in_memory_.at(axis_to_dim.first)->getDataPointer().get(), (int)this->not_in_memory_.at(axis_to_dim.first)->getTensorSize());
@@ -618,7 +629,7 @@ namespace TensorBase
     TensorTableGpuClassT<ArrayT, TensorT, 2> tensorTable;
     tensorTable.addTensorAxis(axis_1_ptr);
     tensorTable.addTensorAxis(axis_2_ptr);
-    tensorTable.setAxes();
+    tensorTable.setAxes(device);
 
     // set the data
     Eigen::TensorMap<Eigen::Tensor<ArrayT<TensorT>, 2>> sparse_data_values(sparse_data->getData().data(), sparse_data->getTensorSize(), 1);

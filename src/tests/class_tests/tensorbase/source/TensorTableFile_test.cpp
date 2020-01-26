@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(storeAndLoadBinaryDefaultDevice)
   tensorTable.addTensorAxis(axis_1_ptr);
   tensorTable.addTensorAxis(axis_2_ptr);
   tensorTable.addTensorAxis(axis_3_ptr);
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // setup the tensor data
   Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));

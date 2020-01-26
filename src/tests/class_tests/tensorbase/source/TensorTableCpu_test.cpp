@@ -58,14 +58,14 @@ BOOST_AUTO_TEST_CASE(comparatorCpu)
   tensorTable_test.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1)));
   tensorTable_test.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2)));
   tensorTable_test.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3)));
-  tensorTable_test.setAxes();
+  tensorTable_test.setAxes(device);
 
   // Test expected comparison
   TensorTableCpu<float, 3> tensorTable1("1");
   tensorTable1.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1)));
   tensorTable1.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2)));
   tensorTable1.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3)));
-  tensorTable1.setAxes();
+  tensorTable1.setAxes(device);
 
   BOOST_CHECK(tensorTable_test == tensorTable1); // expected
   tensorTable1.setName("1.1");
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(comparatorCpu)
   tensorTable2.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("4", dimensions1, labels1)));
   tensorTable2.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("5", dimensions2, labels2)));
   tensorTable2.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("6", dimensions3, labels3)));
-  tensorTable2.setAxes();
+  tensorTable2.setAxes(device);
 
   BOOST_CHECK(tensorTable_test != tensorTable2); // different axes
 }
@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersCpu)
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3)));
   tensorTable.setShardSpans(std::map<std::string, int>()); // reset the shard spans to zero
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // Test expected axes values
   BOOST_CHECK_EQUAL(tensorTable.getAxes().at("1")->getName(), "1");
@@ -274,7 +274,7 @@ BOOST_AUTO_TEST_CASE(reShardIndicesCpu)
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3)));
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // Test the default shard span
   BOOST_CHECK_EQUAL(tensorTable.getShardSpans().at("1"), 4);
@@ -325,7 +325,7 @@ BOOST_AUTO_TEST_CASE(tensorDataWrappersCpu)
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3)));
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // Set up the device
   Eigen::ThreadPool pool(1);  Eigen::ThreadPoolDevice device(&pool, 2);
@@ -541,7 +541,7 @@ BOOST_AUTO_TEST_CASE(zeroIndicesViewAndResetIndicesViewCpu)
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3)));
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // test null
   Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_1(tensorTable.getIndicesView().at("1")->getDataPointer().get(), tensorTable.getIndicesView().at("1")->getDimensions());
@@ -580,7 +580,7 @@ BOOST_AUTO_TEST_CASE(selectIndicesView1Cpu)
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3)));
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // set up the selection labels
   Eigen::Tensor<int, 1> select_labels_values(nlabels / 2);
@@ -624,7 +624,7 @@ BOOST_AUTO_TEST_CASE(selectIndicesView2Cpu)
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3)));
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // set up the selection labels
   Eigen::Tensor<int, 2> select_labels_values(2, 2);
@@ -662,7 +662,7 @@ BOOST_AUTO_TEST_CASE(broadcastSelectIndicesViewCpu)
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3)));
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // setup the indices test
   Eigen::Tensor<int, 3> indices_test(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
@@ -705,7 +705,7 @@ BOOST_AUTO_TEST_CASE(extractTensorDataCpu)
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3)));
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // setup the tensor data, selection indices, and test selection data
   Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
@@ -762,7 +762,7 @@ BOOST_AUTO_TEST_CASE(selectTensorIndicesCpu)
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3)));
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // setup the tensor select and values select data
   Eigen::Tensor<float, 3> tensor_select_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
@@ -894,7 +894,7 @@ BOOST_AUTO_TEST_CASE(applyIndicesSelectToIndicesViewCpu)
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3)));
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // setup the indices select
   Eigen::Tensor<int, 3> indices_select_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
@@ -991,7 +991,7 @@ BOOST_AUTO_TEST_CASE(whereIndicesViewDataCpu)
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3)));
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // setup the tensor data
   Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
@@ -1045,7 +1045,7 @@ BOOST_AUTO_TEST_CASE(whereIndicesViewDataCpu)
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3)));
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
   tensorTable.setData(tensor_values);
   tensorTable.storeTensorTableBinary("", device);
   tensorTable.setData();
@@ -1091,7 +1091,7 @@ BOOST_AUTO_TEST_CASE(sliceTensorForSortCpu)
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3)));
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // setup the tensor data
   Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
@@ -1142,7 +1142,7 @@ BOOST_AUTO_TEST_CASE(sortIndicesViewData1Cpu)
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3)));
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // setup the tensor data
   Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
@@ -1185,7 +1185,7 @@ BOOST_AUTO_TEST_CASE(sortIndicesViewData1Cpu)
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3)));
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
   tensorTable.setData(tensor_values);
   tensorTable.storeTensorTableBinary("", device);
   tensorTable.setData();
@@ -1226,7 +1226,7 @@ BOOST_AUTO_TEST_CASE(sortIndicesViewData2Cpu)
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3)));
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // setup the tensor data
   Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
@@ -1269,7 +1269,7 @@ BOOST_AUTO_TEST_CASE(sortIndicesViewData2Cpu)
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3)));
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
   tensorTable.setData(tensor_values);
   tensorTable.storeTensorTableBinary("", device);
   tensorTable.setData();
@@ -1310,7 +1310,7 @@ BOOST_AUTO_TEST_CASE(makeSelectIndicesFromIndicesViewCpu)
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3)));
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // Test null
   std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 3>> indices_select;
@@ -1375,7 +1375,7 @@ BOOST_AUTO_TEST_CASE(getSelectTensorDataFromIndicesViewCpu)
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3)));
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // setup the tensor data
   Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
@@ -1452,7 +1452,7 @@ BOOST_AUTO_TEST_CASE(selectTensorDataCpu)
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3)));
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // setup the tensor data
   Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
@@ -1537,7 +1537,7 @@ BOOST_AUTO_TEST_CASE(selectTensorDataCpu)
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3)));
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
   tensorTable.setData(tensor_values);
   tensorTable.storeTensorTableBinary("", device);
   tensorTable.setData();
@@ -1617,7 +1617,7 @@ BOOST_AUTO_TEST_CASE(makeSortIndicesViewFromIndicesViewCpu)
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3)));
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // make the expected tensor indices
   Eigen::Tensor<int, 3> indices_test(nlabels, nlabels, nlabels);
@@ -1663,7 +1663,7 @@ BOOST_AUTO_TEST_CASE(sortTensorDataCpu)
   tensorTable.addTensorAxis(axis_1_ptr);
   tensorTable.addTensorAxis(axis_2_ptr);
   tensorTable.addTensorAxis(axis_3_ptr);
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // setup the tensor data
   Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
@@ -1718,7 +1718,7 @@ BOOST_AUTO_TEST_CASE(sortTensorDataCpu)
   tensorTable.addTensorAxis(axis_1_ptr);
   tensorTable.addTensorAxis(axis_2_ptr);
   tensorTable.addTensorAxis(axis_3_ptr);
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
   tensorTable.setData(tensor_values);
   tensorTable.storeTensorTableBinary("", device);
   tensorTable.setData();
@@ -1767,7 +1767,7 @@ BOOST_AUTO_TEST_CASE(updateSelectTensorDataValues1Cpu)
   tensorTable.addTensorAxis(axis_1_ptr);
   tensorTable.addTensorAxis(axis_2_ptr);
   tensorTable.addTensorAxis(axis_3_ptr);
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // setup the tensor data and the update values
   Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
@@ -1819,7 +1819,7 @@ BOOST_AUTO_TEST_CASE(updateSelectTensorDataValues1Cpu)
   tensorTable.addTensorAxis(axis_1_ptr);
   tensorTable.addTensorAxis(axis_2_ptr);
   tensorTable.addTensorAxis(axis_3_ptr);
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
   tensorTable.setData(tensor_values);
   tensorTable.storeTensorTableBinary("", device);
   tensorTable.setData();
@@ -1871,7 +1871,7 @@ BOOST_AUTO_TEST_CASE(updateTensorDataValuesCpu)
 	tensorTable.addTensorAxis(axis_1_ptr);
 	tensorTable.addTensorAxis(axis_2_ptr);
 	tensorTable.addTensorAxis(axis_3_ptr);
-	tensorTable.setAxes();
+	tensorTable.setAxes(device);
 
 	// setup the tensor data and the update values
 	Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
@@ -1923,7 +1923,7 @@ BOOST_AUTO_TEST_CASE(updateTensorDataValuesCpu)
 	tensorTable.addTensorAxis(axis_1_ptr);
 	tensorTable.addTensorAxis(axis_2_ptr);
 	tensorTable.addTensorAxis(axis_3_ptr);
-	tensorTable.setAxes();
+	tensorTable.setAxes(device);
 	tensorTable.setData(tensor_values);
 	tensorTable.storeTensorTableBinary("", device);
 	tensorTable.setData();
@@ -1975,7 +1975,7 @@ BOOST_AUTO_TEST_CASE(updateSelectTensorDataValues2Cpu)
   tensorTable.addTensorAxis(axis_1_ptr);
   tensorTable.addTensorAxis(axis_2_ptr);
   tensorTable.addTensorAxis(axis_3_ptr);
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // setup the tensor data and the update values
   Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
@@ -2029,7 +2029,7 @@ BOOST_AUTO_TEST_CASE(updateSelectTensorDataValues2Cpu)
   tensorTable.addTensorAxis(axis_1_ptr);
   tensorTable.addTensorAxis(axis_2_ptr);
   tensorTable.addTensorAxis(axis_3_ptr);
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
   tensorTable.setData(tensor_values);
   tensorTable.storeTensorTableBinary("", device);
   tensorTable.setData();
@@ -2082,7 +2082,7 @@ BOOST_AUTO_TEST_CASE(makeAppendIndicesCpu)
   tensorTable.addTensorAxis(axis_1_ptr);
   tensorTable.addTensorAxis(axis_2_ptr);
   tensorTable.addTensorAxis(axis_3_ptr);
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // test the making the append indices
   std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>> indices_ptr;
@@ -2121,7 +2121,7 @@ BOOST_AUTO_TEST_CASE(appendToIndicesCpu)
   tensorTable.addTensorAxis(axis_1_ptr);
   tensorTable.addTensorAxis(axis_2_ptr);
   tensorTable.addTensorAxis(axis_3_ptr);
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // setup the new indices
   Eigen::Tensor<int, 1> indices_new_values(nlabels - 1);
@@ -2174,7 +2174,7 @@ BOOST_AUTO_TEST_CASE(appendToAxisCpu)
   tensorTable.addTensorAxis(axis_1_ptr);
   tensorTable.addTensorAxis(axis_2_ptr);
   tensorTable.addTensorAxis(axis_3_ptr);
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // setup the tensor data
   Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
@@ -2239,7 +2239,7 @@ BOOST_AUTO_TEST_CASE(appendToAxisCpu)
   tensorTable.addTensorAxis(axis_1_ptr);
   tensorTable.addTensorAxis(axis_2_ptr);
   tensorTable.addTensorAxis(axis_3_ptr);
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
   tensorTable.setData(tensor_values);
   tensorTable.storeTensorTableBinary("", device);
   tensorTable.setData();
@@ -2286,7 +2286,7 @@ BOOST_AUTO_TEST_CASE(makeIndicesViewSelectFromIndicesCpu)
   tensorTable.addTensorAxis(axis_1_ptr);
   tensorTable.addTensorAxis(axis_2_ptr);
   tensorTable.addTensorAxis(axis_3_ptr);
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // setup the selection indices
   Eigen::Tensor<int, 1> indices_to_select_values(Eigen::array<Eigen::Index, 1>({ 2 }));
@@ -2336,7 +2336,7 @@ BOOST_AUTO_TEST_CASE(deleteFromIndicesCpu)
   tensorTable.addTensorAxis(axis_1_ptr);
   tensorTable.addTensorAxis(axis_2_ptr);
   tensorTable.addTensorAxis(axis_3_ptr);
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // setup the selection indices
   Eigen::Tensor<int, 1> indices_to_select_values(Eigen::array<Eigen::Index, 1>({ 1 }));
@@ -2387,7 +2387,7 @@ BOOST_AUTO_TEST_CASE(makeSelectIndicesFromIndicesCpu)
   tensorTable.addTensorAxis(axis_1_ptr);
   tensorTable.addTensorAxis(axis_2_ptr);
   tensorTable.addTensorAxis(axis_3_ptr);
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // setup the selection indices
   Eigen::Tensor<int, 1> indices_to_select_values(Eigen::array<Eigen::Index, 1>({ nlabels }));
@@ -2436,7 +2436,7 @@ BOOST_AUTO_TEST_CASE(deleteFromAxisCpu)
   tensorTable.addTensorAxis(axis_1_ptr);
   tensorTable.addTensorAxis(axis_2_ptr);
   tensorTable.addTensorAxis(axis_3_ptr);
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // setup the tensor data
   Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
@@ -2537,7 +2537,7 @@ BOOST_AUTO_TEST_CASE(makeIndicesFromIndicesViewCpu)
   tensorTable.addTensorAxis(axis_1_ptr);
   tensorTable.addTensorAxis(axis_2_ptr);
   tensorTable.addTensorAxis(axis_3_ptr);
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // modify the indices view for axis 1
   tensorTable.getIndicesView().at("1")->getData()(0) = 0;
@@ -2572,7 +2572,7 @@ BOOST_AUTO_TEST_CASE(insertIntoAxisCpu)
   tensorTable.addTensorAxis(axis_1_ptr);
   tensorTable.addTensorAxis(axis_2_ptr);
   tensorTable.addTensorAxis(axis_3_ptr);
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // setup the tensor data
   Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
@@ -2673,7 +2673,7 @@ BOOST_AUTO_TEST_CASE(makeSparseAxisLabelsFromIndicesViewCpu)
   tensorTable.addTensorAxis(axis_1_ptr);
   tensorTable.addTensorAxis(axis_2_ptr);
   tensorTable.addTensorAxis(axis_3_ptr);
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // setup the tensor data
   Eigen::Tensor<int, 2> expected_values(Eigen::array<Eigen::Index, 2>({ 3, nlabels*nlabels*nlabels }));
@@ -2816,7 +2816,7 @@ BOOST_AUTO_TEST_CASE(getSelectTensorDataAsSparseTensorTableCpu)
   tensorTable.addTensorAxis(axis_1_ptr);
   tensorTable.addTensorAxis(axis_2_ptr);
   tensorTable.addTensorAxis(axis_3_ptr);
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // setup the tensor data
   Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
@@ -2987,7 +2987,7 @@ BOOST_AUTO_TEST_CASE(updateTensorDataConstantCpu)
   tensorTable.addTensorAxis(axis_1_ptr);
   tensorTable.addTensorAxis(axis_2_ptr);
   tensorTable.addTensorAxis(axis_3_ptr);
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // setup the tensor data
   Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
@@ -3129,7 +3129,7 @@ BOOST_AUTO_TEST_CASE(makeShardIndicesFromShardIDsCpu)
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3)));
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // Reshard indices
   int shard_span = 2;
@@ -3194,7 +3194,7 @@ BOOST_AUTO_TEST_CASE(makeModifiedShardIDTensorCpu)
   tensorTable.addTensorAxis(axis_1_ptr);
   tensorTable.addTensorAxis(axis_2_ptr);
   tensorTable.addTensorAxis(axis_3_ptr);
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // Reshard indices
   int shard_span = 2;
@@ -3292,7 +3292,7 @@ BOOST_AUTO_TEST_CASE(makeNotInMemoryShardIDTensorCpu)
   tensorTable.addTensorAxis(axis_1_ptr);
   tensorTable.addTensorAxis(axis_2_ptr);
   tensorTable.addTensorAxis(axis_3_ptr);
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // Reshard indices
   int shard_span = 2;
@@ -3452,7 +3452,7 @@ BOOST_AUTO_TEST_CASE(storeAndLoadBinaryCpu)
   tensorTable.addTensorAxis(axis_1_ptr);
   tensorTable.addTensorAxis(axis_2_ptr);
   tensorTable.addTensorAxis(axis_3_ptr);
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // setup the tensor data
   Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
@@ -3634,7 +3634,7 @@ BOOST_AUTO_TEST_CASE(storeAndLoadTensorTableAxesCpu)
   tensorTable1.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1)));
   tensorTable1.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2)));
   tensorTable1.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3)));
-  tensorTable1.setAxes();
+  tensorTable1.setAxes(device);
 
   // Store the axes
   Eigen::ThreadPool pool(1);  Eigen::ThreadPoolDevice device(&pool, 2);
@@ -3645,7 +3645,7 @@ BOOST_AUTO_TEST_CASE(storeAndLoadTensorTableAxesCpu)
   tensorTable1.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", 1, nlabels1)));
   tensorTable1.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", 1, nlabels2)));
   tensorTable1.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", 1, nlabels3)));
-  tensorTable1.setAxes();
+  tensorTable1.setAxes(device);
 
   // Load the axes
   tensorTable1.loadTensorTableAxesBinary("", device);
@@ -3695,7 +3695,7 @@ BOOST_AUTO_TEST_CASE(getCsvDataRowCpu)
   tensorTable.addTensorAxis(axis_1_ptr);
   tensorTable.addTensorAxis(axis_2_ptr);
   tensorTable.addTensorAxis(axis_3_ptr);
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // setup the tensor data
   Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
@@ -3778,7 +3778,7 @@ BOOST_AUTO_TEST_CASE(insertIntoTableFromCsvCpu)
   tensorTable.addTensorAxis(axis_1_ptr);
   tensorTable.addTensorAxis(axis_2_ptr);
   tensorTable.addTensorAxis(axis_3_ptr);
-  tensorTable.setAxes();
+  tensorTable.setAxes(device);
 
   // setup the tensor data, the new tensor data from csv, and the new axes labels from csv
   Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, 1, 1 }));

@@ -23,7 +23,7 @@ namespace TensorBase
     TensorTableDefaultDevice(const std::string& name, const std::string& dir) : TensorTable(name, dir) {};
     ~TensorTableDefaultDevice() = default;
     // Initialization methods
-    void setAxes() override;
+    void setAxes(Eigen::DefaultDevice& device) override;
     void initData(Eigen::DefaultDevice& device) override;
     void initData(const Eigen::array<Eigen::Index, TDim>& new_dimensions, Eigen::DefaultDevice& device) override;
     // Select methods
@@ -63,7 +63,7 @@ namespace TensorBase
   };
 
   template<typename TensorT, int TDim>
-  void TensorTableDefaultDevice<TensorT, TDim>::setAxes() {
+  void TensorTableDefaultDevice<TensorT, TDim>::setAxes(Eigen::DefaultDevice& device) {
     assert(TDim == this->axes_.size()); // "The number of tensor_axes and the template TDim do not match.";
     // Clear existing data
     this->dimensions_ = Eigen::array<Eigen::Index, TDim>();
@@ -592,7 +592,7 @@ namespace TensorBase
     TensorTableDefaultDevice<TensorT, 2> tensorTable;
     tensorTable.addTensorAxis(axis_1_ptr);
     tensorTable.addTensorAxis(axis_2_ptr);
-    tensorTable.setAxes();
+    tensorTable.setAxes(device);
 
     // set the data
     Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> sparse_data_values(sparse_data->getData().data(), sparse_data->getTensorSize(), 1);
@@ -767,7 +767,7 @@ namespace TensorBase
 
     // check if enough data is allocated for the slices
     if (this->getDataTensorSize() <= 0) {
-      this->setDataShards(not_in_memory_shard_ids);
+      this->setDataShards(not_in_memory_shard_ids, device);
     }
     else {
       this->syncHData(device); // D to H
