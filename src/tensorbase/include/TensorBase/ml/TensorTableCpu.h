@@ -25,7 +25,7 @@ namespace TensorBase
 		~TensorTableCpu() = default;
 		// Initialization methods
 		void setAxes() override;
-		void initData() override;
+		void initData(Eigen::ThreadPoolDevice& device) override;
 		// Select methods
 		void broadcastSelectIndicesView(std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices_view_bcast, const std::string& axis_name, Eigen::ThreadPoolDevice& device) override;
 		void reduceTensorDataToSelectIndices(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices_view_bcast, std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, Eigen::ThreadPoolDevice& device) override;
@@ -135,12 +135,12 @@ namespace TensorBase
     this->reShardIndices();
 
 		// Allocate memory for the tensor
-		this->initData();
+		this->initData(device);
 	};
 
 	template<typename TensorT, int TDim>
-	void TensorTableCpu<TensorT, TDim>::initData() {
-		this->data_.reset(new TensorDataCpu<TensorT, TDim>(this->getDimensions()));
+	void TensorTableCpu<TensorT, TDim>::initData(Eigen::ThreadPoolDevice& device) {
+		this->data_ = std::make_shared<TensorDataCpu<TensorT, TDim>>(TensorDataCpu<TensorT, TDim>(this->getDimensions()));
 	}
 
 	template<typename TensorT, int TDim>
@@ -806,7 +806,7 @@ namespace TensorBase
 		// Convert from string to TensorT and reshape to n_data x 1
 		TensorTableCpu<TensorT, 2> sparse_table;
 		sparse_table.setDimensions(Eigen::array<Eigen::Index, 2>({ int(data_new.size()), 1 }));
-		sparse_table.initData();
+		sparse_table.initData(device);
 		sparse_table.setData();
 		sparse_table.syncHAndDData(device);
 		sparse_table.convertDataFromStringToTensorT(data_new, device);

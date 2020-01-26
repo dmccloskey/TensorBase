@@ -644,7 +644,7 @@ BOOST_AUTO_TEST_CASE(CommitDefaultDevice)
   }
 
   // test re-initializing the TensorTable data and adding additional data
-  transactionManager.initTensorCollectionTensorData();
+  transactionManager.initTensorCollectionTensorData(device);
 
   // Operation #2: add
   // Set up the new labels

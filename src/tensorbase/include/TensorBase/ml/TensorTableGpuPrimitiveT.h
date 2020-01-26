@@ -31,7 +31,7 @@ namespace TensorBase
     ~TensorTableGpuPrimitiveT() = default;
     // Initialization methods
     void setAxes() override;
-    void initData() override;
+    void initData(Eigen::GpuDevice& device) override;
     // Select methods
     void broadcastSelectIndicesView(std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices_view_bcast, const std::string& axis_name, Eigen::GpuDevice& device) override;
     void reduceTensorDataToSelectIndices(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices_view_bcast, std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, Eigen::GpuDevice& device) override;
@@ -141,12 +141,17 @@ namespace TensorBase
     this->reShardIndices();
 
     // Allocate memory for the tensor
-    this->initData();
+    this->initData(device);
   };
 
   template<typename TensorT, int TDim>
-  void TensorTableGpuPrimitiveT<TensorT, TDim>::initData() {
-    this->data_.reset(new TensorDataGpuPrimitiveT<TensorT, TDim>(this->getDimensions()));
+  void TensorTableGpuPrimitiveT<TensorT, TDim>::initData(Eigen::GpuDevice& device) {
+    this->data_ = std::make_shared<TensorDataGpuPrimitiveT<TensorT, TDim>>(TensorDataGpuPrimitiveT<TensorT, TDim>(this->getDimensions()));
+    // update the not_in_memory
+    for (const auto& axis_to_dim : this->axes_to_dims_) {
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> not_in_memory(this->not_in_memory_.at(axis_to_dim.first)->getDataPointer().get(), (int)this->not_in_memory_.at(axis_to_dim.first)->getTensorSize());
+      not_in_memory.device(device) = not_in_memory.constant(0);
+    }
   }
 
   template<typename TensorT, int TDim>
@@ -872,7 +877,7 @@ namespace TensorBase
     // Convert from string to TensorT and reshape to n_data x 1
     TensorTableGpuPrimitiveT<TensorT, 2> sparse_table;
     sparse_table.setDimensions(Eigen::array<Eigen::Index, 2>({ int(data_new.size()), 1 }));
-    sparse_table.initData();
+    sparse_table.initData(device);
     sparse_table.setData();
     sparse_table.syncHAndDData(device);
     sparse_table.convertDataFromStringToTensorT(data_new, device);

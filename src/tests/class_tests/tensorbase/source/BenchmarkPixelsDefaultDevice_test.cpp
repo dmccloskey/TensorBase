@@ -1268,7 +1268,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DShardingDefaultDevice)
       BOOST_CHECK_EQUAL(data_insert_values(i, j), values(i, j));
     }
   }
-  n_dim_tensor_collection->tables_.at("TTable")->initData();
+  n_dim_tensor_collection->tables_.at("TTable")->initData(device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
 
   // Test the expected tensor collection after update

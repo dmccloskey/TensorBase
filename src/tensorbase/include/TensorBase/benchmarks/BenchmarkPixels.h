@@ -439,7 +439,7 @@ namespace TensorBaseBenchmarks
 			transaction_manager.executeOperation(appendToAxis_ptr, device);
       if (!in_memory) {
         transaction_manager.commit(device);
-        transaction_manager.initTensorCollectionTensorData();
+        transaction_manager.initTensorCollectionTensorData(device);
       }
 		}
 	}
@@ -458,7 +458,7 @@ namespace TensorBaseBenchmarks
 			transaction_manager.executeOperation(appendToAxis_ptr, device);
       if (!in_memory) {
         transaction_manager.commit(device);
-        transaction_manager.initTensorCollectionTensorData();
+        transaction_manager.initTensorCollectionTensorData(device);
       }
 		}
 	}
@@ -477,7 +477,7 @@ namespace TensorBaseBenchmarks
 			transaction_manager.executeOperation(appendToAxis_ptr, device);
       if (!in_memory) {
         transaction_manager.commit(device);
-        transaction_manager.initTensorCollectionTensorData();
+        transaction_manager.initTensorCollectionTensorData(device);
       }
 		}
 	}
@@ -496,7 +496,7 @@ namespace TensorBaseBenchmarks
 			transaction_manager.executeOperation(appendToAxis_ptr, device);
       if (!in_memory) {
         transaction_manager.commit(device);
-        transaction_manager.initTensorCollectionTensorData();
+        transaction_manager.initTensorCollectionTensorData(device);
       }
 		}
 	}
@@ -515,7 +515,7 @@ namespace TensorBaseBenchmarks
 			transaction_manager.executeOperation(appendToAxis_ptr, device);
       if (!in_memory) {
         transaction_manager.commit(device);
-        transaction_manager.initTensorCollectionTensorData();
+        transaction_manager.initTensorCollectionTensorData(device);
       }
 		}
 	}
@@ -535,7 +535,7 @@ namespace TensorBaseBenchmarks
 			transaction_manager.executeOperation(tensorUpdate_ptr, device);
       if (!in_memory) {
         transaction_manager.commit(device);
-        transaction_manager.initTensorCollectionTensorData();
+        transaction_manager.initTensorCollectionTensorData(device);
       }
 		}
 	}
@@ -555,7 +555,7 @@ namespace TensorBaseBenchmarks
 			transaction_manager.executeOperation(tensorUpdate_ptr, device);
       if (!in_memory) {
         transaction_manager.commit(device);
-        transaction_manager.initTensorCollectionTensorData();
+        transaction_manager.initTensorCollectionTensorData(device);
       }
 		}
 	}
@@ -575,7 +575,7 @@ namespace TensorBaseBenchmarks
 			transaction_manager.executeOperation(tensorUpdate_ptr, device);
       if (!in_memory) {
         transaction_manager.commit(device);
-        transaction_manager.initTensorCollectionTensorData();
+        transaction_manager.initTensorCollectionTensorData(device);
       }
 		}
 	}
@@ -595,7 +595,7 @@ namespace TensorBaseBenchmarks
 			transaction_manager.executeOperation(tensorUpdate_ptr, device);
       if (!in_memory) {
         transaction_manager.commit(device);
-        transaction_manager.initTensorCollectionTensorData();
+        transaction_manager.initTensorCollectionTensorData(device);
       }
 		}
 	}
@@ -615,7 +615,7 @@ namespace TensorBaseBenchmarks
 			transaction_manager.executeOperation(tensorUpdate_ptr, device);
       if (!in_memory) {
         transaction_manager.commit(device);
-        transaction_manager.initTensorCollectionTensorData();
+        transaction_manager.initTensorCollectionTensorData(device);
       }
 		}
 	}

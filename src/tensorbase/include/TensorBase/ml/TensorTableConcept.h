@@ -1027,7 +1027,7 @@ namespace TensorBase
     bool syncAxesAndIndicesHData(DeviceT& device) { return tensor_table_->syncAxesAndIndicesHData(device); }
     bool syncDData(DeviceT& device) { return tensor_table_->syncDData(device); }
     bool syncHData(DeviceT& device) { return tensor_table_->syncHData(device); }
-    void initData() { tensor_table_->initData(); }
+    void initData() { tensor_table_->initData(device); }
     std::map<std::string, int> getShardSpans() const { return tensor_table_->getShardSpans(); };
 
     void getDataPointer(std::shared_ptr<int[]>& data_copy) override {
