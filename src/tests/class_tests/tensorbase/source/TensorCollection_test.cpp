@@ -27,6 +27,9 @@ BOOST_AUTO_TEST_CASE(destructorDefaultDevice)
 
 BOOST_AUTO_TEST_CASE(commparisonDefaultDevice)
 {
+  // Set up the device
+  Eigen::DefaultDevice device;
+
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
   dimensions1(0) = "x";
   dimensions2(0) = "y";
@@ -79,6 +82,9 @@ BOOST_AUTO_TEST_CASE(commparisonDefaultDevice)
 
 BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
 {
+  // Set up the device
+  Eigen::DefaultDevice device;
+
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
   dimensions1(0) = "x";
   dimensions2(0) = "y";
@@ -141,6 +147,9 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
 
 BOOST_AUTO_TEST_CASE(addTensorTableConceptDefaultDevice)
 {
+  // Set up the device
+  Eigen::DefaultDevice device;
+
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
   dimensions1(0) = "x";
   dimensions2(0) = "y";

@@ -66,6 +66,9 @@ BOOST_AUTO_TEST_CASE(destructorDefaultDevice)
 
 BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
 {
+  // Set up the device
+  Eigen::DefaultDevice device;
+
   // Setup the tensor tables
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
   dimensions1(0) = "x";

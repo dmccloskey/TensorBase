@@ -81,14 +81,14 @@ namespace TensorBase
     virtual void makeIndicesFromIndicesView(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) = 0;
     virtual int getDimFromAxisName(const std::string& axis_name) = 0;
 		virtual std::map<std::string, int> getAxesToDims() const = 0;
-    virtual void setAxes() = 0;
+    virtual void setAxes(DeviceT& device) = 0;
     virtual void setData() = 0;
 		virtual size_t getDataTensorSize() const = 0;
     virtual bool syncAxesAndIndicesDData(DeviceT& device) = 0;
     virtual bool syncAxesAndIndicesHData(DeviceT& device) = 0;
     virtual bool syncDData(DeviceT& device) = 0;
     virtual bool syncHData(DeviceT& device) = 0;
-    virtual void initData() = 0;
+    virtual void initData(DeviceT& device) = 0;
     virtual std::map<std::string, int> getShardSpans() const = 0;
 
     // All TensorT combos of `getLabelsDatapointer`
@@ -1020,14 +1020,14 @@ namespace TensorBase
     };
     int getDimFromAxisName(const std::string& axis_name) override { return tensor_table_->getDimFromAxisName(axis_name); }
 		std::map<std::string, int> getAxesToDims() const override { return tensor_table_->getAxesToDims(); }
-    void setAxes() override { tensor_table_->setAxes(device); }
+    void setAxes(DeviceT& device) override { tensor_table_->setAxes(device); }
     void setData() override { tensor_table_->setData(); }
 		size_t getDataTensorSize() const override { return tensor_table_->getDataTensorSize(); }
     bool syncAxesAndIndicesDData(DeviceT& device) { return tensor_table_->syncAxesAndIndicesDData(device); }
     bool syncAxesAndIndicesHData(DeviceT& device) { return tensor_table_->syncAxesAndIndicesHData(device); }
     bool syncDData(DeviceT& device) { return tensor_table_->syncDData(device); }
     bool syncHData(DeviceT& device) { return tensor_table_->syncHData(device); }
-    void initData() { tensor_table_->initData(device); }
+    void initData(DeviceT& device) { tensor_table_->initData(device); }
     std::map<std::string, int> getShardSpans() const { return tensor_table_->getShardSpans(); };
 
     void getDataPointer(std::shared_ptr<int[]>& data_copy) override {

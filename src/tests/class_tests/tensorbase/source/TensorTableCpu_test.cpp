@@ -42,6 +42,7 @@ BOOST_AUTO_TEST_CASE(constructorNameAndAxesCpu)
 
 BOOST_AUTO_TEST_CASE(comparatorCpu)
 {
+  Eigen::ThreadPool pool(1);  Eigen::ThreadPoolDevice device(&pool, 2);
   // Set the axes
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
   dimensions1(0) = "x";
@@ -84,6 +85,8 @@ BOOST_AUTO_TEST_CASE(comparatorCpu)
 BOOST_AUTO_TEST_CASE(gettersAndSettersCpu)
 {
   TensorTableCpu<float, 3> tensorTable;
+  Eigen::ThreadPool pool(1);  Eigen::ThreadPoolDevice device(&pool, 2);
+
   // Check defaults
   BOOST_CHECK_EQUAL(tensorTable.getId(), -1);
   BOOST_CHECK_EQUAL(tensorTable.getName(), "");
@@ -311,6 +314,9 @@ BOOST_AUTO_TEST_CASE(reShardIndicesCpu)
 
 BOOST_AUTO_TEST_CASE(tensorDataWrappersCpu)
 {
+  // Set up the device
+  Eigen::ThreadPool pool(1);  Eigen::ThreadPoolDevice device(&pool, 2);
+
   // Set up the tensor table
   TensorTableCpu<float, 3> tensorTable;
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
@@ -326,9 +332,6 @@ BOOST_AUTO_TEST_CASE(tensorDataWrappersCpu)
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3)));
   tensorTable.setAxes(device);
-
-  // Set up the device
-  Eigen::ThreadPool pool(1);  Eigen::ThreadPoolDevice device(&pool, 2);
 
   // Test indices wrappers
   std::map<std::string, std::pair<bool, bool>> statuses;
@@ -3433,6 +3436,9 @@ BOOST_AUTO_TEST_CASE(makeTensorTableShardFilenameCpu)
 
 BOOST_AUTO_TEST_CASE(storeAndLoadBinaryCpu)
 {
+  // Set up the device
+  Eigen::ThreadPool pool(1);  Eigen::ThreadPoolDevice device(&pool, 2);
+
   // setup the table
   TensorTableCpu<float, 3> tensorTable;
 
@@ -3464,9 +3470,6 @@ BOOST_AUTO_TEST_CASE(storeAndLoadBinaryCpu)
     }
   }
   tensorTable.setData(tensor_values);
-
-  // Setup the device
-  Eigen::ThreadPool pool(1);  Eigen::ThreadPoolDevice device(&pool, 2);
 
   // Reshard indices
   int shard_span = 2;
@@ -3618,6 +3621,9 @@ BOOST_AUTO_TEST_CASE(storeAndLoadBinaryCpu)
 
 BOOST_AUTO_TEST_CASE(storeAndLoadTensorTableAxesCpu)
 {
+  // Set up the device
+  Eigen::ThreadPool pool(1);  Eigen::ThreadPoolDevice device(&pool, 2);
+
   // Set the axes data
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
   dimensions1(0) = "x";
@@ -3637,7 +3643,6 @@ BOOST_AUTO_TEST_CASE(storeAndLoadTensorTableAxesCpu)
   tensorTable1.setAxes(device);
 
   // Store the axes
-  Eigen::ThreadPool pool(1);  Eigen::ThreadPoolDevice device(&pool, 2);
   tensorTable1.storeTensorTableAxesBinary("", device);
 
   // Remake empty axes
@@ -3675,6 +3680,9 @@ BOOST_AUTO_TEST_CASE(storeAndLoadTensorTableAxesCpu)
 
 BOOST_AUTO_TEST_CASE(getCsvDataRowCpu)
 {
+  // Set up the device
+  Eigen::ThreadPool pool(1);  Eigen::ThreadPoolDevice device(&pool, 2);
+
   // setup the table
   TensorTableCpu<float, 3> tensorTable;
 
@@ -3759,6 +3767,9 @@ BOOST_AUTO_TEST_CASE(getCsvDataRowCpu)
 
 BOOST_AUTO_TEST_CASE(insertIntoTableFromCsvCpu)
 {
+  // Set up the device
+  Eigen::ThreadPool pool(1);  Eigen::ThreadPoolDevice device(&pool, 2);
+
   // setup the table
   TensorTableCpu<float, 3> tensorTable;
 
@@ -3808,7 +3819,6 @@ BOOST_AUTO_TEST_CASE(insertIntoTableFromCsvCpu)
   labels_new_str.emplace("3", labels_3_str);
 
   // Setup the device
-  Eigen::ThreadPool pool(1);  Eigen::ThreadPoolDevice device(&pool, 2);
   tensorTable.insertIntoTableFromCsv(labels_new_str, new_values_str, device);
 
   // Test for the tensor data

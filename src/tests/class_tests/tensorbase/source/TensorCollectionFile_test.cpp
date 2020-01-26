@@ -27,6 +27,9 @@ BOOST_AUTO_TEST_CASE(destructorDefaultDevice)
 
 BOOST_AUTO_TEST_CASE(storeAndLoadBinaryDefaultDevice) 
 {
+  // Set up the device
+  Eigen::DefaultDevice device;
+
   // Setup the tensor collection
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
   dimensions1(0) = "x";
@@ -93,7 +96,6 @@ BOOST_AUTO_TEST_CASE(storeAndLoadBinaryDefaultDevice)
   auto tensorCollectionPtr = std::make_shared<TensorCollectionDefaultDevice>(tensorCollection);
 
   // Store the Tensor Collection
-  Eigen::DefaultDevice device;
   TensorCollectionFile<Eigen::DefaultDevice> data;
   std::string filename = "TensorCollectionFileTest.dat";
   data.storeTensorCollectionBinary(filename, tensorCollectionPtr, device);
@@ -211,6 +213,9 @@ BOOST_AUTO_TEST_CASE(storeAndLoadBinaryDefaultDevice)
 
 BOOST_AUTO_TEST_CASE(getTensorTableHeadersDefaultDevice)
 {
+  // Set up the device
+  Eigen::DefaultDevice device;
+
   // Setup the tensor collection
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
   dimensions1(0) = "x";
@@ -282,7 +287,6 @@ BOOST_AUTO_TEST_CASE(getTensorTableHeadersDefaultDevice)
   std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> tensorCollectionPtr = std::make_shared<TensorCollectionDefaultDevice>(tensorCollection);
 
   // Test making the output header names
-  Eigen::DefaultDevice device;
   TensorCollectionFile<Eigen::DefaultDevice> data;
   std::pair<std::map<std::string, std::vector<std::string>>, std::map<std::string, std::vector<std::string>>> headers = data.getTensorTableHeaders("1", tensorCollectionPtr, device);
   BOOST_CHECK(headers.first.at("2") == std::vector<std::string>({ "y" }));
