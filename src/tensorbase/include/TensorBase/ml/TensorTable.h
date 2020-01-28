@@ -89,7 +89,6 @@ namespace TensorBase
       @param[in] new_dimensions An array specifying the new data dimensions
     */
     virtual void initData(const Eigen::array<Eigen::Index, TDim>& new_dimensions, DeviceT& device) = 0;
-    virtual void initData(DeviceT& device) = 0;
 
     std::map<std::string, std::shared_ptr<TensorAxisConcept<DeviceT>>>& getAxes() { return axes_; }; ///< axes getter
     std::map<std::string, std::shared_ptr<TensorAxisConcept<DeviceT>>> getAxes() const { return axes_; }; ///< axes getter
@@ -126,7 +125,24 @@ namespace TensorBase
 
     void setData(const Eigen::Tensor<TensorT, TDim>& data); ///< data setter (NOTE: must sync the `data` AND `not_in_memory`/`is_modified` attributes!)
     void setData(); ///< data setter (NOTE: must sync the `data` AND `not_in_memory`/`is_modified` attributes!)
-    void setDataShards(const std::shared_ptr<TensorData<int, DeviceT, 1>>& not_in_memory_shard_ids, DeviceT& device); ///< data setter that allocates memory only for the specified shards
+
+    /*
+    @brief Determine the needed Tensor Data dimensions for the not in memory shards
+
+    @param[in] non_in_memory_shard_ids 
+    @param[out] shard_dimensions
+
+    @returns the size of the needed Tensor
+    */
+    int getDataShardDimensions(const std::shared_ptr<TensorData<int, DeviceT, 1>>& not_in_memory_shard_ids, Eigen::array<Eigen::Index, TDim>& shard_dimensions);
+
+    /*
+    @brief Set the needed Tensor Data for the not in memory shards
+
+    @parma[in] shard_dimensions
+    @param[in] device
+    */
+    void setDataShards(const Eigen::array<Eigen::Index, TDim>& shard_dimensions, DeviceT& device); ///< data setter that allocates memory only for the specified shards
     void convertDataFromStringToTensorT(const Eigen::Tensor<std::string, TDim>& data_new, DeviceT& device); ///< data setter (NOTE: must sync the `data` AND `not_in_memory`/`is_modified` attributes!)
 
     bool syncIndicesHAndDData(DeviceT& device); ///< Sync the host and device indices data
@@ -878,16 +894,23 @@ namespace TensorBase
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
-  inline void TensorTable<TensorT, DeviceT, TDim>::setDataShards(const std::shared_ptr<TensorData<int, DeviceT, 1>>& not_in_memory_shard_ids, DeviceT& device)
+  inline int TensorTable<TensorT, DeviceT, TDim>::getDataShardDimensions(const std::shared_ptr<TensorData<int, DeviceT, 1>>& not_in_memory_shard_ids, Eigen::array<Eigen::Index, TDim>& shard_dimensions)
   {
     // determine the needed data dimensions
-    Eigen::array<Eigen::Index, TDim> data_dimensions;
+    int data_size = 1;
     for (const auto& axis_to_dim : axes_to_dims_) {
-      data_dimensions.at(axis_to_dim.second) = not_in_memory_shard_ids->getTensorSize() * shard_spans_.at(axis_to_dim.first);
+      const int shard_dim_sizes = not_in_memory_shard_ids->getTensorSize() * shard_spans_.at(axis_to_dim.first);
+      shard_dimensions.at(axis_to_dim.second) = shard_dim_sizes;
+      data_size *= shard_dim_sizes;
     }
+    return data_size;
+  }
 
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::setDataShards(const Eigen::array<Eigen::Index, TDim>& shard_dimensions, DeviceT& device)
+  {
     // allocate memory for the data
-    initData(data_dimensions, device);
+    initData(shard_dimensions, device);
     setData();
   }
 

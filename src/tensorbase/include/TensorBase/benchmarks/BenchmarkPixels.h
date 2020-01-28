@@ -649,40 +649,40 @@ namespace TensorBaseBenchmarks
 	public:
 		TensorCollectionGenerator() = default;
 		~TensorCollectionGenerator() = default;
-		std::shared_ptr<TensorCollection<DeviceT>> makeTensorCollection(const int& n_dims, const int& data_size, const double& shard_span_perc, const bool& is_columnar) const;
-		virtual std::shared_ptr<TensorCollection<DeviceT>> make0DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar) const = 0;
-		virtual std::shared_ptr<TensorCollection<DeviceT>> make1DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar) const = 0;
-		virtual std::shared_ptr<TensorCollection<DeviceT>> make2DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar) const = 0;
-		virtual std::shared_ptr<TensorCollection<DeviceT>> make3DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar) const = 0;
-		virtual std::shared_ptr<TensorCollection<DeviceT>> make4DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar) const = 0;
+		std::shared_ptr<TensorCollection<DeviceT>> makeTensorCollection(const int& n_dims, const int& data_size, const double& shard_span_perc, const bool& is_columnar, DeviceT& device) const;
+		virtual std::shared_ptr<TensorCollection<DeviceT>> make0DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar, DeviceT& device) const = 0;
+		virtual std::shared_ptr<TensorCollection<DeviceT>> make1DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar, DeviceT& device) const = 0;
+		virtual std::shared_ptr<TensorCollection<DeviceT>> make2DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar, DeviceT& device) const = 0;
+		virtual std::shared_ptr<TensorCollection<DeviceT>> make3DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar, DeviceT& device) const = 0;
+		virtual std::shared_ptr<TensorCollection<DeviceT>> make4DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar, DeviceT& device) const = 0;
 	};
 	template<typename LabelsT, typename TensorT, typename DeviceT>
-	std::shared_ptr<TensorCollection<DeviceT>> TensorCollectionGenerator<LabelsT, TensorT, DeviceT>::makeTensorCollection(const int& n_dims, const int& data_size, const double& shard_span_perc, const bool& is_columnar) const
+	std::shared_ptr<TensorCollection<DeviceT>> TensorCollectionGenerator<LabelsT, TensorT, DeviceT>::makeTensorCollection(const int& n_dims, const int& data_size, const double& shard_span_perc, const bool& is_columnar, DeviceT& device) const
 	{
 		if (n_dims == 0) {
 			std::map<std::string, int> shard_span;
 			shard_span.emplace("xyztv", 5);
 			shard_span.emplace("indices", TensorCollectionShardHelper::round_1(data_size,shard_span_perc));
-			return make0DTensorCollection(data_size, shard_span, is_columnar);
+			return make0DTensorCollection(data_size, shard_span, is_columnar, device);
 		}
 		else if (n_dims == 1) {
 			std::map<std::string, int> shard_span;
 			shard_span.emplace("xyzt", TensorCollectionShardHelper::round_1(data_size, shard_span_perc));
 			shard_span.emplace("values", 1);
-			return make1DTensorCollection(data_size, shard_span, is_columnar);
+			return make1DTensorCollection(data_size, shard_span, is_columnar, device);
 		}
 		else if (n_dims == 2) {
 			std::map<std::string, int> shard_span;
 			shard_span.emplace("xyz", TensorCollectionShardHelper::round_1(std::pow(std::pow(data_size, 0.25), 3), shard_span_perc));
 			shard_span.emplace("t", TensorCollectionShardHelper::round_1(std::pow(data_size, 0.25), shard_span_perc));
-			return make2DTensorCollection(data_size, shard_span, is_columnar);
+			return make2DTensorCollection(data_size, shard_span, is_columnar, device);
 		}
 		else if (n_dims == 3) {
 			std::map<std::string, int> shard_span;
 			shard_span.emplace("xy", TensorCollectionShardHelper::round_1(std::pow(std::pow(data_size, 0.25), 2), shard_span_perc));
 			shard_span.emplace("z", TensorCollectionShardHelper::round_1(std::pow(data_size, 0.25), shard_span_perc));
 			shard_span.emplace("t", TensorCollectionShardHelper::round_1(std::pow(data_size, 0.25), shard_span_perc));
-			return make3DTensorCollection(data_size, shard_span, is_columnar);
+			return make3DTensorCollection(data_size, shard_span, is_columnar, device);
 		}
 		else if (n_dims == 4) {
 			std::map<std::string, int> shard_span;
@@ -690,7 +690,7 @@ namespace TensorBaseBenchmarks
 			shard_span.emplace("y", TensorCollectionShardHelper::round_1(std::pow(data_size, 0.25), shard_span_perc));
 			shard_span.emplace("z", TensorCollectionShardHelper::round_1(std::pow(data_size, 0.25), shard_span_perc));
 			shard_span.emplace("t", TensorCollectionShardHelper::round_1(std::pow(data_size, 0.25), shard_span_perc));
-			return make4DTensorCollection(data_size, shard_span, is_columnar);
+			return make4DTensorCollection(data_size, shard_span, is_columnar, device);
 		}
 		else {
 			return std::shared_ptr<TensorCollection<DeviceT>>();
@@ -704,7 +704,7 @@ namespace TensorBaseBenchmarks
 		std::cout << "Starting insert/delete/update pixel benchmarks for n_dims=" << n_dims << ", data_size=" << data_size << ", in_memory=" << in_memory << ", and shard_span_perc=" << shard_span_perc << std::endl;
 
 		// Make the nD TensorTables
-		std::shared_ptr<TensorCollection<DeviceT>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true);
+		std::shared_ptr<TensorCollection<DeviceT>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true, device);
 
 		// Setup the transaction manager
 		TransactionManager<DeviceT> transaction_manager;

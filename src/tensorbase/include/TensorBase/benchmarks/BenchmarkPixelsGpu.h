@@ -310,14 +310,14 @@ namespace TensorBaseBenchmarks
 	template<typename LabelsT, typename TensorT>
 	class TensorCollectionGeneratorGpu : public TensorCollectionGenerator<LabelsT, TensorT, Eigen::GpuDevice> {
 	public:
-		std::shared_ptr<TensorCollection<Eigen::GpuDevice>> make0DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar) const;
-		std::shared_ptr<TensorCollection<Eigen::GpuDevice>> make1DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar) const;
-		std::shared_ptr<TensorCollection<Eigen::GpuDevice>> make2DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar) const;
-		std::shared_ptr<TensorCollection<Eigen::GpuDevice>> make3DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar) const;
-		std::shared_ptr<TensorCollection<Eigen::GpuDevice>> make4DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar) const;
+		std::shared_ptr<TensorCollection<Eigen::GpuDevice>> make0DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar, Eigen::GpuDevice& device) const override;
+		std::shared_ptr<TensorCollection<Eigen::GpuDevice>> make1DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar, Eigen::GpuDevice& device) const override;
+		std::shared_ptr<TensorCollection<Eigen::GpuDevice>> make2DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar, Eigen::GpuDevice& device) const override;
+		std::shared_ptr<TensorCollection<Eigen::GpuDevice>> make3DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar, Eigen::GpuDevice& device) const override;
+		std::shared_ptr<TensorCollection<Eigen::GpuDevice>> make4DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar, Eigen::GpuDevice& device) const override;
 	};
 	template<typename LabelsT, typename TensorT>
-	std::shared_ptr<TensorCollection<Eigen::GpuDevice>> TensorCollectionGeneratorGpu<LabelsT, TensorT>::make0DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar) const
+	std::shared_ptr<TensorCollection<Eigen::GpuDevice>> TensorCollectionGeneratorGpu<LabelsT, TensorT>::make0DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar, Eigen::GpuDevice& device) const
 	{
 		// Setup the axes
     Eigen::Tensor<std::string, 1> dimensions_1(1), dimensions_2(1);
@@ -348,7 +348,7 @@ namespace TensorBaseBenchmarks
 		return collection_1_ptr;
 	}
 	template<typename LabelsT, typename TensorT>
-	std::shared_ptr<TensorCollection<Eigen::GpuDevice>> TensorCollectionGeneratorGpu<LabelsT, TensorT>::make1DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar) const
+	std::shared_ptr<TensorCollection<Eigen::GpuDevice>> TensorCollectionGeneratorGpu<LabelsT, TensorT>::make1DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar, Eigen::GpuDevice& device) const
 	{
 		// Setup the axes
 		Eigen::Tensor<std::string, 1> dimensions_1(1), dimensions_2(4);
@@ -376,7 +376,7 @@ namespace TensorBaseBenchmarks
 		return collection_1_ptr;
 	}
 	template<typename LabelsT, typename TensorT>
-	std::shared_ptr<TensorCollection<Eigen::GpuDevice>> TensorCollectionGeneratorGpu<LabelsT, TensorT>::make2DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar) const
+	std::shared_ptr<TensorCollection<Eigen::GpuDevice>> TensorCollectionGeneratorGpu<LabelsT, TensorT>::make2DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar, Eigen::GpuDevice& device) const
 	{
 		// Setup the axes
 		int dim_span = std::pow(data_size, 0.25);
@@ -409,7 +409,7 @@ namespace TensorBaseBenchmarks
 		return collection_1_ptr;
 	}
 	template<typename LabelsT, typename TensorT>
-	std::shared_ptr<TensorCollection<Eigen::GpuDevice>> TensorCollectionGeneratorGpu<LabelsT, TensorT>::make3DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar) const
+	std::shared_ptr<TensorCollection<Eigen::GpuDevice>> TensorCollectionGeneratorGpu<LabelsT, TensorT>::make3DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar, Eigen::GpuDevice& device) const
 	{
 		// Setup the axes
 		int dim_span = std::pow(data_size, 0.25);
@@ -448,7 +448,7 @@ namespace TensorBaseBenchmarks
 		return collection_1_ptr;
 	}
 	template<typename LabelsT, typename TensorT>
-	std::shared_ptr<TensorCollection<Eigen::GpuDevice>> TensorCollectionGeneratorGpu<LabelsT, TensorT>::make4DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar) const
+	std::shared_ptr<TensorCollection<Eigen::GpuDevice>> TensorCollectionGeneratorGpu<LabelsT, TensorT>::make4DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar, Eigen::GpuDevice& device) const
 	{
 		// Setup the axes
 		int dim_span = std::pow(data_size, 0.25);

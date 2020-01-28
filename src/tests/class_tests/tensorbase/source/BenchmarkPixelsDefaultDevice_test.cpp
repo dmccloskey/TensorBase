@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DDefaultDevice)
   Eigen::DefaultDevice device;
 
   // Make the nD TensorTables
-  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true);
+  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true, device);
 
   // Setup the transaction manager
   TransactionManager<Eigen::DefaultDevice> transaction_manager;
@@ -224,7 +224,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete1DDefaultDevice)
   Eigen::DefaultDevice device;
 
   // Make the nD TensorTables
-  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true);
+  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true, device);
 
   // Setup the transaction manager
   TransactionManager<Eigen::DefaultDevice> transaction_manager;
@@ -399,7 +399,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DDefaultDevice)
   Eigen::DefaultDevice device;
 
   // Make the nD TensorTables
-  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true);
+  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true, device);
 
   // Setup the transaction manager
   TransactionManager<Eigen::DefaultDevice> transaction_manager;
@@ -599,7 +599,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DDefaultDevice)
   Eigen::DefaultDevice device;
 
   // Make the nD TensorTables
-  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true);
+  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true, device);
 
   // Setup the transaction manager
   TransactionManager<Eigen::DefaultDevice> transaction_manager;
@@ -858,7 +858,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DDefaultDevice)
   Eigen::DefaultDevice device;
 
   // Make the nD TensorTables
-  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true);
+  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true, device);
 
   // Setup the transaction manager
   TransactionManager<Eigen::DefaultDevice> transaction_manager;
@@ -1171,7 +1171,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DShardingDefaultDevice)
   Eigen::DefaultDevice device;
 
   // Make the nD TensorTables
-  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true);
+  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true, device);
 
   // Setup the transaction manager
   TransactionManager<Eigen::DefaultDevice> transaction_manager;
@@ -1370,7 +1370,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete1DShardingDefaultDevice)
   Eigen::DefaultDevice device;
 
   // Make the nD TensorTables
-  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true);
+  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true, device);
 
   // Setup the transaction manager
   TransactionManager<Eigen::DefaultDevice> transaction_manager;
@@ -1545,7 +1545,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DShardingDefaultDevice)
   Eigen::DefaultDevice device;
 
   // Make the nD TensorTables
-  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true);
+  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true, device);
 
   // Setup the transaction manager
   TransactionManager<Eigen::DefaultDevice> transaction_manager;
@@ -1745,7 +1745,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DShardingDefaultDevice)
   Eigen::DefaultDevice device;
 
   // Make the nD TensorTables
-  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true);
+  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true, device);
 
   // Setup the transaction manager
   TransactionManager<Eigen::DefaultDevice> transaction_manager;
@@ -2004,7 +2004,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DShardingDefaultDevice)
   Eigen::DefaultDevice device;
 
   // Make the nD TensorTables
-  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true);
+  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true, device);
 
   // Setup the transaction manager
   TransactionManager<Eigen::DefaultDevice> transaction_manager;

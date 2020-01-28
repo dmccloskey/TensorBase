@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DCpu)
   Eigen::ThreadPool pool(2); Eigen::ThreadPoolDevice device(&pool, 2);
 
   // Make the nD TensorTables
-  std::shared_ptr<TensorCollection<Eigen::ThreadPoolDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true);
+  std::shared_ptr<TensorCollection<Eigen::ThreadPoolDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true, device);
 
   // Setup the transaction manager
   TransactionManager<Eigen::ThreadPoolDevice> transaction_manager;
@@ -222,7 +222,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete1DCpu)
   Eigen::ThreadPool pool(2); Eigen::ThreadPoolDevice device(&pool, 2);
 
   // Make the nD TensorTables
-  std::shared_ptr<TensorCollection<Eigen::ThreadPoolDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true);
+  std::shared_ptr<TensorCollection<Eigen::ThreadPoolDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true, device);
 
   // Setup the transaction manager
   TransactionManager<Eigen::ThreadPoolDevice> transaction_manager;
@@ -395,7 +395,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DCpu)
   Eigen::ThreadPool pool(2); Eigen::ThreadPoolDevice device(&pool, 2);
 
   // Make the nD TensorTables
-  std::shared_ptr<TensorCollection<Eigen::ThreadPoolDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true);
+  std::shared_ptr<TensorCollection<Eigen::ThreadPoolDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true, device);
 
   // Setup the transaction manager
   TransactionManager<Eigen::ThreadPoolDevice> transaction_manager;
@@ -593,7 +593,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DCpu)
   Eigen::ThreadPool pool(2); Eigen::ThreadPoolDevice device(&pool, 2);
 
   // Make the nD TensorTables
-  std::shared_ptr<TensorCollection<Eigen::ThreadPoolDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true);
+  std::shared_ptr<TensorCollection<Eigen::ThreadPoolDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true, device);
 
   // Setup the transaction manager
   TransactionManager<Eigen::ThreadPoolDevice> transaction_manager;
@@ -849,7 +849,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DCpu)
   Eigen::ThreadPool pool(2); Eigen::ThreadPoolDevice device(&pool, 2);
 
   // Make the nD TensorTables
-  std::shared_ptr<TensorCollection<Eigen::ThreadPoolDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true);
+  std::shared_ptr<TensorCollection<Eigen::ThreadPoolDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true, device);
 
   // Setup the transaction manager
   TransactionManager<Eigen::ThreadPoolDevice> transaction_manager;
