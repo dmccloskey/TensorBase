@@ -820,8 +820,9 @@ namespace TensorBase
   {
     // Convert from string to TensorT and reshape to n_data x 1
     TensorTableDefaultDevice<TensorT, 2> sparse_table;
-    sparse_table.setDimensions(Eigen::array<Eigen::Index, 2>({ int(data_new.size()), 1 }));
-    sparse_table.initData(this->getDimensions(), device);
+    Eigen::array<Eigen::Index, 2> new_dimensions = { int(data_new.size()), 1 };
+    sparse_table.setDimensions(new_dimensions);
+    sparse_table.initData(new_dimensions, device);
     sparse_table.setData();
     sparse_table.syncHAndDData(device);
     sparse_table.convertDataFromStringToTensorT(data_new, device);
