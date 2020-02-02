@@ -92,6 +92,7 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersCpu)
   BOOST_CHECK_EQUAL(tensorTable.getName(), "");
   BOOST_CHECK_EQUAL(tensorTable.getAxes().size(), 0);
   BOOST_CHECK_EQUAL(tensorTable.getDir(), "");
+  BOOST_CHECK_EQUAL(tensorTable.getTensorSize(), 0);
 
   // Check getters/setters
   tensorTable.setId(1);
@@ -189,6 +190,7 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersCpu)
   BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(0), 2);
   BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(1), 3);
   BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(2), 5);
+  BOOST_CHECK_EQUAL(tensorTable.getTensorSize(), 30);
 
   // Test expected tensor data values
   BOOST_CHECK_EQUAL(tensorTable.getDataDimensions().at(0), 2);

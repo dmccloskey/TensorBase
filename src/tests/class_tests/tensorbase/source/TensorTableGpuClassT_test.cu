@@ -52,6 +52,7 @@ void test_gettersAndSettersGpu()
   assert(tensorTable.getName() == "");
   assert(tensorTable.getAxes().size() == 0);
   assert(tensorTable.getDir() == "");
+  assert(tensorTable.getTensorSize() == 0);
 
   // Check getters/setters
   tensorTable.setId(1);
@@ -149,6 +150,7 @@ void test_gettersAndSettersGpu()
   assert(tensorTable.getDimensions().at(0) == 2);
   assert(tensorTable.getDimensions().at(1) == 3);
   assert(tensorTable.getDimensions().at(2) == 5);
+  assert(tensorTable.getTensorSize() == 30);
 
   // Test expected tensor data values
   assert(tensorTable.getDataDimensions().at(0) == 2);

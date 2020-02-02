@@ -91,6 +91,7 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable.getName(), "");
   BOOST_CHECK_EQUAL(tensorTable.getAxes().size(), 0);
   BOOST_CHECK_EQUAL(tensorTable.getDir(), "");
+  BOOST_CHECK_EQUAL(tensorTable.getTensorSize(), 0);
 
   // Check getters/setters
   tensorTable.setId(1);
@@ -188,6 +189,7 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(0), 2);
   BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(1), 3);
   BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(2), 5);
+  BOOST_CHECK_EQUAL(tensorTable.getTensorSize(), 30);
 
   // Test expected tensor data values
   BOOST_CHECK_EQUAL(tensorTable.getDataDimensions().at(0), 2);
@@ -255,6 +257,73 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(1), 0);
   BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(2), 0);
   BOOST_CHECK_EQUAL(tensorTable.getShardSpans().size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(initDataDefaultDevice)
+{
+  // setup the table
+  TensorTableDefaultDevice<float, 3> tensorTable;
+  Eigen::DefaultDevice device;
+
+  // setup the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels = 3;
+  Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels), labels3(1, nlabels);
+  labels1.setValues({ {0, 1, 2} });
+  labels2.setValues({ {0, 1, 2} });
+  labels3.setValues({ {0, 1, 2} });
+  auto axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1));
+  auto axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2));
+  auto axis_3_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3));
+  tensorTable.addTensorAxis(axis_1_ptr);
+  tensorTable.addTensorAxis(axis_2_ptr);
+  tensorTable.addTensorAxis(axis_3_ptr);
+  tensorTable.setAxes(device);
+
+  // Check the dimensions and expected not_in_memory values
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("1")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("3")->getData()(i), 1);
+  }
+  BOOST_CHECK_EQUAL(tensorTable.getDataTensorSize(), nlabels*nlabels*nlabels);
+
+  // Reset the not_in_memory to false
+  for (auto& in_memory_map : tensorTable.getNotInMemory()) {
+    in_memory_map.second->getData() = in_memory_map.second->getData().constant(0);
+  }
+
+  // Resize the tensor data
+  Eigen::array<Eigen::Index, 3> new_dimensions = { 2, 2, 2 };
+  tensorTable.initData(new_dimensions, device);
+
+  // Check the dimensions and expected not_in_memory values
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("1")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("3")->getData()(i), 1);
+  }
+  BOOST_CHECK_EQUAL(tensorTable.getDataTensorSize(), 8);
+
+  // Reset the not_in_memory to false
+  for (auto& in_memory_map : tensorTable.getNotInMemory()) {
+    in_memory_map.second->getData() = in_memory_map.second->getData().constant(0);
+  }
+
+  // Resize the tensor data to 0
+  tensorTable.initData(device);
+
+  // Check the dimensions and expected not_in_memory values
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("1")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("3")->getData()(i), 1);
+  }
+  BOOST_CHECK_EQUAL(tensorTable.getDataTensorSize(), 0);
+
 }
 
 BOOST_AUTO_TEST_CASE(reShardIndicesDefaultDevice)

@@ -24,6 +24,7 @@ namespace TensorBase
     ~TensorTableDefaultDevice() = default;
     // Initialization methods
     void setAxes(Eigen::DefaultDevice& device) override;
+    void initData(Eigen::DefaultDevice& device) override;
     void initData(const Eigen::array<Eigen::Index, TDim>& new_dimensions, Eigen::DefaultDevice& device) override;
     // Select methods
     void broadcastSelectIndicesView(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_view_bcast, const std::string& axis_name, Eigen::DefaultDevice& device) override;
@@ -80,8 +81,9 @@ namespace TensorBase
 
     // Determine the overall dimensions of the tensor
     int axis_cnt = 0;
+    Eigen::array<Eigen::Index, TDim> dimensions;
     for (auto& axis : axes_) {
-      this->dimensions_.at(axis_cnt) = axis.second->getNLabels();
+      dimensions.at(axis_cnt) = axis.second->getNLabels();
       Eigen::array<Eigen::Index, 1> axis_dimensions = { (int)axis.second->getNLabels() };
 
       // Set the axes name to dim map
@@ -131,13 +133,26 @@ namespace TensorBase
       // Next iteration
       ++axis_cnt;
     }
+    // Set the dimensions and tensor size
+    this->setDimensions(dimensions);
 
     // Set the shard_id and shard_indices
     this->reShardIndices();
 
     // Allocate memory for the tensor
     this->initData(this->getDimensions(), device);
-  };
+  }
+
+  template<typename TensorT, int TDim>
+  inline void TensorTableDefaultDevice<TensorT, TDim>::initData(Eigen::DefaultDevice & device)
+  {
+    this->data_ = std::make_shared<TensorDataDefaultDevice<TensorT, TDim>>(TensorDataDefaultDevice<TensorT, TDim>(Eigen::array<Eigen::Index, TDim>()));
+    // update the not_in_memory
+    for (const auto& axis_to_dim : this->axes_to_dims_) {
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> not_in_memory(this->not_in_memory_.at(axis_to_dim.first)->getDataPointer().get(), (int)this->not_in_memory_.at(axis_to_dim.first)->getTensorSize());
+      not_in_memory.device(device) = not_in_memory.constant(1);
+    }
+  }
 
   template<typename TensorT, int TDim>
   inline void TensorTableDefaultDevice<TensorT, TDim>::initData(const Eigen::array<Eigen::Index, TDim>& new_dimensions, Eigen::DefaultDevice& device) {
@@ -145,7 +160,7 @@ namespace TensorBase
     // update the not_in_memory
     for (const auto& axis_to_dim : this->axes_to_dims_) {
       Eigen::TensorMap<Eigen::Tensor<int, 1>> not_in_memory(this->not_in_memory_.at(axis_to_dim.first)->getDataPointer().get(), (int)this->not_in_memory_.at(axis_to_dim.first)->getTensorSize());
-      not_in_memory.device(device) = not_in_memory.constant(0);
+      not_in_memory.device(device) = not_in_memory.constant(1);
     }
   }
 
@@ -756,7 +771,7 @@ namespace TensorBase
     // check if enough data is allocated for the slices
     Eigen::array<Eigen::Index, TDim> shard_dimensions;
     const int data_size = this->getDataShardDimensions(not_in_memory_shard_ids, shard_dimensions);
-    if (this->getDataTensorSize() <= data_size) {
+    if (this->getDataTensorSize() < data_size) {
       this->setDataShards(shard_dimensions, device);
     }
     else {

@@ -85,9 +85,12 @@ namespace TensorBase
 
     /**
       @brief DeviceT specific initializer
+        If no dimensions are provided, the overload method will initialize to all 0's
 
       @param[in] new_dimensions An array specifying the new data dimensions
+      @param[in] device
     */
+    virtual void initData(DeviceT& device) = 0;
     virtual void initData(const Eigen::array<Eigen::Index, TDim>& new_dimensions, DeviceT& device) = 0;
 
     std::map<std::string, std::shared_ptr<TensorAxisConcept<DeviceT>>>& getAxes() { return axes_; }; ///< axes getter
@@ -110,8 +113,9 @@ namespace TensorBase
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getShardId() const { return shard_id_; }; ///< shard_id getter
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getShardIndices() const { return shard_indices_; }; ///< shard_indicies getter
 
-    void setDimensions(const Eigen::array<Eigen::Index, TDim>& dimensions) { dimensions_ = dimensions; }; ///< dimensions setter
+    void setDimensions(const Eigen::array<Eigen::Index, TDim>& dimensions); ///< dimensions setter
     Eigen::array<Eigen::Index, TDim> getDimensions() const { return dimensions_; }  ///< dimensions getter
+    size_t getTensorSize() const { return tensor_size_; }; ///< the size of the dimensions
     int getDimFromAxisName(const std::string& axis_name) const { return axes_to_dims_.at(axis_name); }
 		std::map<std::string, int> getAxesToDims() const { return axes_to_dims_; }  ///< axes_to_dims getter
     void clear(const bool& clear_shard_spans = true);  ///< clears the axes and all associated data
@@ -821,7 +825,8 @@ namespace TensorBase
     std::string name_ = "";
     std::string dir_ = "";
 
-    Eigen::array<Eigen::Index, TDim> dimensions_ = Eigen::array<Eigen::Index, TDim>();
+    Eigen::array<Eigen::Index, TDim> dimensions_ = Eigen::array<Eigen::Index, TDim>(); ///< dimensions of the tensor table (dimensions_ and data_->dimensions_ need not be the same)
+    size_t tensor_size_ = 0; /// < size of the tensor table (tensor_size_ and data_->tensor_size_ need not be the same)
     std::map<std::string, std::shared_ptr<TensorAxisConcept<DeviceT>>> axes_; ///< primary axis is dim=0
 
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> indices_; ///< starting at 1
@@ -850,6 +855,17 @@ namespace TensorBase
   inline void TensorTable<TensorT, DeviceT, TDim>::addTensorAxis(const std::shared_ptr<T>& tensor_axis)
   {
     auto found = axes_.emplace(tensor_axis->getName(), std::shared_ptr<TensorAxisConcept<DeviceT>>(new TensorAxisWrapper<T, DeviceT>(tensor_axis)));
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::setDimensions(const Eigen::array<Eigen::Index, TDim>& dimensions)
+  {
+    dimensions_ = dimensions;
+    size_t tensor_size = 1;
+    for (int i = 0; i < TDim; ++i) {
+      tensor_size *= getDimensions().at(i);
+    }
+    tensor_size_ = tensor_size;
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
@@ -2044,7 +2060,7 @@ namespace TensorBase
   template<typename LabelsT>
   inline void TensorTable<TensorT, DeviceT, TDim>::appendToAxis(const std::string & axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<TensorT[]>& values, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device)
   {
-		if (getDataTensorSize() > 0) {
+		if (getTensorSize() > 0) {
 			// Check that the needed values are in memory
 			// TODO [not_in_memory]: only the shards on the "edge" of the insert will be needed
 			loadTensorTableBinary(dir_, device);
