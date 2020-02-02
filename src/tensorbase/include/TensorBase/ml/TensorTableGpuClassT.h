@@ -55,7 +55,7 @@ namespace TensorBase
     // IO methods
     void makeShardIndicesFromShardIDs(std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices_shard, Eigen::GpuDevice& device) const override;
     void runLengthEncodeIndex(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& data, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& n_runs, Eigen::GpuDevice& device) const override;
-    void makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>>& slice_indices, Eigen::GpuDevice& device) const override;
+    int makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>>& slice_indices, Eigen::array<Eigen::Index, TDim>& shard_data_dimensions, Eigen::GpuDevice& device) const override;
     void makeShardIDTensor(std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& modified_shard_ids, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& num_runs, Eigen::GpuDevice & device) const override;
     bool loadTensorTableBinary(const std::string& dir, Eigen::GpuDevice& device) override;
     bool storeTensorTableBinary(const std::string& dir, Eigen::GpuDevice& device) override;
@@ -719,7 +719,7 @@ namespace TensorBase
     data->runLengthEncode(unique, count, n_runs, device);
   }
   template<template<class> class ArrayT, class TensorT, int TDim>
-  inline void TensorTableGpuClassT<ArrayT, TensorT, TDim>::makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>>& slice_indices, Eigen::GpuDevice & device) const
+  inline int TensorTableGpuClassT<ArrayT, TensorT, TDim>::makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>>& slice_indices, Eigen::array<Eigen::Index, TDim>& shard_data_dimensions, Eigen::GpuDevice & device) const
   {
     if (modified_shard_ids->getTensorSize() == 0) return;
 

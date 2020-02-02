@@ -49,7 +49,7 @@ namespace TensorBase
 		// IO methods
 		void makeShardIndicesFromShardIDs(std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices_shard, Eigen::ThreadPoolDevice& device) const override;
 		void runLengthEncodeIndex(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& data, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& n_runs, Eigen::ThreadPoolDevice& device) const override;
-		void makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>>& slice_indices, Eigen::ThreadPoolDevice& device) const override;
+		int makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>>& slice_indices, Eigen::array<Eigen::Index, TDim>& shard_data_dimensions, Eigen::ThreadPoolDevice& device) const override;
 		void makeShardIDTensor(std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& modified_shard_ids, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& num_runs, Eigen::ThreadPoolDevice& device) const override;
 		bool loadTensorTableBinary(const std::string& dir, Eigen::ThreadPoolDevice& device) override;
 		bool storeTensorTableBinary(const std::string& dir, Eigen::ThreadPoolDevice& device) override;
@@ -670,7 +670,7 @@ namespace TensorBase
 		data->runLengthEncode(unique, count, n_runs, device);
 	}
 	template<typename TensorT, int TDim>
-	inline void TensorTableCpu<TensorT, TDim>::makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>>& slice_indices, Eigen::ThreadPoolDevice& device) const
+	inline int TensorTableCpu<TensorT, TDim>::makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>>& slice_indices, Eigen::array<Eigen::Index, TDim>& shard_data_dimensions, Eigen::ThreadPoolDevice& device) const
 	{
 		if (modified_shard_ids->getTensorSize() == 0) return;
 

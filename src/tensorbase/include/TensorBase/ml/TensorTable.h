@@ -2164,7 +2164,9 @@ namespace TensorBase
     }
 
     // update the dimensions
-    dimensions_.at(axes_to_dims_.at(axis_name)) += indices->getTensorSize();
+    auto dimensions = dimensions_;
+    dimensions.at(axes_to_dims_.at(axis_name)) += indices->getTensorSize();
+    setDimensions(dimensions);
   }
 
   template<typename TensorT, typename DeviceT, int TDim>

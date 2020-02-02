@@ -672,7 +672,9 @@ namespace TensorBase
     data->runLengthEncode(unique, count, n_runs, device);
   }
   template<typename TensorT, int TDim>
-  inline int TensorTableDefaultDevice<TensorT, TDim>::makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>>& slice_indices, Eigen::array<Eigen::Index, TDim>& shard_data_dimensions, Eigen::DefaultDevice & device) const
+  inline int TensorTableDefaultDevice<TensorT, TDim>::makeSliceIndicesFromShardIndices(
+    const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>>& slice_indices, 
+    Eigen::array<Eigen::Index, TDim>& shard_data_dimensions, Eigen::DefaultDevice & device) const
   {
     if (modified_shard_ids->getTensorSize() == 0) return 0;
 
@@ -797,14 +799,15 @@ namespace TensorBase
       const std::string filename = makeTensorTableShardFilename(dir, getName(), slice_index.first);
       Eigen::Tensor<TensorT, TDim> shard_data(slice_index.second.second);
       DataFile::loadDataBinary<TensorT, TDim>(filename, shard_data);
+      assert(slice_index.second.second == shard_data.dimensions());
       this->getData().slice(slice_index.second.first, slice_index.second.second) = shard_data;
 
       // update the `not_in_memory` tensor table attribute
       for (auto& not_in_memory_map : not_in_memory_) {
         Eigen::array<Eigen::Index, 1> offset;
-        offset.at(0) = slice_index.second.first.at(getDimFromAxisName(not_in_memory_map.first));
+        offset.at(0) = slice_index.second.first.at(this->getDimFromAxisName(not_in_memory_map.first));
         Eigen::array<Eigen::Index, 1> span;
-        span.at(0) = slice_index.second.second.at(getDimFromAxisName(not_in_memory_map.first));
+        span.at(0) = slice_index.second.second.at(this->getDimFromAxisName(not_in_memory_map.first));
         Eigen::TensorMap<Eigen::Tensor<int, 1>> not_in_memory_values(not_in_memory_map.second->getDataPointer().get(), (int)not_in_memory_map.second->getTensorSize());
         not_in_memory_values.slice(offset, span).device(device) = not_in_memory_values.slice(offset, span).constant(0);
       }
@@ -834,14 +837,18 @@ namespace TensorBase
         const std::string filename = makeTensorTableShardFilename(dir, getName(), slice_index.first);
         Eigen::Tensor<TensorT, TDim> shard_data = getData().slice(slice_index.second.first, slice_index.second.second);
         DataFile::storeDataBinary<TensorT, TDim>(filename, shard_data);
+
+        // update the `is_modified` tensor table attribute
+        for (auto& is_modified_map : is_modified_) {
+          Eigen::array<Eigen::Index, 1> offset;
+          offset.at(0) = slice_index.second.first.at(this->getDimFromAxisName(is_modified_map.first));
+          Eigen::array<Eigen::Index, 1> span;
+          span.at(0) = slice_index.second.second.at(this->getDimFromAxisName(is_modified_map.first));
+          Eigen::TensorMap<Eigen::Tensor<int, 1>> is_modified_values(is_modified_map.second->getDataPointer().get(), (int)is_modified_map.second->getTensorSize());
+          is_modified_values.slice(offset, span).device(device) = is_modified_values.slice(offset, span).constant(0);
+        }
       }
       setDataStatus(false, true);
-
-      // update the `is_modified` tensor table attribute
-      for (auto& is_modified_map : is_modified_) {
-        Eigen::TensorMap<Eigen::Tensor<int, 1>> is_modified_values(is_modified_map.second->getDataPointer().get(), (int)is_modified_map.second->getTensorSize());
-        is_modified_values.device(device) = is_modified_values.constant(0);
-      }
     }
     return true;
   }
