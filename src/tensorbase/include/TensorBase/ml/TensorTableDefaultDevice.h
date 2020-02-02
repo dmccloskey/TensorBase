@@ -48,7 +48,7 @@ namespace TensorBase
     // IO methods
     void makeShardIndicesFromShardIDs(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_shard, Eigen::DefaultDevice& device) const override;
     void runLengthEncodeIndex(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& data, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& n_runs, Eigen::DefaultDevice& device) const override;
-    void makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>>& slice_indices, Eigen::DefaultDevice& device) const override;
+    int makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>>& slice_indices, Eigen::array<Eigen::Index, TDim>& shard_data_dimensions, Eigen::DefaultDevice& device) const override;
     void makeShardIDTensor(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& modified_shard_ids, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& num_runs, Eigen::DefaultDevice & device) const override;
     bool loadTensorTableBinary(const std::string& dir, Eigen::DefaultDevice& device) override;
     bool storeTensorTableBinary(const std::string& dir, Eigen::DefaultDevice& device) override;
@@ -672,7 +672,7 @@ namespace TensorBase
     data->runLengthEncode(unique, count, n_runs, device);
   }
   template<typename TensorT, int TDim>
-  inline void TensorTableDefaultDevice<TensorT, TDim>::makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>>& slice_indices, Eigen::DefaultDevice & device) const
+  inline int TensorTableDefaultDevice<TensorT, TDim>::makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>>& slice_indices, Eigen::array<Eigen::Index, TDim>& shard_data_dimensions, Eigen::DefaultDevice & device) const
   {
     if (modified_shard_ids->getTensorSize() == 0) return;
 
@@ -718,20 +718,30 @@ namespace TensorBase
       slice_indices.emplace(modified_shard_ids->getData()(i), std::make_pair(Eigen::array<Eigen::Index, TDim>(), Eigen::array<Eigen::Index, TDim>()));
     }
 
-    // assign the slice indices
+    // assign the slice indices based on determining the individual axes indices from the linearized indices_sort value 
     int axis_size_cum = 1;
+    shard_data_dimensions = Eigen::array<Eigen::Index, TDim>();
+    int shard_data_size = 1;
     for (const auto& axis_to_dim : this->axes_to_dims_) {
+      int span_cum = 0;
       // NOTE: not sure if this part can be done on the GPU using a % b = a - (b * int(a/b)) as the modulo operator
       // PARALLEL: could execute this code using multiple Threads though
       for (int i = 0; i < modified_shard_ids->getTensorSize(); ++i) {
         int min_index = int(floor(float(shard_slice_min.getData()(i)) / float(axis_size_cum))) % this->axes_.at(axis_to_dim.first)->getNLabels();
         slice_indices.at(modified_shard_ids->getData()(i)).first.at(this->getDimFromAxisName(axis_to_dim.first)) = min_index;
         int max_index = int(floor(float(shard_slice_max.getData()(i)) / float(axis_size_cum))) % this->axes_.at(axis_to_dim.first)->getNLabels();
-        slice_indices.at(modified_shard_ids->getData()(i)).second.at(this->getDimFromAxisName(axis_to_dim.first)) = max_index - min_index + 1;
+        int span = max_index - min_index + 1;
+        slice_indices.at(modified_shard_ids->getData()(i)).second.at(this->getDimFromAxisName(axis_to_dim.first)) = span;
+        span_cum += span;
       }
+      // update the needed shard data size dimensions and total data size
+      shard_data_dimensions.at(this->getDimFromAxisName(axis_to_dim.first)) = span_cum;
+      shard_data_size *= span_cum;
+
       // update the accumulative size
       axis_size_cum *= this->axes_.at(axis_to_dim.first)->getNLabels();
     }
+    return shard_data_size;
   }
   template<typename TensorT, int TDim>
   inline void TensorTableDefaultDevice<TensorT, TDim>::makeShardIDTensor(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& modified_shard_ids, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& num_runs, Eigen::DefaultDevice & device) const
@@ -766,11 +776,10 @@ namespace TensorBase
       return false;
     }
     std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>> slice_indices;
-    this->makeSliceIndicesFromShardIndices(not_in_memory_shard_ids, slice_indices, device);
+    Eigen::array<Eigen::Index, TDim> shard_dimensions;
+    const int data_size = this->makeSliceIndicesFromShardIndices(not_in_memory_shard_ids, slice_indices, shard_dimensions, device);
 
     // check if enough data is allocated for the slices
-    Eigen::array<Eigen::Index, TDim> shard_dimensions;
-    const int data_size = this->getDataShardDimensions(not_in_memory_shard_ids, shard_dimensions);
     if (this->getDataTensorSize() < data_size) {
       this->setDataShards(shard_dimensions, device);
     }
@@ -811,7 +820,8 @@ namespace TensorBase
         return false;
       }
       std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>> slice_indices;
-      makeSliceIndicesFromShardIndices(modified_shard_ids, slice_indices, device);
+      Eigen::array<Eigen::Index, TDim> shard_dimensions;
+      const int data_size = this->makeSliceIndicesFromShardIndices(modified_shard_ids, slice_indices, shard_dimensions, device);
 
       // write the TensorTable shards to disk asyncronously
       syncHAndDData(device); // D to H

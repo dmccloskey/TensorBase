@@ -212,6 +212,83 @@ void test_gettersAndSettersGpu()
   assert(tensorTable.getShardSpans().size() == 0);
 }
 
+void test_initDataGpuClassT()
+{
+  // setup the table
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
+
+  // Initialize the device
+  cudaStream_t stream;
+  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  Eigen::GpuStreamDevice stream_device(&stream, 0);
+  Eigen::GpuDevice device(&stream_device);
+
+  // setup the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels = 3;
+  Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels), labels3(1, nlabels);
+  labels1.setValues({ {0, 1, 2} });
+  labels2.setValues({ {0, 1, 2} });
+  labels3.setValues({ {0, 1, 2} });
+  auto axis_1_ptr = std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1", dimensions1, labels1));
+  auto axis_2_ptr = std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("2", dimensions2, labels2));
+  auto axis_3_ptr = std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("3", dimensions3, labels3));
+  tensorTable.addTensorAxis(axis_1_ptr);
+  tensorTable.addTensorAxis(axis_2_ptr);
+  tensorTable.addTensorAxis(axis_3_ptr);
+  tensorTable.setAxes(device);
+
+  // Check the dimensions and expected not_in_memory values
+  for (int i = 0; i < nlabels; ++i) {
+    assert(tensorTable.getNotInMemory().at("1")->getData()(i) == 1);
+    assert(tensorTable.getNotInMemory().at("2")->getData()(i) == 1);
+    assert(tensorTable.getNotInMemory().at("3")->getData()(i) == 1);
+  }
+  assert(tensorTable.getDataTensorSize() == nlabels * nlabels*nlabels);
+
+  // Reset the not_in_memory to false
+
+  for (auto& in_memory_map : tensorTable.getNotInMemory()) {
+    in_memory_map.second->getData() = in_memory_map.second->getData().constant(0);
+  }
+
+  // Resize the tensor data
+  Eigen::array<Eigen::Index, 3> new_dimensions = { 2, 2, 2 };
+  tensorTable.initData(new_dimensions, device);
+
+  // Check the dimensions and expected not_in_memory values
+  tensorTable.syncNotInMemoryHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  for (int i = 0; i < nlabels; ++i) {
+    assert(tensorTable.getNotInMemory().at("1")->getData()(i) == 1);
+    assert(tensorTable.getNotInMemory().at("2")->getData()(i) == 1);
+    assert(tensorTable.getNotInMemory().at("3")->getData()(i) == 1);
+  }
+  assert(tensorTable.getDataTensorSize() == 8);
+
+  // Reset the not_in_memory to false
+  for (auto& in_memory_map : tensorTable.getNotInMemory()) {
+    in_memory_map.second->getData() = in_memory_map.second->getData().constant(0);
+  }
+
+  // Resize the tensor data to 0
+  tensorTable.initData(device);
+
+  // Check the dimensions and expected not_in_memory values
+  tensorTable.syncNotInMemoryHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  for (int i = 0; i < nlabels; ++i) {
+    assert(tensorTable.getNotInMemory().at("1")->getData()(i) == 1);
+    assert(tensorTable.getNotInMemory().at("2")->getData()(i) == 1);
+    assert(tensorTable.getNotInMemory().at("3")->getData()(i) == 1);
+  }
+  assert(tensorTable.getDataTensorSize() == 0);
+  assert(cudaStreamDestroy(stream) == cudaSuccess);
+}
+
 void test_reShardIndicesGpu()
 {
   // setup the table
@@ -282,6 +359,7 @@ void test_reShardIndicesGpu()
       assert(tensorTable.getShardIndices().at("3")->getData()(i) == i - shard_span + 1);
     }
   }
+  assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
 
 void test_zeroIndicesViewAndResetIndicesViewGpu()
@@ -4356,6 +4434,7 @@ int main(int argc, char** argv)
   test_destructorGpu(); 
   test_constructorNameAndAxesGpu();
   test_gettersAndSettersGpu();
+  test_initDataGpuClassT();
   test_reShardIndicesGpu();
   test_zeroIndicesViewAndResetIndicesViewGpu();
   test_selectIndicesView1Gpu();

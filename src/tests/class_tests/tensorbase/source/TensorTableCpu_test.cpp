@@ -260,6 +260,72 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersCpu)
   BOOST_CHECK_EQUAL(tensorTable.getShardSpans().size(), 0);
 }
 
+BOOST_AUTO_TEST_CASE(initDataCpu)
+{
+  // setup the table
+  TensorTableCpu<float, 3> tensorTable;
+  Eigen::ThreadPool pool(1);  Eigen::ThreadPoolDevice device(&pool, 2);
+
+  // setup the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels = 3;
+  Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels), labels3(1, nlabels);
+  labels1.setValues({ {0, 1, 2} });
+  labels2.setValues({ {0, 1, 2} });
+  labels3.setValues({ {0, 1, 2} });
+  auto axis_1_ptr = std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1));
+  auto axis_2_ptr = std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2));
+  auto axis_3_ptr = std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3));
+  tensorTable.addTensorAxis(axis_1_ptr);
+  tensorTable.addTensorAxis(axis_2_ptr);
+  tensorTable.addTensorAxis(axis_3_ptr);
+  tensorTable.setAxes(device);
+
+  // Check the dimensions and expected not_in_memory values
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("1")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("3")->getData()(i), 1);
+  }
+  BOOST_CHECK_EQUAL(tensorTable.getDataTensorSize(), nlabels*nlabels*nlabels);
+
+  // Reset the not_in_memory to false
+  for (auto& in_memory_map : tensorTable.getNotInMemory()) {
+    in_memory_map.second->getData() = in_memory_map.second->getData().constant(0);
+  }
+
+  // Resize the tensor data
+  Eigen::array<Eigen::Index, 3> new_dimensions = { 2, 2, 2 };
+  tensorTable.initData(new_dimensions, device);
+
+  // Check the dimensions and expected not_in_memory values
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("1")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("3")->getData()(i), 1);
+  }
+  BOOST_CHECK_EQUAL(tensorTable.getDataTensorSize(), 8);
+
+  // Reset the not_in_memory to false
+  for (auto& in_memory_map : tensorTable.getNotInMemory()) {
+    in_memory_map.second->getData() = in_memory_map.second->getData().constant(0);
+  }
+
+  // Resize the tensor data to 0
+  tensorTable.initData(device);
+
+  // Check the dimensions and expected not_in_memory values
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("1")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("3")->getData()(i), 1);
+  }
+  BOOST_CHECK_EQUAL(tensorTable.getDataTensorSize(), 0);
+}
+
 BOOST_AUTO_TEST_CASE(reShardIndicesCpu)
 {
   // setup the table

@@ -593,7 +593,7 @@ BOOST_AUTO_TEST_CASE(CommitDefaultDevice)
 
   // Make a new tensor collection
   TensorCollectionDefaultDevice tensorCollectionCommit;
-  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> tensorCollectionCommit_ptr = std::make_shared<TensorCollectionDefaultDevice>(tensorCollection);
+  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> tensorCollectionCommit_ptr = std::make_shared<TensorCollectionDefaultDevice>(tensorCollectionCommit);
 
   // Reload the committed data into a new tensor collection
   TensorCollectionFile<Eigen::DefaultDevice> data;
@@ -609,14 +609,14 @@ BOOST_AUTO_TEST_CASE(CommitDefaultDevice)
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
-        BOOST_CHECK_EQUAL(table_1_values(i, j, k), tensor_values1(i, j, k));
+        BOOST_CHECK_EQUAL(table_1_values(i, j, k), tensor_values1(i, j, k));// fails...
       }
     }
   }
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
-        BOOST_CHECK_EQUAL(table_1_values(i, j + nlabels2, k), tensor_values_new(i, j, k));
+        BOOST_CHECK_EQUAL(table_1_values(i, j + nlabels2, k), tensor_values_new(i, j, k));// fails...
       }
     }
   }
@@ -693,7 +693,7 @@ BOOST_AUTO_TEST_CASE(CommitDefaultDevice)
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
-        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j + 2*nlabels2, k), tensor_values_new2(i, j, k));
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j + 2*nlabels2, k), tensor_values_new2(i, j, k)); // fails...
       }
     }
   }

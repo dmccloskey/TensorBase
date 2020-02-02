@@ -131,16 +131,6 @@ namespace TensorBase
     void setData(); ///< data setter (NOTE: must sync the `data` AND `not_in_memory`/`is_modified` attributes!)
 
     /*
-    @brief Determine the needed Tensor Data dimensions for the not in memory shards
-
-    @param[in] non_in_memory_shard_ids 
-    @param[out] shard_dimensions
-
-    @returns the size of the needed Tensor
-    */
-    int getDataShardDimensions(const std::shared_ptr<TensorData<int, DeviceT, 1>>& not_in_memory_shard_ids, Eigen::array<Eigen::Index, TDim>& shard_dimensions);
-
-    /*
     @brief Set the needed Tensor Data for the not in memory shards
 
     @parma[in] shard_dimensions
@@ -722,13 +712,17 @@ namespace TensorBase
     virtual void runLengthEncodeIndex(const std::shared_ptr<TensorData<int, DeviceT, TDim>>& data, std::shared_ptr<TensorData<int, DeviceT, 1>>& unique, std::shared_ptr<TensorData<int, DeviceT, 1>>& count, std::shared_ptr<TensorData<int, DeviceT, 1>>& n_runs, DeviceT & device) const = 0;
 
     /**
-    @brief Determine the slice indices to extract out the TensorData shards
+    @brief Determine the slice indices to extract out the TensorData shards and
+      Determine the needed Tensor Data dimensions for the not in memory shards
 
     @param[in] modified_shard_id An ordered 1D tensor with unique TensorData shard ids
     @param[out] slice_indices A map of shard_id to slice indices
+    @param[out] shard_dimensions
     @param[in] device
+
+    @returns the size of the needed Tensor for the not in memory shards
     */
-    virtual void makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>>& slice_indices, DeviceT& device) const = 0;
+    virtual int makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>>& slice_indices, Eigen::array<Eigen::Index, TDim>& shard_data_dimensions, DeviceT& device) const = 0;
 
     /**
     @brief Determine the Tensor data shards that are not in memory and are selected from the
@@ -907,19 +901,6 @@ namespace TensorBase
     for (auto& is_modified_map : is_modified_) {
       is_modified_map.second->getData() = is_modified_map.second->getData().constant(0); // host
     }
-  }
-
-  template<typename TensorT, typename DeviceT, int TDim>
-  inline int TensorTable<TensorT, DeviceT, TDim>::getDataShardDimensions(const std::shared_ptr<TensorData<int, DeviceT, 1>>& not_in_memory_shard_ids, Eigen::array<Eigen::Index, TDim>& shard_dimensions)
-  {
-    // determine the needed data dimensions
-    int data_size = 1;
-    for (const auto& axis_to_dim : axes_to_dims_) {
-      const int shard_dim_sizes = not_in_memory_shard_ids->getTensorSize() * shard_spans_.at(axis_to_dim.first);
-      shard_dimensions.at(axis_to_dim.second) = shard_dim_sizes;
-      data_size *= shard_dim_sizes;
-    }
-    return data_size;
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
