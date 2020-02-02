@@ -725,63 +725,34 @@ namespace TensorBase
       // PARALLEL: could execute this code using multiple Threads though
       for (int i = 0; i < modified_shard_ids->getTensorSize(); ++i) {
         int min_index = int(floor(float(shard_slice_min.getData()(i)) / float(axis_size_cum))) % this->axes_.at(axis_to_dim.first)->getNLabels();
-        slice_indices.at(modified_shard_ids->getData()(i)).first.at(this->getDimFromAxisName(axis_to_dim.first)) = min_index;
+        slice_indices.at(modified_shard_ids->getData()(i)).first.at(axis_to_dim.second) = min_index;
         int max_index = int(floor(float(shard_slice_max.getData()(i)) / float(axis_size_cum))) % this->axes_.at(axis_to_dim.first)->getNLabels();
         int span = max_index - min_index + 1;
-        slice_indices.at(modified_shard_ids->getData()(i)).second.at(this->getDimFromAxisName(axis_to_dim.first)) = span;
+        slice_indices.at(modified_shard_ids->getData()(i)).second.at(axis_to_dim.second) = span;
       }
       // update the accumulative size
       axis_size_cum *= this->axes_.at(axis_to_dim.first)->getNLabels();
     }
 
-    // Determine the unique values after sorting
-    TensorDataDefaultDevice<int, 1> shard_ids_indices(Eigen::array<Eigen::Index, 1>({ (int)modified_shard_ids->getTensorSize() * (int)indices_sort->getTensorSize() }));
-    shard_ids_indices.setData();
-    Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_ids_indices_values(shard_ids_indices.getDataPointer().get(), (int)shard_ids_indices.getTensorSize());
-    shard_ids_indices_values.device(device) = shard_ids_slice_indices.reshape(Eigen::array<Eigen::Index, 1>({ (int)modified_shard_ids->getTensorSize() * (int)indices_sort->getTensorSize() }));
-    shard_ids_indices.sort("ASC");
+    // Determine the number of tensor data slots required
+    TensorDataDefaultDevice<int, 1> shard_ids_sum(Eigen::array<Eigen::Index, 1>({ 1 }));
+    shard_ids_sum.setData();
+    shard_ids_sum.syncHAndDData(device);
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_ids_sum_values(shard_ids_sum.getDataPointer().get(), (int)shard_ids_sum.getTensorSize());
+    shard_ids_sum_values.device(device) = (shard_ids_slice_indices + shard_ids_slice_indices.constant(0)).sum(Eigen::array<Eigen::Index, 1>({0})).clip(0, 1).sum(Eigen::array<Eigen::Index, 1>({ 0 }));
+    shard_ids_sum.syncHAndDData(device);
 
-    // Determine the number of indices by select the indices that correspond to the matching shard ids, and collapse back to 0D
-    TensorDataDefaultDevice<int, 1> shard_ids_indices_sum(Eigen::array<Eigen::Index, 1>({ 1 }));
-    shard_ids_indices_sum.setData();
-    shard_ids_indices_sum.syncHAndDData(device); // H to D
-    auto shard_ids_indices = (modified_shard_ids_bcast_2d == shard_ids_bcast_2d).select(indices_bcast_2d.constant(1), indices_bcast_2d.constant(0));
-    shard_ids_indices_sum.device(device) = shard_ids_indices.sum(Eigen::array<Eigen::Index, 2>({ 0, 1 }));
-    shard_ids_indices_sum.syncHAndDData(device); // H to D
-
-    // Determine the unique values after sorting
-    TensorDataDefaultDevice<int, 1> unique(Eigen::array<Eigen::Index, 1>({ shard_ids_indices_sum.getData()(0) }));
-    unique.setData();
-    unique.syncHAndDData(device); // H to D
-    std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> unique_ptr = std::make_shared<TensorDataDefaultDevice<int, 1>>(unique);
-    TensorDataDefaultDevice<int, 1> count(Eigen::array<Eigen::Index, 1>({ shard_ids_indices_sum.getData()(0) }));
-    count.setData();
-    count.syncHAndDData(device); // H to D
-    std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> count_ptr = std::make_shared<TensorDataDefaultDevice<int, 1>>(count);
-    TensorDataDefaultDevice<int, 1> n_runs(Eigen::array<Eigen::Index, 1>({ 1 }));
-    n_runs.setData();
-    n_runs.syncHAndDData(device); // H to D
-    std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>n_runs_ptr = std::make_shared<TensorDataDefaultDevice<int, 1>>(n_runs);
-    shard_ids_indices.runLengthEncode(unique_ptr, count_ptr, n_runs_ptr, device);
-
-    // broadcast the unique values to 4D after removing the -1 and returning to 1 based indexing
-    n_runs_ptr->syncHAndDData(device); // D to H
-    Eigen::TensorMap<Eigen::Tensor<int, 4>> unique_reshape_4d(unique_ptr->getDataPointer(), n_runs_ptr->getData()(0), 1, 1, 1);
-    auto unique_slice_4d = unique_reshape_4d.slice(Eigen::array<Eigen::Index, 4>({ 1, 0, 0, 0 }), Eigen::array<Eigen::Index, 4>({ n_runs_ptr->getData()(0) - 1, 1, 1, 1 }));
-    auto unique_bcast_4d = (unique_slice_4d + unique_slice_4d.constant(1)).broadcast(Eigen::array<Eigen::Index, 4>({ 1, indices_sort->dimension(0), indices_sort->dimension(1), indices_sort->dimension(2) }));
-
-    // broadcast the indices_sort to 4D
-    Eigen::TensorMap<Eigen::Tensor<int, 4>> indices_sort_reshape_4d(indices_sort->getDataPointer(), 1, indices_sort->dimension(0), indices_sort->dimension(1), indices_sort->dimension(2));
-    auto indices_sort_bcast_4d = indices_sort_4d.broadcast(n_runs_ptr->getData()(0) - 1, 1, 1, 1);
-
-    // determine the selected indices and reduce back to 3D
-    auto indices_sort_4d_selected = (indices_sort_bcast_4d == unique_bcast_4d).select(indices_sort_bcast_4d.constant(1), indices_sort_bcast_4d.constant(0));
-    auto indices_sort_3d_selected = indices_sort_4d_selected.sum(Eigen::array<Eigen::Index, 1>({ 0 }));
+    // determine the number of shards needed to hold the total data
+    int shard_size = 1;
+    for (const auto& shard_span : this->getShardSpans()) {
+      shard_size *= shard_span.second;
+    }
+    int n_shards = std::ceil(float(shard_ids_sum.getData()(0)) / float(shard_size));
 
     // determine the needed tensor dimensions to accomodate the slice_indices in memory
     shard_data_dimensions = Eigen::array<Eigen::Index, TDim>();
-    for (const auto& slice_index : slice_indices) {
-      shard_data_dimensions += slice_index.second.second - slice_index.second.first;
+    for (const auto& axis_to_dim : this->axes_to_dims_) {
+      shard_data_dimensions.at(axis_to_dim.second) = this->getShardSpans().at(axis_to_dim.first);
     }
 
     // determine the needed tensor size to accomodate the slice_indices in memory
@@ -790,7 +761,7 @@ namespace TensorBase
       shard_data_size *= shard_data_dimensions.at(i);
     }
 
-    return shard_data_size;
+    return shard_ids_sum.getData()(0);
   }
 
   template<typename TensorT, int TDim>
