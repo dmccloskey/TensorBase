@@ -1622,8 +1622,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DShardingDefaultDevice)
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("xyz")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("xyz")->getData()(i), 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("xyz")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xyz")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xyz")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xyz")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(xyz_dim_size, shard_span_perc), i));
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xyz")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(xyz_dim_size, shard_span_perc), i));
   }
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("t")->getTensorSize(), t_dim_size);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("t")->getTensorSize(), t_dim_size);
@@ -1636,11 +1638,15 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DShardingDefaultDevice)
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("t")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("t")->getData()(i), 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("t")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("t")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("t")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("t")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(t_dim_size, shard_span_perc), i));
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("t")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(t_dim_size, shard_span_perc), i));
   }
 
   // Test the expected data after insert
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
+  n_dim_tensor_collection->tables_.at("TTable")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("TTable")->getDir(), device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
   std::shared_ptr<int[]> data_insert_data;
   n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_insert_data);
@@ -1652,6 +1658,8 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DShardingDefaultDevice)
       BOOST_CHECK_EQUAL(data_insert_values(i, j), values(i, j));
     }
   }
+  n_dim_tensor_collection->tables_.at("TTable")->initData(device);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
@@ -1690,8 +1698,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DShardingDefaultDevice)
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("xyz")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("xyz")->getData()(i), 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("xyz")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xyz")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xyz")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xyz")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(xyz_dim_size, shard_span_perc), i));
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xyz")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(xyz_dim_size, shard_span_perc), i));
   }
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("t")->getTensorSize(), t_dim_size);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("t")->getTensorSize(), t_dim_size);
@@ -1704,11 +1714,15 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DShardingDefaultDevice)
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("t")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("t")->getData()(i), 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("t")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("t")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("t")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("t")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(t_dim_size, shard_span_perc), i));
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("t")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(t_dim_size, shard_span_perc), i));
   }
 
   // Test the expected data after update
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
+  n_dim_tensor_collection->tables_.at("TTable")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("TTable")->getDir(), device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
   std::shared_ptr<int[]> data_update_data;
   n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_update_data);
@@ -1838,8 +1852,11 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DShardingDefaultDevice)
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("xy")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("xy")->getData()(i), 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("xy")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xy")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xy")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xy")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(xy_dim_size, shard_span_perc), i));
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xy")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(xy_dim_size, shard_span_perc), i));
+
   }
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("z")->getTensorSize(), z_dim_size);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("z")->getTensorSize(), z_dim_size);
@@ -1852,8 +1869,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DShardingDefaultDevice)
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("z")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("z")->getData()(i), 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("z")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("z")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("z")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("z")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(z_dim_size, shard_span_perc), i));
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("z")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(z_dim_size, shard_span_perc), i));
   }
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("t")->getTensorSize(), t_dim_size);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("t")->getTensorSize(), t_dim_size);
@@ -1866,11 +1885,15 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DShardingDefaultDevice)
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("t")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("t")->getData()(i), 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("t")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("t")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("t")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("t")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(t_dim_size, shard_span_perc), i));
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("t")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(t_dim_size, shard_span_perc), i));
   }
 
   // Test the expected data after insert
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
+  n_dim_tensor_collection->tables_.at("TTable")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("TTable")->getDir(), device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
   std::shared_ptr<int[]> data_insert_data;
   n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_insert_data);
@@ -1882,6 +1905,8 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DShardingDefaultDevice)
       }
     }
   }
+  n_dim_tensor_collection->tables_.at("TTable")->initData(device);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
@@ -1930,8 +1955,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DShardingDefaultDevice)
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("xy")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("xy")->getData()(i), 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("xy")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xy")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xy")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xy")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(xy_dim_size, shard_span_perc), i));
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xy")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(xy_dim_size, shard_span_perc), i));
   }
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("z")->getTensorSize(), z_dim_size);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("z")->getTensorSize(), z_dim_size);
@@ -1944,8 +1971,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DShardingDefaultDevice)
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("z")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("z")->getData()(i), 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("z")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("z")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("z")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("z")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(z_dim_size, shard_span_perc), i));
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("z")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(z_dim_size, shard_span_perc), i));
   }
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("t")->getTensorSize(), t_dim_size);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("t")->getTensorSize(), t_dim_size);
@@ -1958,11 +1987,15 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DShardingDefaultDevice)
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("t")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("t")->getData()(i), 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("t")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("t")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("t")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("t")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(t_dim_size, shard_span_perc), i));
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("t")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(t_dim_size, shard_span_perc), i));
   }
 
   // Test the expected data after update
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
+  n_dim_tensor_collection->tables_.at("TTable")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("TTable")->getDir(), device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
   std::shared_ptr<int[]> data_update_data;
   n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_update_data);
@@ -2109,8 +2142,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DShardingDefaultDevice)
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("x")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("x")->getData()(i), 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("x")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("x")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("x")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("x")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(x_dim_size, shard_span_perc), i));
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("x")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(x_dim_size, shard_span_perc), i));
   }
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("y")->getTensorSize(), y_dim_size);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("y")->getTensorSize(), y_dim_size);
@@ -2123,8 +2158,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DShardingDefaultDevice)
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("y")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("y")->getData()(i), 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("y")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("y")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("y")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("y")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(y_dim_size, shard_span_perc), i));
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("y")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(y_dim_size, shard_span_perc), i));
   }
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("z")->getTensorSize(), z_dim_size);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("z")->getTensorSize(), z_dim_size);
@@ -2137,8 +2174,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DShardingDefaultDevice)
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("z")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("z")->getData()(i), 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("z")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("z")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("z")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("z")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(z_dim_size, shard_span_perc), i));
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("z")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(z_dim_size, shard_span_perc), i));
   }
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("t")->getTensorSize(), t_dim_size);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("t")->getTensorSize(), t_dim_size);
@@ -2151,11 +2190,15 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DShardingDefaultDevice)
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("t")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("t")->getData()(i), 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("t")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("t")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("t")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("t")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(t_dim_size, shard_span_perc), i));
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("t")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(t_dim_size, shard_span_perc), i));
   }
 
   // Test the expected data after insert
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
+  n_dim_tensor_collection->tables_.at("TTable")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("TTable")->getDir(), device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
   std::shared_ptr<int[]> data_insert_data;
   n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_insert_data);
@@ -2169,6 +2212,8 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DShardingDefaultDevice)
       }
     }
   }
+  n_dim_tensor_collection->tables_.at("TTable")->initData(device);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
@@ -2227,8 +2272,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DShardingDefaultDevice)
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("x")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("x")->getData()(i), 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("x")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("x")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("x")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("x")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(x_dim_size, shard_span_perc), i));
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("x")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(x_dim_size, shard_span_perc), i));
   }
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("y")->getTensorSize(), y_dim_size);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("y")->getTensorSize(), y_dim_size);
@@ -2241,8 +2288,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DShardingDefaultDevice)
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("y")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("y")->getData()(i), 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("y")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("y")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("y")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("y")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(y_dim_size, shard_span_perc), i));
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("y")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(y_dim_size, shard_span_perc), i));
   }
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("z")->getTensorSize(), z_dim_size);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("z")->getTensorSize(), z_dim_size);
@@ -2255,8 +2304,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DShardingDefaultDevice)
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("z")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("z")->getData()(i), 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("z")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("z")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("z")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("z")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(z_dim_size, shard_span_perc), i));
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("z")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(z_dim_size, shard_span_perc), i));
   }
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("t")->getTensorSize(), t_dim_size);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("t")->getTensorSize(), t_dim_size);
@@ -2269,11 +2320,15 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DShardingDefaultDevice)
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("t")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("t")->getData()(i), 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("t")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("t")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("t")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("t")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(t_dim_size, shard_span_perc), i));
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("t")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(t_dim_size, shard_span_perc), i));
   }
 
   // Test the expected data after update
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
+  n_dim_tensor_collection->tables_.at("TTable")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("TTable")->getDir(), device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
   std::shared_ptr<int[]> data_update_data;
   n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_update_data);
