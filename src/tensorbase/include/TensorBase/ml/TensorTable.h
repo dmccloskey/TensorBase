@@ -716,14 +716,24 @@ namespace TensorBase
       Determine the needed Tensor Data dimensions for the not in memory shards
 
     @param[in] modified_shard_id An ordered 1D tensor with unique TensorData shard ids
-    @param[out] slice_indices A map of shard_id to slice indices
+    @param[out] slice_indices A map of shard_id to slice indices where the ids and indices are ordered from lowest to highest
     @param[out] shard_dimensions
     @param[in] device
 
     @returns the size of the needed Tensor for the not in memory shards
     */
     virtual int makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, DeviceT, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>>& slice_indices, Eigen::array<Eigen::Index, TDim>& shard_data_dimensions, DeviceT& device) const = 0;
+    
+    /**
+    @brief Adjust the slice indices based on the amound of data allocated to memory
 
+    @param[in] data_size Previous estimate of the needed data size from `makeSliceIndicesFromShardIndices`
+    @param[in, out] slice_indices A map of shard_id to slice indices where the ids and indices are ordered from lowest to highest
+
+    @returns the size of the needed Tensor for the not in memory shards
+    */
+    void adjustSliceIndicesToDataSize(const int& data_size, std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>>& slice_indices) const;
+    
     /**
     @brief Determine the Tensor data shards that are not in memory and are selected from the
       `not_in_memory`, `indices_view` and `shard_id` members, and make an ordered 1D Tensor with
@@ -2390,6 +2400,46 @@ namespace TensorBase
 
     // Resize the unique results and remove 0's from the unique
     makeShardIDTensor(modified_shard_ids, unique, num_runs, device);
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::adjustSliceIndicesToDataSize(const int & data_size, std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>>& slice_indices) const
+  {
+    // modify the slice indices only if the allocated data is less than the tensor data and the allocated data is equal to the about to be read in total shard size
+    if (this->getDataTensorSize() < this->getTensorSize() && this->getDataTensorSize() == data_size) {
+
+      // initialize the modified slice indices and offsets and spans for the slice indices
+      std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>> data_slice_indices;
+      Eigen::array<Eigen::Index, TDim> offset_max = Eigen::array<Eigen::Index, TDim>();
+      for (const auto slice_index : slice_indices) {
+
+        // determine what the offset should be
+        Eigen::array<Eigen::Index, TDim> offset = Eigen::array<Eigen::Index, TDim>();
+        for (int i = 0; i < TDim; ++i) {
+          if (offset_max.at(i) >= slice_index.second.first.at(i)) offset.at(i) = slice_index.second.first.at(i);
+          else offset.at(i) = offset_max.at(i);
+        }
+
+        // assign the slice indices
+        data_slice_indices.emplace(slice_index.first, std::make_pair(offset, slice_index.second.second));
+
+        // track the maximum offset
+        for (int i = 0; i < TDim; ++i) {
+          const int new_max = slice_index.second.second.at(i) + offset.at(i);
+          if (new_max > offset_max.at(i)) offset_max.at(i) = new_max;
+        }
+      }
+
+      // move over the updated slice indices
+      slice_indices = data_slice_indices;
+    }
+    // check for other unhandled conditions
+    else if (this->getDataTensorSize() < this->getTensorSize() && this->getDataTensorSize() > data_size) {
+      std::cout << "Attempting to read in shards when the allocated data is greater than total shard size but less than the total tensor size!" << std::endl;
+    }
+    else if (this->getDataTensorSize() < this->getTensorSize() && this->getDataTensorSize() < data_size) {
+      std::cout << "Attempting to read in shards when the allocated data is less than total shard size and less than the total tensor size!" << std::endl;
+    }
   }
 
   template<typename TensorT, typename DeviceT, int TDim>

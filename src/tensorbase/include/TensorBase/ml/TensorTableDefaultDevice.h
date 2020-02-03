@@ -782,6 +782,8 @@ namespace TensorBase
       //std::cout << "No shards have been modified." << std::endl; // TODO: Move to logging
       return false;
     }
+
+    // make the slices for the shards
     std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>> slice_indices;
     Eigen::array<Eigen::Index, TDim> shard_dimensions;
     const int data_size = this->makeSliceIndicesFromShardIndices(not_in_memory_shard_ids, slice_indices, shard_dimensions, device);
@@ -794,12 +796,18 @@ namespace TensorBase
       this->syncHData(device); // D to H
     }
 
+    // adjust the slices if necessary
+    this->adjustSliceIndicesToDataSize(data_size, slice_indices);
+
     // read in the shards and update the TensorTable data asyncronously
     for (const auto slice_index : slice_indices) {
+      // read in the shard
       const std::string filename = makeTensorTableShardFilename(dir, getName(), slice_index.first);
       Eigen::Tensor<TensorT, TDim> shard_data(slice_index.second.second);
       DataFile::loadDataBinary<TensorT, TDim>(filename, shard_data);
       assert(slice_index.second.second == shard_data.dimensions());
+
+      // slice and update the data with the shard data
       this->getData().slice(slice_index.second.first, slice_index.second.second) = shard_data;
 
       // update the `not_in_memory` tensor table attribute
