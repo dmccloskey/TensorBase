@@ -839,6 +839,9 @@ namespace TensorBase
       Eigen::array<Eigen::Index, TDim> shard_dimensions;
       const int data_size = this->makeSliceIndicesFromShardIndices(modified_shard_ids, slice_indices, shard_dimensions, device);
 
+      // adjust the slices if necessary
+      this->adjustSliceIndicesToDataSize(data_size, slice_indices);
+
       // write the TensorTable shards to disk asyncronously
       syncHAndDData(device); // D to H
       for (const auto slice_index : slice_indices) {
