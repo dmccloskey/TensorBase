@@ -3839,7 +3839,7 @@ BOOST_AUTO_TEST_CASE(adjustSliceIndicesToDataSizeDefaultDevice)
   slice_indices_test.emplace(14, std::make_pair(Eigen::array<Eigen::Index, 3>({ 1,1,1 }), Eigen::array<Eigen::Index, 3>({ 1,1,1 })));
   tensorTable.initData(Eigen::array<Eigen::Index, 3>({ 2,2,2 }), device);
   tensorTable.setData();
-  shard_data_size = 6;
+  shard_data_size = 8;
   slice_indices = slice_indices_test;
   tensorTable.adjustSliceIndicesToDataSize(shard_data_size, slice_indices);
   BOOST_CHECK(slice_indices == slice_indices_test);
