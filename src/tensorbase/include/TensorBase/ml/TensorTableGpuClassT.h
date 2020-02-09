@@ -796,10 +796,9 @@ namespace TensorBase
     }
 
     return shard_data_size;
-    }
   }
   template<template<class> class ArrayT, class TensorT, int TDim>
-  inline void TensorTableGpuClassT<ArrayT, TensorT, TDim>::makeShardIDTensor(std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& modified_shard_ids, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& num_runs, Eigen::GpuDevice & device) const
+  inline void TensorTableGpuClassT<ArrayT, TensorT, TDim>::makeShardIDTensor(std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& modified_shard_ids, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& num_runs, Eigen::GpuDevice& device) const
   {
     // Resize the unique results and remove 0's from the unique
     unique->syncHAndDData(device); // d to h
@@ -858,8 +857,8 @@ namespace TensorBase
     for (const auto slice_index : slice_indices) {
       // read in the shard
       const std::string filename = makeTensorTableShardFilename(dir, getName(), slice_index.first);
-      Eigen::Tensor<TensorT, TDim> shard_data(slice_index.second.second);
-      DataFile::loadDataBinary<TensorT, TDim>(filename, shard_data);
+      Eigen::Tensor<ArrayT<TensorT>, TDim> shard_data(slice_index.second.second);
+      DataFile::loadDataBinary<ArrayT<TensorT>, TDim>(filename, shard_data);
       assert(slice_index.second.second == shard_data.dimensions());
 
       // slice and update the data with the shard data
@@ -904,8 +903,8 @@ namespace TensorBase
       }
       for (const auto slice_index : slice_indices) {
         const std::string filename = makeTensorTableShardFilename(dir, getName(), slice_index.first);
-        Eigen::Tensor<TensorT, TDim> shard_data = getData().slice(slice_index.second.first, slice_index.second.second);
-        DataFile::storeDataBinary<TensorT, TDim>(filename, shard_data);
+        Eigen::Tensor<ArrayT<TensorT>, TDim> shard_data = getData().slice(slice_index.second.first, slice_index.second.second);
+        DataFile::storeDataBinary<ArrayT<TensorT>, TDim>(filename, shard_data);
 
         // update the `is_modified` tensor table attribute
         for (auto& is_modified_map : is_modified_) {

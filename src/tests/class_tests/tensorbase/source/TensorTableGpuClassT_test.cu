@@ -250,10 +250,10 @@ void test_initDataGpuClassT()
   assert(tensorTable.getDataTensorSize() == nlabels * nlabels*nlabels);
 
   // Reset the not_in_memory to false
-
   for (auto& in_memory_map : tensorTable.getNotInMemory()) {
     in_memory_map.second->getData() = in_memory_map.second->getData().constant(0);
   }
+  tensorTable.syncNotInMemoryHAndDData(device);
 
   // Resize the tensor data
   Eigen::array<Eigen::Index, 3> new_dimensions = { 2, 2, 2 };
@@ -273,6 +273,7 @@ void test_initDataGpuClassT()
   for (auto& in_memory_map : tensorTable.getNotInMemory()) {
     in_memory_map.second->getData() = in_memory_map.second->getData().constant(0);
   }
+  tensorTable.syncNotInMemoryHAndDData(device);
 
   // Resize the tensor data to 0
   tensorTable.initData(device);
