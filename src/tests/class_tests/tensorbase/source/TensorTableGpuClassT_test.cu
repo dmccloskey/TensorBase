@@ -457,9 +457,8 @@ void test_selectIndicesView1Gpu()
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> select_labels_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(select_labels);
 
   // sync the tensorTable
-  tensorTable.syncIndicesHAndDData(device);
-  tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncAxesHAndDData(device);
+  tensorTable.syncAxesAndIndicesDData(device);
+  tensorTable.syncDData(device);
 
   // test the updated view
   select_labels_ptr->syncHAndDData(device);
@@ -559,9 +558,7 @@ void test_broadcastSelectIndicesViewGpu()
   tensorTable.setAxes(device);
 
   // sync the tensorTable indices
-  tensorTable.syncIndicesHAndDData(device);
-  tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncAxesHAndDData(device);
+  tensorTable.syncAxesAndIndicesDData(device);
 
   // setup the indices test
   Eigen::Tensor<int, 3> indices_test(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
@@ -641,10 +638,8 @@ void test_extractTensorDataGpuClassT()
   auto indices_select_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 3>>(indices_select);
 
   // sync the tensorTable
-  tensorTable.syncIndicesHAndDData(device);
-  tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncAxesHAndDData(device);
-  tensorTable.syncHAndDData(device);
+  tensorTable.syncAxesAndIndicesDData(device);
+  tensorTable.syncDData(device);
 
   // test
   indices_select_ptr->syncHAndDData(device);
@@ -847,9 +842,8 @@ void test_applyIndicesSelectToIndicesViewGpu()
   tensorTable.setAxes(device);
 
   // sync the tensorTable
-  tensorTable.syncIndicesHAndDData(device);
-  tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncAxesHAndDData(device);
+  tensorTable.syncAxesAndIndicesDData(device);
+  tensorTable.syncDData(device);
 
   // setup the indices select
   Eigen::Tensor<int, 3> indices_select_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
@@ -1000,14 +994,8 @@ void test_whereIndicesViewDataGpu()
   tensorTable.setData(tensor_values);
 
   // sync the tensorTable
-  tensorTable.syncIndicesHAndDData(device);
-  tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncNotInMemoryHAndDData(device);
-  tensorTable.syncIsModifiedHAndDData(device);
-  tensorTable.syncShardIdHAndDData(device);
-  tensorTable.syncShardIndicesHAndDData(device);
-  tensorTable.syncAxesHAndDData(device);
-  tensorTable.syncHAndDData(device);
+  tensorTable.syncAxesAndIndicesDData(device);
+  tensorTable.syncDData(device);
 
   // set up the selection labels
   Eigen::Tensor<int, 1> select_labels_values(2);
@@ -1138,10 +1126,8 @@ void test_sliceTensorForSortGpu()
   tensorTable.setData(tensor_values);
 
   // sync the tensorTable
-  tensorTable.syncIndicesHAndDData(device);
-  tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncAxesHAndDData(device);
-  tensorTable.syncHAndDData(device);
+  tensorTable.syncAxesAndIndicesDData(device);
+  tensorTable.syncDData(device);
 
   // test sliceTensorForSort for axis 2
   std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 1>> tensor_sort;
@@ -1205,10 +1191,8 @@ void test_sortIndicesViewData1Gpu()
   tensorTable.setData(tensor_values);
 
   // sync the tensorTable
-  tensorTable.syncIndicesHAndDData(device);
-  tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncAxesHAndDData(device);
-  tensorTable.syncHAndDData(device);
+  tensorTable.syncAxesAndIndicesDData(device);
+  tensorTable.syncDData(device);
 
   // set up the selection labels
   Eigen::Tensor<int, 1> select_labels_values(1);
@@ -1286,10 +1270,8 @@ void test_sortIndicesViewData2Gpu()
   tensorTable.setData(tensor_values);
 
   // sync the tensorTable
-  tensorTable.syncIndicesHAndDData(device);
-  tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncAxesHAndDData(device);
-  tensorTable.syncHAndDData(device);
+  tensorTable.syncAxesAndIndicesDData(device);
+  tensorTable.syncDData(device);
 
   // set up the selection labels
   Eigen::Tensor<int, 2> select_labels_values(1, 1);
@@ -1354,9 +1336,8 @@ void test_makeSelectIndicesFromIndicesViewGpu()
   tensorTable.setAxes(device);
 
   // sync the tensorTable
-  tensorTable.syncIndicesHAndDData(device);
-  tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncAxesHAndDData(device);
+  tensorTable.syncAxesAndIndicesDData(device);
+  tensorTable.syncDData(device);
 
   // Test null
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 3>> indices_select;
@@ -1448,10 +1429,8 @@ void test_getSelectTensorDataFromIndicesViewGpu()
   tensorTable.setData(tensor_values);
 
   // sync the tensorTable
-  tensorTable.syncIndicesHAndDData(device);
-  tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncAxesHAndDData(device);
-  tensorTable.syncHAndDData(device);
+  tensorTable.syncAxesAndIndicesDData(device);
+  tensorTable.syncDData(device);
 
   // select label 1 from axis 1
   TensorDataGpuPrimitiveT<int, 1> select_labels(Eigen::array<Eigen::Index, 1>({ 1 }));
@@ -1542,16 +1521,8 @@ void test_selectTensorDataGpuClassT()
   tensorTable.setData(tensor_values);
 
   // sync the tensorTable
-  tensorTable.syncIndicesHAndDData(device);
-  tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncIndicesHAndDData(device);
-  tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncNotInMemoryHAndDData(device);
-  tensorTable.syncIsModifiedHAndDData(device);
-  tensorTable.syncShardIdHAndDData(device);
-  tensorTable.syncShardIndicesHAndDData(device);
-  tensorTable.syncAxesHAndDData(device);
-  tensorTable.syncHAndDData(device);
+  tensorTable.syncAxesAndIndicesDData(device);
+  tensorTable.syncDData(device);
 
   // select label 1 from axis 1
   TensorDataGpuPrimitiveT<int, 1> select_labels(Eigen::array<Eigen::Index, 1>({ 1 }));
@@ -1749,9 +1720,8 @@ void test_makeSortIndicesViewFromIndicesViewGpu()
   tensorTable.setAxes(device);
 
   // sync the tensorTable
-  tensorTable.syncIndicesHAndDData(device);
-  tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncAxesHAndDData(device);
+  tensorTable.syncAxesAndIndicesDData(device);
+  tensorTable.syncDData(device);
 
   // make the expected tensor indices
   Eigen::Tensor<int, 3> indices_test(nlabels, nlabels, nlabels);
@@ -1821,14 +1791,8 @@ void test_sortTensorDataGpuClassT()
   tensorTable.setData(tensor_values);
 
   // sync the tensorTable
-  tensorTable.syncIndicesHAndDData(device);
-  tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncNotInMemoryHAndDData(device);
-  tensorTable.syncIsModifiedHAndDData(device);
-  tensorTable.syncShardIdHAndDData(device);
-  tensorTable.syncShardIndicesHAndDData(device);
-  tensorTable.syncAxesHAndDData(device);
-  tensorTable.syncHAndDData(device);
+  tensorTable.syncAxesAndIndicesDData(device);
+  tensorTable.syncDData(device);
 
   // set up the selection labels
   Eigen::Tensor<int, 1> select_labels_values(1);
@@ -1983,14 +1947,8 @@ void test_updateSelectTensorDataValues1Gpu()
   std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 3>> values_new_ptr = std::make_shared<TensorDataGpuClassT<TensorArrayGpu8, char, 3>>(values_new);
   
   // sync the tensorTable
-  tensorTable.syncIndicesHAndDData(device);
-  tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncNotInMemoryHAndDData(device);
-  tensorTable.syncIsModifiedHAndDData(device);
-  tensorTable.syncShardIdHAndDData(device);
-  tensorTable.syncShardIndicesHAndDData(device);
-  tensorTable.syncAxesHAndDData(device);
-  tensorTable.syncHAndDData(device);
+  tensorTable.syncAxesAndIndicesDData(device);
+  tensorTable.syncDData(device);
   values_new_ptr->syncHAndDData(device);
 
   // Test update
@@ -2138,14 +2096,8 @@ void test_updateSelectTensorDataValues2Gpu()
   std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 3>> values_new_ptr = std::make_shared<TensorDataGpuClassT<TensorArrayGpu8, char, 3>>(values_new);
 
   // sync the tensorTable
-  tensorTable.syncIndicesHAndDData(device);
-  tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncNotInMemoryHAndDData(device);
-  tensorTable.syncIsModifiedHAndDData(device);
-  tensorTable.syncShardIdHAndDData(device);
-  tensorTable.syncShardIndicesHAndDData(device);
-  tensorTable.syncAxesHAndDData(device);
-  tensorTable.syncHAndDData(device);
+  tensorTable.syncAxesAndIndicesDData(device);
+  tensorTable.syncDData(device);
   values_new_ptr->syncHAndDData(device);
 
   // Test update
@@ -2297,14 +2249,8 @@ void test_updateTensorDataValuesGpu()
 	std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 3>> values_new_ptr = std::make_shared<TensorDataGpuClassT<TensorArrayGpu8, char, 3>>(values_new);
 
 	// sync the tensorTable
-	tensorTable.syncIndicesHAndDData(device);
-	tensorTable.syncIndicesViewHAndDData(device);
-	tensorTable.syncNotInMemoryHAndDData(device);
-	tensorTable.syncIsModifiedHAndDData(device);
-	tensorTable.syncShardIdHAndDData(device);
-	tensorTable.syncShardIndicesHAndDData(device);
-	tensorTable.syncAxesHAndDData(device);
-	tensorTable.syncHAndDData(device);
+  tensorTable.syncAxesAndIndicesDData(device);
+  tensorTable.syncDData(device);
 	values_new_ptr->syncHAndDData(device);
 
 	// Test update
@@ -2432,9 +2378,7 @@ void test_makeAppendIndicesGpu()
   tensorTable.setAxes(device);
 
   // sync the tensorTable
-  tensorTable.syncIndicesHAndDData(device);
-  tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncAxesHAndDData(device);
+  tensorTable.syncAxesAndIndicesDData(device);
 
   // test the making the append indices
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_ptr;
@@ -2495,13 +2439,8 @@ void test_appendToIndicesGpu()
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_new_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(indices_new);
 
   // sync the tensorTable
-  tensorTable.syncIndicesHAndDData(device);
-  tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncIsModifiedHAndDData(device);
-  tensorTable.syncNotInMemoryHAndDData(device);
-  tensorTable.syncShardIdHAndDData(device);
-  tensorTable.syncShardIndicesHAndDData(device);
-  tensorTable.syncAxesHAndDData(device);
+  tensorTable.syncAxesAndIndicesDData(device);
+  tensorTable.syncDData(device);
   indices_new_ptr->syncHAndDData(device);
 
   // test appendToIndices
@@ -2598,14 +2537,8 @@ void test_appendToAxisGpu()
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_new_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(indices_new);
 
   // sync the tensorTable
-  tensorTable.syncIndicesHAndDData(device);
-  tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncNotInMemoryHAndDData(device);
-  tensorTable.syncIsModifiedHAndDData(device);
-  tensorTable.syncShardIdHAndDData(device);
-  tensorTable.syncShardIndicesHAndDData(device);
-  tensorTable.syncAxesHAndDData(device);
-  tensorTable.syncHAndDData(device);
+  tensorTable.syncAxesAndIndicesDData(device);
+  tensorTable.syncDData(device);
   labels_new_ptr->syncHAndDData(device);
   values_new_ptr->syncHAndDData(device);
   indices_new_ptr->syncHAndDData(device);
@@ -2723,9 +2656,8 @@ void test_makeIndicesViewSelectFromIndicesGpu()
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_to_select_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(indices_to_select);
   
   // sync the tensorTable
-  tensorTable.syncIndicesHAndDData(device);
-  tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncAxesHAndDData(device);
+  tensorTable.syncAxesAndIndicesDData(device);
+  tensorTable.syncDData(device);
   indices_to_select_ptr->syncHAndDData(device);
 
   // test makeIndicesViewSelectFromIndices
@@ -2789,13 +2721,7 @@ void test_deleteFromIndicesGpu()
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_to_select_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(indices_to_select);
 
   // sync the tensorTable
-  tensorTable.syncIndicesHAndDData(device);
-  tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncAxesHAndDData(device);
-  tensorTable.syncIsModifiedHAndDData(device);
-  tensorTable.syncNotInMemoryHAndDData(device);
-  tensorTable.syncShardIdHAndDData(device);
-  tensorTable.syncShardIndicesHAndDData(device);
+  tensorTable.syncAxesAndIndicesDData(device);
   indices_to_select_ptr->syncHAndDData(device);
 
   // test deleteFromIndices
@@ -2867,9 +2793,8 @@ void test_makeSelectIndicesFromIndicesGpu()
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_to_select_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(indices_to_select);
 
   // sync the tensorTable
-  tensorTable.syncIndicesHAndDData(device);
-  tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncAxesHAndDData(device);
+  tensorTable.syncAxesAndIndicesDData(device);
+  tensorTable.syncDData(device);
   indices_to_select_ptr->syncHAndDData(device);
 
   // test the selection indices
@@ -2944,14 +2869,8 @@ void test_deleteFromAxisGpu()
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_to_select_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(indices_to_select);
 
   // sync the tensorTable
-  tensorTable.syncIndicesHAndDData(device);
-  tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncAxesHAndDData(device);
-  tensorTable.syncHAndDData(device);
-  tensorTable.syncIsModifiedHAndDData(device);
-  tensorTable.syncNotInMemoryHAndDData(device);
-  tensorTable.syncShardIdHAndDData(device);
-  tensorTable.syncShardIndicesHAndDData(device);
+  tensorTable.syncAxesAndIndicesDData(device);
+  tensorTable.syncDData(device);
   indices_to_select_ptr->syncHAndDData(device);
 
   // test deleteFromAxis
@@ -3053,9 +2972,7 @@ void test_makeIndicesFromIndicesViewGpu()
   tensorTable.getIndicesView().at("1")->getData()(0) = 0;
 
   // sync the tensorTable
-  tensorTable.syncIndicesHAndDData(device);
-  tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncAxesHAndDData(device);
+  tensorTable.syncAxesAndIndicesDData(device);
 
   // test makeIndicesFromIndicesView
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_ptr;
@@ -3138,14 +3055,8 @@ void test_insertIntoAxisGpu()
   tensorTable.getIndicesView().at("1")->getData()(nlabels - 1) = 4;
 
   // sync the tensorTable
-  tensorTable.syncIndicesHAndDData(device);
-  tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncNotInMemoryHAndDData(device);
-  tensorTable.syncIsModifiedHAndDData(device);
-  tensorTable.syncShardIdHAndDData(device);
-  tensorTable.syncShardIndicesHAndDData(device);
-  tensorTable.syncAxesHAndDData(device);
-  tensorTable.syncHAndDData(device);
+  tensorTable.syncAxesAndIndicesDData(device);
+  tensorTable.syncDData(device);
   values_new_ptr->syncHAndDData(device);
   labels_new_ptr->syncHAndDData(device);
   indices_new_ptr->syncHAndDData(device);
@@ -3236,14 +3147,8 @@ void test_makeSparseAxisLabelsFromIndicesViewGpu()
     {1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3 } });
 
   // sync the tensorTable
-  tensorTable.syncIndicesHAndDData(device);
-  tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncNotInMemoryHAndDData(device);
-  tensorTable.syncIsModifiedHAndDData(device);
-  tensorTable.syncShardIdHAndDData(device);
-  tensorTable.syncShardIndicesHAndDData(device);
-  tensorTable.syncAxesHAndDData(device);
-  tensorTable.syncHAndDData(device);
+  tensorTable.syncAxesAndIndicesDData(device);
+  tensorTable.syncDData(device);
 
   // Test
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>> labels_ptr;
@@ -3432,14 +3337,8 @@ void test_getSelectTensorDataAsSparseTensorTableGpu()
     {1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3 } });
 
   // sync the tensorTable
-  tensorTable.syncIndicesHAndDData(device);
-  tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncNotInMemoryHAndDData(device);
-  tensorTable.syncIsModifiedHAndDData(device);
-  tensorTable.syncShardIdHAndDData(device);
-  tensorTable.syncShardIndicesHAndDData(device);
-  tensorTable.syncAxesHAndDData(device);
-  tensorTable.syncHAndDData(device);
+  tensorTable.syncAxesAndIndicesDData(device);
+  tensorTable.syncDData(device);
 
   // Test
   std::shared_ptr<TensorTable<TensorArrayGpu8<char>, Eigen::GpuDevice, 2>> sparse_table_ptr;
@@ -3646,14 +3545,8 @@ void test_updateTensorDataConstantGpu()
   std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 1>> values_new_ptr = std::make_shared<TensorDataGpuClassT<TensorArrayGpu8, char, 1>>(values_new);
 
   // sync the tensorTable
-  tensorTable.syncIndicesHAndDData(device);
-  tensorTable.syncIndicesViewHAndDData(device);
-  tensorTable.syncNotInMemoryHAndDData(device);
-  tensorTable.syncIsModifiedHAndDData(device);
-  tensorTable.syncShardIdHAndDData(device);
-  tensorTable.syncShardIndicesHAndDData(device);
-  tensorTable.syncAxesHAndDData(device);
-  tensorTable.syncHAndDData(device);
+  tensorTable.syncAxesAndIndicesDData(device);
+  tensorTable.syncDData(device);
   values_new_ptr->syncHAndDData(device);
 
   // Test update

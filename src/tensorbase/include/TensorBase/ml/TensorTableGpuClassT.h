@@ -150,7 +150,9 @@ namespace TensorBase
 
   template<template<class> class ArrayT, class TensorT, int TDim>
   void TensorTableGpuClassT<ArrayT, TensorT, TDim>::initData(Eigen::GpuDevice& device) {
-    this->data_ = std::make_shared<TensorDataGpuClassT<ArrayT, TensorT, TDim>>(TensorDataGpuClassT<ArrayT, TensorT, TDim>(Eigen::array<Eigen::Index, TDim>()));
+    Eigen::array<Eigen::Index, TDim> zero_dimensions;
+    for (int i = 0; i < TDim; ++i) zero_dimensions.at(i) = 0;
+    this->data_ = std::make_shared<TensorDataGpuClassT<ArrayT, TensorT, TDim>>(TensorDataGpuClassT<ArrayT, TensorT, TDim>(zero_dimensions));
     // update the not_in_memory
     for (const auto& axis_to_dim : this->axes_to_dims_) {
       Eigen::TensorMap<Eigen::Tensor<int, 1>> not_in_memory(this->not_in_memory_.at(axis_to_dim.first)->getDataPointer().get(), (int)this->not_in_memory_.at(axis_to_dim.first)->getTensorSize());
