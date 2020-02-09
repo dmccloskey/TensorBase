@@ -2410,11 +2410,13 @@ namespace TensorBase
 
       // initialize the modified slice indices and offsets and spans for the slice indices
       std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>> data_slice_indices;
-      Eigen::array<Eigen::Index, TDim> offset_max = Eigen::array<Eigen::Index, TDim>();
+      Eigen::array<Eigen::Index, TDim> offset_max;
+      for (int i = 0; i < TDim; ++i) offset_max.at(i) = 0;
       for (const auto slice_index : slice_indices) {
 
         // determine what the offset should be
-        Eigen::array<Eigen::Index, TDim> offset = Eigen::array<Eigen::Index, TDim>();
+        Eigen::array<Eigen::Index, TDim> offset;
+        for (int i = 0; i < TDim; ++i) offset.at(i) = 0; // explicit initialization of the array is required for GPU methods!
         for (int i = 0; i < TDim; ++i) {
           if (offset_max.at(i) >= slice_index.second.first.at(i)) offset.at(i) = slice_index.second.first.at(i);
           else offset.at(i) = offset_max.at(i);
