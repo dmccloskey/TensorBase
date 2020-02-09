@@ -3474,6 +3474,7 @@ BOOST_AUTO_TEST_CASE(makeModifiedShardIDTensorDefaultDevice)
   shard_data_size = tensorTable.makeSliceIndicesFromShardIndices(shard_id_indices_ptr, slice_indices, shard_data_dimensions, device);
   BOOST_CHECK_EQUAL(slice_indices.size(), 0);
   BOOST_CHECK_EQUAL(shard_data_size, 0);
+
   // Test the fully modified case
   for (auto& is_modified_map : tensorTable.getIsModified()) {
     is_modified_map.second->getData() = is_modified_map.second->getData().constant(1);

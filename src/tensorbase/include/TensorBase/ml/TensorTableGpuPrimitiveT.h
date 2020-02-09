@@ -725,7 +725,7 @@ namespace TensorBase
   template<typename TensorT, int TDim>
   inline int TensorTableGpuPrimitiveT<TensorT, TDim>::makeSliceIndicesFromShardIndices(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& modified_shard_ids, std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>>& slice_indices, Eigen::array<Eigen::Index, TDim>& shard_data_dimensions, Eigen::GpuDevice & device) const
   {
-    if (modified_shard_ids->getTensorSize() == 0) return;
+    if (modified_shard_ids->getTensorSize() == 0) return 0;
 
     // broadcast the indices view to select the indices for each modified shard
     std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>> indices_sort;
@@ -927,8 +927,9 @@ namespace TensorBase
   {
     // Convert from string to TensorT and reshape to n_data x 1
     TensorTableGpuPrimitiveT<TensorT, 2> sparse_table;
-    sparse_table.setDimensions(Eigen::array<Eigen::Index, 2>({ int(data_new.size()), 1 }));
-    sparse_table.initData(this->getDimensions(), device);
+    Eigen::array<Eigen::Index, 2> new_dimensions = { int(data_new.size()), 1 };
+    sparse_table.setDimensions(new_dimensions);
+    sparse_table.initData(new_dimensions, device);
     sparse_table.setData();
     sparse_table.syncHAndDData(device);
     sparse_table.convertDataFromStringToTensorT(data_new, device);

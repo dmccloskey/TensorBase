@@ -4173,9 +4173,12 @@ void test_makeModifiedShardIDTensorGpu()
   assert(shard_id_indices_ptr->getTensorSize() == 0);
 
   std::map<int, std::pair<Eigen::array<Eigen::Index, 3>, Eigen::array<Eigen::Index, 3>>> slice_indices;
+  Eigen::array<Eigen::Index, 3> shard_data_dimensions;
+  int shard_data_size = 0;
   shard_id_indices_ptr->syncHAndDData(device);
-  tensorTable.makeSliceIndicesFromShardIndices(shard_id_indices_ptr, slice_indices, device);
+  shard_data_size = tensorTable.makeSliceIndicesFromShardIndices(shard_id_indices_ptr, slice_indices, shard_data_dimensions, device);
   assert(slice_indices.size() == 0);
+  assert(shard_data_size == 0);
 
   // Test the fully modified case
   for (auto& is_modified_map : tensorTable.getIsModified()) {
@@ -4193,7 +4196,9 @@ void test_makeModifiedShardIDTensorGpu()
   }
 
   slice_indices.clear();
-  tensorTable.makeSliceIndicesFromShardIndices(shard_id_indices_ptr, slice_indices, device);
+  shard_data_dimensions = Eigen::array<Eigen::Index, 3>();
+  shard_id_indices_ptr->syncHAndDData(device);
+  shard_data_size = tensorTable.makeSliceIndicesFromShardIndices(shard_id_indices_ptr, slice_indices, shard_data_dimensions, device);
   std::map<int, std::pair<Eigen::array<Eigen::Index, 3>, Eigen::array<Eigen::Index, 3>>> slice_indices_test;
   slice_indices_test.emplace(1, std::make_pair(Eigen::array<Eigen::Index, 3>({ 0,0,0 }), Eigen::array<Eigen::Index, 3>({ 2,2,2 })));
   slice_indices_test.emplace(2, std::make_pair(Eigen::array<Eigen::Index, 3>({ 2,0,0 }), Eigen::array<Eigen::Index, 3>({ 1,2,2 })));
@@ -4202,7 +4207,8 @@ void test_makeModifiedShardIDTensorGpu()
   slice_indices_test.emplace(5, std::make_pair(Eigen::array<Eigen::Index, 3>({ 0,0,2 }), Eigen::array<Eigen::Index, 3>({ 2,2,1 })));
   slice_indices_test.emplace(6, std::make_pair(Eigen::array<Eigen::Index, 3>({ 2,0,2 }), Eigen::array<Eigen::Index, 3>({ 1,2,1 })));
   slice_indices_test.emplace(7, std::make_pair(Eigen::array<Eigen::Index, 3>({ 0,2,2 }), Eigen::array<Eigen::Index, 3>({ 2,1,1 })));
-  slice_indices_test.emplace(8, std::make_pair(Eigen::array<Eigen::Index, 3>({ 2,2,2 }), Eigen::array<Eigen::Index, 3>({ 1,1,1 })));
+  slice_indices_test.emplace(8, std::make_pair(Eigen::array<Eigen::Index, 3>({ 2,2,2 }), Eigen::array<Eigen::Index, 3>({ 1,1,1 })));  
+  Eigen::array<Eigen::Index, 3> shard_data_dimensions_test = { nlabels, nlabels, nlabels };
   int iter = 1;
   for (const auto& slice_indices_map : slice_indices) {
     assert(slice_indices_map.first == iter);
@@ -4210,6 +4216,10 @@ void test_makeModifiedShardIDTensorGpu()
     assert(slice_indices_map.second.second == slice_indices_test.at(slice_indices_map.first).second);
     ++iter;
   }
+  for (int i = 0; i < 3; ++i) {
+    assert(shard_data_dimensions.at(i) == shard_data_dimensions_test.at(i));
+  }
+  assert(shard_data_size == nlabels * nlabels * nlabels);
 
   // Test the partially modified case
   for (auto& is_modified_map : tensorTable.getIsModified()) {
@@ -4232,9 +4242,12 @@ void test_makeModifiedShardIDTensorGpu()
   }
 
   slice_indices.clear();
-  tensorTable.makeSliceIndicesFromShardIndices(shard_id_indices_ptr, slice_indices, device);
+  shard_data_dimensions = Eigen::array<Eigen::Index, 3>();
+  shard_id_indices_ptr->syncHAndDData(device);
+  shard_data_size = tensorTable.makeSliceIndicesFromShardIndices(shard_id_indices_ptr, slice_indices, shard_data_dimensions, device);
   slice_indices_test.clear();
   slice_indices_test.emplace(1, std::make_pair(Eigen::array<Eigen::Index, 3>({ 0,0,0 }), Eigen::array<Eigen::Index, 3>({ 2,2,2 })));
+  shard_data_dimensions_test = Eigen::array<Eigen::Index, 3>({ 2, 2, 2 });
   iter = 1;
   for (const auto& slice_indices_map : slice_indices) {
     assert(slice_indices_map.first == iter);
@@ -4242,6 +4255,10 @@ void test_makeModifiedShardIDTensorGpu()
     assert(slice_indices_map.second.second == slice_indices_test.at(slice_indices_map.first).second);
     ++iter;
   }
+  for (int i = 0; i < 3; ++i) {
+    assert(shard_data_dimensions.at(i) == shard_data_dimensions_test.at(i));
+  }
+  assert(shard_data_size == 8);
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
 
@@ -4300,8 +4317,12 @@ void test_makeNotInMemoryShardIDTensorGpu()
   assert(shard_id_indices_ptr->getTensorSize() == 0);
 
   std::map<int, std::pair<Eigen::array<Eigen::Index, 3>, Eigen::array<Eigen::Index, 3>>> slice_indices;
-  tensorTable.makeSliceIndicesFromShardIndices(shard_id_indices_ptr, slice_indices, device);
+  Eigen::array<Eigen::Index, 3> shard_data_dimensions;
+  int shard_data_size = 0;
+  shard_id_indices_ptr->syncHAndDData(device);
+  shard_data_size = tensorTable.makeSliceIndicesFromShardIndices(shard_id_indices_ptr, slice_indices, shard_data_dimensions, device);
   assert(slice_indices.size() == 0);
+  assert(shard_data_size == 0);
 
   // Test not all in memory case and none selected case
   for (auto& in_memory_map : tensorTable.getNotInMemory()) {
@@ -4321,8 +4342,11 @@ void test_makeNotInMemoryShardIDTensorGpu()
   assert(shard_id_indices_ptr->getTensorSize() == 0);
 
   slice_indices.clear();
-  tensorTable.makeSliceIndicesFromShardIndices(shard_id_indices_ptr, slice_indices, device);
+  shard_data_dimensions = Eigen::array<Eigen::Index, 3>();
+  shard_id_indices_ptr->syncHAndDData(device);
+  shard_data_size = tensorTable.makeSliceIndicesFromShardIndices(shard_id_indices_ptr, slice_indices, shard_data_dimensions, device);
   assert(slice_indices.size() == 0);
+  assert(shard_data_size == 0);
 
   // Test all not in memory case and all selected case
   for (auto& in_memory_map : tensorTable.getNotInMemory()) {
@@ -4345,7 +4369,9 @@ void test_makeNotInMemoryShardIDTensorGpu()
   }
 
   slice_indices.clear();
-  tensorTable.makeSliceIndicesFromShardIndices(shard_id_indices_ptr, slice_indices, device);
+  shard_data_dimensions = Eigen::array<Eigen::Index, 3>();
+  shard_id_indices_ptr->syncHAndDData(device);
+  shard_data_size = tensorTable.makeSliceIndicesFromShardIndices(shard_id_indices_ptr, slice_indices, shard_data_dimensions, device);
   std::map<int, std::pair<Eigen::array<Eigen::Index, 3>, Eigen::array<Eigen::Index, 3>>> slice_indices_test;
   slice_indices_test.emplace(1, std::make_pair(Eigen::array<Eigen::Index, 3>({ 0,0,0 }), Eigen::array<Eigen::Index, 3>({ 2,2,2 })));
   slice_indices_test.emplace(2, std::make_pair(Eigen::array<Eigen::Index, 3>({ 2,0,0 }), Eigen::array<Eigen::Index, 3>({ 1,2,2 })));
@@ -4355,6 +4381,7 @@ void test_makeNotInMemoryShardIDTensorGpu()
   slice_indices_test.emplace(6, std::make_pair(Eigen::array<Eigen::Index, 3>({ 2,0,2 }), Eigen::array<Eigen::Index, 3>({ 1,2,1 })));
   slice_indices_test.emplace(7, std::make_pair(Eigen::array<Eigen::Index, 3>({ 0,2,2 }), Eigen::array<Eigen::Index, 3>({ 2,1,1 })));
   slice_indices_test.emplace(8, std::make_pair(Eigen::array<Eigen::Index, 3>({ 2,2,2 }), Eigen::array<Eigen::Index, 3>({ 1,1,1 })));
+  Eigen::array<Eigen::Index, 3> shard_data_dimensions_test = { nlabels, nlabels, nlabels };
   int iter = 1;
   for (const auto& slice_indices_map : slice_indices) {
     assert(slice_indices_map.first == iter);
@@ -4362,8 +4389,12 @@ void test_makeNotInMemoryShardIDTensorGpu()
     assert(slice_indices_map.second.second == slice_indices_test.at(slice_indices_map.first).second);
     ++iter;
   }
+  for (int i = 0; i < 3; ++i) {
+    assert(shard_data_dimensions.at(i) == shard_data_dimensions_test.at(i));
+  }
+  assert(shard_data_size == nlabels * nlabels * nlabels);
 
-  // Test the partially in memory case
+  // Test the partially in memory case and all selected case
   for (auto& in_memory_map : tensorTable.getNotInMemory()) {
     for (int i = 0; i < nlabels; ++i) {
       if (i < shard_span)
@@ -4384,9 +4415,12 @@ void test_makeNotInMemoryShardIDTensorGpu()
   }
 
   slice_indices.clear();
-  tensorTable.makeSliceIndicesFromShardIndices(shard_id_indices_ptr, slice_indices, device);
+  shard_data_dimensions = Eigen::array<Eigen::Index, 3>();
+  shard_id_indices_ptr->syncHAndDData(device);
+  shard_data_size = tensorTable.makeSliceIndicesFromShardIndices(shard_id_indices_ptr, slice_indices, shard_data_dimensions, device);
   slice_indices_test.clear();
   slice_indices_test.emplace(1, std::make_pair(Eigen::array<Eigen::Index, 3>({ 0,0,0 }), Eigen::array<Eigen::Index, 3>({ 2,2,2 })));
+  shard_data_dimensions_test = Eigen::array<Eigen::Index, 3>({ 2, 2, 2 });
   iter = 1;
   for (const auto& slice_indices_map : slice_indices) {
     assert(slice_indices_map.first == iter);
@@ -4394,6 +4428,10 @@ void test_makeNotInMemoryShardIDTensorGpu()
     assert(slice_indices_map.second.second == slice_indices_test.at(slice_indices_map.first).second);
     ++iter;
   }
+  for (int i = 0; i < 3; ++i) {
+    assert(shard_data_dimensions.at(i) == shard_data_dimensions_test.at(i));
+  }
+  assert(shard_data_size == 8);
   
   // Test the partially in memory case and partially selected case
   for (auto& in_memory_map : tensorTable.getNotInMemory()) {
@@ -4426,9 +4464,12 @@ void test_makeNotInMemoryShardIDTensorGpu()
   }
 
   slice_indices.clear();
-  tensorTable.makeSliceIndicesFromShardIndices(shard_id_indices_ptr, slice_indices, device);
+  shard_data_dimensions = Eigen::array<Eigen::Index, 3>();
+  shard_id_indices_ptr->syncHAndDData(device);
+  shard_data_size = tensorTable.makeSliceIndicesFromShardIndices(shard_id_indices_ptr, slice_indices, shard_data_dimensions, device);
   slice_indices_test.clear();
   slice_indices_test.emplace(1, std::make_pair(Eigen::array<Eigen::Index, 3>({ 0,0,0 }), Eigen::array<Eigen::Index, 3>({ 2,2,2 })));
+  shard_data_dimensions_test = Eigen::array<Eigen::Index, 3>({ 2, 2, 2 });
   iter = 1;
   for (const auto& slice_indices_map : slice_indices) {
     assert(slice_indices_map.first == iter);
@@ -4436,6 +4477,10 @@ void test_makeNotInMemoryShardIDTensorGpu()
     assert(slice_indices_map.second.second == slice_indices_test.at(slice_indices_map.first).second);
     ++iter;
   }
+  for (int i = 0; i < 3; ++i) {
+    assert(shard_data_dimensions.at(i) == shard_data_dimensions_test.at(i));
+  }
+  assert(shard_data_size == 8);
 
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
