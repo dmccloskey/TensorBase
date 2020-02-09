@@ -843,7 +843,7 @@ namespace TensorBase
       this->adjustSliceIndicesToDataSize(data_size, slice_indices);
 
       // write the TensorTable shards to disk asyncronously
-      syncHAndDData(device); // D to H
+      this->syncHData(device); // D to H
       for (const auto slice_index : slice_indices) {
         const std::string filename = makeTensorTableShardFilename(dir, getName(), slice_index.first);
         Eigen::Tensor<TensorT, TDim> shard_data = getData().slice(slice_index.second.first, slice_index.second.second);
@@ -859,7 +859,7 @@ namespace TensorBase
           is_modified_values.slice(offset, span).device(device) = is_modified_values.slice(offset, span).constant(0);
         }
       }
-      setDataStatus(false, true);
+      this->setDataStatus(false, true);
     }
     return true;
   }

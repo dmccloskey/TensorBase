@@ -766,19 +766,34 @@ namespace TensorBase
       slice_indices.emplace(modified_shard_ids->getData()(i), std::make_pair(Eigen::array<Eigen::Index, TDim>(), Eigen::array<Eigen::Index, TDim>()));
     }
 
-    // assign the slice indices
+    // assign the slice indices based on determining the individual axes indices from the linearized indices_sort value 
     int axis_size_cum = 1;
+    shard_data_dimensions = Eigen::array<Eigen::Index, TDim>();
+    int shard_data_size = 1;
     for (const auto& axis_to_dim : this->axes_to_dims_) {
       // NOTE: not sure if this part can be done on the GPU using a % b = a - (b * int(a/b)) as the modulo operator
+      std::set<int> unique_indices;
       // PARALLEL: could execute this code using multiple Threads though
       for (int i = 0; i < modified_shard_ids->getTensorSize(); ++i) {
         int min_index = int(floor(float(shard_slice_min.getData()(i)) / float(axis_size_cum))) % this->axes_.at(axis_to_dim.first)->getNLabels();
-        slice_indices.at(modified_shard_ids->getData()(i)).first.at(this->getDimFromAxisName(axis_to_dim.first)) = min_index;
+        slice_indices.at(modified_shard_ids->getData()(i)).first.at(axis_to_dim.second) = min_index;
         int max_index = int(floor(float(shard_slice_max.getData()(i)) / float(axis_size_cum))) % this->axes_.at(axis_to_dim.first)->getNLabels();
-        slice_indices.at(modified_shard_ids->getData()(i)).second.at(this->getDimFromAxisName(axis_to_dim.first)) = max_index - min_index + 1;
+        int span = max_index - min_index + 1;
+        slice_indices.at(modified_shard_ids->getData()(i)).second.at(axis_to_dim.second) = span;
+        unique_indices.insert(min_index); // only 1 index needed per shard
       }
+      // Estimate the dimensions based off the the unique indices
+      // NOTE: worst case is an over-estimate
+      int shard_data_size_dim_estimate = unique_indices.size() * this->getShardSpans().at(axis_to_dim.first);
+      if (shard_data_size_dim_estimate > this->getDimensions().at(axis_to_dim.second)) shard_data_size_dim_estimate = this->getDimensions().at(axis_to_dim.second);
+      shard_data_dimensions.at(axis_to_dim.second) = shard_data_size_dim_estimate;
+      shard_data_size *= shard_data_size_dim_estimate;
+
       // update the accumulative size
       axis_size_cum *= this->axes_.at(axis_to_dim.first)->getNLabels();
+    }
+
+    return shard_data_size;
     }
   }
   template<template<class> class ArrayT, class TensorT, int TDim>
@@ -817,33 +832,48 @@ namespace TensorBase
       //std::cout << "No shards have been modified." << std::endl; // TODO: Move to logging
       return false;
     }
+
+    // make the slices for the shards
     std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>> slice_indices;
-    makeSliceIndicesFromShardIndices(not_in_memory_shard_ids, slice_indices, device);
+    Eigen::array<Eigen::Index, TDim> shard_dimensions;
+    const int data_size = this->makeSliceIndicesFromShardIndices(not_in_memory_shard_ids, slice_indices, shard_dimensions, device);
+
+    // check if enough data is allocated for the slices
+    if (this->getDataTensorSize() < data_size) {
+      this->setDataShards(shard_dimensions, device);
+    }
+    else {
+      this->syncHData(device); // D to H
+      if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
+        assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+      }
+    }
+
+    // adjust the slices if necessary
+    this->adjustSliceIndicesToDataSize(data_size, slice_indices);
 
     // read in the shards and update the TensorTable data asyncronously
-    this->syncHAndDData(device); // D to H
-    // TODO: Move to device-specific code
-    // Synchronize the Device and Host data for reading from disk
-    if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
-      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
-    }
     for (const auto slice_index : slice_indices) {
+      // read in the shard
       const std::string filename = makeTensorTableShardFilename(dir, getName(), slice_index.first);
-      Eigen::Tensor<ArrayT<TensorT>, TDim> shard_data(slice_index.second.second);
-      DataFile::loadDataBinary<ArrayT<TensorT>, TDim>(filename, shard_data);
-      getData().slice(slice_index.second.first, slice_index.second.second) = shard_data;
+      Eigen::Tensor<TensorT, TDim> shard_data(slice_index.second.second);
+      DataFile::loadDataBinary<TensorT, TDim>(filename, shard_data);
+      assert(slice_index.second.second == shard_data.dimensions());
+
+      // slice and update the data with the shard data
+      this->getData().slice(slice_index.second.first, slice_index.second.second) = shard_data;
 
       // update the `not_in_memory` tensor table attribute
       for (auto& not_in_memory_map : not_in_memory_) {
         Eigen::array<Eigen::Index, 1> offset;
-        offset.at(0) = slice_index.second.first.at(getDimFromAxisName(not_in_memory_map.first));
+        offset.at(0) = slice_index.second.first.at(this->getDimFromAxisName(not_in_memory_map.first));
         Eigen::array<Eigen::Index, 1> span;
-        span.at(0) = slice_index.second.second.at(getDimFromAxisName(not_in_memory_map.first));
+        span.at(0) = slice_index.second.second.at(this->getDimFromAxisName(not_in_memory_map.first));
         Eigen::TensorMap<Eigen::Tensor<int, 1>> not_in_memory_values(not_in_memory_map.second->getDataPointer().get(), (int)not_in_memory_map.second->getTensorSize());
         not_in_memory_values.slice(offset, span).device(device) = not_in_memory_values.slice(offset, span).constant(0);
       }
     }
-    this->syncHAndDData(device); // H to D
+    this->syncDData(device); // H to D
 
     return true;
   }
@@ -859,27 +889,33 @@ namespace TensorBase
         return false;
       }
       std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>> slice_indices;
-      makeSliceIndicesFromShardIndices(modified_shard_ids, slice_indices, device);
+      Eigen::array<Eigen::Index, TDim> shard_dimensions;
+      const int data_size = this->makeSliceIndicesFromShardIndices(modified_shard_ids, slice_indices, shard_dimensions, device);
+
+      // adjust the slices if necessary
+      this->adjustSliceIndicesToDataSize(data_size, slice_indices);
 
       // write the TensorTable shards to disk asyncronously
-      this->syncHAndDData(device); // D to H
-      // TODO: Move to device-specific code
-      // Synchronize the Device and Host data for writing to disk
+      this->syncHData(device); // D to H
       if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
         assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
       }
       for (const auto slice_index : slice_indices) {
         const std::string filename = makeTensorTableShardFilename(dir, getName(), slice_index.first);
-        Eigen::Tensor<ArrayT<TensorT>, TDim> shard_data = getData().slice(slice_index.second.first, slice_index.second.second);
-        DataFile::storeDataBinary<ArrayT<TensorT>, TDim>(filename, shard_data);
+        Eigen::Tensor<TensorT, TDim> shard_data = getData().slice(slice_index.second.first, slice_index.second.second);
+        DataFile::storeDataBinary<TensorT, TDim>(filename, shard_data);
+
+        // update the `is_modified` tensor table attribute
+        for (auto& is_modified_map : is_modified_) {
+          Eigen::array<Eigen::Index, 1> offset;
+          offset.at(0) = slice_index.second.first.at(this->getDimFromAxisName(is_modified_map.first));
+          Eigen::array<Eigen::Index, 1> span;
+          span.at(0) = slice_index.second.second.at(this->getDimFromAxisName(is_modified_map.first));
+          Eigen::TensorMap<Eigen::Tensor<int, 1>> is_modified_values(is_modified_map.second->getDataPointer().get(), (int)is_modified_map.second->getTensorSize());
+          is_modified_values.slice(offset, span).device(device) = is_modified_values.slice(offset, span).constant(0);
+        }
       }
       this->setDataStatus(false, true);
-
-      // update the `is_modified` tensor table attribute
-      for (auto& is_modified_map : is_modified_) {
-        Eigen::TensorMap<Eigen::Tensor<int, 1>> is_modified_values(is_modified_map.second->getDataPointer().get(), (int)is_modified_map.second->getTensorSize());
-        is_modified_values.device(device) = is_modified_values.constant(0);
-      }
     }
     return true;
   }
