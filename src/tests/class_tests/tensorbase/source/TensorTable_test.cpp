@@ -2238,7 +2238,7 @@ BOOST_AUTO_TEST_CASE(appendToIndicesDefaultDevice)
   // test appendToIndices
   tensorTable.appendToIndices("1", indices_new_ptr, device);
 
-  // check the new indices [MODIFIED]
+  // check the new indices
   BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(tensorTable.getDimFromAxisName("1")), nlabels + nlabels - 1);
   for (int i = 0; i < nlabels + nlabels - 1; ++i) {
     BOOST_CHECK_EQUAL(tensorTable.getIndices().at("1")->getData()(i), i + 1);
@@ -2256,7 +2256,7 @@ BOOST_AUTO_TEST_CASE(appendToIndicesDefaultDevice)
     }
   }
 
-  // check the existing indices [NEW]
+  // check the existing indices
   for (int i = 0; i < nlabels; ++i) {
     BOOST_CHECK_EQUAL(tensorTable.getIndices().at("2")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(i), i + 1);
@@ -2274,7 +2274,7 @@ BOOST_AUTO_TEST_CASE(appendToIndicesDefaultDevice)
     BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("3")->getData()(i), i + 1);
   }
 
-  // Check the dimensions and tensor size [NEW]
+  // Check the dimensions and tensor size
   Eigen::array<Eigen::Index, 3> dimensions_test = { nlabels + nlabels - 1, nlabels, nlabels };
   BOOST_CHECK(tensorTable.getDimensions() == dimensions_test);
   BOOST_CHECK_EQUAL(tensorTable.getTensorSize(), (nlabels + nlabels - 1) * nlabels * nlabels);

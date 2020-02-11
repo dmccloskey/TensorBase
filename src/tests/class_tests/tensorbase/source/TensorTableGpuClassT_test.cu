@@ -2469,6 +2469,30 @@ void test_appendToIndicesGpu()
       assert(tensorTable.getShardIndices().at("1")->getData()(i) == 0);
     }
   }
+
+  // check the existing indices
+  for (int i = 0; i < nlabels; ++i) {
+    assert(tensorTable.getIndices().at("2")->getData()(i) == i + 1);
+    assert(tensorTable.getIndicesView().at("2")->getData()(i) == i + 1);
+    assert(tensorTable.getShardId().at("2")->getData()(i) == 1);
+    assert(tensorTable.getIsModified().at("2")->getData()(i) == 1);
+    assert(tensorTable.getNotInMemory().at("2")->getData()(i) == 0);
+    assert(tensorTable.getShardIndices().at("2")->getData()(i) == i + 1);
+  }
+  for (int i = 0; i < nlabels; ++i) {
+    assert(tensorTable.getIndices().at("3")->getData()(i) == i + 1);
+    assert(tensorTable.getIndicesView().at("3")->getData()(i) == i + 1);
+    assert(tensorTable.getShardId().at("3")->getData()(i) == 1);
+    assert(tensorTable.getIsModified().at("3")->getData()(i) == 1);
+    assert(tensorTable.getNotInMemory().at("3")->getData()(i) == 0);
+    assert(tensorTable.getShardIndices().at("3")->getData()(i) == i + 1);
+  }
+
+  // Check the dimensions and tensor size
+  Eigen::array<Eigen::Index, 3> dimensions_test = { nlabels + nlabels - 1, nlabels, nlabels };
+  assert(tensorTable.getDimensions() == dimensions_test);
+  assert(tensorTable.getTensorSize() == (nlabels + nlabels - 1) * nlabels * nlabels);
+
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
 
@@ -4834,8 +4858,8 @@ int main(int argc, char** argv)
   test_updateSelectTensorDataValues2Gpu();
 	test_updateTensorDataValuesGpu();
   test_makeAppendIndicesGpu();
-  test_appendToIndicesGpu(); // Failing to launch Gpu kernal???
-  test_appendToAxisGpu(); // Failing to launch Gpu kernal???
+  test_appendToIndicesGpu();
+  test_appendToAxisGpu();
   test_makeIndicesViewSelectFromIndicesGpu();
   test_deleteFromIndicesGpu();
   test_makeSelectIndicesFromIndicesGpu();

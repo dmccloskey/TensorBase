@@ -2681,10 +2681,34 @@ void test_appendToIndicesGpu()
       assert(tensorTable.getShardIndices().at("1")->getData()(i) == 0);
     }
   }
+
+  // check the existing indices
+  for (int i = 0; i < nlabels; ++i) {
+    assert(tensorTable.getIndices().at("2")->getData()(i) == i + 1);
+    assert(tensorTable.getIndicesView().at("2")->getData()(i) == i + 1);
+    assert(tensorTable.getShardId().at("2")->getData()(i) == 1);
+    assert(tensorTable.getIsModified().at("2")->getData()(i) == 1);
+    assert(tensorTable.getNotInMemory().at("2")->getData()(i) == 0);
+    assert(tensorTable.getShardIndices().at("2")->getData()(i) == i + 1);
+  }
+  for (int i = 0; i < nlabels; ++i) {
+    assert(tensorTable.getIndices().at("3")->getData()(i) == i + 1);
+    assert(tensorTable.getIndicesView().at("3")->getData()(i) == i + 1);
+    assert(tensorTable.getShardId().at("3")->getData()(i) == 1);
+    assert(tensorTable.getIsModified().at("3")->getData()(i) == 1);
+    assert(tensorTable.getNotInMemory().at("3")->getData()(i) == 0);
+    assert(tensorTable.getShardIndices().at("3")->getData()(i) == i + 1);
+  }
+
+  // Check the dimensions and tensor size
+  Eigen::array<Eigen::Index, 3> dimensions_test = { nlabels + nlabels - 1, nlabels, nlabels };
+  assert(tensorTable.getDimensions() == dimensions_test);
+  assert(tensorTable.getTensorSize() == (nlabels + nlabels - 1) * nlabels * nlabels);
+
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
 
-void test_appendToAxisGpu()
+void test_appendToAxis1Gpu()
 {
   // setup the table
   TensorTableGpuPrimitiveT<float, 3> tensorTable;
@@ -2779,6 +2803,11 @@ void test_appendToAxisGpu()
   }
   assert(indices_new_ptr->getData()(0) == nlabels + 1);
 
+  // test the expected dimensions
+  Eigen::array<Eigen::Index, 3> dimensions_test = { nlabels + 1, nlabels, nlabels };
+  assert(tensorTable.getDimensions() == dimensions_test);
+  assert(tensorTable.getTensorSize() == (nlabels + 1) * nlabels * nlabels);
+
   // Write the original data to disk, clear the data, and repeat the tests
   tensorTable.clear();
   axis_1_ptr = std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1", dimensions1, labels1));
@@ -2828,6 +2857,47 @@ void test_appendToAxisGpu()
     }
   }
   assert(indices_new_ptr->getData()(0) == nlabels + 1);
+
+  // test the expected dimensions
+  dimensions_test = Eigen::array<Eigen::Index, 3>({ nlabels + 1, nlabels, nlabels });
+  assert(tensorTable.getDimensions() == dimensions_test);
+  assert(tensorTable.getTensorSize() == (nlabels + 1) * nlabels * nlabels);
+
+  // Check that the binarized data was written correctly
+  tensorTable.storeTensorTableBinary("", device);
+  tensorTable.setData();
+  tensorTable.syncHAndDData(device);
+
+  // Reset the in_memory values
+  for (auto& in_memory_map : tensorTable.getNotInMemory()) {
+    in_memory_map.second->getData() = in_memory_map.second->getData().constant(1);
+  }
+  tensorTable.setNotInMemoryDataStatus(true, false);
+  tensorTable.syncNotInMemoryHAndDData(device);
+
+  tensorTable.loadTensorTableBinary("", device);
+  // Test the new TensorTable  tensorTable.syncAxesHAndDData(device);
+  tensorTable.syncHAndDData(device);
+  indices_new_ptr->syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  iter = 0;
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        assert(tensorTable.getData()(i, j, k) == tensor_values(i, j, k));
+      }
+    }
+  }
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      assert(tensorTable.getData()(nlabels, i, j) == update_values(0, i, j));
+    }
+  }
+
+  // test the expected dimensions
+  dimensions_test = Eigen::array<Eigen::Index, 3>({ nlabels + 1, nlabels, nlabels });
+  assert(tensorTable.getDimensions() == dimensions_test);
+  assert(tensorTable.getTensorSize() == (nlabels + 1) * nlabels * nlabels);
 
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
@@ -5051,7 +5121,7 @@ int main(int argc, char** argv)
 	test_updateTensorDataValuesGpu();
   test_makeAppendIndicesGpu();
   test_appendToIndicesGpu(); // Failing to launch Gpu kernal???
-  test_appendToAxisGpu();
+  test_appendToAxis1Gpu();
   test_makeIndicesViewSelectFromIndicesGpu();
   test_deleteFromIndicesGpu();
   test_makeSelectIndicesFromIndicesGpu();

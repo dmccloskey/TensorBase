@@ -2205,6 +2205,8 @@ BOOST_AUTO_TEST_CASE(appendToIndicesCpu)
 
   // test appendToIndices
   tensorTable.appendToIndices("1", indices_new_ptr, device);
+
+  // check the new indices
   BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(tensorTable.getDimFromAxisName("1")), nlabels + nlabels - 1);
   for (int i = 0; i < nlabels + nlabels - 1; ++i) {
     BOOST_CHECK_EQUAL(tensorTable.getIndices().at("1")->getData()(i), i + 1);
@@ -2221,9 +2223,32 @@ BOOST_AUTO_TEST_CASE(appendToIndicesCpu)
       BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("1")->getData()(i), 0);
     }
   }
+
+  // check the existing indices
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable.getIndices().at("2")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("2")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable.getShardId().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("2")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("2")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("2")->getData()(i), i + 1);
+  }
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable.getIndices().at("3")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("3")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(tensorTable.getShardId().at("3")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getIsModified().at("3")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(tensorTable.getNotInMemory().at("3")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(tensorTable.getShardIndices().at("3")->getData()(i), i + 1);
+  }
+
+  // Check the dimensions and tensor size
+  Eigen::array<Eigen::Index, 3> dimensions_test = { nlabels + nlabels - 1, nlabels, nlabels };
+  BOOST_CHECK(tensorTable.getDimensions() == dimensions_test);
+  BOOST_CHECK_EQUAL(tensorTable.getTensorSize(), (nlabels + nlabels - 1) * nlabels * nlabels);
 }
 
-BOOST_AUTO_TEST_CASE(appendToAxisCpu)
+BOOST_AUTO_TEST_CASE(appendToAxis1Cpu)
 {
   // setup the table
   TensorTableCpu<float, 3> tensorTable;
@@ -2302,6 +2327,11 @@ BOOST_AUTO_TEST_CASE(appendToAxisCpu)
   }
   BOOST_CHECK_EQUAL(indices_new_ptr->getData()(0), nlabels + 1);
 
+  // test the expected dimensions [NEW]
+  Eigen::array<Eigen::Index, 3> dimensions_test = { nlabels + 1, nlabels, nlabels };
+  BOOST_CHECK(tensorTable.getDimensions() == dimensions_test);
+  BOOST_CHECK_EQUAL(tensorTable.getTensorSize(), (nlabels + 1) * nlabels * nlabels);
+
   // Write the original data to disk, clear the data, and repeat the tests
   tensorTable.clear();
   axis_1_ptr = std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1));
@@ -2333,6 +2363,134 @@ BOOST_AUTO_TEST_CASE(appendToAxisCpu)
     }
   }
   BOOST_CHECK_EQUAL(indices_new_ptr->getData()(0), nlabels + 1);
+
+  // test the expected dimensions
+  dimensions_test = Eigen::array<Eigen::Index, 3>({ nlabels + 1, nlabels, nlabels });
+  BOOST_CHECK(tensorTable.getDimensions() == dimensions_test);
+  BOOST_CHECK_EQUAL(tensorTable.getTensorSize(), (nlabels + 1) * nlabels * nlabels);
+
+  // Check that the binarized data was written correctly
+  tensorTable.storeTensorTableBinary("", device);
+  tensorTable.setData();
+
+  // Reset the in_memory values
+  for (auto& in_memory_map : tensorTable.getNotInMemory()) {
+    in_memory_map.second->getData() = in_memory_map.second->getData().constant(1);
+  }
+
+  tensorTable.loadTensorTableBinary("", device);
+  // Test the new TensorTable
+  iter = 0;
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        BOOST_CHECK_EQUAL(tensorTable.getData()(i, j, k), tensor_values(i, j, k));
+      }
+    }
+  }
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      BOOST_CHECK_EQUAL(tensorTable.getData()(nlabels, i, j), update_values(0, i, j));
+    }
+  }
+
+  // test the expected dimensions
+  dimensions_test = Eigen::array<Eigen::Index, 3>({ nlabels + 1, nlabels, nlabels });
+  BOOST_CHECK(tensorTable.getDimensions() == dimensions_test);
+  BOOST_CHECK_EQUAL(tensorTable.getTensorSize(), (nlabels + 1) * nlabels * nlabels);
+}
+
+BOOST_AUTO_TEST_CASE(appendToAxis2Cpu)
+{
+  // setup the table
+  TensorTableCpu<float, 3> tensorTable;
+  Eigen::ThreadPool pool(1);  Eigen::ThreadPoolDevice device(&pool, 2);
+
+  // setup the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels = 3;
+  Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels), labels3(1, nlabels);
+  labels1.setValues({ {0, 1, 2} });
+  labels2.setValues({ {0, 1, 2} });
+  labels3.setValues({ {0, 1, 2} });
+  auto axis_1_ptr = std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", 1, 0));
+  axis_1_ptr->setDimensions(dimensions1);
+  auto axis_2_ptr = std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2));
+  auto axis_3_ptr = std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3));
+  tensorTable.addTensorAxis(axis_1_ptr);
+  tensorTable.addTensorAxis(axis_2_ptr);
+  tensorTable.addTensorAxis(axis_3_ptr);
+  tensorTable.setAxes(device);
+  tensorTable.setData();
+
+  // setup the tensor data
+  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  for (int k = 0; k < nlabels; ++k) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int i = 0; i < nlabels; ++i) {
+        tensor_values(i, j, k) = i + j * nlabels + k * nlabels * nlabels;
+      }
+    }
+  }
+  TensorDataCpu<float, 3> values_new(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  values_new.setData(tensor_values);
+  std::shared_ptr<TensorData<float, Eigen::ThreadPoolDevice, 3>> values_new_ptr = std::make_shared<TensorDataCpu<float, 3>>(values_new);
+
+  // setup the new axis labels
+  TensorDataCpu<int, 2> labels_new(Eigen::array<Eigen::Index, 2>({ 1, nlabels }));
+  labels_new.setData(labels1);
+  std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>> labels_new_ptr = std::make_shared<TensorDataCpu<int, 2>>(labels_new);
+
+  // setup the new indices
+  TensorDataCpu<int, 1> indices_new(Eigen::array<Eigen::Index, 1>({ nlabels }));
+  indices_new.setData();
+  std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>> indices_new_ptr = std::make_shared<TensorDataCpu<int, 1>>(indices_new);
+
+  // test appendToAxis
+  tensorTable.appendToAxis("1", labels_new_ptr, values_new_ptr->getDataPointer(), indices_new_ptr, device);
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_EQUAL(axis_1_ptr->getLabels()(0, i), labels1(i));
+    BOOST_CHECK_EQUAL(indices_new_ptr->getData()(i), i + 1);
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        BOOST_CHECK_EQUAL(tensorTable.getData()(i, j, k), tensor_values(i, j, k));
+      }
+    }
+  }
+
+  // test the expected dimensions
+  Eigen::array<Eigen::Index, 3> dimensions_test = { nlabels, nlabels, nlabels };
+  BOOST_CHECK(tensorTable.getDimensions() == dimensions_test);
+  BOOST_CHECK_EQUAL(tensorTable.getTensorSize(), nlabels * nlabels * nlabels);
+
+  // Check that the binarized data was written correctly
+  tensorTable.storeTensorTableBinary("", device);
+  tensorTable.setData();
+
+  // Reset the in_memory values
+  for (auto& in_memory_map : tensorTable.getNotInMemory()) {
+    in_memory_map.second->getData() = in_memory_map.second->getData().constant(1);
+  }
+
+  tensorTable.loadTensorTableBinary("", device);
+  // Test the new TensorTable
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_EQUAL(axis_1_ptr->getLabels()(0, i), labels1(i));
+    BOOST_CHECK_EQUAL(indices_new_ptr->getData()(i), i + 1);
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        BOOST_CHECK_EQUAL(tensorTable.getData()(i, j, k), tensor_values(i, j, k));
+      }
+    }
+  }
+
+  // test the expected dimensions
+  dimensions_test = Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels });
+  BOOST_CHECK(tensorTable.getDimensions() == dimensions_test);
+  BOOST_CHECK_EQUAL(tensorTable.getTensorSize(), nlabels * nlabels * nlabels);
 }
 
 BOOST_AUTO_TEST_CASE(makeIndicesViewSelectFromIndicesCpu)
