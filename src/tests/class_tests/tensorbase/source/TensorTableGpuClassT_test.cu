@@ -2496,7 +2496,7 @@ void test_appendToIndicesGpu()
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
 
-void test_appendToAxisGpu()
+void test_appendToAxis1Gpu()
 {
   // setup the table
   TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
@@ -2591,6 +2591,11 @@ void test_appendToAxisGpu()
   }
   assert(indices_new_ptr->getData()(0) == nlabels + 1);
 
+  // test the expected dimensions
+  Eigen::array<Eigen::Index, 3> dimensions_test = { nlabels + 1, nlabels, nlabels };
+  assert(tensorTable.getDimensions() == dimensions_test);
+  assert(tensorTable.getTensorSize() == (nlabels + 1) * nlabels * nlabels);
+
   // Write the original data to disk, clear the data, and repeat the tests
   tensorTable.clear();
   axis_1_ptr = std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1", dimensions1, labels1));
@@ -2640,6 +2645,167 @@ void test_appendToAxisGpu()
     }
   }
   assert(indices_new_ptr->getData()(0) == nlabels + 1);
+
+  // test the expected dimensions
+  dimensions_test = Eigen::array<Eigen::Index, 3>({ nlabels + 1, nlabels, nlabels });
+  assert(tensorTable.getDimensions() == dimensions_test);
+  assert(tensorTable.getTensorSize() == (nlabels + 1) * nlabels * nlabels);
+
+  // Check that the binarized data was written correctly
+  tensorTable.storeTensorTableBinary("", device);
+  tensorTable.setData();
+  tensorTable.syncHAndDData(device);
+
+  // Reset the in_memory values
+  for (auto& in_memory_map : tensorTable.getNotInMemory()) {
+    in_memory_map.second->getData() = in_memory_map.second->getData().constant(1);
+  }
+  tensorTable.setNotInMemoryDataStatus(true, false);
+  tensorTable.syncNotInMemoryHAndDData(device);
+
+  tensorTable.loadTensorTableBinary("", device);
+  // Test the new TensorTable  tensorTable.syncAxesHAndDData(device);
+  tensorTable.syncHAndDData(device);
+  indices_new_ptr->syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  iter = 0;
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        assert(tensorTable.getData()(i, j, k) == tensor_values(i, j, k));
+      }
+    }
+  }
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      assert(tensorTable.getData()(nlabels, i, j) == update_values(0, i, j));
+    }
+  }
+
+  // test the expected dimensions
+  dimensions_test = Eigen::array<Eigen::Index, 3>({ nlabels + 1, nlabels, nlabels });
+  assert(tensorTable.getDimensions() == dimensions_test);
+  assert(tensorTable.getTensorSize() == (nlabels + 1) * nlabels * nlabels);
+
+  assert(cudaStreamDestroy(stream) == cudaSuccess);
+}
+
+void test_appendToAxis2Gpu()
+{
+  // setup the table
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
+
+  // Initialize the device
+  cudaStream_t stream;
+  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  Eigen::GpuStreamDevice stream_device(&stream, 0);
+  Eigen::GpuDevice device(&stream_device);
+
+  // setup the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels = 3;
+  Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels), labels3(1, nlabels);
+  labels1.setValues({ {0, 1, 2} });
+  labels2.setValues({ {0, 1, 2} });
+  labels3.setValues({ {0, 1, 2} });
+  auto axis_1_ptr = std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1", 1, 0));
+  axis_1_ptr->setDimensions(dimensions1);
+  auto axis_2_ptr = std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("2", dimensions2, labels2));
+  auto axis_3_ptr = std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("3", dimensions3, labels3));
+  tensorTable.addTensorAxis(axis_1_ptr);
+  tensorTable.addTensorAxis(axis_2_ptr);
+  tensorTable.addTensorAxis(axis_3_ptr);
+  tensorTable.setAxes(device);
+  tensorTable.setData();
+
+  // setup the tensor data
+  Eigen::Tensor<TensorArrayGpu8<char>, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  int iter = 0;
+  for (int k = 0; k < nlabels; ++k) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int i = 0; i < nlabels; ++i) {
+        tensor_values(i, j, k).setTensorArray(std::to_string(iter));
+        ++iter;
+      }
+    }
+  }
+  TensorDataGpuClassT<TensorArrayGpu8, char, 3> values_new(Eigen::array<Eigen::Index, 3>({ 1, nlabels, nlabels }));
+  values_new.setData(tensor_values);
+  std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 3>> values_new_ptr = std::make_shared<TensorDataGpuClassT<TensorArrayGpu8, char, 3>>(values_new);
+
+  // setup the new axis labels
+  TensorDataGpuPrimitiveT<int, 2> labels_new(Eigen::array<Eigen::Index, 2>({ 1, nlabels }));
+  labels_new.setData(labels1);
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>> labels_new_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 2>>(labels_new);
+
+  // setup the new indices
+  TensorDataGpuPrimitiveT<int, 1> indices_new(Eigen::array<Eigen::Index, 1>({ nlabels }));
+  indices_new.setData();
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_new_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(indices_new);
+
+  // sync the tensorTable
+  tensorTable.syncAxesAndIndicesDData(device);
+  tensorTable.syncDData(device);
+  labels_new_ptr->syncHAndDData(device);
+  values_new_ptr->syncHAndDData(device);
+  indices_new_ptr->syncHAndDData(device);
+
+  // test appendToAxis
+  tensorTable.appendToAxis("1", labels_new_ptr, values_new_ptr->getDataPointer(), indices_new_ptr, device);
+  tensorTable.syncAxesHAndDData(device);
+  tensorTable.syncHAndDData(device);
+  indices_new_ptr->syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  for (int i = 0; i < nlabels; ++i) {
+    assert(axis_1_ptr->getLabels()(0, i) == labels1(i));
+    assert(indices_new_ptr->getData()(i) == i + 1);
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        assert(tensorTable.getData()(i, j, k) == tensor_values(i, j, k));
+      }
+    }
+  }
+
+  // test the expected dimensions
+  Eigen::array<Eigen::Index, 3> dimensions_test = { nlabels, nlabels, nlabels };
+  assert(tensorTable.getDimensions() == dimensions_test);
+  assert(tensorTable.getTensorSize() == nlabels * nlabels * nlabels);
+
+  // Check that the binarized data was written correctly
+  tensorTable.storeTensorTableBinary("", device);
+  tensorTable.setData();
+  tensorTable.syncHAndDData(device);
+
+  // Reset the in_memory values
+  for (auto& in_memory_map : tensorTable.getNotInMemory()) {
+    in_memory_map.second->getData() = in_memory_map.second->getData().constant(1);
+  }
+  tensorTable.setNotInMemoryDataStatus(true, false);
+  tensorTable.syncNotInMemoryHAndDData(device);
+
+  tensorTable.loadTensorTableBinary("", device);
+  // Test the new TensorTable  tensorTable.syncAxesHAndDData(device);
+  tensorTable.syncHAndDData(device);
+  indices_new_ptr->syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  for (int i = 0; i < nlabels; ++i) {
+    assert(axis_1_ptr->getLabels()(0, i) == labels1(i));
+    assert(indices_new_ptr->getData()(i) == i + 1);
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        assert(tensorTable.getData()(i, j, k) == tensor_values(i, j, k));
+      }
+    }
+  }
+
+  // test the expected dimensions
+  dimensions_test = Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels });
+  assert(tensorTable.getDimensions() == dimensions_test);
+  assert(tensorTable.getTensorSize() == nlabels * nlabels * nlabels);
+
 
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
@@ -4859,7 +5025,8 @@ int main(int argc, char** argv)
 	test_updateTensorDataValuesGpu();
   test_makeAppendIndicesGpu();
   test_appendToIndicesGpu();
-  test_appendToAxisGpu();
+  test_appendToAxis1Gpu();
+  test_appendToAxis2Gpu();
   test_makeIndicesViewSelectFromIndicesGpu();
   test_deleteFromIndicesGpu();
   test_makeSelectIndicesFromIndicesGpu();

@@ -2359,7 +2359,7 @@ BOOST_AUTO_TEST_CASE(appendToAxis1DefaultDevice)
   }
   BOOST_CHECK_EQUAL(indices_new_ptr->getData()(0), nlabels + 1);
 
-  // test the expected dimensions [NEW]
+  // test the expected dimensions
   Eigen::array<Eigen::Index, 3> dimensions_test = { nlabels + 1, nlabels, nlabels };
   BOOST_CHECK(tensorTable.getDimensions() == dimensions_test);
   BOOST_CHECK_EQUAL(tensorTable.getTensorSize(), (nlabels + 1) * nlabels * nlabels);
@@ -2396,12 +2396,12 @@ BOOST_AUTO_TEST_CASE(appendToAxis1DefaultDevice)
   }
   BOOST_CHECK_EQUAL(indices_new_ptr->getData()(0), nlabels + 1);
 
-  // test the expected dimensions [NEW]
+  // test the expected dimensions
   dimensions_test = Eigen::array<Eigen::Index, 3>({ nlabels + 1, nlabels, nlabels });
   BOOST_CHECK(tensorTable.getDimensions() == dimensions_test);
   BOOST_CHECK_EQUAL(tensorTable.getTensorSize(), (nlabels + 1) * nlabels * nlabels);
 
-  // Check that the binarized data was written correctly [NEW]
+  // Check that the binarized data was written correctly
   tensorTable.storeTensorTableBinary("", device);
   tensorTable.setData();
 
@@ -2426,7 +2426,7 @@ BOOST_AUTO_TEST_CASE(appendToAxis1DefaultDevice)
     }
   }
 
-  // test the expected dimensions [NEW]
+  // test the expected dimensions
   dimensions_test = Eigen::array<Eigen::Index, 3>({ nlabels + 1, nlabels, nlabels });
   BOOST_CHECK(tensorTable.getDimensions() == dimensions_test);
   BOOST_CHECK_EQUAL(tensorTable.getTensorSize(), (nlabels + 1) * nlabels * nlabels);
@@ -2493,7 +2493,7 @@ BOOST_AUTO_TEST_CASE(appendToAxis2DefaultDevice)
     }
   }
 
-  // test the expected dimensions [NEW]
+  // test the expected dimensions
   Eigen::array<Eigen::Index, 3> dimensions_test = { nlabels, nlabels, nlabels };
   BOOST_CHECK(tensorTable.getDimensions() == dimensions_test);
   BOOST_CHECK_EQUAL(tensorTable.getTensorSize(), nlabels * nlabels * nlabels);
@@ -2519,7 +2519,7 @@ BOOST_AUTO_TEST_CASE(appendToAxis2DefaultDevice)
     }
   }
 
-  // test the expected dimensions [NEW]
+  // test the expected dimensions
   dimensions_test = Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels });
   BOOST_CHECK(tensorTable.getDimensions() == dimensions_test);
   BOOST_CHECK_EQUAL(tensorTable.getTensorSize(), nlabels * nlabels * nlabels);
