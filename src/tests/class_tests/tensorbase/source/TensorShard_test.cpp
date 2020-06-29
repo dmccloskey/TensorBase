@@ -29,24 +29,35 @@ BOOST_AUTO_TEST_CASE(destructorTensorShardDefaultDevice)
 BOOST_AUTO_TEST_CASE(getNMaxShardsDefaultDevice)
 {
   Eigen::array<Eigen::Index, 3> dims_small = { 1,2,3 };
-  TensorShard tensorShard;
-  BOOST_CHECK_EQUAL(tensorShard.getNMaxShards(dims_small), 1);
+  BOOST_CHECK_EQUAL(TensorShard::getNMaxShards(dims_small), 1);
 
   Eigen::array<Eigen::Index, 4> dims_medium = { 1000,1000,1000,1000 };
-  BOOST_CHECK_EQUAL(tensorShard.getNMaxShards(dims_medium), 1001);
+  BOOST_CHECK_EQUAL(TensorShard::getNMaxShards(dims_medium), 1001);
 
   Eigen::array<Eigen::Index, 7> dims_large = { 1000,1000,1000,1000,1000,1000,1000 };
-  BOOST_CHECK_EQUAL(tensorShard.getNMaxShards(dims_large), -1);
+  BOOST_CHECK_EQUAL(TensorShard::getNMaxShards(dims_large), -1);
+}
+
+BOOST_AUTO_TEST_CASE(getDefaultMaxDimensionsDefaultDevice)
+{
+  auto dims_small = TensorShard::getDefaultMaxDimensions<3>();
+  for (int i=0;i<3;++i) BOOST_CHECK_EQUAL(dims_small.at(i), -1);
+
+  auto dims_medium = TensorShard::getDefaultMaxDimensions<4>();
+  for (int i = 0; i < 4; ++i) BOOST_CHECK_EQUAL(dims_medium.at(i), -1);
+
+  auto dims_large = TensorShard::getDefaultMaxDimensions<64>();
+  for (int i = 0; i < 64; ++i) BOOST_CHECK_EQUAL(dims_large.at(i), 2);
 }
 
 BOOST_AUTO_TEST_CASE(makeShardIndicesFromShardIDsDefaultDevice)
 {
-  TensorShard tensorShard;
   Eigen::DefaultDevice device;
 
   // Setup the input data
-  int nlabels = 6;
+  int nlabels = 6, maxlabels = 1000;
   Eigen::array<Eigen::Index, 3> dimensions = { nlabels,nlabels,nlabels };
+  Eigen::array<Eigen::Index, 3> dimensions_max = { maxlabels,maxlabels,maxlabels };
   std::map<std::string, int> axes_to_dims = {{"1", 0}, {"2", 1}, {"3", 2}};
   std::map<std::string, int> shard_span = { {"1", nlabels}, {"2", nlabels}, {"3", nlabels} };
   std::map<std::string, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>> shard_ids;
@@ -62,11 +73,9 @@ BOOST_AUTO_TEST_CASE(makeShardIndicesFromShardIDsDefaultDevice)
   // Test for the shard indices
   TensorDataDefaultDevice<int, 3> indices_shard(dimensions);
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>> indices_shard_ptr = std::make_shared<TensorDataDefaultDevice<int,3>>(indices_shard);
-  Eigen::Tensor<int, 3> zeros(dimensions);
-  zeros.setZero();
-  indices_shard_ptr->setData(zeros);
+  indices_shard_ptr->setData();
   indices_shard_ptr->syncHAndDData(device);
-  tensorShard.makeShardIndicesFromShardIDs(axes_to_dims, shard_span, dimensions, shard_ids, indices_shard_ptr, device);
+  TensorShard::makeShardIndicesFromShardIDs(axes_to_dims, shard_span, dimensions, dimensions_max, shard_ids, indices_shard_ptr, device);
   indices_shard_ptr->syncHAndDData(device);
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
@@ -78,7 +87,7 @@ BOOST_AUTO_TEST_CASE(makeShardIndicesFromShardIDsDefaultDevice)
 
   // make the expected tensor indices
   std::map<std::string, int> shard_span_new = { {"1", 2}, {"2", 2}, {"3", 2} };
-  int shard_n_indices = 3;
+  int shard_n_indices = maxlabels/2;
   std::vector<int> shard_id_indices = { 0, 0, 1, 1, 2, 2 };
   Eigen::Tensor<int, 3> indices_test(nlabels, nlabels, nlabels);
   for (int i = 0; i < nlabels; ++i) {
@@ -99,9 +108,9 @@ BOOST_AUTO_TEST_CASE(makeShardIndicesFromShardIDsDefaultDevice)
   }
 
   // Test for the shard indices
-  indices_shard_ptr->setData(zeros);
+  indices_shard_ptr->setData();
   indices_shard_ptr->syncHAndDData(device);
-  tensorShard.makeShardIndicesFromShardIDs(axes_to_dims, shard_span_new, dimensions, shard_ids, indices_shard_ptr, device);
+  TensorShard::makeShardIndicesFromShardIDs(axes_to_dims, shard_span_new, dimensions, dimensions_max, shard_ids, indices_shard_ptr, device);
   indices_shard_ptr->syncHAndDData(device);
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {

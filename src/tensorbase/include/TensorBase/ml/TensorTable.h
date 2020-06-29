@@ -823,6 +823,8 @@ namespace TensorBase
     //virtual bool loadTensorTableIndicesBinary(const std::string& dir, DeviceT& device) = 0; ///< Read tensor indices from disk
 
   protected:
+    static int getMaxInt() { return 2e9; }
+
     int id_ = -1;
     std::string name_ = "";
     std::string dir_ = "";
@@ -844,8 +846,6 @@ namespace TensorBase
     std::map<std::string, int> shard_spans_; ///< the shard span in each dimension
     
   private:
-    int max_int_ = 2e9;
-
   	friend class cereal::access;
   	template<class Archive>
   	void serialize(Archive& archive) {
@@ -1425,7 +1425,7 @@ namespace TensorBase
   {
     // sort the indices view
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_values(indices_view_.at(axis_name)->getDataPointer().get(), indices_view_.at(axis_name)->getDimensions());
-    auto indices_view_selected = (indices_view_values != indices_view_values.constant(0)).select(indices_view_values, indices_view_values.constant(this->max_int_));
+    auto indices_view_selected = (indices_view_values != indices_view_values.constant(0)).select(indices_view_values, indices_view_values.constant(this->getMaxInt()));
     indices_view_values.device(device) = indices_view_selected;
     indices_view_.at(axis_name)->sort("ASC", device);
     indices_view_.at(axis_name)->syncHAndDData(device);
