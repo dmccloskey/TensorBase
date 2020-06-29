@@ -27,7 +27,7 @@
 
 namespace TensorBase
 {
-  int MAX_INT = 1e9;
+  int TENSORBASE_MAX_INT = 2e9;
 
   /**
     @brief Class for managing Tensor data and associated Axes
@@ -1425,7 +1425,7 @@ namespace TensorBase
   {
     // sort the indices view
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_values(indices_view_.at(axis_name)->getDataPointer().get(), indices_view_.at(axis_name)->getDimensions());
-    auto indices_view_selected = (indices_view_values != indices_view_values.constant(0)).select(indices_view_values, indices_view_values.constant(MAX_INT));
+    auto indices_view_selected = (indices_view_values != indices_view_values.constant(0)).select(indices_view_values, indices_view_values.constant(TENSORBASE_MAX_INT));
     indices_view_values.device(device) = indices_view_selected;
     indices_view_.at(axis_name)->sort("ASC", device);
     indices_view_.at(axis_name)->syncHAndDData(device);

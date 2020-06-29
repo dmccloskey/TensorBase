@@ -2942,7 +2942,7 @@ void test_appendToAxis2Gpu()
       }
     }
   }
-  TensorDataGpuPrimitiveT<float, 3> values_new(Eigen::array<Eigen::Index, 3>({ 1, nlabels, nlabels }));
+  TensorDataGpuPrimitiveT<float, 3> values_new(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   values_new.setData(tensor_values);
   std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> values_new_ptr = std::make_shared<TensorDataGpuPrimitiveT<float, 3>>(values_new);
   

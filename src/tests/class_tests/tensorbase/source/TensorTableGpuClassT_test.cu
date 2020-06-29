@@ -2732,7 +2732,7 @@ void test_appendToAxis2Gpu()
       }
     }
   }
-  TensorDataGpuClassT<TensorArrayGpu8, char, 3> values_new(Eigen::array<Eigen::Index, 3>({ 1, nlabels, nlabels }));
+  TensorDataGpuClassT<TensorArrayGpu8, char, 3> values_new(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
   values_new.setData(tensor_values);
   std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 3>> values_new_ptr = std::make_shared<TensorDataGpuClassT<TensorArrayGpu8, char, 3>>(values_new);
 

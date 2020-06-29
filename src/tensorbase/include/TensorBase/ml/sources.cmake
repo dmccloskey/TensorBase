@@ -32,6 +32,7 @@ set(sources_list_h
 	TensorOperationCpu.h
 	TensorOperationDefaultDevice.h
 	TensorOperationGpu.h
+	TensorShard.h
 	TensorTable.h
 	TensorTableConcept.h
 	TensorTableConceptCpu.h
