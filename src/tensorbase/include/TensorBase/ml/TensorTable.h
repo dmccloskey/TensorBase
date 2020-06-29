@@ -27,8 +27,6 @@
 
 namespace TensorBase
 {
-  int TENSORBASE_MAX_INT = 2e9;
-
   /**
     @brief Class for managing Tensor data and associated Axes
   */
@@ -846,6 +844,8 @@ namespace TensorBase
     std::map<std::string, int> shard_spans_; ///< the shard span in each dimension
     
   private:
+    int max_int_ = 2e9;
+
   	friend class cereal::access;
   	template<class Archive>
   	void serialize(Archive& archive) {
@@ -1425,7 +1425,7 @@ namespace TensorBase
   {
     // sort the indices view
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_values(indices_view_.at(axis_name)->getDataPointer().get(), indices_view_.at(axis_name)->getDimensions());
-    auto indices_view_selected = (indices_view_values != indices_view_values.constant(0)).select(indices_view_values, indices_view_values.constant(TENSORBASE_MAX_INT));
+    auto indices_view_selected = (indices_view_values != indices_view_values.constant(0)).select(indices_view_values, indices_view_values.constant(this->max_int_));
     indices_view_values.device(device) = indices_view_selected;
     indices_view_.at(axis_name)->sort("ASC", device);
     indices_view_.at(axis_name)->syncHAndDData(device);
