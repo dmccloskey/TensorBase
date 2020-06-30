@@ -607,45 +607,12 @@ namespace TensorBase
 	{
 		// allocate memory for the indices
 		TensorDataCpu<int, TDim> indices_shard_tmp(this->getDimensions());
-		Eigen::Tensor<int, TDim> zeros(this->getDimensions());
-		zeros.setZero();
-		indices_shard_tmp.setData(zeros);
-		indices_shard_tmp.syncHAndDData(device);
-		Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_shard_values(indices_shard_tmp.getDataPointer().get(), indices_shard_tmp.getDimensions());
+    indices_shard_tmp.setData();
+    indices_shard_tmp.syncHAndDData(device);
+    indices_shard = std::make_shared<TensorDataCpu<int, TDim>>(indices_shard_tmp);
 
-		// the number of shard ids along the axis
-		int n_shard_ids_cumulative = 1;
-
-		for (const auto& axis_to_index : this->axes_to_dims_) {
-			// determine the dimensions for reshaping and broadcasting the indices
-			Eigen::array<Eigen::Index, TDim> indices_reshape_dimensions;
-			Eigen::array<Eigen::Index, TDim> indices_bcast_dimensions;
-			for (int i = 0; i < TDim; ++i) {
-				if (i == this->axes_to_dims_.at(axis_to_index.first)) {
-					indices_reshape_dimensions.at(i) = (int)this->axes_.at(axis_to_index.first)->getNLabels();
-					indices_bcast_dimensions.at(i) = 1;
-				}
-				else {
-					indices_reshape_dimensions.at(i) = 1;
-					indices_bcast_dimensions.at(i) = this->getDimensions().at(i);
-				}
-			}
-
-			// normalize and broadcast the indices across the tensor
-			Eigen::TensorMap<Eigen::Tensor<int, TDim>> shard_id_reshape(this->shard_id_.at(axis_to_index.first)->getDataPointer().get(), indices_reshape_dimensions);
-			auto shard_id_norm = (shard_id_reshape - shard_id_reshape.constant(1)) * shard_id_reshape.constant(n_shard_ids_cumulative);
-			auto shard_id_bcast_values = shard_id_norm.broadcast(indices_bcast_dimensions);
-
-			// update the indices_shard_values
-			indices_shard_values.device(device) += shard_id_bcast_values;
-
-			// update the accumulative size
-			n_shard_ids_cumulative *= ceil(float(this->axes_.at(axis_to_index.first)->getNLabels()) / float(this->shard_spans_.at(axis_to_index.first)));
-		}
-		indices_shard_values.device(device) += indices_shard_values.constant(1);
-
-		// move over the results
-		indices_shard = std::make_shared<TensorDataCpu<int, TDim>>(indices_shard_tmp);
+    // make the shard indices
+    TensorShard::makeShardIndicesFromShardIDs(this->getAxesToDims(), this->getShardSpans(), this->getDimensions(), this->getMaximumDimensions(), this->getShardId(), indices_shard, device);
 	}
 	template<typename TensorT, int TDim>
 	inline void TensorTableCpu<TensorT, TDim>::runLengthEncodeIndex(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& data, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& n_runs, Eigen::ThreadPoolDevice& device) const

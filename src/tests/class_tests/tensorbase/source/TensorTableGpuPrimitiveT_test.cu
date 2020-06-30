@@ -57,14 +57,10 @@ void test_gettersAndSettersGpu()
   // Check getters/setters
   tensorTable.setId(1);
   tensorTable.setName("1");
-  std::map<std::string, int> shard_span = {
-    {"1", 2}, {"2", 2}, {"3", 3} };
-  tensorTable.setShardSpans(shard_span);
   tensorTable.setDir("dir");
 
   assert(tensorTable.getId() == 1);
   assert(tensorTable.getName() == "1");
-  assert(tensorTable.getShardSpans() == shard_span);
   assert(tensorTable.getDir() == "dir");
 
   // SetAxes associated getters/setters
@@ -84,7 +80,6 @@ void test_gettersAndSettersGpu()
   tensorTable.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1", dimensions1, labels1)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("2", dimensions2, labels2)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("3", dimensions3, labels3)));
-  tensorTable.setShardSpans(std::map<std::string, int>()); // reset the shard spans to zero
   tensorTable.setAxes(device);
 
   // Test expected axes values
@@ -151,6 +146,11 @@ void test_gettersAndSettersGpu()
   assert(tensorTable.getDimensions().at(1) == 3);
   assert(tensorTable.getDimensions().at(2) == 5);
   assert(tensorTable.getTensorSize() == 30);
+
+  // Test expected maximum dimensions
+  BOOST_CHECK_EQUAL(tensorTable.getMaximumDimensions().at(0), 36);
+  BOOST_CHECK_EQUAL(tensorTable.getMaximumDimensions().at(1), 54);
+  BOOST_CHECK_EQUAL(tensorTable.getMaximumDimensions().at(2), 90);
 
   // Test expected tensor data values
   assert(tensorTable.getDataDimensions().at(0) == 2);
@@ -4154,6 +4154,7 @@ void test_makeShardIndicesFromShardIDsGpu()
   int shard_span = 2;
   std::map<std::string, int> shard_span_new = { {"1", shard_span}, {"2", shard_span}, {"3", shard_span} };
   tensorTable.setShardSpans(shard_span_new);
+  tensorTable.setMaximumDimensions(Eigen::array<Eigen::Index, 3>({ nlabels , nlabels , nlabels }));
 
   // Test for the shard indices
   tensorTable.syncShardIdHAndDData(device);
@@ -4239,6 +4240,7 @@ void test_makeModifiedShardIDTensorGpu()
   std::map<std::string, int> shard_span_new = { {"1", shard_span}, {"2", shard_span}, {"3", shard_span} };
   tensorTable.setShardSpans(shard_span_new);
   tensorTable.reShardIndices(device);
+  tensorTable.setMaximumDimensions(Eigen::array<Eigen::Index, 3>({ nlabels , nlabels , nlabels }));
 
   // Test the unmodified case
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> shard_id_indices_ptr;
@@ -4378,6 +4380,7 @@ void test_makeNotInMemoryShardIDTensorGpu()
   std::map<std::string, int> shard_span_new = { {"1", shard_span}, {"2", shard_span}, {"3", shard_span} };
   tensorTable.setShardSpans(shard_span_new);
   tensorTable.reShardIndices(device);
+  tensorTable.setMaximumDimensions(Eigen::array<Eigen::Index, 3>({ nlabels , nlabels , nlabels }));
 
   // Test all in memory case and all selected case
   for (auto& in_memory_map : tensorTable.getNotInMemory()) {
