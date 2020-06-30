@@ -3882,6 +3882,41 @@ BOOST_AUTO_TEST_CASE(adjustSliceIndicesToDataSizeDefaultDevice)
   slice_indices = slice_indices_test;
   tensorTable.adjustSliceIndicesToDataSize(shard_data_size, slice_indices);
   BOOST_CHECK(slice_indices == slice_indices_test);
+
+  // NEW:::
+  // Test slices for shards 2 and 3 and memory is allocated for shards 2 and 3
+  slice_indices_test.clear();
+  slice_indices_test.emplace(2, std::make_pair(Eigen::array<Eigen::Index, 3>({ 1,0,0 }), Eigen::array<Eigen::Index, 3>({ 1,1,1 })));
+  slice_indices_test.emplace(3, std::make_pair(Eigen::array<Eigen::Index, 3>({ 2,0,0 }), Eigen::array<Eigen::Index, 3>({ 1,1,1 })));
+  tensorTable.initData(Eigen::array<Eigen::Index, 3>({ 2,1,1 }), device);
+  tensorTable.setData();
+  shard_data_size = 2;
+  slice_indices = slice_indices_test;
+  tensorTable.adjustSliceIndicesToDataSize(shard_data_size, slice_indices);
+  slice_indices_expected.clear();
+  slice_indices_expected.emplace(2, std::make_pair(Eigen::array<Eigen::Index, 3>({ 0,0,0 }), Eigen::array<Eigen::Index, 3>({ 1,1,1 })));
+  slice_indices_expected.emplace(3, std::make_pair(Eigen::array<Eigen::Index, 3>({ 1,0,0 }), Eigen::array<Eigen::Index, 3>({ 1,1,1 })));
+  for (const auto& slice_index : slice_indices) {
+    BOOST_CHECK(slice_index.second.first == slice_indices_expected.at(slice_index.first).first);
+    BOOST_CHECK(slice_index.second.second == slice_indices_expected.at(slice_index.first).second);
+  }
+
+  // Test slices for shards 1 and 14 and memory is allocated for shards 1 and 14
+  slice_indices_test.clear();
+  slice_indices_test.emplace(1, std::make_pair(Eigen::array<Eigen::Index, 3>({ 0,0,0 }), Eigen::array<Eigen::Index, 3>({ 1,1,1 })));
+  slice_indices_test.emplace(14, std::make_pair(Eigen::array<Eigen::Index, 3>({ 1,1,1 }), Eigen::array<Eigen::Index, 3>({ 1,1,1 })));
+  tensorTable.initData(Eigen::array<Eigen::Index, 3>({ 2,1,1 }), device);
+  tensorTable.setData();
+  shard_data_size = 2;
+  slice_indices = slice_indices_test;
+  tensorTable.adjustSliceIndicesToDataSize(shard_data_size, slice_indices);
+  slice_indices_expected.clear();
+  slice_indices_expected.emplace(1, std::make_pair(Eigen::array<Eigen::Index, 3>({ 0,0,0 }), Eigen::array<Eigen::Index, 3>({ 1,1,1 })));
+  slice_indices_expected.emplace(14, std::make_pair(Eigen::array<Eigen::Index, 3>({ 1,0,0 }), Eigen::array<Eigen::Index, 3>({ 1,1,1 })));
+  for (const auto& slice_index : slice_indices) {
+    BOOST_CHECK(slice_index.second.first == slice_indices_expected.at(slice_index.first).first);
+    BOOST_CHECK(slice_index.second.second == slice_indices_expected.at(slice_index.first).second);
+  }
 }
 
 BOOST_AUTO_TEST_CASE(makeTensorTableShardFilenameDefaultDevice)

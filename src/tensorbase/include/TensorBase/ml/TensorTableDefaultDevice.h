@@ -764,6 +764,7 @@ namespace TensorBase
     }
 
     // adjust the slices if necessary
+    std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>> slice_indices_copy = slice_indices;
     this->adjustSliceIndicesToDataSize(data_size, slice_indices);
 
     // read in the shards and update the TensorTable data asyncronously

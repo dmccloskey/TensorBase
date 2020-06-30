@@ -1333,6 +1333,8 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DShardingDefaultDevice)
   std::shared_ptr<int[]> data_update_data;
   n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_update_values(data_update_data.get(), data_size, 5);
+  std::cout << "Expected\n" << values << std::endl;
+  std::cout << "Predicted\n" << data_update_values << std::endl;
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 5; ++j) {
       if (j == 4) BOOST_CHECK_EQUAL(data_update_values(i, j), -1);
@@ -1514,6 +1516,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete1DShardingDefaultDevice)
   std::shared_ptr<int[]> data_update_data;
   n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_update_values(data_update_data.get(), 1, data_size);
+  std::cout << "data_update_values\n" << data_update_values << std::endl;
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
       BOOST_CHECK_EQUAL(data_update_values(i, j), -1);
@@ -1727,6 +1730,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DShardingDefaultDevice)
   std::shared_ptr<int[]> data_update_data;
   n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_update_values(data_update_data.get(), t_dim_size, xyz_dim_size);
+  std::cout << "data_update_values\n" << data_update_values << std::endl;
   for (int i = 0; i < xyz_dim_size; ++i) {
     for (int j = 0; j < t_dim_size; ++j) {
       BOOST_CHECK_EQUAL(data_update_values(i, j), -1);
