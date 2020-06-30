@@ -148,9 +148,9 @@ void test_gettersAndSettersGpu()
   assert(tensorTable.getTensorSize() == 30);
 
   // Test expected maximum dimensions
-  BOOST_CHECK_EQUAL(tensorTable.getMaximumDimensions().at(0), 36);
-  BOOST_CHECK_EQUAL(tensorTable.getMaximumDimensions().at(1), 54);
-  BOOST_CHECK_EQUAL(tensorTable.getMaximumDimensions().at(2), 90);
+  assert(tensorTable.getMaximumDimensions().at(0) == 36);
+  assert(tensorTable.getMaximumDimensions().at(1) == 54);
+  assert(tensorTable.getMaximumDimensions().at(2) == 90);
 
   // Test expected tensor data values
   assert(tensorTable.getDataDimensions().at(0) == 2);
