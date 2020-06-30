@@ -38,16 +38,34 @@ BOOST_AUTO_TEST_CASE(getNMaxShardsDefaultDevice)
   BOOST_CHECK_EQUAL(TensorShard::getNMaxShards(dims_large), -1);
 }
 
+BOOST_AUTO_TEST_CASE(checkShardSpansDefaultDevice)
+{
+  Eigen::array<Eigen::Index, 4> dimensions_medium = { 0, 1000, 3, 0 };
+  std::map<std::string, int> axes_to_dims_medium = { {"1", 0}, {"2", 1}, {"3", 2}, {"4", 3} };
+  std::map<std::string, int> shard_span_medium = { {"1", 10}, {"2", 2e9}, {"3", -1}, {"4", 0} };
+  TensorShard::checkShardSpans<4>(axes_to_dims_medium, dimensions_medium, shard_span_medium);
+  BOOST_CHECK_EQUAL(shard_span_medium.at("1"), 10);
+  BOOST_CHECK_EQUAL(shard_span_medium.at("2"), 1000);
+  BOOST_CHECK_EQUAL(shard_span_medium.at("3"), 3);
+  BOOST_CHECK_EQUAL(shard_span_medium.at("4"), 1e9);
+}
+
 BOOST_AUTO_TEST_CASE(getDefaultMaxDimensionsDefaultDevice)
 {
-  auto dims_small = TensorShard::getDefaultMaxDimensions<3>();
-  for (int i=0;i<3;++i) BOOST_CHECK_EQUAL(dims_small.at(i), -1);
+  std::map<std::string, int> axes_to_dims_small = { {"1", 0}, {"2", 1}, {"3", 2} };
+  std::map<std::string, int> shard_span_small = { {"1", 1}, {"2", 2}, {"3", 3} };
+  auto dims_small = TensorShard::getDefaultMaxDimensions<3>(axes_to_dims_small, shard_span_small);
+  BOOST_CHECK_EQUAL(dims_small.at(0), 18);
+  BOOST_CHECK_EQUAL(dims_small.at(1), 36);
+  BOOST_CHECK_EQUAL(dims_small.at(2), 54);
 
-  auto dims_medium = TensorShard::getDefaultMaxDimensions<4>();
-  for (int i = 0; i < 4; ++i) BOOST_CHECK_EQUAL(dims_medium.at(i), -1);
-
-  auto dims_large = TensorShard::getDefaultMaxDimensions<64>();
-  for (int i = 0; i < 64; ++i) BOOST_CHECK_EQUAL(dims_large.at(i), 2);
+  std::map<std::string, int> axes_to_dims_medium = { {"1", 0}, {"2", 1}, {"3", 2}, {"4", 3} };
+  std::map<std::string, int> shard_span_medium = { {"1", 10}, {"2", 20}, {"3", 30}, {"4", 40} };
+  auto dims_medium = TensorShard::getDefaultMaxDimensions<4>(axes_to_dims_medium, shard_span_medium);
+  BOOST_CHECK_EQUAL(dims_medium.at(0), 140);
+  BOOST_CHECK_EQUAL(dims_medium.at(1), 280);
+  BOOST_CHECK_EQUAL(dims_medium.at(2), 420);
+  BOOST_CHECK_EQUAL(dims_medium.at(3), 560);
 }
 
 BOOST_AUTO_TEST_CASE(makeShardIndicesFromShardIDsDefaultDevice)

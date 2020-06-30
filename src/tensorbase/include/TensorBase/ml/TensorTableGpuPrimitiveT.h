@@ -185,19 +185,19 @@ namespace TensorBase
       }
       else {
         indices_reshape_dimensions.at(i) = 1;
-        indices_bcast_dimensions.at(i) = this->dimensions_.at(i);
+        indices_bcast_dimensions.at(i) = this->getDimensions().at(i);
       }
     }
 
     // allocate to memory
-    TensorDataGpuPrimitiveT<int, TDim> indices_view_bcast_tmp(this->dimensions_);
+    TensorDataGpuPrimitiveT<int, TDim> indices_view_bcast_tmp(this->getDimensions());
     indices_view_bcast_tmp.setData();
     indices_view_bcast_tmp.syncHAndDData(device);
 
     // broadcast the indices across the tensor
     Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_view_reshape(this->indices_view_.at(axis_name)->getDataPointer().get(), indices_reshape_dimensions);
     auto indices_view_bcast_values = indices_view_reshape.broadcast(indices_bcast_dimensions);
-    Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_view_bcast_map(indices_view_bcast_tmp.getDataPointer().get(), this->dimensions_);
+    Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_view_bcast_map(indices_view_bcast_tmp.getDataPointer().get(), this->getDimensions());
     indices_view_bcast_map.device(device) = indices_view_bcast_values;
 
     // move over the results
@@ -311,7 +311,7 @@ namespace TensorBase
         }
         else {
           indices_reshape_dimensions.at(i) = 1;
-          indices_bcast_dimensions.at(i) = this->dimensions_.at(i);
+          indices_bcast_dimensions.at(i) = this->getDimensions().at(i);
         }
       }
 
@@ -421,7 +421,7 @@ namespace TensorBase
         }
         else {
           indices_reshape_dimensions.at(i) = 1;
-          indices_bcast_dimensions.at(i) = this->dimensions_.at(i);
+          indices_bcast_dimensions.at(i) = this->getDimensions().at(i);
         }
       }
 
@@ -488,12 +488,12 @@ namespace TensorBase
     Eigen::array<Eigen::Index, TDim> indices_bcast_dimensions;
     for (const auto& axis_to_index : this->axes_to_dims_) {
       if (axis_to_index.first == axis_name) {
-        indices_reshape_dimensions.at(axis_to_index.second) = this->dimensions_.at(axis_to_index.second);
+        indices_reshape_dimensions.at(axis_to_index.second) = this->getDimensions().at(axis_to_index.second);
         indices_bcast_dimensions.at(axis_to_index.second) = 1;
       }
       else {
         indices_reshape_dimensions.at(axis_to_index.second) = 1;
-        indices_bcast_dimensions.at(axis_to_index.second) = this->dimensions_.at(axis_to_index.second);
+        indices_bcast_dimensions.at(axis_to_index.second) = this->getDimensions().at(axis_to_index.second);
       }
     }
 
@@ -682,7 +682,7 @@ namespace TensorBase
         }
         else {
           indices_reshape_dimensions.at(i) = 1;
-          indices_bcast_dimensions.at(i) = this->dimensions_.at(i);
+          indices_bcast_dimensions.at(i) = this->getDimensions().at(i);
         }
       }
 

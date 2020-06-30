@@ -35,14 +35,31 @@ namespace TensorBase
     static int getNMaxShards(const Eigen::array<Eigen::Index, TDim>& tensor_dimensions);
 
     /*
-    @brief Determine the maximum dimension sizes given the number of tensor dimensions
+    @brief Check the values of the shard span and replace the following invalid entries
+      - values over the maximum shard index with the tensor dimensions
+      - values less than or equal to zero with the tensor dimensions
+      if the tensor dimensions are not give (i.e., set to 0) the value will be replaced with the maximum shard index
 
+    @param[in] axes_to_dims
     @param[in] tensor_dimensions The dimensions of the tensor
+    @param[in,out] shard_spans
+    */
+    template<int TDim>
+    static void checkShardSpans(const std::map<std::string, int>& axes_to_dims, const Eigen::array<Eigen::Index, TDim>& tensor_dimensions, std::map<std::string, int>& shard_spans);
+
+    /*
+    @brief Determine the maximum dimension sizes given the number of tensor dimensions
+      and the shard spans using the following algorithm
+
+      max_dim_size(i) = log(max_shard_id)/log(TDim)*shard_span(i)
+
+    @param[in] axes_to_dims
+    @param[in] shard_spans
 
     @returns An array populated with the maximum dimension size
     */
     template<int TDim>
-    static Eigen::array<Eigen::Index, TDim> getDefaultMaxDimensions();
+    static Eigen::array<Eigen::Index, TDim> getDefaultMaxDimensions(const std::map<std::string, int>& axes_to_dims, const std::map<std::string, int>& shard_spans);
 
     /*
     @brief Convert the 1D shard ID into a TDim indices tensor that describes the shart IDs of each Tensor element
@@ -86,11 +103,25 @@ namespace TensorBase
     else return n_shard_indices / getMaxShardIndex() + 1;
   }
   template<int TDim>
-  inline Eigen::array<Eigen::Index, TDim> TensorShard::getDefaultMaxDimensions()
+  inline void TensorShard::checkShardSpans(const std::map<std::string, int>& axes_to_dims, const Eigen::array<Eigen::Index, TDim>& tensor_dimensions, std::map<std::string, int>& shard_spans)
   {
+    assert(axes_to_dims.size() == TDim);
+    assert(shard_spans.size() == TDim);
+    for (auto& shard_span : shard_spans) {
+      if (shard_span.second > getMaxShardIndex() && tensor_dimensions.at(axes_to_dims.at(shard_span.first)) <= 0) shard_span.second = getMaxShardIndex();
+      else if (shard_span.second <= 0 && tensor_dimensions.at(axes_to_dims.at(shard_span.first)) <= 0) shard_span.second = getMaxShardIndex();
+      else if (shard_span.second > getMaxShardIndex()) shard_span.second = tensor_dimensions.at(axes_to_dims.at(shard_span.first));
+      else if (shard_span.second <= 0) shard_span.second = tensor_dimensions.at(axes_to_dims.at(shard_span.first));
+    }
+  }
+  template<int TDim>
+  inline Eigen::array<Eigen::Index, TDim> TensorShard::getDefaultMaxDimensions(const std::map<std::string, int>& axes_to_dims, const std::map<std::string, int>& shard_spans)
+  {
+    assert(axes_to_dims.size() == TDim);
+    assert(shard_spans.size() == TDim);
     int max_dim_size = std::log(double(getMaxShardID()))/std::log(double(TDim));
     Eigen::array<Eigen::Index, TDim> maximum_dimensions;
-    for (int i = 0; i < TDim; ++i) maximum_dimensions.at(i) = max_dim_size;
+    for (const auto& axis_to_index : axes_to_dims) maximum_dimensions.at(axis_to_index.second) = max_dim_size * shard_spans.at(axis_to_index.first);
     return maximum_dimensions;
   }
   template<typename DeviceT, int TDim>

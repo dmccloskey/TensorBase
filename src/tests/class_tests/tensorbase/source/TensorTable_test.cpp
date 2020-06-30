@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(comparatorDefaultDevice)
   tensorTable1.setName("1.1");
   BOOST_CHECK(tensorTable_test != tensorTable1); // difference names but same axes
 
-  // Test differen axes but same name
+  // Test different axes but same name
   TensorTableDefaultDevice<float, 3> tensorTable2("1");
   tensorTable2.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("4", dimensions1, labels1)));
   tensorTable2.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("5", dimensions2, labels2)));
@@ -96,14 +96,10 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   // Check getters/setters
   tensorTable.setId(1);
   tensorTable.setName("1");
-  std::map<std::string, int> shard_span = {
-    {"1", 2}, {"2", 2}, {"3", 3} };
-  tensorTable.setShardSpans(shard_span);
   tensorTable.setDir("dir");
 
   BOOST_CHECK_EQUAL(tensorTable.getId(), 1);
   BOOST_CHECK_EQUAL(tensorTable.getName(), "1");
-  BOOST_CHECK(tensorTable.getShardSpans() == shard_span);
   BOOST_CHECK_EQUAL(tensorTable.getDir(), "dir");
 
   // SetAxes associated getters/setters
@@ -123,7 +119,6 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
   tensorTable.addTensorAxis(std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3)));
-  tensorTable.setShardSpans(std::map<std::string, int>()); // reset the shard spans to zero
   tensorTable.setAxes(device);
 
   // Test expected axes values
@@ -190,6 +185,11 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(1), 3);
   BOOST_CHECK_EQUAL(tensorTable.getDimensions().at(2), 5);
   BOOST_CHECK_EQUAL(tensorTable.getTensorSize(), 30);
+
+  // Test expected maximum dimensions
+  BOOST_CHECK_EQUAL(tensorTable.getMaximumDimensions().at(0), 36);
+  BOOST_CHECK_EQUAL(tensorTable.getMaximumDimensions().at(1), 54);
+  BOOST_CHECK_EQUAL(tensorTable.getMaximumDimensions().at(2), 90);
 
   // Test expected tensor data values
   BOOST_CHECK_EQUAL(tensorTable.getDataDimensions().at(0), 2);
@@ -3396,6 +3396,7 @@ BOOST_AUTO_TEST_CASE(makeShardIndicesFromShardIDsDefaultDevice)
   int shard_span = 2;
   std::map<std::string, int> shard_span_new = { {"1", shard_span}, {"2", shard_span}, {"3", shard_span} };
   tensorTable.setShardSpans(shard_span_new);
+  tensorTable.setMaximumDimensions(Eigen::array<Eigen::Index, 3>({ nlabels , nlabels , nlabels }));
 
   // Test for the shard indices
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>> indices_shard_ptr;
@@ -3415,7 +3416,7 @@ BOOST_AUTO_TEST_CASE(makeShardIndicesFromShardIDsDefaultDevice)
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
-        indices_test(i, j, k) = shard_id_indices.at(i) + shard_id_indices.at(j) * shard_n_indices + shard_id_indices.at(k) * shard_n_indices*shard_n_indices + 1;
+        indices_test(i, j, k) = shard_id_indices.at(i) + shard_id_indices.at(j) * shard_n_indices + shard_id_indices.at(k) * shard_n_indices * shard_n_indices + 1;
       }
     }
   }
@@ -3462,6 +3463,7 @@ BOOST_AUTO_TEST_CASE(makeModifiedShardIDTensorDefaultDevice)
   std::map<std::string, int> shard_span_new = { {"1", shard_span}, {"2", shard_span}, {"3", shard_span} };
   tensorTable.setShardSpans(shard_span_new);
   tensorTable.reShardIndices(device);
+  tensorTable.setMaximumDimensions(Eigen::array<Eigen::Index, 3>({ nlabels , nlabels , nlabels }));
 
   // Test the unmodified case
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> shard_id_indices_ptr;
@@ -3575,6 +3577,7 @@ BOOST_AUTO_TEST_CASE(makeNotInMemoryShardIDTensorDefaultDevice)
   std::map<std::string, int> shard_span_new = { {"1", shard_span}, {"2", shard_span}, {"3", shard_span} };
   tensorTable.setShardSpans(shard_span_new);
   tensorTable.reShardIndices(device);
+  tensorTable.setMaximumDimensions(Eigen::array<Eigen::Index, 3>({ nlabels , nlabels , nlabels }));
 
   // Test all in memory case and all selected case
   for (auto& in_memory_map : tensorTable.getNotInMemory()) {

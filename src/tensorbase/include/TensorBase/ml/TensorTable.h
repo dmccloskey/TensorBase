@@ -13,6 +13,7 @@
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/ml/TensorAxisConcept.h>
 #include <TensorBase/ml/TensorClauses.h>
+#include <TensorBase/ml/TensorShard.h>
 #include <TensorBase/io/DataFile.h>
 #include <map>
 #include <array>
@@ -113,6 +114,8 @@ namespace TensorBase
 
     void setDimensions(const Eigen::array<Eigen::Index, TDim>& dimensions); ///< dimensions setter
     Eigen::array<Eigen::Index, TDim> getDimensions() const { return dimensions_; }  ///< dimensions getter
+    void setMaximumDimensions(const Eigen::array<Eigen::Index, TDim>& dimensions_maximum) { dimensions_maximum_ = dimensions_maximum; }; ///< dimensions_maximum setter
+    Eigen::array<Eigen::Index, TDim> getMaximumDimensions() const;  ///< dimensions_maximum getter
     size_t getTensorSize() const { return tensor_size_; }; ///< the size of the dimensions
     int getDimFromAxisName(const std::string& axis_name) const { return axes_to_dims_.at(axis_name); }
 		std::map<std::string, int> getAxesToDims() const { return axes_to_dims_; }  ///< axes_to_dims getter
@@ -177,7 +180,7 @@ namespace TensorBase
     template<typename T>
     void getDataPointer(std::shared_ptr<T[]>& data_copy); ///< TensorTableConcept data getter
 
-    void setShardSpans(const std::map<std::string, int>& shard_spans) { shard_spans_ = shard_spans; }; ///< shard_span setter
+    void setShardSpans(const std::map<std::string, int>& shard_spans); ///< shard_span setter
     std::map<std::string, int> getShardSpans() const { return shard_spans_; }; ///< shard_span getter
 
     /*
@@ -830,6 +833,7 @@ namespace TensorBase
     std::string dir_ = "";
 
     Eigen::array<Eigen::Index, TDim> dimensions_ = Eigen::array<Eigen::Index, TDim>(); ///< dimensions of the tensor table (dimensions_ and data_->dimensions_ need not be the same)
+    Eigen::array<Eigen::Index, TDim> dimensions_maximum_ = Eigen::array<Eigen::Index, TDim>(); ///< The maximum dimensions of the tensor table
     size_t tensor_size_ = 0; /// < size of the tensor table (tensor_size_ and data_->tensor_size_ need not be the same)
     std::map<std::string, std::shared_ptr<TensorAxisConcept<DeviceT>>> axes_; ///< primary axis is dim=0
 
@@ -870,6 +874,15 @@ namespace TensorBase
       tensor_size *= getDimensions().at(i);
     }
     tensor_size_ = tensor_size;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline Eigen::array<Eigen::Index, TDim> TensorTable<TensorT, DeviceT, TDim>::getMaximumDimensions() const
+  {
+    if (dimensions_maximum_.size() > 0 && dimensions_maximum_.at(0) > 0)
+      return dimensions_maximum_;
+    else
+      return TensorShard::getDefaultMaxDimensions<TDim>(getAxesToDims(), getShardSpans());
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
@@ -1273,6 +1286,13 @@ namespace TensorBase
     if (!statuses.first)
       synced = syncHAndDData(device);
     return synced;
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::setShardSpans(const std::map<std::string, int>& shard_spans)
+  {
+    shard_spans_ = shard_spans;
+    TensorShard::checkShardSpans(getAxesToDims(), getDimensions(), shard_spans_);
   }
 
   template<typename TensorT, typename DeviceT, int TDim>

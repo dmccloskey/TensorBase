@@ -177,18 +177,18 @@ namespace TensorBase
       }
       else {
         indices_reshape_dimensions.at(i) = 1;
-        indices_bcast_dimensions.at(i) = this->dimensions_.at(i);
+        indices_bcast_dimensions.at(i) = this->getDimensions().at(i);
       }
     }
 
     // allocate to memory
-    TensorDataDefaultDevice<int, TDim> indices_view_bcast_tmp(this->dimensions_);
+    TensorDataDefaultDevice<int, TDim> indices_view_bcast_tmp(this->getDimensions());
     indices_view_bcast_tmp.setData();
 
     // broadcast the indices across the tensor
     Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_view_reshape(this->indices_view_.at(axis_name)->getDataPointer().get(), indices_reshape_dimensions);
     auto indices_view_bcast_values = indices_view_reshape.broadcast(indices_bcast_dimensions);
-    Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_view_bcast_map(indices_view_bcast_tmp.getDataPointer().get(), this->dimensions_);
+    Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_view_bcast_map(indices_view_bcast_tmp.getDataPointer().get(), this->getDimensions());
     indices_view_bcast_map.device(device) = indices_view_bcast_values;
     
     // move over the results
@@ -294,12 +294,12 @@ namespace TensorBase
       Eigen::array<Eigen::Index, TDim> indices_bcast_dimensions;
       for (int i = 0; i < TDim; ++i) {
         if (i == this->axes_to_dims_.at(axis_to_index.first)) {
-          indices_reshape_dimensions.at(i) = this->dimensions_.at(i);
+          indices_reshape_dimensions.at(i) = this->getDimensions().at(i);
           indices_bcast_dimensions.at(i) = 1;
         }
         else {
           indices_reshape_dimensions.at(i) = 1;
-          indices_bcast_dimensions.at(i) = this->dimensions_.at(i);
+          indices_bcast_dimensions.at(i) = this->getDimensions().at(i);
         }
       }
       
@@ -396,7 +396,7 @@ namespace TensorBase
         }
         else {
           indices_reshape_dimensions.at(i) = 1;
-          indices_bcast_dimensions.at(i) = this->dimensions_.at(i);
+          indices_bcast_dimensions.at(i) = this->getDimensions().at(i);
         }
       }
 
@@ -461,12 +461,12 @@ namespace TensorBase
     Eigen::array<Eigen::Index, TDim> indices_bcast_dimensions;
     for (const auto& axis_to_index : this->axes_to_dims_) {
       if (axis_to_index.first == axis_name) {
-        indices_reshape_dimensions.at(axis_to_index.second) = this->dimensions_.at(axis_to_index.second);
+        indices_reshape_dimensions.at(axis_to_index.second) = this->getDimensions().at(axis_to_index.second);
         indices_bcast_dimensions.at(axis_to_index.second) = 1;
       }
       else {
         indices_reshape_dimensions.at(axis_to_index.second) = 1;
-        indices_bcast_dimensions.at(axis_to_index.second) = this->dimensions_.at(axis_to_index.second);
+        indices_bcast_dimensions.at(axis_to_index.second) = this->getDimensions().at(axis_to_index.second);
       }
     }
 
@@ -609,45 +609,12 @@ namespace TensorBase
   {
     // allocate memory for the indices
     TensorDataDefaultDevice<int, TDim> indices_shard_tmp(this->getDimensions());
-    Eigen::Tensor<int, TDim> zeros(this->getDimensions());
-    zeros.setZero();
-    indices_shard_tmp.setData(zeros);
+    indices_shard_tmp.setData();
     indices_shard_tmp.syncHAndDData(device);
-    Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_shard_values(indices_shard_tmp.getDataPointer().get(), indices_shard_tmp.getDimensions());
-
-    // the number of shard ids along the axis
-    int n_shard_ids_cumulative = 1;
-
-    for (const auto& axis_to_index : this->axes_to_dims_) {
-      // determine the dimensions for reshaping and broadcasting the indices
-      Eigen::array<Eigen::Index, TDim> indices_reshape_dimensions;
-      Eigen::array<Eigen::Index, TDim> indices_bcast_dimensions;
-      for (int i = 0; i < TDim; ++i) {
-        if (i == this->axes_to_dims_.at(axis_to_index.first)) {
-          indices_reshape_dimensions.at(i) = (int)this->axes_.at(axis_to_index.first)->getNLabels();
-          indices_bcast_dimensions.at(i) = 1;
-        }
-        else {
-          indices_reshape_dimensions.at(i) = 1;
-          indices_bcast_dimensions.at(i) = this->dimensions_.at(i);
-        }
-      }
-
-      // normalize and broadcast the indices across the tensor
-      Eigen::TensorMap<Eigen::Tensor<int, TDim>> shard_id_reshape(this->shard_id_.at(axis_to_index.first)->getDataPointer().get(), indices_reshape_dimensions);
-      auto shard_id_norm = (shard_id_reshape - shard_id_reshape.constant(1)) * shard_id_reshape.constant(n_shard_ids_cumulative);
-      auto shard_id_bcast_values = shard_id_norm.broadcast(indices_bcast_dimensions);
-
-      // update the indices_shard_values
-      indices_shard_values.device(device) += shard_id_bcast_values;
-
-      // update the accumulative size
-      n_shard_ids_cumulative *= ceil(float(this->axes_.at(axis_to_index.first)->getNLabels())/float(this->shard_spans_.at(axis_to_index.first)));
-    }
-    indices_shard_values.device(device) += indices_shard_values.constant(1);
-
-    // move over the results
     indices_shard = std::make_shared<TensorDataDefaultDevice<int, TDim>>(indices_shard_tmp);
+
+    // make the shard indices
+    TensorShard::makeShardIndicesFromShardIDs(this->getAxesToDims(), this->getShardSpans(), this->getDimensions(), this->getMaximumDimensions(), this->getShardId(), indices_shard, device);
   }
   template<typename TensorT, int TDim>
   inline void TensorTableDefaultDevice<TensorT, TDim>::runLengthEncodeIndex(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& data, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& count, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& n_runs, Eigen::DefaultDevice &device) const
