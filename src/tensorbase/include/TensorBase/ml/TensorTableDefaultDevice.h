@@ -693,7 +693,8 @@ namespace TensorBase
     int shard_data_size = 1;
     for (const auto& axis_to_dim : this->axes_to_dims_) {
       // NOTE: not sure if this part can be done on the GPU using a % b = a - (b * int(a/b)) as the modulo operator
-      std::set<int> unique_indices;
+      int minimum_index = this->getMaxInt();
+      int maximum_index = 0;
       // PARALLEL: could execute this code using multiple Threads though
       for (int i = 0; i < modified_shard_ids->getTensorSize(); ++i) {
         int min_index = int(floor(float(shard_slice_min.getData()(i)) / float(axis_size_cum))) % this->axes_.at(axis_to_dim.first)->getNLabels();
@@ -701,12 +702,14 @@ namespace TensorBase
         int max_index = int(floor(float(shard_slice_max.getData()(i)) / float(axis_size_cum))) % this->axes_.at(axis_to_dim.first)->getNLabels();
         int span = max_index - min_index + 1;
         slice_indices.at(modified_shard_ids->getData()(i)).second.at(axis_to_dim.second) = span;
-        unique_indices.insert(min_index); // only 1 index needed per shard
+        minimum_index = std::min(minimum_index, min_index);
+        maximum_index = std::max(maximum_index, max_index);
       }
       // Estimate the dimensions based off the the unique indices
       // NOTE: worst case is an over-estimate
-      int shard_data_size_dim_estimate = unique_indices.size() * this->getShardSpans().at(axis_to_dim.first);
+      int shard_data_size_dim_estimate = (maximum_index - minimum_index) * this->getShardSpans().at(axis_to_dim.first);
       if (shard_data_size_dim_estimate > this->getDimensions().at(axis_to_dim.second)) shard_data_size_dim_estimate = this->getDimensions().at(axis_to_dim.second);
+      else if (shard_data_size_dim_estimate == 0) shard_data_size_dim_estimate = 1;
       shard_data_dimensions.at(axis_to_dim.second) = shard_data_size_dim_estimate;
       shard_data_size*= shard_data_size_dim_estimate;
 
@@ -763,10 +766,6 @@ namespace TensorBase
       this->syncHData(device); // D to H
     }
 
-    // adjust the slices if necessary
-    std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>> slice_indices_copy = slice_indices;
-    this->adjustSliceIndicesToDataSize(data_size, slice_indices);
-
     // read in the shards and update the TensorTable data asyncronously
     for (const auto slice_index : slice_indices) {
       // read in the shard
@@ -806,9 +805,6 @@ namespace TensorBase
       std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>> slice_indices;
       Eigen::array<Eigen::Index, TDim> shard_dimensions;
       const int data_size = this->makeSliceIndicesFromShardIndices(modified_shard_ids, slice_indices, shard_dimensions, device);
-
-      // adjust the slices if necessary
-      this->adjustSliceIndicesToDataSize(data_size, slice_indices);
 
       // write the TensorTable shards to disk asyncronously
       this->syncHData(device); // D to H
