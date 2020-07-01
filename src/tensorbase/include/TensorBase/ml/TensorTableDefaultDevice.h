@@ -701,15 +701,20 @@ namespace TensorBase
         slice_indices.at(modified_shard_ids->getData()(i)).first.at(axis_to_dim.second) = min_index;
         int max_index = int(floor(float(shard_slice_max.getData()(i)) / float(axis_size_cum))) % this->axes_.at(axis_to_dim.first)->getNLabels();
         int span = max_index - min_index + 1;
+        if (min_index < 0 || max_index < 0 || span < 0) {
+          std::cout << "modified_shard_ids:\n" << modified_shard_ids->getData() << std::endl;
+          std::cout << "shard_slice_min:\n" << shard_slice_min.getData() << std::endl;
+          std::cout << "shard_slice_max:\n" << shard_slice_max.getData() << std::endl;
+          std::cout << "min or max index is less than 0." << std::endl;
+        }
         slice_indices.at(modified_shard_ids->getData()(i)).second.at(axis_to_dim.second) = span;
         minimum_index = std::min(minimum_index, min_index);
         maximum_index = std::max(maximum_index, max_index);
       }
       // Estimate the dimensions based off the the unique indices
       // NOTE: worst case is an over-estimate
-      int shard_data_size_dim_estimate = (maximum_index - minimum_index) * this->getShardSpans().at(axis_to_dim.first);
+      int shard_data_size_dim_estimate = (maximum_index + 1) * this->getShardSpans().at(axis_to_dim.first);
       if (shard_data_size_dim_estimate > this->getDimensions().at(axis_to_dim.second)) shard_data_size_dim_estimate = this->getDimensions().at(axis_to_dim.second);
-      else if (shard_data_size_dim_estimate == 0) shard_data_size_dim_estimate = 1;
       shard_data_dimensions.at(axis_to_dim.second) = shard_data_size_dim_estimate;
       shard_data_size*= shard_data_size_dim_estimate;
 
