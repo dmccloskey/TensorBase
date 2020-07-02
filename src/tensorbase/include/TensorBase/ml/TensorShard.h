@@ -161,7 +161,7 @@ namespace TensorBase
       indices_shard_values.device(device) += shard_id_bcast_values;
 
       // update the accumulative size
-      n_shard_ids_cumulative *= ceil(float(max_dimensions.at(axes_to_dims.at(axis_to_index.first))) / float(shard_spans.at(axis_to_index.first))); // Previous logic
+      n_shard_ids_cumulative *= ceil(float(max_dimensions.at(axes_to_dims.at(axis_to_index.first))) / float(shard_spans.at(axis_to_index.first)));
     }
     indices_shard_values.device(device) += indices_shard_values.constant(1);
   }

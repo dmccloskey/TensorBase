@@ -702,21 +702,24 @@ namespace TensorBase
         int max_index = int(floor(float(shard_slice_max.getData()(i)) / float(axis_size_cum))) % this->axes_.at(axis_to_dim.first)->getNLabels();
         int span = max_index - min_index + 1;
         if (min_index < 0 || max_index < 0 || span < 0) {
-          std::cout << "modified_shard_ids:\n" << modified_shard_ids->getData() << std::endl;
-          std::cout << "shard_slice_min:\n" << shard_slice_min.getData() << std::endl;
-          std::cout << "shard_slice_max:\n" << shard_slice_max.getData() << std::endl;
-          std::cout << "min or max index is less than 0." << std::endl;
+          std::cout << "Check that the maximum_dimensions are set correctly!" << std::endl;
         }
         slice_indices.at(modified_shard_ids->getData()(i)).second.at(axis_to_dim.second) = span;
         minimum_index = std::min(minimum_index, min_index);
         maximum_index = std::max(maximum_index, max_index);
       }
       // Estimate the dimensions based off the the unique indices
-      // NOTE: worst case is an over-estimate
-      int shard_data_size_dim_estimate = (maximum_index + 1) * this->getShardSpans().at(axis_to_dim.first);
-      if (shard_data_size_dim_estimate > this->getDimensions().at(axis_to_dim.second)) shard_data_size_dim_estimate = this->getDimensions().at(axis_to_dim.second);
+      int shard_data_size_dim_estimate = maximum_index + 1; // NOTE: assumes starting from 0
+      //int shard_data_size_dim_estimate = maximum_index - minimum_index + 1; // NOTE: assumes starting from minimum_index (but we need to adjust the slice indices accordingly)
       shard_data_dimensions.at(axis_to_dim.second) = shard_data_size_dim_estimate;
       shard_data_size*= shard_data_size_dim_estimate;
+
+      //// Re-adjust the offset slice index to the minimium_index
+      //// NOTE: assumes starting from minimum_index
+      //for (int i = 0; i < modified_shard_ids->getTensorSize(); ++i) {
+      //  int min_index = int(floor(float(shard_slice_min.getData()(i)) / float(axis_size_cum))) % this->axes_.at(axis_to_dim.first)->getNLabels();
+      //  slice_indices.at(modified_shard_ids->getData()(i)).first.at(axis_to_dim.second) = min_index - minimum_index;
+      //}
 
       // update the accumulative size
       axis_size_cum *= this->axes_.at(axis_to_dim.first)->getNLabels();
@@ -764,8 +767,11 @@ namespace TensorBase
     const int data_size = this->makeSliceIndicesFromShardIndices(not_in_memory_shard_ids, slice_indices, shard_dimensions, device);
 
     // check if enough data is allocated for the slices
-    if (this->getDataTensorSize() < data_size) {
-      this->setDataShards(shard_dimensions, device);
+    bool data_dims_too_small = false;
+    for (int i = 0; i < TDim; ++i) if (this->getDataDimensions().at(i) < shard_dimensions.at(i)) data_dims_too_small = true;
+    if (data_dims_too_small) {
+      this->setDataShards(this->getDimensions(), device);
+      //this->setDataShards(shard_dimensions, device);
     }
     else {
       this->syncHData(device); // D to H

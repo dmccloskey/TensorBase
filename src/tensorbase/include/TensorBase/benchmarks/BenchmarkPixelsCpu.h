@@ -337,6 +337,7 @@ namespace TensorBaseBenchmarks
 		// Setup the table data
 		table_1_ptr->setData();
 		table_1_ptr->setShardSpans(shard_span);
+    table_1_ptr->setMaximumDimensions(Eigen::array<Eigen::Index, 2>({ 5, data_size }));
 
 		// Setup the collection
 		auto collection_1_ptr = std::make_shared<TensorCollectionCpu>(TensorCollectionCpu());
@@ -365,6 +366,7 @@ namespace TensorBaseBenchmarks
 		// Setup the table data
 		table_1_ptr->setData();
 		table_1_ptr->setShardSpans(shard_span);
+    table_1_ptr->setMaximumDimensions(Eigen::array<Eigen::Index, 2>({ 1, data_size }));
 
 		// Setup the collection
 		auto collection_1_ptr = std::make_shared<TensorCollectionCpu>(TensorCollectionCpu());
@@ -398,6 +400,7 @@ namespace TensorBaseBenchmarks
 		// Setup the table data
 		table_1_ptr->setData();
 		table_1_ptr->setShardSpans(shard_span);
+    table_1_ptr->setMaximumDimensions(Eigen::array<Eigen::Index, 2>({ dim_span, int(std::pow(dim_span, 3)) })); // NOTE: axes are added in alphabetical order
 
 		// Setup the collection
 		auto collection_1_ptr = std::make_shared<TensorCollectionCpu>(TensorCollectionCpu());
@@ -437,6 +440,7 @@ namespace TensorBaseBenchmarks
 		// Setup the table data
 		table_1_ptr->setData();
 		table_1_ptr->setShardSpans(shard_span);
+    table_1_ptr->setMaximumDimensions(Eigen::array<Eigen::Index, 3>({ dim_span, int(std::pow(dim_span, 2)), dim_span })); // NOTE: axes are added in alphabetical order
 
 		// Setup the collection
 		auto collection_1_ptr = std::make_shared<TensorCollectionCpu>(TensorCollectionCpu());
@@ -478,6 +482,7 @@ namespace TensorBaseBenchmarks
 		// Setup the table data
 		table_1_ptr->setData();
 		table_1_ptr->setShardSpans(shard_span);
+    table_1_ptr->setMaximumDimensions(Eigen::array<Eigen::Index, 4>({ dim_span, dim_span, dim_span, dim_span }));
 
 		// Setup the collection
 		auto collection_1_ptr = std::make_shared<TensorCollectionCpu>(TensorCollectionCpu());

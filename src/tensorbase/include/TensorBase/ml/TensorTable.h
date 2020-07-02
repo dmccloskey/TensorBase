@@ -114,8 +114,10 @@ namespace TensorBase
 
     void setDimensions(const Eigen::array<Eigen::Index, TDim>& dimensions); ///< dimensions setter
     Eigen::array<Eigen::Index, TDim> getDimensions() const { return dimensions_; }  ///< dimensions getter
+    int getDimSizeFromAxisName(const std::string& axis_name) const { return dimensions_.at(axes_to_dims_.at(axis_name)); } ///< dimensions getter for TensorTableConcept
     void setMaximumDimensions(const Eigen::array<Eigen::Index, TDim>& dimensions_maximum) { dimensions_maximum_ = dimensions_maximum; }; ///< dimensions_maximum setter
     Eigen::array<Eigen::Index, TDim> getMaximumDimensions() const;  ///< dimensions_maximum getter
+    int getMaxDimSizeFromAxisName(const std::string& axis_name) const { return getMaximumDimensions().at(axes_to_dims_.at(axis_name)); } ///< dimensions getter for TensorTableConcept
     size_t getTensorSize() const { return tensor_size_; }; ///< the size of the dimensions
     int getDimFromAxisName(const std::string& axis_name) const { return axes_to_dims_.at(axis_name); }
 		std::map<std::string, int> getAxesToDims() const { return axes_to_dims_; }  ///< axes_to_dims getter

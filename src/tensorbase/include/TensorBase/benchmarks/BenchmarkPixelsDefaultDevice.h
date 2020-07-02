@@ -336,6 +336,7 @@ namespace TensorBaseBenchmarks
 		// Setup the table data
 		table_1_ptr->setData();
 		table_1_ptr->setShardSpans(shard_span);
+    table_1_ptr->setMaximumDimensions(Eigen::array<Eigen::Index, 2>({5, data_size}));
 
 		// Setup the collection
 		auto collection_1_ptr = std::make_shared<TensorCollectionDefaultDevice>(TensorCollectionDefaultDevice());
@@ -364,6 +365,7 @@ namespace TensorBaseBenchmarks
 		// Setup the table data
 		table_1_ptr->setData();
 		table_1_ptr->setShardSpans(shard_span);
+    table_1_ptr->setMaximumDimensions(Eigen::array<Eigen::Index, 2>({ 1, data_size }));
 
 		// Setup the collection
 		auto collection_1_ptr = std::make_shared<TensorCollectionDefaultDevice>(TensorCollectionDefaultDevice());
@@ -374,7 +376,7 @@ namespace TensorBaseBenchmarks
 	std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> TensorCollectionGeneratorDefaultDevice<LabelsT, TensorT>::make2DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar, Eigen::DefaultDevice& device) const
 	{
 		// Setup the axes
-		int dim_span = std::pow(data_size, 0.25);
+		const int dim_span = std::pow(data_size, 0.25);
 		Eigen::Tensor<std::string, 1> dimensions_1(3), dimensions_2(1);
 		dimensions_1.setValues({ "x","y","z" });
 		dimensions_2.setValues({ "t" });
@@ -397,6 +399,7 @@ namespace TensorBaseBenchmarks
 		// Setup the table data
 		table_1_ptr->setData();
 		table_1_ptr->setShardSpans(shard_span);
+    table_1_ptr->setMaximumDimensions(Eigen::array<Eigen::Index, 2>({ dim_span, int(std::pow(dim_span, 3)) })); // NOTE: axes are added in alphabetical order
 
 		// Setup the collection
 		auto collection_1_ptr = std::make_shared<TensorCollectionDefaultDevice>(TensorCollectionDefaultDevice());
@@ -407,7 +410,7 @@ namespace TensorBaseBenchmarks
 	std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> TensorCollectionGeneratorDefaultDevice<LabelsT, TensorT>::make3DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar, Eigen::DefaultDevice& device) const
 	{
 		// Setup the axes
-		int dim_span = std::pow(data_size, 0.25);
+		const int dim_span = std::pow(data_size, 0.25);
 		Eigen::Tensor<std::string, 1> dimensions_1(2), dimensions_2(1), dimensions_3(1);
 		dimensions_1.setValues({ "x","y" });
 		dimensions_2.setValues({ "z" });
@@ -436,6 +439,7 @@ namespace TensorBaseBenchmarks
 		// Setup the table data
 		table_1_ptr->setData();
 		table_1_ptr->setShardSpans(shard_span);
+    table_1_ptr->setMaximumDimensions(Eigen::array<Eigen::Index, 3>({ dim_span, int(std::pow(dim_span, 2)), dim_span })); // NOTE: axes are added in alphabetical order
 
 		// Setup the collection
 		auto collection_1_ptr = std::make_shared<TensorCollectionDefaultDevice>(TensorCollectionDefaultDevice());
@@ -446,7 +450,7 @@ namespace TensorBaseBenchmarks
 	std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> TensorCollectionGeneratorDefaultDevice<LabelsT, TensorT>::make4DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar, Eigen::DefaultDevice& device) const
 	{
 		// Setup the axes
-		int dim_span = std::pow(data_size, 0.25);
+		const int dim_span = std::pow(data_size, 0.25);
 		Eigen::Tensor<std::string, 1> dimensions_1(1), dimensions_2(1), dimensions_3(1), dimensions_4(1);
 		dimensions_1.setValues({ "x" });
 		dimensions_2.setValues({ "y" });
@@ -477,6 +481,7 @@ namespace TensorBaseBenchmarks
 		// Setup the table data
 		table_1_ptr->setData();
 		table_1_ptr->setShardSpans(shard_span);
+    table_1_ptr->setMaximumDimensions(Eigen::array<Eigen::Index, 4>({ dim_span, dim_span, dim_span, dim_span }));
 
 		// Setup the collection
 		auto collection_1_ptr = std::make_shared<TensorCollectionDefaultDevice>(TensorCollectionDefaultDevice());

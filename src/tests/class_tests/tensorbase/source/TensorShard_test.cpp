@@ -137,7 +137,6 @@ BOOST_AUTO_TEST_CASE(makeShardIndicesFromShardIDsDefaultDevice)
       }
     }
   }
-
 }
 
 BOOST_AUTO_TEST_SUITE_END()
