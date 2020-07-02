@@ -1149,7 +1149,6 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DDefaultDevice)
 }
 
 // repeat with sharding
-
 BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DShardingDefaultDevice)
 {
   // Parameters for the test
