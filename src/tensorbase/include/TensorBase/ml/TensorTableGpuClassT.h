@@ -226,7 +226,7 @@ namespace TensorBase
     tensor_select = std::make_shared<TensorDataGpuClassT<ArrayT, TensorT, TDim>>(tensor_select_tmp);
 
     // apply the device specific select algorithm
-    assert(this->getDataDimensions() == indices_view_bcast->getDimensions());
+    assert(this->getDataTensorSize() == 0 || this->getDataDimensions() == indices_view_bcast->getDimensions());
     this->data_->select(tensor_select, indices_view_bcast, device);
   }
 
@@ -508,7 +508,7 @@ namespace TensorBase
     tensor_select = std::make_shared<TensorDataGpuClassT<ArrayT, TensorT, TDim>>(tensor_select_tmp);
 
     // select the tensor
-    assert(this->getDataDimensions() == indices_select->getDimensions());
+    assert(this->getDataTensorSize() == 0 || this->getDataDimensions() == indices_select->getDimensions());
     this->data_->select(tensor_select, indices_select, device);
   }
   template<template<class> class ArrayT, class TensorT, int TDim>

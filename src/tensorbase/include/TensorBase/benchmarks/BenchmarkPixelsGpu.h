@@ -341,7 +341,7 @@ namespace TensorBaseBenchmarks
 		// Setup the table data
 		table_1_ptr->setData();
 		table_1_ptr->setShardSpans(shard_span);
-    table_1_ptr->setMaximumDimensions(Eigen::array<Eigen::Index, 2>({ 5, data_size }));
+    table_1_ptr->setMaximumDimensions(Eigen::array<Eigen::Index, 2>({ data_size, 5 }));
 
 		// Setup the collection
 		auto collection_1_ptr = std::make_shared<TensorCollectionGpu>(TensorCollectionGpu());
