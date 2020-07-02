@@ -130,6 +130,9 @@ namespace TensorBase
     assert(axes_to_dims.size() == shard_spans.size());
     assert(axes_to_dims.size() == TDim);
     assert(shard_ids.size() == TDim);
+    for (int i = 0; i < TDim; ++i) {
+      assert(tensor_dimensions.at(i) <= max_dimensions.at(i));
+    }
 
     Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_shard_values(indices_shard->getDataPointer().get(), indices_shard->getDimensions());
     indices_shard_values.device(device) = indices_shard_values.constant(0);

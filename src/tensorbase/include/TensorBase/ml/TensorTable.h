@@ -567,7 +567,9 @@ namespace TensorBase
     /*
     @brief Select the Tensor data and return the selected/reduced data
 
-    Overloads are provided for TDim or 1D reduced tensor data output
+    NOTES:
+    1. The method assumes that the FULL data is in memory
+    2. Overloads are provided for TDim or 1D reduced tensor data output
 
     @param[out] tensor_select The selected/reduced tensor data ([in] empty pointer)
     @param[in] indices_select The broadcasted indices view to perform the selection on
@@ -635,6 +637,9 @@ namespace TensorBase
     
     /**
       @brief Load data from file
+
+      NOTES:
+      1. The currently initializes the data to the FULL tensor table dimensions if insufficient data is available for reading in each of the shards
 
       @param[in] filename The name of the data file
       @param[in] device
@@ -1711,6 +1716,7 @@ namespace TensorBase
   inline void TensorTable<TensorT, DeviceT, TDim>::sortTensorDataSlice(const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& tensor_sort, const std::string & axis_name_apply, const sortOrder::order & order_by, DeviceT & device)
   {
     // sort the slice
+    assert(tensor_sort->getDimensions() == this->indices_view_.at(axis_name_apply)->getDimensions());
     if (order_by == sortOrder::order::ASC) {
       tensor_sort->sortIndices(this->indices_view_.at(axis_name_apply), "ASC", device);
     }
@@ -1770,6 +1776,7 @@ namespace TensorBase
 
     // check that the data is in memory and then apply the sort indices to the tensor data
     loadTensorTableBinary(dir_, device);
+    assert(data_->getDimensions() == indices_sort->getDimensions());
     data_->sort(indices_sort, device);
 
     //sort each of the axis labels then reset the indices view
@@ -1989,6 +1996,7 @@ namespace TensorBase
     loadTensorTableBinary(this->dir_, device);
 
     // partition the data in place
+    assert(data_->getDimensions() == indices_partition->getDimensions());
     data_->partition(indices_partition, device);
 
     // update the sorted tensor data "slice" with the old values
@@ -2016,9 +2024,11 @@ namespace TensorBase
     makeSortIndicesFromTensorIndicesComponent(indices_view_, indices_sort, device);
 
     // partition the indices
+    assert(indices_sort->getDimensions() == indices_partition->getDimensions());
     indices_sort->partition(indices_partition, device);
 
     // re-sort the data back to the original order
+    assert(data_->getDimensions() == indices_sort->getDimensions());
     data_->sort(indices_sort, device);
   }
 
@@ -2096,6 +2106,7 @@ namespace TensorBase
     data_->setDimensions(new_dimensions);
     data_->setData();
     data_->syncHAndDData(device);
+    TensorShard::checkShardSpans(getAxesToDims(), getDimensions(), this->shard_spans_);
 
     // Determine the dimensions for the values
     Eigen::array<Eigen::Index, TDim> value_dimensions;
@@ -2386,6 +2397,7 @@ namespace TensorBase
     indices_values.slice(offsets, extents).device(device) = indices_old_values;
 
     // Sort the is_modified values by the indices, and then sort the indices and update the shard indices
+    assert(is_modified_.at(axis_name)->getDimensions() == indices_.at(axis_name)->getDimensions());
     is_modified_.at(axis_name)->sort(indices_.at(axis_name), device);
     indices_.at(axis_name)->sort("ASC", device); // NOTE: this could fail if there are 0's in the index!
     reShardIndices(device);
