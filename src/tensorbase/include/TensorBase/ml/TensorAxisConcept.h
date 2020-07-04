@@ -144,9 +144,6 @@ namespace TensorBase
     // All DeviceT combos of `appendLabelsToAxisFromCsv`
     virtual void appendLabelsToAxisFromCsv(const Eigen::Tensor<std::string, 2>& labels, DeviceT& device) = 0;
 
-    // All DeviceT combos of `makeSelectIndicesFromCsv`
-    virtual void makeSelectIndicesFromCsv(std::shared_ptr<TensorData<int, DeviceT, 1>>& select_indices, const Eigen::Tensor<std::string, 2>& labels, DeviceT& device) = 0;
-
   private:
     friend class cereal::access;
     template<class Archive>
@@ -378,10 +375,6 @@ namespace TensorBase
 
     void appendLabelsToAxisFromCsv(const Eigen::Tensor<std::string, 2>& labels, DeviceT& device) override {
       tensor_axis_->appendLabelsToAxisFromCsv(labels, device);
-    }
-
-    void makeSelectIndicesFromCsv(std::shared_ptr<TensorData<int, DeviceT, 1>>& select_indices, const Eigen::Tensor<std::string, 2>& labels, DeviceT& device) override {
-      tensor_axis_->makeSelectIndicesFromCsv(select_indices, labels, device);
     }
 
   private:

@@ -126,15 +126,4 @@ namespace TensorBase
     }
   };
 };
-
-// Cereal registration of TensorTs: float, int, char, double and DeviceTs: Default, ThreadPool, Gpu
-CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionDefaultDevice<int>, Eigen::DefaultDevice>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionDefaultDevice<float>, Eigen::DefaultDevice>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionDefaultDevice<double>, Eigen::DefaultDevice>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionDefaultDevice<char>, Eigen::DefaultDevice>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionDefaultDevice<TensorBase::TensorArray8<char>>, Eigen::DefaultDevice>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionDefaultDevice<TensorBase::TensorArray32<char>>, Eigen::DefaultDevice>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionDefaultDevice<TensorBase::TensorArray128<char>>, Eigen::DefaultDevice>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionDefaultDevice<TensorBase::TensorArray512<char>>, Eigen::DefaultDevice>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorDimensionWrapper<TensorBase::TensorDimensionDefaultDevice<TensorBase::TensorArray2048<char>>, Eigen::DefaultDevice>);
 #endif //TENSORBASE_TENSORDIMENSIONCONCEPT_H

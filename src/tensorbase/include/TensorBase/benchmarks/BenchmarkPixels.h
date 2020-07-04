@@ -718,7 +718,7 @@ namespace TensorBaseBenchmarks
 	}
 
 	///Parse the command line arguments
-	static void parseCmdArgs(const int& argc, char** argv, std::string& data_dir, int& n_dims, int& data_size, bool& in_memory, double& shard_span_perc, int& n_engines) {
+	static void parseCmdArgs(const int& argc, char** argv, std::string& data_dir, int& n_dims, int& data_size, bool& in_memory, double& shard_span_perc, int& n_engines, std::string& labels_type, std::string& tensor_type) {
 		if (argc >= 2) {
 			data_dir = argv[1];
 		}
@@ -769,6 +769,28 @@ namespace TensorBaseBenchmarks
       }
       catch (std::exception & e) {
         std::cout << e.what() << std::endl;
+      }
+    }
+    if (argc >= 8) {
+      if (argv[7] == std::string("int")) {
+        labels_type = std::string("int");
+      }
+      else if (argv[7] == std::string("float")) {
+        labels_type = std::string("float");
+      }
+      else if (argv[7] == std::string("double")) {
+        labels_type = std::string("double");
+      }
+    }
+    if (argc >= 9) {
+      if (argv[8] == std::string("int")) {
+        tensor_type = std::string("int");
+      }
+      else if (argv[8] == std::string("float")) {
+        tensor_type = std::string("float");
+      }
+      else if (argv[8] == std::string("double")) {
+        tensor_type = std::string("double");
       }
     }
 	}

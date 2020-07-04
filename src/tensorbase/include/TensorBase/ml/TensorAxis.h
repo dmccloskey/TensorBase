@@ -163,15 +163,6 @@ namespace TensorBase
     */
     virtual void appendLabelsToAxisFromCsv(const Eigen::Tensor<std::string, 2>& labels, DeviceT& device) = 0;
 
-    /*
-    @brief Match the labels that are derived from a .csv file
-
-    @param[out] select_indices A binary vector indicating the indices of the labels that matched
-    @param[in] labels The labels to match
-    @param[in] device
-    */
-    virtual void makeSelectIndicesFromCsv(std::shared_ptr<TensorData<int, DeviceT, 1>>& select_indices, const Eigen::Tensor<std::string, 2>& labels, DeviceT& device) = 0;
-
   protected:
     void setNLabels(const size_t& n_labels) { n_labels_ = n_labels; }; ///< n_labels setter
     void setNDimensions(const size_t& n_dimenions) { n_dimensions_ = n_dimenions; }; ///< n_tensor_dimensions setter

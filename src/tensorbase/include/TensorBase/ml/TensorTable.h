@@ -2675,27 +2675,6 @@ namespace TensorBase
     syncAxesHAndDData(device);
     syncHAndDData(device);
 
-    // Select the new axis labels
-    // NOTE: Due to the non-convex shape of the addition, we are not able to select
-    //       the new data without either missing part of the new data or over-writing portions of the previous data
-    //for (auto& axis_map : axes_) {
-      //// ATTEMPT 1
-      //if (axis_map.first != axes_.begin()->first) {
-      //  // make the select indices
-      //  std::shared_ptr<TensorData<int, DeviceT, 1>> select_indices;
-      //  axis_map.second->makeSelectIndicesFromCsv(select_indices, labels_new.at(axis_map.first), device);
-
-      //  // update the indices view based on the selection
-      //  Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_map.first)->getDataPointer().get(), (int)axes_.at(axis_map.first)->getNLabels());
-      //  Eigen::TensorMap<Eigen::Tensor<int, 1>> selected(select_indices->getDataPointer().get(), (int)axes_.at(axis_map.first)->getNLabels());
-      //  indices_view.device(device) = indices_view * selected;
-      //}
-      //// ATTEMPT 1
-      //// update the indices view based on the selection
-      //Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_map.first)->getDataPointer().get(), (int)axes_.at(axis_map.first)->getNLabels());
-      //indices_view.slice(Eigen::array<Eigen::Index, 1>({ 0 }), indices_copy.at(axis_map.first)->getDimensions()).device(device) = indices_view.slice(Eigen::array<Eigen::Index, 1>({ 0 }), indices_copy.at(axis_map.first)->getDimensions()).constant(0);
-    //}
-
     // Reformat into a SparseTensorTable
     std::shared_ptr<TensorTable<TensorT, DeviceT, 2>> sparse_table_ptr;
     makeSparseTensorTableFromCsv(sparse_table_ptr, data_new, device);
