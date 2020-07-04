@@ -1137,7 +1137,6 @@ int main(int argc, char** argv)
   test_constructor1GpuPrimitiveT();
   test_constructor2GpuPrimitiveT();
   test_gettersAndSettersGpuPrimitiveT();
-  //test_getLabelsDataPointerGpuPrimitiveT(); // Not needed?
   test_deleteFromAxisGpuPrimitiveT();
   test_appendLabelsToAxis1GpuPrimitiveT();
   test_appendLabelsToAxis2GpuPrimitiveT();
@@ -1153,7 +1152,6 @@ int main(int argc, char** argv)
   test_constructor1GpuClassT(); 
   test_constructor2GpuClassT();
   test_gettersAndSettersGpuClassT();
-  //test_getLabelsDataPointerGpuClassT(); // Not needed?
   test_deleteFromAxisGpuClassT();
   test_appendLabelsToAxis1GpuClassT();
   test_appendLabelsToAxis2GpuClassT();
