@@ -67,6 +67,24 @@ namespace TensorBase
     virtual void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu2048<char>[]>& data_copy) = 0;
 #endif
 
+    // All TensorT combos of `getLabelsHDataPointer`
+    virtual void getLabelsHDataPointer(std::shared_ptr<int[]>& data_copy) = 0;
+    virtual void getLabelsHDataPointer(std::shared_ptr<float[]>& data_copy) = 0;
+    virtual void getLabelsHDataPointer(std::shared_ptr<double[]>& data_copy) = 0;
+    virtual void getLabelsHDataPointer(std::shared_ptr<char[]>& data_copy) = 0;
+    virtual void getLabelsHDataPointer(std::shared_ptr<TensorArray8<char>[]>& data_copy) = 0;
+    virtual void getLabelsHDataPointer(std::shared_ptr<TensorArray32<char>[]>& data_copy) = 0;
+    virtual void getLabelsHDataPointer(std::shared_ptr<TensorArray128<char>[]>& data_copy) = 0;
+    virtual void getLabelsHDataPointer(std::shared_ptr<TensorArray512<char>[]>& data_copy) = 0;
+    virtual void getLabelsHDataPointer(std::shared_ptr<TensorArray2048<char>[]>& data_copy) = 0;
+#if COMPILE_WITH_CUDA
+    virtual void getLabelsHDataPointer(std::shared_ptr<TensorArrayGpu8<char>[]>& data_copy) = 0;
+    virtual void getLabelsHDataPointer(std::shared_ptr<TensorArrayGpu32<char>[]>& data_copy) = 0;
+    virtual void getLabelsHDataPointer(std::shared_ptr<TensorArrayGpu128<char>[]>& data_copy) = 0;
+    virtual void getLabelsHDataPointer(std::shared_ptr<TensorArrayGpu512<char>[]>& data_copy) = 0;
+    virtual void getLabelsHDataPointer(std::shared_ptr<TensorArrayGpu2048<char>[]>& data_copy) = 0;
+#endif
+
     // All DeviceT combos of `deleteFromAxis`
     virtual void deleteFromAxis(const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) = 0;
 
@@ -125,9 +143,6 @@ namespace TensorBase
 
     // All DeviceT combos of `appendLabelsToAxisFromCsv`
     virtual void appendLabelsToAxisFromCsv(const Eigen::Tensor<std::string, 2>& labels, DeviceT& device) = 0;
-
-    // All DeviceT combos of `makeSelectIndicesFromCsv`
-    virtual void makeSelectIndicesFromCsv(std::shared_ptr<TensorData<int, DeviceT, 1>>& select_indices, const Eigen::Tensor<std::string, 2>& labels, DeviceT& device) = 0;
 
   private:
     friend class cereal::access;
@@ -193,6 +208,51 @@ namespace TensorBase
     };
     void getLabelsDataPointer(std::shared_ptr<TensorArrayGpu2048<char>[]>& data_copy) override {
       tensor_axis_->getLabelsDataPointer(data_copy);
+    };
+#endif
+
+    void getLabelsHDataPointer(std::shared_ptr<int[]>& data_copy) override {
+      tensor_axis_->getLabelsHDataPointer(data_copy);
+    };
+    void getLabelsHDataPointer(std::shared_ptr<float[]>& data_copy) override {
+      tensor_axis_->getLabelsHDataPointer(data_copy);
+    };
+    void getLabelsHDataPointer(std::shared_ptr<double[]>& data_copy) override {
+      tensor_axis_->getLabelsHDataPointer(data_copy);
+    };
+    void getLabelsHDataPointer(std::shared_ptr<char[]>& data_copy) override {
+      tensor_axis_->getLabelsHDataPointer(data_copy);
+    };
+    void getLabelsHDataPointer(std::shared_ptr<TensorArray8<char>[]>& data_copy) override {
+      tensor_axis_->getLabelsHDataPointer(data_copy);
+    };
+    void getLabelsHDataPointer(std::shared_ptr<TensorArray32<char>[]>& data_copy) override {
+      tensor_axis_->getLabelsHDataPointer(data_copy);
+    };
+    void getLabelsHDataPointer(std::shared_ptr<TensorArray128<char>[]>& data_copy) override {
+      tensor_axis_->getLabelsHDataPointer(data_copy);
+    };
+    void getLabelsHDataPointer(std::shared_ptr<TensorArray512<char>[]>& data_copy) override {
+      tensor_axis_->getLabelsHDataPointer(data_copy);
+    };
+    void getLabelsHDataPointer(std::shared_ptr<TensorArray2048<char>[]>& data_copy) override {
+      tensor_axis_->getLabelsHDataPointer(data_copy);
+    };
+#if COMPILE_WITH_CUDA
+    void getLabelsHDataPointer(std::shared_ptr<TensorArrayGpu8<char>[]>& data_copy) override {
+      tensor_axis_->getLabelsHDataPointer(data_copy);
+    };
+    void getLabelsHDataPointer(std::shared_ptr<TensorArrayGpu32<char>[]>& data_copy) override {
+      tensor_axis_->getLabelsHDataPointer(data_copy);
+    };
+    void getLabelsHDataPointer(std::shared_ptr<TensorArrayGpu128<char>[]>& data_copy) override {
+      tensor_axis_->getLabelsHDataPointer(data_copy);
+    };
+    void getLabelsHDataPointer(std::shared_ptr<TensorArrayGpu512<char>[]>& data_copy) override {
+      tensor_axis_->getLabelsHDataPointer(data_copy);
+    };
+    void getLabelsHDataPointer(std::shared_ptr<TensorArrayGpu2048<char>[]>& data_copy) override {
+      tensor_axis_->getLabelsHDataPointer(data_copy);
     };
 #endif
 
@@ -315,10 +375,6 @@ namespace TensorBase
 
     void appendLabelsToAxisFromCsv(const Eigen::Tensor<std::string, 2>& labels, DeviceT& device) override {
       tensor_axis_->appendLabelsToAxisFromCsv(labels, device);
-    }
-
-    void makeSelectIndicesFromCsv(std::shared_ptr<TensorData<int, DeviceT, 1>>& select_indices, const Eigen::Tensor<std::string, 2>& labels, DeviceT& device) override {
-      tensor_axis_->makeSelectIndicesFromCsv(select_indices, labels, device);
     }
 
   private:

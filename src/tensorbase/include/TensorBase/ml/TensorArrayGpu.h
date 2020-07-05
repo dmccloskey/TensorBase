@@ -20470,12 +20470,5 @@ namespace TensorBase
     return comp(*this, other);
   }
 };
-
-//// Register of all array TensorTs
-//CEREAL_REGISTER_TYPE(TensorBase::TensorArrayGpu8<char>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorArrayGpu32<char>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorArrayGpu128<char>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorArrayGpu512<char>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorArrayGpu2048<char>);
 #endif
 #endif //TENSORBASE_TENSORARRAYGPU_H

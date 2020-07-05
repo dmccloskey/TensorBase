@@ -2,7 +2,7 @@
 
 #define BOOST_TEST_MODULE TensorDimension test suite 
 #include <boost/test/included/unit_test.hpp>
-#include <TensorBase/ml/TensorDimension.h>
+#include <TensorBase/ml/TensorDimensionDefaultDevice.h>
 
 using namespace TensorBase;
 using namespace std;

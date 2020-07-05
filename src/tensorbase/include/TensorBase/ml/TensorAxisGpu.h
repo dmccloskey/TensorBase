@@ -36,7 +36,6 @@ namespace TensorBase
     bool loadLabelsBinary(const std::string& filename, Eigen::GpuDevice& device) override;
     bool storeLabelsBinary(const std::string& filename, Eigen::GpuDevice& device) override;
     void appendLabelsToAxisFromCsv(const Eigen::Tensor<std::string, 2>& labels, Eigen::GpuDevice& device) override;
-    void makeSelectIndicesFromCsv(std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& select_indices, const Eigen::Tensor<std::string, 2>& labels, Eigen::GpuDevice& device) override;
   private:
     friend class cereal::access;
     template<class Archive>
@@ -174,10 +173,12 @@ namespace TensorBase
   inline bool TensorAxisGpuPrimitiveT<TensorT>::storeLabelsBinary(const std::string & filename, Eigen::GpuDevice & device)
   {
     // Store the labels
-    this->syncHAndDData(device); // D to H
-    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
-    DataFile::storeDataBinary<TensorT, 2>(filename + ".ta", this->getLabels());
-    this->setDataStatus(false, true);
+    if (this->getNLabels()*this->getNLabels() > 0) {
+      this->syncHAndDData(device); // D to H
+      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+      DataFile::storeDataBinary<TensorT, 2>(filename + ".ta", this->getLabels());
+      this->setDataStatus(false, true);
+    }
     return true;
   }
   template<typename TensorT>
@@ -277,41 +278,6 @@ namespace TensorBase
     // Append the selected labels to the axis
     this->appendLabelsToAxis(labels_select_ptr, device);
   }
-  template<typename TensorT>
-  inline void TensorAxisGpuPrimitiveT<TensorT>::makeSelectIndicesFromCsv(std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& select_indices, const Eigen::Tensor<std::string, 2>& labels, Eigen::GpuDevice & device)
-  {
-    assert(this->n_dimensions_ == (int)labels.dimension(0));
-
-    // Convert to TensorT
-    TensorDataGpuPrimitiveT<TensorT, 2> select_labels(Eigen::array<Eigen::Index, 2>({ (int)labels.dimension(0), (int)labels.dimension(1) }));
-    select_labels.setData();
-    select_labels.syncHAndDData(device);
-    select_labels.convertFromStringToTensorT(labels, device);
-
-    // reshape to match the axis labels shape and broadcast the length of the labels
-    Eigen::TensorMap<Eigen::Tensor<TensorT, 4>> labels_names_selected_reshape(select_labels.getDataPointer().get(), 1, 1, select_labels.getDimensions().at(0), select_labels.getDimensions().at(1));
-    auto labels_names_selected_bcast = labels_names_selected_reshape.broadcast(Eigen::array<Eigen::Index, 4>({ (int)this->getNDimensions(), (int)this->getNLabels(), 1, 1 }));
-
-    // broadcast the axis labels the size of the labels queried
-    Eigen::TensorMap<Eigen::Tensor<TensorT, 4>> labels_reshape(this->tensor_dimension_labels_->getDataPointer().get(), (int)this->getNDimensions(), (int)this->getNLabels(), 1, 1);
-    auto labels_bcast = labels_reshape.broadcast(Eigen::array<Eigen::Index, 4>({ 1, 1, select_labels.getDimensions().at(0), select_labels.getDimensions().at(1) }));
-
-    // broadcast the tensor indices the size of the labels queried
-    TensorDataGpuPrimitiveT<int, 1> select_indices_tmp(Eigen::array<Eigen::Index, 1>({ (int)this->getNLabels() }));
-    select_indices_tmp.setData();
-    select_indices_tmp.syncHAndDData(device);
-    Eigen::TensorMap<Eigen::Tensor<int, 4>> indices_reshape(select_indices_tmp.getDataPointer().get(), 1, (int)this->getNLabels(), 1, 1);
-    auto indices_bcast = indices_reshape.broadcast(Eigen::array<Eigen::Index, 4>({ (int)this->getNDimensions(), 1, select_labels.getDimensions().at(0), select_labels.getDimensions().at(1) }));
-
-    // select the indices and reduce back to a 1D Tensor
-    auto selected = (labels_bcast == labels_names_selected_bcast).select(indices_bcast.constant(1), indices_bcast.constant(0)).sum(
-      Eigen::array<Eigen::Index, 2>({ 2, 3 })).prod(Eigen::array<Eigen::Index, 1>({ 0 })).clip(0, 1); // matched = 1, not-matched = 0;
-
-    // assign the select indices
-    Eigen::TensorMap<Eigen::Tensor<int, 1>> select_indices_values(select_indices_tmp.getDataPointer().get(), (int)this->getNLabels());
-    select_indices_values.device(device) = selected;
-    select_indices = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(select_indices_tmp);
-  }
 
   template<template<class> class ArrayT, class TensorT>
   class TensorAxisGpuClassT : public TensorAxis<ArrayT<TensorT>, Eigen::GpuDevice>
@@ -329,7 +295,6 @@ namespace TensorBase
     bool loadLabelsBinary(const std::string& filename, Eigen::GpuDevice& device) override;
     bool storeLabelsBinary(const std::string& filename, Eigen::GpuDevice& device) override;
     void appendLabelsToAxisFromCsv(const Eigen::Tensor<std::string, 2>& labels, Eigen::GpuDevice& device) override;
-    void makeSelectIndicesFromCsv(std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& select_indices, const Eigen::Tensor<std::string, 2>& labels, Eigen::GpuDevice& device) override;
   private:
     friend class cereal::access;
     template<class Archive>
@@ -569,41 +534,6 @@ namespace TensorBase
 
     // Append the selected labels to the axis
     this->appendLabelsToAxis(labels_select_ptr, device);
-  }
-  template<template<class> class ArrayT, class TensorT>
-  inline void TensorAxisGpuClassT<ArrayT, TensorT>::makeSelectIndicesFromCsv(std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& select_indices, const Eigen::Tensor<std::string, 2>& labels, Eigen::GpuDevice & device)
-  {
-    assert(this->n_dimensions_ == (int)labels.dimension(0));
-
-    // Convert to ArrayT<TensorT>
-    TensorDataGpuClassT<ArrayT, TensorT, 2> select_labels(Eigen::array<Eigen::Index, 2>({ (int)labels.dimension(0), (int)labels.dimension(1) }));
-    select_labels.setData();
-    select_labels.syncHAndDData(device);
-    select_labels.convertFromStringToTensorT(labels, device);
-
-    // reshape to match the axis labels shape and broadcast the length of the labels
-    Eigen::TensorMap<Eigen::Tensor<ArrayT<TensorT>, 4>> labels_names_selected_reshape(select_labels.getDataPointer().get(), 1, 1, select_labels.getDimensions().at(0), select_labels.getDimensions().at(1));
-    auto labels_names_selected_bcast = labels_names_selected_reshape.broadcast(Eigen::array<Eigen::Index, 4>({ (int)this->getNDimensions(), (int)this->getNLabels(), 1, 1 }));
-
-    // broadcast the axis labels the size of the labels queried
-    Eigen::TensorMap<Eigen::Tensor<ArrayT<TensorT>, 4>> labels_reshape(this->tensor_dimension_labels_->getDataPointer().get(), (int)this->getNDimensions(), (int)this->getNLabels(), 1, 1);
-    auto labels_bcast = labels_reshape.broadcast(Eigen::array<Eigen::Index, 4>({ 1, 1, select_labels.getDimensions().at(0), select_labels.getDimensions().at(1) }));
-
-    // broadcast the tensor indices the size of the labels queried
-    TensorDataGpuPrimitiveT<int, 1> select_indices_tmp(Eigen::array<Eigen::Index, 1>({ (int)this->getNLabels() }));
-    select_indices_tmp.setData();
-    select_indices_tmp.syncHAndDData(device);
-    Eigen::TensorMap<Eigen::Tensor<int, 4>> indices_reshape(select_indices_tmp.getDataPointer().get(), 1, (int)this->getNLabels(), 1, 1);
-    auto indices_bcast = indices_reshape.broadcast(Eigen::array<Eigen::Index, 4>({ (int)this->getNDimensions(), 1, select_labels.getDimensions().at(0), select_labels.getDimensions().at(1) }));
-
-    // select the indices and reduce back to a 1D Tensor
-    auto selected = (labels_bcast == labels_names_selected_bcast).select(indices_bcast.constant(1), indices_bcast.constant(0)).sum(
-      Eigen::array<Eigen::Index, 2>({ 2, 3 })).prod(Eigen::array<Eigen::Index, 1>({ 0 })).clip(0, 1); // matched = 1, not-matched = 0;
-
-    // assign the select indices
-    Eigen::TensorMap<Eigen::Tensor<int, 1>> select_indices_values(select_indices_tmp.getDataPointer().get(), (int)this->getNLabels());
-    select_indices_values.device(device) = selected;
-    select_indices = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(select_indices_tmp);
   }
 };
 

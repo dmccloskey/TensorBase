@@ -90,7 +90,7 @@ namespace TensorBase
     bool rollback(DeviceT& device);
 
     void clear(); ///< clear the tensor operations, commit indices, and current_index_
-    void initTensorCollectionTensorData(); ///< clears the tensor data
+    void initTensorCollectionTensorData(DeviceT& device); ///< clears the tensor data
 
   protected:
     std::shared_ptr<TensorCollection<DeviceT>> tensor_collection_; ///< the managed TensorCollection object
@@ -226,10 +226,11 @@ namespace TensorBase
   }
 
   template<typename DeviceT>
-  inline void TransactionManager<DeviceT>::initTensorCollectionTensorData()
+  inline void TransactionManager<DeviceT>::initTensorCollectionTensorData(DeviceT& device)
   {
     for (auto& table_map : tensor_collection_->tables_) {
-      table_map.second->initData();
+      table_map.second->initData(device);
+      //table_map.second->setData(); // NOTE: this will allocate memory for the full TensorData dimensions, which is not optimal
     }
   }
 };

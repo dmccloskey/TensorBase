@@ -602,54 +602,6 @@ void test_appendLabelsToAxisFromCsv2GpuPrimitiveT()
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
 
-void test_makeSelectIndicesFromCsvGpuPrimitiveT()
-{
-  // Setup the device
-  cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
-  Eigen::GpuStreamDevice stream_device(&stream, 0);
-  Eigen::GpuDevice device(&stream_device);
-
-  // Setup the axis
-  int n_dimensions = 2, n_labels = 5;
-  Eigen::Tensor<std::string, 1> dimensions(n_dimensions);
-  dimensions(0) = "TensorDimension1";
-  dimensions(1) = "TensorDimension2";
-  Eigen::Tensor<int, 2> labels(n_dimensions, n_labels);
-  int iter = 0;
-  for (int i = 0; i < n_dimensions; ++i) {
-    for (int j = 0; j < n_labels; ++j) {
-      labels(i, j) = iter;
-      ++iter;
-    }
-  }
-  TensorAxisGpuPrimitiveT<int> tensoraxis("1", dimensions, labels);
-
-  // Setup the new labels
-  int n_new_labels = 3;
-  Eigen::Tensor<std::string, 2> labels_values(Eigen::array<Eigen::Index, 2>({ n_dimensions, n_new_labels }));
-  iter = 0;
-  for (int i = 0; i < n_dimensions; ++i) {
-    for (int j = 0; j < n_labels; ++j) {
-      if (j % 2 == 0) labels_values(i, j / 2) = std::to_string(iter);
-      ++iter;
-    }
-  }
-
-  // Test
-  tensoraxis.syncHAndDData(device);
-  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> select_indices;
-  tensoraxis.makeSelectIndicesFromCsv(select_indices, labels_values, device); //FIXME
-  select_indices->syncHAndDData(device);
-  tensoraxis.syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  for (int i = 0; i < n_labels; ++i) {
-    if (i % 2 == 0) assert(select_indices->getData()(i) == 1);
-    else assert(select_indices->getData()(i) == 0);
-  }
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
-}
-
 void test_constructorGpuClassT()
 {
   TensorAxisGpuClassT<TensorArrayGpu8, int>* ptr = nullptr;
@@ -1177,54 +1129,6 @@ void test_appendLabelsToAxisFromCsv2GpuClassT()
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
 
-void test_makeSelectIndicesFromCsvGpuClassT()
-{
-  // Setup the device
-  cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
-  Eigen::GpuStreamDevice stream_device(&stream, 0);
-  Eigen::GpuDevice device(&stream_device);
-
-  // Setup the axis
-  int n_dimensions = 2, n_labels = 5;
-  Eigen::Tensor<std::string, 1> dimensions(n_dimensions);
-  dimensions(0) = "TensorDimension1";
-  dimensions(1) = "TensorDimension2";
-  Eigen::Tensor<TensorArrayGpu8<char>, 2> labels(n_dimensions, n_labels);
-  int iter = 0;
-  for (int i = 0; i < n_dimensions; ++i) {
-    for (int j = 0; j < n_labels; ++j) {
-      labels(i, j) = TensorArrayGpu8<char>(std::to_string(iter));
-      ++iter;
-    }
-  }
-  TensorAxisGpuClassT<TensorArrayGpu8, char> tensoraxis("1", dimensions, labels);
-
-  // Setup the new labels
-  int n_new_labels = 3;
-  Eigen::Tensor<std::string, 2> labels_values(Eigen::array<Eigen::Index, 2>({ n_dimensions, n_new_labels }));
-  iter = 0;
-  for (int i = 0; i < n_dimensions; ++i) {
-    for (int j = 0; j < n_labels; ++j) {
-      if (j % 2 == 0) labels_values(i, j / 2) = std::to_string(iter);
-      ++iter;
-    }
-  }
-
-  // Test
-  tensoraxis.syncHAndDData(device);
-  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> select_indices;
-  tensoraxis.makeSelectIndicesFromCsv(select_indices, labels_values, device); //FIXME
-  select_indices->syncHAndDData(device);
-  tensoraxis.syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  for (int i = 0; i < n_labels; ++i) {
-    if (i % 2 == 0) assert(select_indices->getData()(i) == 1);
-    else assert(select_indices->getData()(i) == 0);
-  }
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
-}
-
 int main(int argc, char** argv)
 {
   assert(cudaDeviceReset() == cudaSuccess);
@@ -1233,7 +1137,6 @@ int main(int argc, char** argv)
   test_constructor1GpuPrimitiveT();
   test_constructor2GpuPrimitiveT();
   test_gettersAndSettersGpuPrimitiveT();
-  //test_getLabelsDataPointerGpuPrimitiveT(); // Not needed?
   test_deleteFromAxisGpuPrimitiveT();
   test_appendLabelsToAxis1GpuPrimitiveT();
   test_appendLabelsToAxis2GpuPrimitiveT();
@@ -1242,7 +1145,6 @@ int main(int argc, char** argv)
   test_storeAndLoadLabelsGpuPrimitiveT();
   test_appendLabelsToAxisFromCsv1GpuPrimitiveT();
   test_appendLabelsToAxisFromCsv2GpuPrimitiveT();
-  //test_makeSelectIndicesFromCsvGpuPrimitiveT(); // FIXME, Not needed?
 
   assert(cudaDeviceReset() == cudaSuccess);
   test_constructorGpuClassT();
@@ -1250,7 +1152,6 @@ int main(int argc, char** argv)
   test_constructor1GpuClassT(); 
   test_constructor2GpuClassT();
   test_gettersAndSettersGpuClassT();
-  //test_getLabelsDataPointerGpuClassT(); // Not needed?
   test_deleteFromAxisGpuClassT();
   test_appendLabelsToAxis1GpuClassT();
   test_appendLabelsToAxis2GpuClassT();
@@ -1259,7 +1160,6 @@ int main(int argc, char** argv)
   test_storeAndLoadLabelsGpuClassT();
   test_appendLabelsToAxisFromCsv1GpuClassT();
   test_appendLabelsToAxisFromCsv2GpuClassT();
-  //test_makeSelectIndicesFromCsvGpuClassT(); // FIXME, Not needed?
   return 0;
 }
 #endif

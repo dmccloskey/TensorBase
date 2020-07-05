@@ -25,6 +25,7 @@ set(ml_executables_list
   TensorAxisGpu_test
   TensorClauses_test
   TensorCollection_test
+  TensorCollectionGpu_test
   TensorData_test
   TensorDataCpu_test
   TensorDataGpu_test
@@ -32,6 +33,7 @@ set(ml_executables_list
   TensorDimensionCpu_test
   TensorDimensionGpu_test
   TensorOperation_test
+  TensorShard_test
   TensorSelect_test
   TensorTable_test
   TensorTableCpu_test
