@@ -836,7 +836,6 @@ void test_appendLabelsToAxis2GpuClassT()
   TensorAxisGpuClassT<TensorArrayGpu8, char> tensoraxis("1", n_dimensions, 0);
 
   // Setup the new labels
-  int n_new_labels = 2;
   Eigen::Tensor<TensorArrayGpu8<char>, 2> labels_values(Eigen::array<Eigen::Index, 2>({ n_dimensions, n_labels }));
   int iter = 0;
   for (int i = 0; i < n_dimensions; ++i) {
@@ -845,7 +844,7 @@ void test_appendLabelsToAxis2GpuClassT()
       ++iter;
     }
   }
-  TensorDataGpuClassT<TensorArrayGpu8, char, 2> labels_new(Eigen::array<Eigen::Index, 2>({ n_dimensions, n_new_labels }));
+  TensorDataGpuClassT<TensorArrayGpu8, char, 2> labels_new(Eigen::array<Eigen::Index, 2>({ n_dimensions, n_labels }));
   labels_new.setData(labels_values);
   std::shared_ptr<TensorDataGpuClassT<TensorArrayGpu8, char, 2>> labels_new_ptr = std::make_shared<TensorDataGpuClassT<TensorArrayGpu8, char, 2>>(labels_new);
 
