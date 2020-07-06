@@ -13,7 +13,6 @@ set(core_executables_list
 set(io_executables_list
   CSVWriter_test
   DataFile_test
-  TensorCollectionFile_test
   TensorTableFile_test
 )
 

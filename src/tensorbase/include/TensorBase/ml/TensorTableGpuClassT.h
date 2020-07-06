@@ -826,9 +826,6 @@ namespace TensorBase
       }
     }
 
-    // adjust the slices if necessary
-    this->adjustSliceIndicesToDataSize(data_size, slice_indices);
-
     // read in the shards and update the TensorTable data asyncronously
     for (const auto slice_index : slice_indices) {
       // read in the shard
@@ -868,9 +865,6 @@ namespace TensorBase
       std::map<int, std::pair<Eigen::array<Eigen::Index, TDim>, Eigen::array<Eigen::Index, TDim>>> slice_indices;
       Eigen::array<Eigen::Index, TDim> shard_dimensions;
       const int data_size = this->makeSliceIndicesFromShardIndices(modified_shard_ids, slice_indices, shard_dimensions, device);
-
-      // adjust the slices if necessary
-      this->adjustSliceIndicesToDataSize(data_size, slice_indices);
 
       // write the TensorTable shards to disk asyncronously
       this->syncHData(device); // D to H
