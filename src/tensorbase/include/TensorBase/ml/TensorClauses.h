@@ -22,6 +22,9 @@ namespace TensorBase
     - Specifying the axis and dimension has the effect of selecting all indices in the axis/dimension.
     - Specifying the axis, dimension, and labels has the effect of selecting only the axis indices corresponding to the
       named axis/dimension/labels.
+
+  NOTES:
+    - The user can execute multiple select and where statements in a defined order in order to select the regions of interest
   */
   template<typename LabelsT, typename DeviceT>
   class SelectClause {
@@ -37,6 +40,84 @@ namespace TensorBase
     std::string dimension_name = ""; ///< the dimension to select (option 1)
     std::shared_ptr<TensorData<LabelsT, DeviceT, 1>> labels = nullptr; ///< the labels to select (option 1)
     std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> axis_labels = nullptr; ///< the labels to select (option 2)
+  };
+
+  struct aggregateFunctions {
+    enum aggregateFunction {
+      // Wrappers around Eigen::Tensor Reduction operations
+      MIN,
+      MAX,
+      MEAN,
+      COUNT,
+      SUM,
+      DINSTINCT, // unique values
+      // TODO: other SQL standard aggregate functions
+      CUSTOM, // TODO: example implementation for StDev and %RSD
+      NONE
+    };
+  };
+  /*
+  @brief Class defining the `aggregate` clause statement that selects particular axis, dimensions, and/or label indices
+    and performs and applies an aggregation function to the selected data resulting in a new entry with the aggregated data
+    broadcasted to all other dimensions of the Tensor.
+  */
+  template<typename LabelsT, typename DeviceT>
+  class AggregateClause: public SelectClause<LabelsT, DeviceT> {
+  public:
+    AggregateClause() = default;
+    AggregateClause(const std::string & table_name, const std::string & axis_name, const std::string & dimension_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>> & labels, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& as_axis_labels, const aggregateFunctions::aggregateFunctions& aggregate_function) :
+      SelectClause(table_name, axis_name, axis_labels), as_axis_labels(as_axis_labels), aggregate_function(aggregate_function){ };
+    AggregateClause(const std::string & table_name, const std::string & axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> & axis_labels, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& as_axis_labels, const aggregateFunctions::aggregateFunctions& aggregate_function) :
+      SelectClause(table_name, axis_name, axis_labels), as_axis_labels(as_axis_labels), aggregate_function(aggregate_function) { };
+    AggregateClause(const std::string& table_name, const std::vector<std::string>& axes_names,
+      const aggregateFunctions::aggregateFunctions& reduction_function) :
+      table_name(table_name), axes_names(axes_names),
+      reduction_function(reduction_function) { };
+    ~ReductionClause() = default;
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> as_axis_labels = nullptr; ///< the labels to select (option 2)
+    aggregateFunctions::aggregateFunctions aggregate_function;
+  };
+
+  struct joinTypes {
+    enum joinType {
+      INNER, // Default
+      LEFT,
+      RIGHT,
+      FULL
+    };
+  };
+  /*
+  @brief Class defining the `join` clause statement that joins two tables along a particular axis, dimensions, and/or label indices.
+
+  NOTES:
+    - The table dimensions must be equal 
+    - The method will match ON the user supplied table axis, dimensions, and/or label indices
+    - It is assumed that the user has already selected other axes, dimensions, and/or labels to consider during execution prior to running the Join clause
+  */
+  template<typename LabelsT, typename DeviceT>
+  class JoinClause {
+  public:
+    JoinClause() = default;
+    SelectClause(const std::string & table_name, const std::string & axis_name, const std::string & dimension_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>> & labels) :
+      table_name(table_name), axis_name(axis_name), dimension_name(dimension_name), labels(labels) { };
+    SelectClause(const std::string & table_name, const std::string & axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> & axis_labels) :
+      table_name(table_name), axis_name(axis_name), axis_labels(axis_labels) { };
+    JoinClause(const std::string& table_name, const std::vector<std::string>& axes_names,
+      const aggregateFunctions::aggregateFunctions& reduction_function) :
+      table_name(table_name), axes_names(axes_names),
+      reduction_function(reduction_function) { };
+    ~JoinClause() = default;
+    std::string table_name_l; ///< the table to select (option 1 and 2)
+    std::string axis_name_l = ""; ///< the axis to select (option 1 and 2)
+    std::string dimension_name_l = ""; ///< the dimension to select (option 1)
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 1>> labels_l = nullptr; ///< the labels to select (option 1)
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> axis_labels_l = nullptr; ///< the labels to select (option 2)
+    std::string table_name_r; ///< the table to select (option 1 and 2)
+    std::string axis_name_r = ""; ///< the axis to select (option 1 and 2)
+    std::string dimension_name_r = ""; ///< the dimension to select (option 1)
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 1>> labels_r = nullptr; ///< the labels to select (option 1)
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> axis_labels_r = nullptr; ///< the labels to select (option 2)
+    joinTypes::joinTypes join_type;
   };
 
   struct reductionFunctions {
@@ -126,6 +207,11 @@ namespace TensorBase
   @param Class defining the `Where` clause statements that filters axis indices based on the
     selection criteria that is applied across all selected indices.  If the Tensor is of TDim > 2
     an `OR` clause will be applied to aggregate all other non-target selection axis
+
+  TODO: Missing support for using another table's values as the RHS comparison.
+
+  NOTES:
+    - The user can execute multiple select and where statements in a defined order in order to select the regions of interest
   */
   template<typename LabelsT, typename TensorT, typename DeviceT>
   class WhereClause : public SelectClause<LabelsT, DeviceT> {

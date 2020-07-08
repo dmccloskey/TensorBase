@@ -211,26 +211,6 @@ namespace TensorBase
 
     // Log the changes
     this->setRedoLog(TensorOperationLog(labels_->getTensorSize(), 0, 0, indices_->getTensorSize(), 0, 0, values_->getTensorSize(), 0, 0));
-
-    /////DEBUG(DefaultDevice)
-    //std::cout << "indices_\n" << indices_->getData() << std::endl;
-
-    /////DEBUG(DefaultDevice): Change in deleted labels
-    //std::cout << "Deleted Axis labels\n" << labels_->getData() << std::endl;
-    //std::shared_ptr<LabelsT[]> labels_indices_data;
-    //tensor_collection->tables_.at(table_name_)->getAxes().at(axis_name_)->getLabelsDataPointer(labels_indices_data);
-    //Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> labels_indices_data_values(labels_indices_data.get(), tensor_collection->tables_.at(table_name_)->getAxes().at(axis_name_)->getNDimensions(), tensor_collection->tables_.at(table_name_)->getAxes().at(axis_name_)->getNLabels());
-    //std::cout << "Tensor Axis labels\n" << labels_indices_data_values << std::endl;
-
-    /////DEBUG(DefaultDevice): Change in deleted data
-    //Eigen::array<Eigen::Index, TDim> data_dimensions;
-    //for (const auto& axis_map : tensor_collection->tables_.at(table_name_)->getAxes()) {
-    //  data_dimensions.at(tensor_collection->tables_.at(table_name_)->getDimFromAxisName(axis_map.first)) = axis_map.second->getNLabels();
-    //}
-    //std::shared_ptr<TensorT[]> data_data;
-    //tensor_collection->tables_.at(table_name_)->getDataPointer(data_data);
-    //Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_data_values(data_data.get(), data_dimensions);
-    //std::cout << "data_data_values\n" << data_data_values << std::endl;
   }
   template<typename LabelsT, typename TensorT, typename DeviceT, int TDim>
   inline void TensorDeleteFromAxis<LabelsT, TensorT, DeviceT, TDim>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)

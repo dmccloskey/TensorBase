@@ -20,13 +20,38 @@ namespace TensorBase
     /*
     @brief reduce the selected Tables in the Tensor according to the selected indices view
       that have been modified through the `select` and `where` clauses
+
+    @param[in] tensor_collection The tensor collection to apply the reduction to
+    @param[in] table_names List of table_names to apply the reduction to
+    @param[in] table_names_new List of the new table_names after applying the reduction.
+      WARNING: tables_names that match table_names_new will be modified in place.
+    @param[in] device
     */
     template<typename DeviceT>
     void applySelect(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, const std::vector<std::string>& table_names, DeviceT& device);
 
     /*
+    @brief reduce and concatenate the selected Tables in the Tensor according to the selected indices view
+      that have been modified through the `select`, `where`, and `join` clauses
+
+    @param[in] tensor_collection The tensor collection to apply the reduction to
+    @param[in] table_LR_names List of pairs of table_names to apply the join to
+    @param[in] table_names_new List of the new table_names after applying the reduction.
+      WARNING: tables_names that match table_names_new will be modified in place.
+    @param[in] device
+    */
+    template<typename DeviceT>
+    void applyJoin(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, const std::vector<std::pair<std::string, std::string>>& table_LR_names, DeviceT& device);
+
+    /*
     @brief sort the selected Tables in the Tensor according to the ordering of the indices view
       that have been modified through the `sort` clause
+
+    @param[in] tensor_collection The tensor collection to apply the reduction to
+    @param[in] table_names List of table_names to apply the reduction to
+    @param[in] table_names_new List of the new table_names after applying the reduction.
+      WARNING: tables_names that match table_names_new will be modified in place.
+    @param[in] device
     */
     template<typename DeviceT>
     void applySort(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, const std::vector<std::string>& table_names, DeviceT& device);
@@ -42,9 +67,17 @@ namespace TensorBase
     template<typename LabelsT, typename DeviceT>
     void selectClause(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, SelectClause<LabelsT, DeviceT>& select_clause, DeviceT& device);
 
+    /// TODO Aggregate table values by an aggregation function resulting in a new axis label with the aggregate value
+    template<typename LabelsT, typename DeviceT>
+    void aggregateClause(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, AggregateClause<LabelsT, DeviceT>& aggregate_clause, DeviceT& device);
+
     /// TODO Reduce the table by a reduction function
     template<typename DeviceT>
     void reductionClause(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, ReductionClause<DeviceT>& reduction_clause, DeviceT& device);
+
+    /// TODO Merge two tables into one
+    template<typename LabelsT, typename DeviceT>
+    void joinClause(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, JoinClause<LabelsT, DeviceT>& join_clause, DeviceT& device);
 
     /// Select the table/axis/dimension/labels by a boolean expression
     template<typename LabelsT, typename TensorT, typename DeviceT>
