@@ -94,32 +94,99 @@ namespace TensorBaseBenchmarks
     dimensions_3_t.setValues({ "time" });
     dimensions_3_x.setValues({ "x" });
     dimensions_3_y.setValues({ "y" });
-		Eigen::Tensor<TensorArray32<char>, 2> labels_1_1(1, 1), labels_1_2(1, 1), labels_1_3(1, 1), labels_1_4(1, 1);
+    Eigen::Tensor<TensorArray32<char>, 2> labels_1_1(1, 1), labels_1_2(1, 1), labels_1_3(1, 1), labels_1_4(1, 1);
+    Eigen::Tensor<TensorArray8<char>, 2> labels_3_t(1, 6);
+    Eigen::Tensor<int, 2> labels_3_x(1, 28), labels_3_y(1, 28);
     labels_1_1.setValues({ { TensorArray32<char>("time_stamp")} });
     labels_1_2.setValues({ { TensorArray32<char>("label")} });
     labels_1_3.setValues({ { TensorArray32<char>("image_2D")} });
     labels_1_4.setValues({ { TensorArray32<char>("is_valid")} });
+    labels_3_t.setValues({ { TensorArray8<char>("sec"), TensorArray8<char>("min"), TensorArray8<char>("hour"), TensorArray8<char>("day"), TensorArray8<char>("month"), TensorArray8<char>("year")} });
+    labels_3_x.setZero();
+    labels_3_x = labels_3_x.constant(1).cumsum(1);
+    labels_3_y.setZero();
+    labels_3_y = labels_3_y.constant(1).cumsum(1);
 
 		// Setup the tables
-		// TODO: refactor for the case where LabelsT != TensorT
-		std::shared_ptr<TensorTable<TensorT, Eigen::DefaultDevice, 2>> table_1_ptr = std::make_shared<TensorTableDefaultDevice<TensorT, 2>>(TensorTableDefaultDevice<TensorT, 2>("TTable"));
-		auto table_1_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray8<char>>>(TensorAxisDefaultDevice<TensorArray8<char>>("xyztv", dimensions_1, labels_1));
-		//auto table_1_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray8<char>>>(TensorAxisDefaultDevice<TensorArray8<char>>("xyzt", dimensions_1a, labels_1a));
-		//auto table_1_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray8<char>>>(TensorAxisDefaultDevice<TensorArray8<char>>("v", dimensions_1b, labels_1b));
-		auto table_1_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<LabelsT>>(TensorAxisDefaultDevice<LabelsT>("indices", 1, 0));
+		std::shared_ptr<TensorTable<int, Eigen::DefaultDevice, 3>> table_1_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(TensorTableDefaultDevice<int, 3>("DataFrame_time_stamp"));
+		auto table_1_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray32<char>>>(TensorAxisDefaultDevice<TensorArray32<char>>("1_columns", dimensions_1, labels_1_1));
+		auto table_1_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2_indices", 1, 0));
+    auto table_1_axis_3_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray8<char>>>(TensorAxisDefaultDevice<TensorArray8<char>>("3_time", dimensions_3_t, labels_3_t));
 		table_1_axis_2_ptr->setDimensions(dimensions_2);
 		table_1_ptr->addTensorAxis(table_1_axis_1_ptr);
 		table_1_ptr->addTensorAxis(table_1_axis_2_ptr);
+    table_1_ptr->addTensorAxis(table_1_axis_3_ptr);
 		table_1_ptr->setAxes(device);
 
 		// Setup the table data
-		table_1_ptr->setData();
+		table_1_ptr->setData(); 
+    std::map<std::string, int> shard_span_1;
+    shard_span_1.emplace("1_columns", 1);
+    shard_span_1.emplace("2_indices", TensorCollectionShardHelper::round_1(data_size, shard_span_perc));
+    shard_span_1.emplace("3_time", 6);
 		table_1_ptr->setShardSpans(shard_span);
-    table_1_ptr->setMaximumDimensions(Eigen::array<Eigen::Index, 2>({ data_size , 5}));
+    table_1_ptr->setMaximumDimensions(Eigen::array<Eigen::Index, 2>({ 1, data_size, 6}));
+
+    // Setup the tables
+		std::shared_ptr<TensorTable<TensorArray32<char>, Eigen::DefaultDevice, 2>> table_2_ptr = std::make_shared<TensorTableDefaultDevice<TensorArray32<char>, 2>>(TensorTableDefaultDevice<TensorArray32<char>, 2>("DataFrame_label"));
+		auto table_2_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray32<char>>>(TensorAxisDefaultDevice<TensorArray32<char>>("1_columns", dimensions_1, labels_1_1));
+		auto table_2_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2_indices", 1, 0));
+		table_2_axis_2_ptr->setDimensions(dimensions_2);
+    table_2_ptr->addTensorAxis(table_2_axis_1_ptr);
+		table_2_ptr->addTensorAxis(table_2_axis_2_ptr);
+		table_2_ptr->setAxes(device);
+
+		// Setup the table data
+    table_2_ptr->setData();
+    std::map<std::string, int> shard_span_2;
+    shard_span_2.emplace("1_columns", 1);
+    shard_span_2.emplace("2_indices", TensorCollectionShardHelper::round_1(data_size, shard_span_perc));
+    table_2_ptr->setShardSpans(shard_span);
+    table_2_ptr->setMaximumDimensions(Eigen::array<Eigen::Index, 2>({ 1, data_size}));
+
+    // Setup the tables
+    std::shared_ptr<TensorTable<float, Eigen::DefaultDevice, 4>> table_3_ptr = std::make_shared<TensorTableDefaultDevice<float, 2>>(TensorTableDefaultDevice<float, 4>("DataFrame_image_2D"));
+    auto table_3_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray32<char>>>(TensorAxisDefaultDevice<TensorArray32<char>>("1_columns", dimensions_1, labels_1_3));
+    auto table_3_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2_indices", 1, 0));
+    auto table_3_axis_3_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3_x", dimensions_3_x, labels_3_x));
+    auto table_3_axis_4_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3_y", dimensions_3_y, labels_3_y));
+    table_3_axis_2_ptr->setDimensions(dimensions_2);
+    table_3_ptr->addTensorAxis(table_3_axis_1_ptr);
+    table_3_ptr->addTensorAxis(table_3_axis_2_ptr);
+    table_3_ptr->addTensorAxis(table_3_axis_3_ptr);
+    table_3_ptr->addTensorAxis(table_3_axis_4_ptr);
+    table_3_ptr->setAxes(device);
+
+    // Setup the table data
+    table_3_ptr->setData();
+    std::map<std::string, int> shard_span_1;
+    shard_span_1.emplace("1_columns", 1);
+    shard_span_1.emplace("2_indices", TensorCollectionShardHelper::round_1(data_size, shard_span_perc));
+    shard_span_1.emplace("3_x", 28);
+    shard_span_1.emplace("3_y", 28);
+    table_3_ptr->setShardSpans(shard_span);
+    table_3_ptr->setMaximumDimensions(Eigen::array<Eigen::Index, 2>({ 1, data_size, 28, 28 }));
+
+    // Setup the tables
+    std::shared_ptr<TensorTable<int, Eigen::DefaultDevice, 2>> table_4_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(TensorTableDefaultDevice<int, 2>("DataFrame_is_valid"));
+    auto table_4_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray32<char>>>(TensorAxisDefaultDevice<TensorArray32<char>>("1_columns", dimensions_1, labels_1_1));
+    auto table_4_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2_indices", 1, 0));
+    table_4_axis_2_ptr->setDimensions(dimensions_2);
+    table_4_ptr->addTensorAxis(table_4_axis_1_ptr);
+    table_4_ptr->addTensorAxis(table_4_axis_2_ptr);
+    table_4_ptr->setAxes(device);
+
+    // Setup the table data
+    table_4_ptr->setData();
+    table_4_ptr->setShardSpans(shard_span);
+    table_4_ptr->setMaximumDimensions(Eigen::array<Eigen::Index, 2>({ 1, data_size }));
 
 		// Setup the collection
 		auto collection_1_ptr = std::make_shared<TensorCollectionDefaultDevice>(TensorCollectionDefaultDevice());
-		collection_1_ptr->addTensorTable(table_1_ptr, "TTable");
+		collection_1_ptr->addTensorTable(table_1_ptr, "DataFrame");
+    collection_1_ptr->addTensorTable(table_2_ptr, "DataFrame");
+    collection_1_ptr->addTensorTable(table_3_ptr, "DataFrame");
+    collection_1_ptr->addTensorTable(table_4_ptr, "DataFrame");
 		return collection_1_ptr;
 	}
 };
