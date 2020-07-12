@@ -136,7 +136,7 @@ namespace TensorBaseBenchmarks
 	@brief A class for running 1 line insertion, deletion, and update benchmarks
 	*/
 	template<typename LabelsT, typename TensorT>
-	class Benchmark1TimePointGpu : public Benchmark1TimePoint<LabelsT, TensorT, Eigen::GpuDevice> {
+	class Benchmark1TimePointGpu : public BenchmarkPixel1TimePoint<LabelsT, TensorT, Eigen::GpuDevice> {
 	protected:
 		void insert1TimePoint0D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `insert1TimePoint0D`
 		void insert1TimePoint1D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `insert1TimePoint1D`
@@ -308,7 +308,7 @@ namespace TensorBaseBenchmarks
 	}
 
 	template<typename LabelsT, typename TensorT>
-	class TensorCollectionGeneratorGpu : public TensorCollectionGenerator<LabelsT, TensorT, Eigen::GpuDevice> {
+	class TensorCollectionGeneratorGpu : public PixelTensorCollectionGenerator<LabelsT, TensorT, Eigen::GpuDevice> {
 	public:
 		std::shared_ptr<TensorCollection<Eigen::GpuDevice>> make0DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar, Eigen::GpuDevice& device) const override;
 		std::shared_ptr<TensorCollection<Eigen::GpuDevice>> make1DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar, Eigen::GpuDevice& device) const override;

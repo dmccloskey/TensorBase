@@ -21,7 +21,7 @@ void test_InsertUpdateDelete0DGpu()
   // Setup the Benchmarking suite
   Benchmark1TimePointGpu<int, int> benchmark_1_tp;
 
-  // Setup the TensorCollectionGenerator
+  // Setup the PixelTensorCollectionGenerator
   TensorCollectionGeneratorGpu<int, int> tensor_collection_generator;
 
   // Setup the device
@@ -223,7 +223,7 @@ void test_InsertUpdateDelete1DGpu()
   // Setup the Benchmarking suite
   Benchmark1TimePointGpu<int, int> benchmark_1_tp;
 
-  // Setup the TensorCollectionGenerator
+  // Setup the PixelTensorCollectionGenerator
   TensorCollectionGeneratorGpu<int, int> tensor_collection_generator;
 
   // Setup the device
@@ -407,7 +407,7 @@ void test_InsertUpdateDelete2DGpu()
   // Setup the Benchmarking suite
   Benchmark1TimePointGpu<int, int> benchmark_1_tp;
 
-  // Setup the TensorCollectionGenerator
+  // Setup the PixelTensorCollectionGenerator
   TensorCollectionGeneratorGpu<int, int> tensor_collection_generator;
 
   // Setup the device
@@ -616,7 +616,7 @@ void test_InsertUpdateDelete3DGpu()
   // Setup the Benchmarking suite
   Benchmark1TimePointGpu<int, int> benchmark_1_tp;
 
-  // Setup the TensorCollectionGenerator
+  // Setup the PixelTensorCollectionGenerator
   TensorCollectionGeneratorGpu<int, int> tensor_collection_generator;
 
   // Setup the device
@@ -883,7 +883,7 @@ void test_InsertUpdateDelete4DGpu()
   // Setup the Benchmarking suite
   Benchmark1TimePointGpu<int, int> benchmark_1_tp;
 
-  // Setup the TensorCollectionGenerator
+  // Setup the PixelTensorCollectionGenerator
   TensorCollectionGeneratorGpu<int, int> tensor_collection_generator;
 
   // Setup the device
@@ -1201,7 +1201,7 @@ void test_InsertUpdateDelete0DShardingGpu()
   // Setup the Benchmarking suite
   Benchmark1TimePointGpu<int, int> benchmark_1_tp;
 
-  // Setup the TensorCollectionGenerator
+  // Setup the PixelTensorCollectionGenerator
   TensorCollectionGeneratorGpu<int, int> tensor_collection_generator;
 
   // Setup the device
@@ -1407,7 +1407,7 @@ void test_InsertUpdateDelete1DShardingGpu()
   // Setup the Benchmarking suite
   Benchmark1TimePointGpu<int, int> benchmark_1_tp;
 
-  // Setup the TensorCollectionGenerator
+  // Setup the PixelTensorCollectionGenerator
   TensorCollectionGeneratorGpu<int, int> tensor_collection_generator;
 
   // Setup the device
@@ -1595,7 +1595,7 @@ void test_InsertUpdateDelete2DShardingGpu()
   // Setup the Benchmarking suite
   Benchmark1TimePointGpu<int, int> benchmark_1_tp;
 
-  // Setup the TensorCollectionGenerator
+  // Setup the PixelTensorCollectionGenerator
   TensorCollectionGeneratorGpu<int, int> tensor_collection_generator;
 
   // Setup the device
@@ -1808,7 +1808,7 @@ void test_InsertUpdateDelete3DShardingGpu()
   // Setup the Benchmarking suite
   Benchmark1TimePointGpu<int, int> benchmark_1_tp;
 
-  // Setup the TensorCollectionGenerator
+  // Setup the PixelTensorCollectionGenerator
   TensorCollectionGeneratorGpu<int, int> tensor_collection_generator;
 
   // Setup the device
@@ -2081,7 +2081,7 @@ void test_InsertUpdateDelete4DShardingGpu()
   // Setup the Benchmarking suite
   Benchmark1TimePointGpu<int, int> benchmark_1_tp;
 
-  // Setup the TensorCollectionGenerator
+  // Setup the PixelTensorCollectionGenerator
   TensorCollectionGeneratorGpu<int, int> tensor_collection_generator;
 
   // Setup the device

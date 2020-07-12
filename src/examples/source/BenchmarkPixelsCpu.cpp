@@ -37,13 +37,13 @@ int main(int argc, char** argv)
   int n_engines = 2;
   std::string labels_type = "int";
   std::string tensor_type = "int";
-  parseCmdArgs(argc, argv, data_dir, n_dims, data_size, in_memory, shard_span_perc, n_engines, labels_type, tensor_type);
+  parseCmdArgsPixels(argc, argv, data_dir, n_dims, data_size, in_memory, shard_span_perc, n_engines, labels_type, tensor_type);
 
   // Setup the device
   Eigen::ThreadPool pool(n_engines);
   Eigen::ThreadPoolDevice device(&pool, n_engines);
 
-  // Setup the Benchmarking suite, TensorCollectionGenerator, and run the application
+  // Setup the Benchmarking suite, PixelTensorCollectionGenerator, and run the application
   // NOTE: currently 0D requires labesl_type == tensor_type == int
   if (labels_type == "int" && tensor_type == "int") {
     Benchmark1TimePointCpu<int, int> benchmark_1_tp;

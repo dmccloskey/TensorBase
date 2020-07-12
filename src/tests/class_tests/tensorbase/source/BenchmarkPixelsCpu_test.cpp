@@ -24,7 +24,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DCpu)
   // Setup the Benchmarking suite
   Benchmark1TimePointCpu<int, int> benchmark_1_tp;
 
-  // Setup the TensorCollectionGenerator
+  // Setup the PixelTensorCollectionGenerator
   TensorCollectionGeneratorCpu<int, int> tensor_collection_generator;
 
   // Setup the device
@@ -215,7 +215,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete1DCpu)
   // Setup the Benchmarking suite
   Benchmark1TimePointCpu<int, int> benchmark_1_tp;
 
-  // Setup the TensorCollectionGenerator
+  // Setup the PixelTensorCollectionGenerator
   TensorCollectionGeneratorCpu<int, int> tensor_collection_generator;
 
   // Setup the device
@@ -388,7 +388,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DCpu)
   // Setup the Benchmarking suite
   Benchmark1TimePointCpu<int, int> benchmark_1_tp;
 
-  // Setup the TensorCollectionGenerator
+  // Setup the PixelTensorCollectionGenerator
   TensorCollectionGeneratorCpu<int, int> tensor_collection_generator;
 
   // Setup the device
@@ -586,7 +586,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DCpu)
   // Setup the Benchmarking suite
   Benchmark1TimePointCpu<int, int> benchmark_1_tp;
 
-  // Setup the TensorCollectionGenerator
+  // Setup the PixelTensorCollectionGenerator
   TensorCollectionGeneratorCpu<int, int> tensor_collection_generator;
 
   // Setup the device
@@ -842,7 +842,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DCpu)
   // Setup the Benchmarking suite
   Benchmark1TimePointCpu<int, int> benchmark_1_tp;
 
-  // Setup the TensorCollectionGenerator
+  // Setup the PixelTensorCollectionGenerator
   TensorCollectionGeneratorCpu<int, int> tensor_collection_generator;
 
   // Setup the device
@@ -1149,7 +1149,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DShardingCpu)
   // Setup the Benchmarking suite
   Benchmark1TimePointCpu<int, int> benchmark_1_tp;
 
-  // Setup the TensorCollectionGenerator
+  // Setup the PixelTensorCollectionGenerator
   TensorCollectionGeneratorCpu<int, int> tensor_collection_generator;
 
   // Setup the device
@@ -1350,7 +1350,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete1DShardingCpu)
   // Setup the Benchmarking suite
   Benchmark1TimePointCpu<int, int> benchmark_1_tp;
 
-  // Setup the TensorCollectionGenerator
+  // Setup the PixelTensorCollectionGenerator
   TensorCollectionGeneratorCpu<int, int> tensor_collection_generator;
 
   // Setup the device
@@ -1534,7 +1534,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DShardingCpu)
   // Setup the Benchmarking suite
   Benchmark1TimePointCpu<int, int> benchmark_1_tp;
 
-  // Setup the TensorCollectionGenerator
+  // Setup the PixelTensorCollectionGenerator
   TensorCollectionGeneratorCpu<int, int> tensor_collection_generator;
 
   // Setup the device
@@ -1748,7 +1748,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DShardingCpu)
   // Setup the Benchmarking suite
   Benchmark1TimePointCpu<int, int> benchmark_1_tp;
 
-  // Setup the TensorCollectionGenerator
+  // Setup the PixelTensorCollectionGenerator
   TensorCollectionGeneratorCpu<int, int> tensor_collection_generator;
 
   // Setup the device
@@ -2029,7 +2029,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DShardingCpu)
   // Setup the Benchmarking suite
   Benchmark1TimePointCpu<int, int> benchmark_1_tp;
 
-  // Setup the TensorCollectionGenerator
+  // Setup the PixelTensorCollectionGenerator
   TensorCollectionGeneratorCpu<int, int> tensor_collection_generator;
 
   // Setup the device

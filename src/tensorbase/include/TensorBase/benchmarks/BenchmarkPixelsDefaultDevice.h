@@ -131,7 +131,7 @@ namespace TensorBaseBenchmarks
 	@brief A class for running 1 line insertion, deletion, and update benchmarks
 	*/
 	template<typename LabelsT, typename TensorT>
-	class Benchmark1TimePointDefaultDevice : public Benchmark1TimePoint<LabelsT, TensorT, Eigen::DefaultDevice> {
+	class Benchmark1TimePointDefaultDevice : public BenchmarkPixel1TimePoint<LabelsT, TensorT, Eigen::DefaultDevice> {
 	protected:
 		void insert1TimePoint0D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `insert1TimePoint0D`
 		void insert1TimePoint1D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `insert1TimePoint1D`
@@ -303,7 +303,7 @@ namespace TensorBaseBenchmarks
 	}
 
 	template<typename LabelsT, typename TensorT>
-	class TensorCollectionGeneratorDefaultDevice : public TensorCollectionGenerator<LabelsT, TensorT, Eigen::DefaultDevice> {
+	class TensorCollectionGeneratorDefaultDevice : public PixelTensorCollectionGenerator<LabelsT, TensorT, Eigen::DefaultDevice> {
 	public:
 		std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> make0DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar, Eigen::DefaultDevice& device) const override;
 		std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> make1DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar, Eigen::DefaultDevice& device) const override;

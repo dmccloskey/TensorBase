@@ -27,7 +27,7 @@ int main(int argc, char** argv)
 	int data_size = 1e5;
   int array_size = 32;
   int n_engines = 1;
-  parseCmdArgs(argc, argv, data_size, array_size, n_engines);
+  parseCmdArgsArray(argc, argv, data_size, array_size, n_engines);
 
   // Setup the benchmarking suite
   BenchmarkArrayGpuClassT<char> benchmark_array;

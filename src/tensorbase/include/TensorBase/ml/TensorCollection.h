@@ -84,12 +84,16 @@ namespace TensorBase
     @brief Links the `axes`, `indices`, `indices_view`, and `is_modified` shared_ptr so that queries made against
       one user table are also applied to all other user tables.  The method assumes that the
       first axis is split by type and differs among all user tables.
+
+      NOTE: experimental
     */
     void linkAxesAndIndicesByUserTableName(const std::string& user_table_name, const std::string& p_axis_name);
 
     /*
     @brief Links the `axes`, `indices`, `indices_view`, and `is_modified` shared_ptr so that queries made against
       one table axis are applied to all other tables that have the same axis name.
+
+      NOTE: experimental
     */
     void linkAxesAndIndicesByAxisName(const std::vector<std::string>& axes_names);
 
