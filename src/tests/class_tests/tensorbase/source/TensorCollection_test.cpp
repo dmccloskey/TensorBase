@@ -202,6 +202,90 @@ BOOST_AUTO_TEST_CASE(addTensorTableConceptDefaultDevice)
   tensorCollection.addTensorTableConcept(tt1_ptr, "1");
   BOOST_CHECK(tensorCollection.getTableNames() == std::vector<std::string>({ "1", "2", "3" }));
   BOOST_CHECK(tensorCollection.getTableNamesFromUserName("1") == std::set<std::string>({ "1", "2", "3" }));
+
+  // test default axes and indices linkage
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("1")->getAxes().at("1") == tensorTable1.getAxes().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("1")->getAxes().at("2") == tensorTable1.getAxes().at("2"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("1")->getAxes().at("3") == tensorTable1.getAxes().at("3"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("2")->getAxes().at("1") != tensorTable1.getAxes().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("2")->getAxes().at("2") != tensorTable1.getAxes().at("2"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("3")->getAxes().at("1") != tensorTable1.getAxes().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("3")->getAxes().at("2") != tensorTable1.getAxes().at("2"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("3")->getAxes().at("3") != tensorTable1.getAxes().at("3"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("1")->getIndices().at("1") == tensorTable1.getIndices().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("1")->getIndices().at("2") == tensorTable1.getIndices().at("2"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("1")->getIndices().at("3") == tensorTable1.getIndices().at("3"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("2")->getIndices().at("1") != tensorTable1.getIndices().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("2")->getIndices().at("2") != tensorTable1.getIndices().at("2"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("3")->getIndices().at("1") != tensorTable1.getIndices().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("3")->getIndices().at("2") != tensorTable1.getIndices().at("2"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("3")->getIndices().at("3") != tensorTable1.getIndices().at("3"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("1") == tensorTable1.getIndicesView().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("2") == tensorTable1.getIndicesView().at("2"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("3") == tensorTable1.getIndicesView().at("3"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("2")->getIndicesView().at("1") != tensorTable1.getIndicesView().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("2")->getIndicesView().at("2") != tensorTable1.getIndicesView().at("2"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("1") != tensorTable1.getIndicesView().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("2") != tensorTable1.getIndicesView().at("2"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("3") != tensorTable1.getIndicesView().at("3"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("1")->getIsModified().at("1") == tensorTable1.getIsModified().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("1")->getIsModified().at("2") == tensorTable1.getIsModified().at("2"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("1")->getIsModified().at("3") == tensorTable1.getIsModified().at("3"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("2")->getIsModified().at("1") != tensorTable1.getIsModified().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("2")->getIsModified().at("2") != tensorTable1.getIsModified().at("2"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("3")->getIsModified().at("1") != tensorTable1.getIsModified().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("3")->getIsModified().at("2") != tensorTable1.getIsModified().at("2"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("3")->getIsModified().at("3") != tensorTable1.getIsModified().at("3"));
+
+  // test linkAxesAndIndicesByUserTableName
+  tensorCollection.linkAxesAndIndicesByUserTableName("1", "1");
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("1")->getAxes().at("1") == tensorTable1.getAxes().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("1")->getAxes().at("2") == tensorTable1.getAxes().at("2"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("1")->getAxes().at("3") == tensorTable1.getAxes().at("3"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("2")->getAxes().at("1") != tensorTable1.getAxes().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("2")->getAxes().at("2") == tensorTable1.getAxes().at("2"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("3")->getAxes().at("1") != tensorTable1.getAxes().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("3")->getAxes().at("2") == tensorTable1.getAxes().at("2"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("3")->getAxes().at("3") == tensorTable1.getAxes().at("3"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("1")->getIndices().at("1") == tensorTable1.getIndices().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("1")->getIndices().at("2") == tensorTable1.getIndices().at("2"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("1")->getIndices().at("3") == tensorTable1.getIndices().at("3"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("2")->getIndices().at("1") != tensorTable1.getIndices().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("2")->getIndices().at("2") == tensorTable1.getIndices().at("2"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("3")->getIndices().at("1") != tensorTable1.getIndices().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("3")->getIndices().at("2") == tensorTable1.getIndices().at("2"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("3")->getIndices().at("3") == tensorTable1.getIndices().at("3"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("1") == tensorTable1.getIndicesView().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("2") == tensorTable1.getIndicesView().at("2"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("3") == tensorTable1.getIndicesView().at("3"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("2")->getIndicesView().at("1") != tensorTable1.getIndicesView().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("2")->getIndicesView().at("2") == tensorTable1.getIndicesView().at("2"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("1") != tensorTable1.getIndicesView().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("2") == tensorTable1.getIndicesView().at("2"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("3") == tensorTable1.getIndicesView().at("3"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("1")->getIsModified().at("1") == tensorTable1.getIsModified().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("1")->getIsModified().at("2") == tensorTable1.getIsModified().at("2"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("1")->getIsModified().at("3") == tensorTable1.getIsModified().at("3"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("2")->getIsModified().at("1") != tensorTable1.getIsModified().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("2")->getIsModified().at("2") == tensorTable1.getIsModified().at("2"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("3")->getIsModified().at("1") != tensorTable1.getIsModified().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("3")->getIsModified().at("2") == tensorTable1.getIsModified().at("2"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("3")->getIsModified().at("3") == tensorTable1.getIsModified().at("3"));
+
+  // test linkAxesAndIndicesByAxisName
+  tensorCollection.linkAxesAndIndicesByAxisName({ "1" });
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("1")->getAxes().at("1") == tensorTable1.getAxes().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("2")->getAxes().at("1") == tensorTable1.getAxes().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("3")->getAxes().at("1") == tensorTable1.getAxes().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("1")->getIndices().at("1") == tensorTable1.getIndices().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("2")->getIndices().at("1") == tensorTable1.getIndices().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("3")->getIndices().at("1") == tensorTable1.getIndices().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("1") == tensorTable1.getIndicesView().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("2")->getIndicesView().at("1") == tensorTable1.getIndicesView().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("1") == tensorTable1.getIndicesView().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("1")->getIsModified().at("1") == tensorTable1.getIsModified().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("2")->getIsModified().at("1") == tensorTable1.getIsModified().at("1"));
+  BOOST_CHECK(tensorCollection.getTensorTableConcept("3")->getIsModified().at("1") == tensorTable1.getIsModified().at("1"));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

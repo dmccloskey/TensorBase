@@ -210,7 +210,91 @@ void test_addTensorTableConceptGpu()
   assert(tensorCollection.getTableNamesFromUserName("1") == std::set<std::string>({ "2", "3" }));
   tensorCollection.addTensorTableConcept(tt1_ptr, "1");
   assert(tensorCollection.getTableNames() == std::vector<std::string>({ "1", "2", "3" }));
-  assert(tensorCollection.getTableNamesFromUserName("1") == std::set<std::string>({ "1", "2", "3" }));
+  assert(tensorCollection.getTableNamesFromUserName("1") == std::set<std::string>({ "1", "2", "3" }));;
+
+  // test default axes and indices linkage
+  assert(tensorCollection.getTensorTableConcept("1")->getAxes().at("1") == tensorTable1.getAxes().at("1"));
+  assert(tensorCollection.getTensorTableConcept("1")->getAxes().at("2") == tensorTable1.getAxes().at("2"));
+  assert(tensorCollection.getTensorTableConcept("1")->getAxes().at("3") == tensorTable1.getAxes().at("3"));
+  assert(tensorCollection.getTensorTableConcept("2")->getAxes().at("1") != tensorTable1.getAxes().at("1"));
+  assert(tensorCollection.getTensorTableConcept("2")->getAxes().at("2") != tensorTable1.getAxes().at("2"));
+  assert(tensorCollection.getTensorTableConcept("3")->getAxes().at("1") != tensorTable1.getAxes().at("1"));
+  assert(tensorCollection.getTensorTableConcept("3")->getAxes().at("2") != tensorTable1.getAxes().at("2"));
+  assert(tensorCollection.getTensorTableConcept("3")->getAxes().at("3") != tensorTable1.getAxes().at("3"));
+  assert(tensorCollection.getTensorTableConcept("1")->getIndices().at("1") == tensorTable1.getIndices().at("1"));
+  assert(tensorCollection.getTensorTableConcept("1")->getIndices().at("2") == tensorTable1.getIndices().at("2"));
+  assert(tensorCollection.getTensorTableConcept("1")->getIndices().at("3") == tensorTable1.getIndices().at("3"));
+  assert(tensorCollection.getTensorTableConcept("2")->getIndices().at("1") != tensorTable1.getIndices().at("1"));
+  assert(tensorCollection.getTensorTableConcept("2")->getIndices().at("2") != tensorTable1.getIndices().at("2"));
+  assert(tensorCollection.getTensorTableConcept("3")->getIndices().at("1") != tensorTable1.getIndices().at("1"));
+  assert(tensorCollection.getTensorTableConcept("3")->getIndices().at("2") != tensorTable1.getIndices().at("2"));
+  assert(tensorCollection.getTensorTableConcept("3")->getIndices().at("3") != tensorTable1.getIndices().at("3"));
+  assert(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("1") == tensorTable1.getIndicesView().at("1"));
+  assert(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("2") == tensorTable1.getIndicesView().at("2"));
+  assert(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("3") == tensorTable1.getIndicesView().at("3"));
+  assert(tensorCollection.getTensorTableConcept("2")->getIndicesView().at("1") != tensorTable1.getIndicesView().at("1"));
+  assert(tensorCollection.getTensorTableConcept("2")->getIndicesView().at("2") != tensorTable1.getIndicesView().at("2"));
+  assert(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("1") != tensorTable1.getIndicesView().at("1"));
+  assert(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("2") != tensorTable1.getIndicesView().at("2"));
+  assert(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("3") != tensorTable1.getIndicesView().at("3"));
+  assert(tensorCollection.getTensorTableConcept("1")->getIsModified().at("1") == tensorTable1.getIsModified().at("1"));
+  assert(tensorCollection.getTensorTableConcept("1")->getIsModified().at("2") == tensorTable1.getIsModified().at("2"));
+  assert(tensorCollection.getTensorTableConcept("1")->getIsModified().at("3") == tensorTable1.getIsModified().at("3"));
+  assert(tensorCollection.getTensorTableConcept("2")->getIsModified().at("1") != tensorTable1.getIsModified().at("1"));
+  assert(tensorCollection.getTensorTableConcept("2")->getIsModified().at("2") != tensorTable1.getIsModified().at("2"));
+  assert(tensorCollection.getTensorTableConcept("3")->getIsModified().at("1") != tensorTable1.getIsModified().at("1"));
+  assert(tensorCollection.getTensorTableConcept("3")->getIsModified().at("2") != tensorTable1.getIsModified().at("2"));
+  assert(tensorCollection.getTensorTableConcept("3")->getIsModified().at("3") != tensorTable1.getIsModified().at("3"));
+
+  // test linkAxesAndIndicesByUserTableName
+  tensorCollection.linkAxesAndIndicesByUserTableName("1", "1");
+  assert(tensorCollection.getTensorTableConcept("1")->getAxes().at("1") == tensorTable1.getAxes().at("1"));
+  assert(tensorCollection.getTensorTableConcept("1")->getAxes().at("2") == tensorTable1.getAxes().at("2"));
+  assert(tensorCollection.getTensorTableConcept("1")->getAxes().at("3") == tensorTable1.getAxes().at("3"));
+  assert(tensorCollection.getTensorTableConcept("2")->getAxes().at("1") != tensorTable1.getAxes().at("1"));
+  assert(tensorCollection.getTensorTableConcept("2")->getAxes().at("2") == tensorTable1.getAxes().at("2"));
+  assert(tensorCollection.getTensorTableConcept("3")->getAxes().at("1") != tensorTable1.getAxes().at("1"));
+  assert(tensorCollection.getTensorTableConcept("3")->getAxes().at("2") == tensorTable1.getAxes().at("2"));
+  assert(tensorCollection.getTensorTableConcept("3")->getAxes().at("3") == tensorTable1.getAxes().at("3"));
+  assert(tensorCollection.getTensorTableConcept("1")->getIndices().at("1") == tensorTable1.getIndices().at("1"));
+  assert(tensorCollection.getTensorTableConcept("1")->getIndices().at("2") == tensorTable1.getIndices().at("2"));
+  assert(tensorCollection.getTensorTableConcept("1")->getIndices().at("3") == tensorTable1.getIndices().at("3"));
+  assert(tensorCollection.getTensorTableConcept("2")->getIndices().at("1") != tensorTable1.getIndices().at("1"));
+  assert(tensorCollection.getTensorTableConcept("2")->getIndices().at("2") == tensorTable1.getIndices().at("2"));
+  assert(tensorCollection.getTensorTableConcept("3")->getIndices().at("1") != tensorTable1.getIndices().at("1"));
+  assert(tensorCollection.getTensorTableConcept("3")->getIndices().at("2") == tensorTable1.getIndices().at("2"));
+  assert(tensorCollection.getTensorTableConcept("3")->getIndices().at("3") == tensorTable1.getIndices().at("3"));
+  assert(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("1") == tensorTable1.getIndicesView().at("1"));
+  assert(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("2") == tensorTable1.getIndicesView().at("2"));
+  assert(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("3") == tensorTable1.getIndicesView().at("3"));
+  assert(tensorCollection.getTensorTableConcept("2")->getIndicesView().at("1") != tensorTable1.getIndicesView().at("1"));
+  assert(tensorCollection.getTensorTableConcept("2")->getIndicesView().at("2") == tensorTable1.getIndicesView().at("2"));
+  assert(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("1") != tensorTable1.getIndicesView().at("1"));
+  assert(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("2") == tensorTable1.getIndicesView().at("2"));
+  assert(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("3") == tensorTable1.getIndicesView().at("3"));
+  assert(tensorCollection.getTensorTableConcept("1")->getIsModified().at("1") == tensorTable1.getIsModified().at("1"));
+  assert(tensorCollection.getTensorTableConcept("1")->getIsModified().at("2") == tensorTable1.getIsModified().at("2"));
+  assert(tensorCollection.getTensorTableConcept("1")->getIsModified().at("3") == tensorTable1.getIsModified().at("3"));
+  assert(tensorCollection.getTensorTableConcept("2")->getIsModified().at("1") != tensorTable1.getIsModified().at("1"));
+  assert(tensorCollection.getTensorTableConcept("2")->getIsModified().at("2") == tensorTable1.getIsModified().at("2"));
+  assert(tensorCollection.getTensorTableConcept("3")->getIsModified().at("1") != tensorTable1.getIsModified().at("1"));
+  assert(tensorCollection.getTensorTableConcept("3")->getIsModified().at("2") == tensorTable1.getIsModified().at("2"));
+  assert(tensorCollection.getTensorTableConcept("3")->getIsModified().at("3") == tensorTable1.getIsModified().at("3"));
+
+  // test linkAxesAndIndicesByAxisName
+  tensorCollection.linkAxesAndIndicesByAxisName({ "1" });
+  assert(tensorCollection.getTensorTableConcept("1")->getAxes().at("1") == tensorTable1.getAxes().at("1"));
+  assert(tensorCollection.getTensorTableConcept("2")->getAxes().at("1") == tensorTable1.getAxes().at("1"));
+  assert(tensorCollection.getTensorTableConcept("3")->getAxes().at("1") == tensorTable1.getAxes().at("1"));
+  assert(tensorCollection.getTensorTableConcept("1")->getIndices().at("1") == tensorTable1.getIndices().at("1"));
+  assert(tensorCollection.getTensorTableConcept("2")->getIndices().at("1") == tensorTable1.getIndices().at("1"));
+  assert(tensorCollection.getTensorTableConcept("3")->getIndices().at("1") == tensorTable1.getIndices().at("1"));
+  assert(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("1") == tensorTable1.getIndicesView().at("1"));
+  assert(tensorCollection.getTensorTableConcept("2")->getIndicesView().at("1") == tensorTable1.getIndicesView().at("1"));
+  assert(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("1") == tensorTable1.getIndicesView().at("1"));
+  assert(tensorCollection.getTensorTableConcept("1")->getIsModified().at("1") == tensorTable1.getIsModified().at("1"));
+  assert(tensorCollection.getTensorTableConcept("2")->getIsModified().at("1") == tensorTable1.getIsModified().at("1"));
+  assert(tensorCollection.getTensorTableConcept("3")->getIsModified().at("1") == tensorTable1.getIsModified().at("1"));
 }
 
 int main(int argc, char** argv)

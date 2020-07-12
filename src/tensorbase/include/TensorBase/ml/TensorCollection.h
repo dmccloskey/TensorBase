@@ -80,6 +80,19 @@ namespace TensorBase
     */
     std::string getUserNameFromTableName(const std::string& table_name) const;
 
+    /*
+    @brief Links the `axes`, `indices`, `indices_view`, and `is_modified` shared_ptr so that queries made against
+      one user table are also applied to all other user tables.  The method assumes that the
+      first axis is split by type and differs among all user tables.
+    */
+    void linkAxesAndIndicesByUserTableName(const std::string& user_table_name, const std::string& p_axis_name);
+
+    /*
+    @brief Links the `axes`, `indices`, `indices_view`, and `is_modified` shared_ptr so that queries made against
+      one table axis are applied to all other tables that have the same axis name.
+    */
+    void linkAxesAndIndicesByAxisName(const std::vector<std::string>& axes_names);
+
     std::map<std::string, std::shared_ptr<TensorTableConcept<DeviceT>>> tables_; ///< map of Tensor tables
     std::map<std::string, std::set<std::string>> user_table_names_to_tensor_table_names_; ///< map of user names to tensor names split based on type
 
@@ -109,6 +122,7 @@ namespace TensorBase
     auto found_user_table = user_table_names_to_tensor_table_names_.emplace(user_table_name, table_names);
     if (!found_user_table.second)
       user_table_names_to_tensor_table_names_.at(user_table_name).insert(tensor_table->getName());
+
   }
 
   template<typename DeviceT>
@@ -200,6 +214,68 @@ namespace TensorBase
       }
     }
     return user_table_name;
+  }
+  template<typename DeviceT>
+  inline void TensorCollection<DeviceT>::linkAxesAndIndicesByUserTableName(const std::string& user_table_name, const std::string& p_axis_name)
+  {
+    // get the first encounter of all indices, indices_view, and is_modified
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> indices, indices_view, is_modified;
+    std::map<std::string, std::shared_ptr<TensorAxisConcept<DeviceT>>> axes;
+    for (auto& table_name : getTableNamesFromUserName(user_table_name)) {
+      auto& table = getTensorTableConcept(table_name);
+      for (auto& axis_to_dim : table->getAxesToDims()) {
+        if (axis_to_dim.first != p_axis_name) {
+          indices.emplace(axis_to_dim.first, table->getIndices().at(axis_to_dim.first));
+          indices_view.emplace(axis_to_dim.first, table->getIndicesView().at(axis_to_dim.first));
+          is_modified.emplace(axis_to_dim.first, table->getIsModified().at(axis_to_dim.first));
+          axes.emplace(axis_to_dim.first, table->getAxes().at(axis_to_dim.first));
+        }
+      }
+    }
+
+    // set the indices, indices_view and is_modified using the same indices
+    for (auto& table_name : getTableNamesFromUserName(user_table_name)) {
+      auto& table = getTensorTableConcept(table_name);
+      for (auto& axis_to_dim : table->getAxesToDims()) {
+        if (axis_to_dim.first != p_axis_name) {
+          table->getIndices().at(axis_to_dim.first) = indices.at(axis_to_dim.first);
+          table->getIndicesView().at(axis_to_dim.first) = indices_view.at(axis_to_dim.first);
+          table->getIsModified().at(axis_to_dim.first) = is_modified.at(axis_to_dim.first);
+          table->getAxes().at(axis_to_dim.first) = axes.at(axis_to_dim.first);
+        }
+      }
+    }
+  }
+  template<typename DeviceT>
+  inline void TensorCollection<DeviceT>::linkAxesAndIndicesByAxisName(const std::vector<std::string>& axes_names)
+  {
+    // get the first encounter of all indices, indices_view, and is_modified
+    std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> indices, indices_view, is_modified;
+    std::map<std::string, std::shared_ptr<TensorAxisConcept<DeviceT>>> axes;
+
+    // and then set the indices, indices_view, and is_modified using the same indices for all other encounters
+    for (auto& table_name_to_table : tables_) {
+      for (auto& axis_to_dim : table_name_to_table.second->getAxesToDims()) {
+        if (std::count(axes_names.begin(), axes_names.end(), axis_to_dim.first) > 0) {
+          auto found_indices = indices.emplace(axis_to_dim.first, table_name_to_table.second->getIndices().at(axis_to_dim.first));
+          if (!found_indices.second) {
+            table_name_to_table.second->getIndices().at(axis_to_dim.first) = indices.at(axis_to_dim.first);
+          }
+          auto found_indices_view = indices_view.emplace(axis_to_dim.first, table_name_to_table.second->getIndicesView().at(axis_to_dim.first));
+          if (!found_indices_view.second) {
+            table_name_to_table.second->getIndicesView().at(axis_to_dim.first) = indices_view.at(axis_to_dim.first);
+          }
+          auto found_indices_is_modified = is_modified.emplace(axis_to_dim.first, table_name_to_table.second->getIsModified().at(axis_to_dim.first));
+          if (!found_indices_is_modified.second) {
+            table_name_to_table.second->getIsModified().at(axis_to_dim.first) = is_modified.at(axis_to_dim.first);
+          }
+          auto found_indices_axes = axes.emplace(axis_to_dim.first, table_name_to_table.second->getAxes().at(axis_to_dim.first));
+          if (!found_indices_axes.second) {
+            table_name_to_table.second->getAxes().at(axis_to_dim.first) = axes.at(axis_to_dim.first);
+          }
+        }
+      }
+    }
   }
 };
 #endif //TENSORBASE_TENSORCOLLECTION_H
