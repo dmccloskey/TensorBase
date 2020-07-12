@@ -41,7 +41,7 @@ struct SelectTable1 {
 
     // Apply the select clause
     if (apply_select)
-      tensorSelect.applySelect(tensor_collection, { "1" }, device);
+      tensorSelect.applySelect(tensor_collection, { "1" }, { "1" }, device);
   }
   bool apply_select = true;
 };

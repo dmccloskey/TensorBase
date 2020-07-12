@@ -28,7 +28,7 @@ namespace TensorBase
     @param[in] device
     */
     template<typename DeviceT>
-    void applySelect(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, const std::vector<std::string>& table_names, DeviceT& device);
+    void applySelect(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, const std::vector<std::string>& table_names, const std::vector<std::string>& table_names_new, DeviceT& device);
 
     /*
     @brief reduce and concatenate the selected Tables in the Tensor according to the selected indices view
@@ -41,7 +41,7 @@ namespace TensorBase
     @param[in] device
     */
     template<typename DeviceT>
-    void applyJoin(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, const std::vector<std::pair<std::string, std::string>>& table_LR_names, DeviceT& device);
+    void applyJoin(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, const std::vector<std::pair<std::string, std::string>>& table_LR_names, const std::vector<std::string>& table_names_new, DeviceT& device);
 
     /*
     @brief sort the selected Tables in the Tensor according to the ordering of the indices view
@@ -54,7 +54,7 @@ namespace TensorBase
     @param[in] device
     */
     template<typename DeviceT>
-    void applySort(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, const std::vector<std::string>& table_names, DeviceT& device);
+    void applySort(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, const std::vector<std::string>& table_names, const std::vector<std::string>& table_names_new, DeviceT& device);
 
     /* @brief Select the table/axis/dimension/labels that will be returned in the view.
 
@@ -89,18 +89,24 @@ namespace TensorBase
   };
 
   template<typename DeviceT>
-  void TensorSelect::applySelect(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, const std::vector<std::string>& table_names, DeviceT& device) {
-    for (const std::string& table_name : table_names) {
-      tensor_collection->tables_.at(table_name)->syncAxesAndIndicesDData(device);
-      tensor_collection->tables_.at(table_name)->selectTensorData(device);
+  void TensorSelect::applySelect(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, const std::vector<std::string>& table_names, const std::vector<std::string>& table_names_new, DeviceT& device) {
+    assert(table_names.size() == table_names_new.size());
+    for (int i = 0; i < table_names.size(); ++i) {
+      if (table_names.at(i) == table_names_new.at(i)) {
+        tensor_collection->tables_.at(table_names.at(i))->syncAxesAndIndicesDData(device);
+        tensor_collection->tables_.at(table_names.at(i))->selectTensorData(device);
+      }
     }
   };
 
   template<typename DeviceT>
-  void TensorSelect::applySort(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, const std::vector<std::string>& table_names, DeviceT& device) {
-    for (const std::string& table_name : table_names) {
-      tensor_collection->tables_.at(table_name)->syncAxesAndIndicesDData(device);
-      tensor_collection->tables_.at(table_name)->sortTensorData(device);
+  void TensorSelect::applySort(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, const std::vector<std::string>& table_names, const std::vector<std::string>& table_names_new, DeviceT& device) {
+    assert(table_names.size() == table_names_new.size());
+    for (int i = 0; i < table_names.size(); ++i) {
+      if (table_names.at(i) == table_names_new.at(i)) {
+        tensor_collection->tables_.at(table_names.at(i))->syncAxesAndIndicesDData(device);
+        tensor_collection->tables_.at(table_names.at(i))->sortTensorData(device);
+      }
     }
   };
 

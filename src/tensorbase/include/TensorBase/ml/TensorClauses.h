@@ -65,17 +65,13 @@ namespace TensorBase
   class AggregateClause: public SelectClause<LabelsT, DeviceT> {
   public:
     AggregateClause() = default;
-    AggregateClause(const std::string & table_name, const std::string & axis_name, const std::string & dimension_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>> & labels, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& as_axis_labels, const aggregateFunctions::aggregateFunctions& aggregate_function) :
-      SelectClause(table_name, axis_name, axis_labels), as_axis_labels(as_axis_labels), aggregate_function(aggregate_function){ };
-    AggregateClause(const std::string & table_name, const std::string & axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> & axis_labels, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& as_axis_labels, const aggregateFunctions::aggregateFunctions& aggregate_function) :
+    AggregateClause(const std::string & table_name, const std::string & axis_name, const std::string & dimension_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>> & labels, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& as_axis_labels, const aggregateFunctions::aggregateFunction& aggregate_function) :
+      SelectClause(table_name, axis_name, dimension_name, labels), as_axis_labels(as_axis_labels), aggregate_function(aggregate_function){ };
+    AggregateClause(const std::string & table_name, const std::string & axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> & axis_labels, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& as_axis_labels, const aggregateFunctions::aggregateFunction& aggregate_function) :
       SelectClause(table_name, axis_name, axis_labels), as_axis_labels(as_axis_labels), aggregate_function(aggregate_function) { };
-    AggregateClause(const std::string& table_name, const std::vector<std::string>& axes_names,
-      const aggregateFunctions::aggregateFunctions& reduction_function) :
-      table_name(table_name), axes_names(axes_names),
-      reduction_function(reduction_function) { };
-    ~ReductionClause() = default;
+    ~AggregateClause() = default;
     std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> as_axis_labels = nullptr; ///< the labels to select (option 2)
-    aggregateFunctions::aggregateFunctions aggregate_function;
+    aggregateFunctions::aggregateFunction aggregate_function;
   };
 
   struct joinTypes {
@@ -98,14 +94,18 @@ namespace TensorBase
   class JoinClause {
   public:
     JoinClause() = default;
-    SelectClause(const std::string & table_name, const std::string & axis_name, const std::string & dimension_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>> & labels) :
-      table_name(table_name), axis_name(axis_name), dimension_name(dimension_name), labels(labels) { };
-    SelectClause(const std::string & table_name, const std::string & axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> & axis_labels) :
-      table_name(table_name), axis_name(axis_name), axis_labels(axis_labels) { };
-    JoinClause(const std::string& table_name, const std::vector<std::string>& axes_names,
-      const aggregateFunctions::aggregateFunctions& reduction_function) :
-      table_name(table_name), axes_names(axes_names),
-      reduction_function(reduction_function) { };
+    JoinClause(const std::string & table_name_l, const std::string & axis_name_l, const std::string & dimension_name_l, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>> & labels_l,
+      const std::string& table_name_r, const std::string& axis_name_r, const std::string& dimension_name_r, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& labels_r,
+      const joinTypes::joinType& join_type) :
+      table_name_l(table_name_l), axis_name_l(axis_name_l), dimension_name_l(dimension_name_l), labels_l(labels_l),
+      table_name_r(table_name_r), axis_name_r(axis_name_r), dimension_name_r(dimension_name_r), labels_r(labels_r),
+      join_type(join_type) { };
+    JoinClause(const std::string & table_name_l, const std::string & axis_name_l, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> & axis_labels_l,
+      const std::string& table_name_r, const std::string& axis_name_r, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& axis_labels_r,
+      const joinTypes::joinType& join_type) :
+      table_name_l(table_name_l), axis_name_l(axis_name_l), axis_labels_l(axis_labels_l),
+      table_name_r(table_name_r), axis_name_r(axis_name_r), axis_labels_r(axis_labels_r),
+      join_type(join_type) { };
     ~JoinClause() = default;
     std::string table_name_l; ///< the table to select (option 1 and 2)
     std::string axis_name_l = ""; ///< the axis to select (option 1 and 2)
@@ -117,7 +117,7 @@ namespace TensorBase
     std::string dimension_name_r = ""; ///< the dimension to select (option 1)
     std::shared_ptr<TensorData<LabelsT, DeviceT, 1>> labels_r = nullptr; ///< the labels to select (option 1)
     std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> axis_labels_r = nullptr; ///< the labels to select (option 2)
-    joinTypes::joinTypes join_type;
+    joinTypes::joinType join_type;
   };
 
   struct reductionFunctions {
@@ -208,7 +208,9 @@ namespace TensorBase
     selection criteria that is applied across all selected indices.  If the Tensor is of TDim > 2
     an `OR` clause will be applied to aggregate all other non-target selection axis
 
-  TODO: Missing support for using another table's values as the RHS comparison.
+  TODO: 
+    - Missing support for using another table's values as the RHS comparison.
+    - Missing support for array-specific operators (i.e., STARTS_WITH, ENDS_WITH, CONTAINS)
 
   NOTES:
     - The user can execute multiple select and where statements in a defined order in order to select the regions of interest

@@ -282,7 +282,7 @@ BOOST_AUTO_TEST_CASE(whereClauseDefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 3); // unchanged
 
   // Apply the select clause
-  tensorSelect.applySelect(collection_1_ptr, { "1", "2" }, device);
+  tensorSelect.applySelect(collection_1_ptr, { "1", "2" }, { "1", "2" }, device);
 
   // Test for the expected table attributes
   Eigen::array<Eigen::Index, 3> dimensions1_test = { 2, 1, 2 };
@@ -402,7 +402,7 @@ BOOST_AUTO_TEST_CASE(sortClause1DefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 1);
 
   // Apply the select clause
-  tensorSelect.applySort(collection_1_ptr, { "1", "2" }, device);
+  tensorSelect.applySort(collection_1_ptr, { "1", "2" }, { "1", "2" }, device);
 
   // Test for the expected table attributes
   Eigen::array<Eigen::Index, 3> dimensions1_test = { nlabels1, nlabels2, nlabels3 };
@@ -528,7 +528,7 @@ BOOST_AUTO_TEST_CASE(sortClause2DefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 1);
 
   // Apply the select clause
-  tensorSelect.applySort(collection_1_ptr, { "1", "2" }, device);
+  tensorSelect.applySort(collection_1_ptr, { "1", "2" }, { "1", "2" }, device);
 
   // Test for the expected table attributes
   Eigen::array<Eigen::Index, 3> dimensions1_test = { nlabels1, nlabels2, nlabels3 };
