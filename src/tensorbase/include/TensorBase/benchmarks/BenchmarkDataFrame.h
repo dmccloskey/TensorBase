@@ -52,7 +52,6 @@ namespace TensorBaseBenchmarks
 	public:
     DataFrameManager(const int& data_size, const bool& use_random_values = false) : data_size_(data_size), use_random_values_(use_random_values){};
 		~DataFrameManager() = default;
-		void setDimSizes();
 		virtual void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, NDim>>& values_ptr) = 0;
 		virtual void makeLabelsPtr(const Eigen::Tensor<int, 2>& labels, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr) = 0;
 		virtual void makeValuesPtr(const Eigen::Tensor<TensorT, NDim>& values, std::shared_ptr<TensorData<TensorT, DeviceT, NDim>>& values_ptr) = 0;
@@ -64,8 +63,6 @@ namespace TensorBaseBenchmarks
 	protected:
 		int data_size_;
 		bool use_random_values_;
-    int indices_dim_size_;
-    int dim_span_;
 	};
 	template<typename LabelsT, typename TensorT, typename DeviceT, int NDim>
 	TensorT DataFrameManager<LabelsT, TensorT, DeviceT, NDim>::getRandomValue() {
@@ -79,43 +76,89 @@ namespace TensorBaseBenchmarks
 	@brief Specialized `DataFrameManager` for generating time_stamps
 	*/
 	template<typename LabelsT, typename TensorT, typename DeviceT>
-	class DataFrameManagerTime : public DataFrameManager<LabelsT, TensorT, DeviceT, 2> {
+	class DataFrameManagerTime : public DataFrameManager<LabelsT, TensorT, DeviceT, 3> {
 	public:
 		using DataFrameManager::DataFrameManager;
-		void setDimSizes();
-		void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& values_ptr);
-  protected:
-    int indices_dim_size_;
-    int dim_span_;
+		void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 3>>& values_ptr);
   };
   template<typename LabelsT, typename TensorT, typename DeviceT>
-  void DataFrameManager<LabelsT, TensorT, DeviceT>::setDimSizes() {
-    indices_dim_size_ = this->data_size_;
-    dim_span_ = std::pow(this->data_size_, 0.25);
-  }
-	template<typename LabelsT, typename TensorT, typename DeviceT>
-	void DataFrameManager<LabelsT, TensorT, DeviceT>::getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& values_ptr) {
-		setDimSizes();
+	void DataFrameManagerTime<LabelsT, TensorT, DeviceT>::getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 3>>& values_ptr) {
 		// Make the labels and values
 		Eigen::Tensor<LabelsT, 2> labels(1, span);
-		Eigen::Tensor<TensorT, 2> values(span, 5);
-		for (int i = offset; i < offset + span; ++i) {
+		Eigen::Tensor<TensorT, 3> values(1, span, 6);
+
+    // Make the fixed starting time
+    std::tm time_start;
+    std::istringstream iss("01/01/2008 00:00:00");
+    iss.imbue(std::locale(""));
+    iss >> std::get_time(&time_start, "%d/%m/%Y %H:%M:%S");
+
+		for (int i = offset; i < offset + span; ++i) {      
 			labels(0, i - offset) = LabelsT(i);
-			values(i - offset, 0) = int(floor(float(i) / float(std::pow(this->dim_span_, 0)))) % this->dim_span_ + 1;
-			values(i - offset, 1) = int(floor(float(i) / float(std::pow(this->dim_span_, 1)))) % this->dim_span_ + 1;
-			values(i - offset, 2) = int(floor(float(i) / float(std::pow(this->dim_span_, 2)))) % this->dim_span_ + 1;
-			values(i - offset, 3) = int(floor(float(i) / float(std::pow(this->dim_span_, 3)))) % this->dim_span_ + 1;
-      if (this->use_random_values_) values(i - offset, 4) = TensorT(-1); // this->getRandomValue();
-			else values(i - offset, 4) = TensorT(i);
+      time_start.tm_sec += i * 10;
+      std::mktime(&time_start);
+			values(0, i - offset, 0) = TensorT(time_start.tm_sec);
+			values(0, i - offset, 1) = TensorT(time_start.tm_min);
+			values(0, i - offset, 2) = TensorT(time_start.tm_hour);
+			values(0, i - offset, 3) = TensorT(time_start.tm_mday);
+      values(0, i - offset, 4) = TensorT(time_start.tm_mon);
+      values(0, i - offset, 5) = TensorT(time_start.tm_year);
 		}
 		this->makeLabelsPtr(labels, labels_ptr);
 		this->makeValuesPtr(values, values_ptr);
 	}
 
+  /*
+  @brief Specialized `DataFrameManager` for generating labels
+  */
+  template<typename LabelsT, typename TensorT, typename DeviceT>
+  class DataFrameManagerLabels : public DataFrameManager<LabelsT, TensorT, DeviceT, 2> {
+  public:
+    using DataFrameManager::DataFrameManager;
+    void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& values_ptr);
+  private:
+    std::string labels_ = { "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" };
+  };
+  template<typename LabelsT, typename TensorT, typename DeviceT>
+  void DataFrameManagerLabels<LabelsT, TensorT, DeviceT>::getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& values_ptr) {
+    // Make the labels and values
+    Eigen::Tensor<LabelsT, 2> labels(1, span);
+    Eigen::Tensor<TensorT, 2> values(1, span);
+
+    for (int i = offset; i < offset + span; ++i) {
+      labels(0, i - offset) = LabelsT(i);
+      time_start.tm_sec += i * 10;
+      std::mktime(&time_start);
+      values(0, i - offset, 0) = TensorT(labels_.at(i%labels_.size());
+    }
+    this->makeLabelsPtr(labels, labels_ptr);
+    this->makeValuesPtr(values, values_ptr);
+  }
+
+  /*
+  @brief Specialized `DataFrameManager` for generating image_2d
+  */
+  template<typename LabelsT, typename TensorT, typename DeviceT>
+  class DataFrameManagerImage2D : public DataFrameManager<LabelsT, TensorT, DeviceT, 4> {
+  public:
+    using DataFrameManager::DataFrameManager;
+    void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 4>>& values_ptr);
+  };
+
+  /*
+  @brief Specialized `DataFrameManager` for generating is_valid
+  */
+  template<typename LabelsT, typename TensorT, typename DeviceT>
+  class DataFrameManagerIsValid : public DataFrameManager<LabelsT, TensorT, DeviceT, 2> {
+  public:
+    using DataFrameManager::DataFrameManager;
+    void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& values_ptr);
+  };
+
 	/*
 	@brief A class for running 1 line insertion, deletion, and update benchmarks
 	*/
-	template<typename DeviceT>
+	template<typename DataFrameManagerTimeT, typename DataFrameManagerLabelsT, typename DataFrameManagerImage2DT, typename DataFrameManagerIsValidT, typename DeviceT>
 	class BenchmarkDataFrame1TimePoint {
 	public:
 		BenchmarkDataFrame1TimePoint() = default;
@@ -134,13 +177,15 @@ namespace TensorBaseBenchmarks
 		std::string delete1TimePoint(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const;
 	protected:
 		virtual void insert1TimePoint(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const = 0; ///< Device specific interface to call `insert1TimePoint0D`
-		void insert1TimePoint_(DataFrameManager0D<DeviceT>& dataframe_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const; ///< Device agnostic implementation of `insert1TimePoint0D`
+		void insert1TimePoint_(DataFrameManagerTimeT& dataframe_manager_time, DataFrameManagerLabelsT& dataframe_manager_labels, DataFrameManagerImage2DT& dataframe_manager_image_2d, DataFrameManagerIsValidT& dataframe_manager_is_valid,
+      TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const; ///< Device agnostic implementation of `insert1TimePoint0D`
 		virtual void update1TimePoint(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const = 0; ///< Device specific interface to call `update1TimePoint0D`
-		void update1TimePoint_(DataFrameManager0D<DeviceT>& dataframe_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const; ///< Device agnostic implementation of `update1TimePoint0D`
+		void update1TimePoint_(DataFrameManagerTimeT& dataframe_manager_time, DataFrameManagerLabelsT& dataframe_manager_labels, DataFrameManagerImage2DT& dataframe_manager_image_2d, DataFrameManagerIsValidT& dataframe_manager_is_valid,
+      TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const; ///< Device agnostic implementation of `update1TimePoint0D`
 		virtual void delete1TimePoint(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const = 0; ///< Device specific interface to call `delete1TimePoint0D`
 	};
-	template<typename DeviceT>
-	std::string BenchmarkDataFrame1TimePoint<DeviceT>::insert1TimePoint(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
+	template<typename DataFrameManagerTimeT, typename DataFrameManagerLabelsT, typename DataFrameManagerImage2DT, typename DataFrameManagerIsValidT, typename DeviceT>
+	std::string BenchmarkDataFrame1TimePoint<DataFrameManagerTimeT, DataFrameManagerLabelsT, DataFrameManagerImage2DT, DataFrameManagerIsValidT, DeviceT>::insert1TimePoint(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
 	{
 		// Start the timer
 		auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
@@ -152,8 +197,8 @@ namespace TensorBaseBenchmarks
 		std::string milli_time = std::to_string(stop - start);
 		return milli_time;
 	}
-	template<typename DeviceT>
-	std::string BenchmarkDataFrame1TimePoint<DeviceT>::update1TimePoint(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
+	template<typename DataFrameManagerTimeT, typename DataFrameManagerLabelsT, typename DataFrameManagerImage2DT, typename DataFrameManagerIsValidT, typename DeviceT>
+	std::string BenchmarkDataFrame1TimePoint<DataFrameManagerTimeT, DataFrameManagerLabelsT, DataFrameManagerImage2DT, DataFrameManagerIsValidT, DeviceT>::update1TimePoint(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
 	{
 		// Start the timer
 		auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
@@ -165,8 +210,8 @@ namespace TensorBaseBenchmarks
 		std::string milli_time = std::to_string(stop - start);
 		return milli_time;
 	}
-	template<typename DeviceT>
-	std::string BenchmarkDataFrame1TimePoint<DeviceT>::delete1TimePoint(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
+	template<typename DataFrameManagerTimeT, typename DataFrameManagerLabelsT, typename DataFrameManagerImage2DT, typename DataFrameManagerIsValidT, typename DeviceT>
+	std::string BenchmarkDataFrame1TimePoint<DataFrameManagerTimeT, DataFrameManagerLabelsT, DataFrameManagerImage2DT, DataFrameManagerIsValidT, DeviceT>::delete1TimePoint(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
 	{
 		// Start the timer
 		auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
@@ -178,8 +223,8 @@ namespace TensorBaseBenchmarks
 		std::string milli_time = std::to_string(stop - start);
 		return milli_time;
 	}
-	template<typename DeviceT>
-	void BenchmarkDataFrame1TimePoint<DeviceT>::insert1TimePoint_(DataFrameManager0D<DeviceT>& dataframe_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
+	template<typename DataFrameManagerTimeT, typename DataFrameManagerLabelsT, typename DataFrameManagerImage2DT, typename DataFrameManagerIsValidT, typename DeviceT>
+	void BenchmarkDataFrame1TimePoint<DataFrameManagerTimeT, DataFrameManagerLabelsT, DataFrameManagerImage2DT, DataFrameManagerIsValidT, DeviceT>::insert1TimePoint_(DataFrameManagerTimeT& dataframe_manager_time, DataFrameManagerLabelsT& dataframe_manager_labels, DataFrameManagerImage2DT& dataframe_manager_image_2d, DataFrameManagerIsValidT& dataframe_manager_is_valid, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
 	{
 		std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> labels_ptr;
 		std::shared_ptr<TensorData<TensorT, DeviceT, 2>> values_ptr;
@@ -197,8 +242,8 @@ namespace TensorBaseBenchmarks
       }
 		}
 	}
-	template<typename DeviceT>
-	void BenchmarkDataFrame1TimePoint<DeviceT>::update1TimePoint_(DataFrameManager0D<DeviceT>& dataframe_manager, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
+	template<typename DataFrameManagerTimeT, typename DataFrameManagerLabelsT, typename DataFrameManagerImage2DT, typename DataFrameManagerIsValidT, typename DeviceT>
+	void BenchmarkDataFrame1TimePoint<DataFrameManagerTimeT, DataFrameManagerLabelsT, DataFrameManagerImage2DT, DataFrameManagerIsValidT, DeviceT>::update1TimePoint_(DataFrameManagerTimeT& dataframe_manager_time, DataFrameManagerLabelsT& dataframe_manager_labels, DataFrameManagerImage2DT& dataframe_manager_image_2d, DataFrameManagerIsValidT& dataframe_manager_is_valid, TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
 	{
 		std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> labels_ptr;
 		std::shared_ptr<TensorData<TensorT, DeviceT, 2>> values_ptr;
@@ -229,9 +274,9 @@ namespace TensorBaseBenchmarks
 		virtual std::shared_ptr<TensorCollection<DeviceT>> makeTensorCollection(const int& data_size, const double& shard_span_perc, const bool& is_columnar, DeviceT& device) const = 0;
 	};
 
-	template<typename DeviceT>
+	template<typename DataFrameManagerTimeT, typename DataFrameManagerLabelsT, typename DataFrameManagerImage2DT, typename DataFrameManagerIsValidT, typename DeviceT>
 	static void runBenchmarkDataFrame(const std::string& data_dir, const int& data_size, const bool& in_memory, const bool& is_columnar, const double& shard_span_perc,
-		const BenchmarkDataFrame1TimePoint<DeviceT>& benchmark_1_tp,
+		const BenchmarkDataFrame1TimePoint<DataFrameManagerTimeT, DataFrameManagerLabelsT, DataFrameManagerImage2DT, DataFrameManagerIsValidT, DeviceT>& benchmark_1_tp,
 		const DataFrameTensorCollectionGenerator<DeviceT>& tensor_collection_generator, DeviceT& device) {
 		std::cout << "Starting insert/delete/update DataFrame benchmarks for data_size=" << data_size << ", in_memory=" << in_memory << ", is_columnar=" << is_columnar << ", and shard_span_perc=" << shard_span_perc << std::endl;
 

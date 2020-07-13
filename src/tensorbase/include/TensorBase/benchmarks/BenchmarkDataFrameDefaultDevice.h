@@ -13,47 +13,93 @@ using namespace TensorBase;
 namespace TensorBaseBenchmarks
 {
 	/*
-	@brief Specialized `DataFrameManager` for the 0D and DefaultDevice case
+	@brief Specialized `DataFrameManager` for the DefaultDevice case
 	*/
-	template<typename LabelsT, typename TensorT>
-	class DataFrameManagerTimeDefaultDevice : public DataFrameManagerTime<LabelsT, TensorT, Eigen::DefaultDevice> {
+	class DataFrameManagerTimeDefaultDevice : public DataFrameManagerTime<int, int, Eigen::DefaultDevice> {
 	public:
 		using DataFrameManagerTime::DataFrameManagerTime;
-		void makeLabelsPtr(const Eigen::Tensor<LabelsT, 2>& labels, std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& labels_ptr);
-		void makeValuesPtr(const Eigen::Tensor<TensorT, 2>& values, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& values_ptr);
+		void makeLabelsPtr(const Eigen::Tensor<int, 2>& labels, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& labels_ptr);
+		void makeValuesPtr(const Eigen::Tensor<int, 3>& values, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>>& values_ptr);
 	};
-	template<typename LabelsT, typename TensorT>
-	void DataFrameManagerTimeDefaultDevice<LabelsT, TensorT>::makeLabelsPtr(const Eigen::Tensor<LabelsT, 2>& labels, std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& labels_ptr) {
-		TensorDataDefaultDevice<LabelsT, 2> labels_data(Eigen::array<Eigen::Index, 2>({ labels.dimension(0), labels.dimension(1) }));
+	void DataFrameManagerTimeDefaultDevice::makeLabelsPtr(const Eigen::Tensor<int, 2>& labels, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& labels_ptr) {
+		TensorDataDefaultDevice<int, 2> labels_data(Eigen::array<Eigen::Index, 2>({ labels.dimension(0), labels.dimension(1) }));
 		labels_data.setData(labels);
-		labels_ptr = std::make_shared<TensorDataDefaultDevice<LabelsT, 2>>(labels_data);
+		labels_ptr = std::make_shared<TensorDataDefaultDevice<int, 2>>(labels_data);
 	}
-	template<typename LabelsT, typename TensorT>
-	void DataFrameManagerTimeDefaultDevice<LabelsT, TensorT>::makeValuesPtr(const Eigen::Tensor<TensorT, 2>& values, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& values_ptr) {
-		TensorDataDefaultDevice<TensorT, 2> values_data(Eigen::array<Eigen::Index, 2>({ values.dimension(0), values.dimension(1) }));
+	void DataFrameManagerTimeDefaultDevice::makeValuesPtr(const Eigen::Tensor<int, 3>& values, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>>& values_ptr) {
+		TensorDataDefaultDevice<int, 3> values_data(Eigen::array<Eigen::Index, 3>({ values.dimension(0), values.dimension(1), values.dimension(2) }));
 		values_data.setData(values);
-		values_ptr = std::make_shared<TensorDataDefaultDevice<TensorT, 2>>(values_data);
+		values_ptr = std::make_shared<TensorDataDefaultDevice<int, 3>>(values_data);
 	}
+
+  /*
+  @brief Specialized `DataFrameManager` for the DefaultDevice case
+  */
+  class DataFrameManagerLabelsDefaultDevice : public DataFrameManagerLabels<int, TensorArray32<char>, Eigen::DefaultDevice> {
+  public:
+    using DataFrameManagerLabels::DataFrameManagerLabels;
+    void makeLabelsPtr(const Eigen::Tensor<int, 2>& labels, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& labels_ptr);
+    void makeValuesPtr(const Eigen::Tensor<TensorArray32<char>, 2>& values, std::shared_ptr<TensorData<TensorArray32<char>, Eigen::DefaultDevice, 2>>& values_ptr);
+  };
+  void DataFrameManagerLabelsDefaultDevice::makeLabelsPtr(const Eigen::Tensor<int, 2>& labels, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& labels_ptr) {
+    TensorDataDefaultDevice<int, 2> labels_data(Eigen::array<Eigen::Index, 2>({ labels.dimension(0), labels.dimension(1) }));
+    labels_data.setData(labels);
+    labels_ptr = std::make_shared<TensorDataDefaultDevice<int, 2>>(labels_data);
+  }
+  void DataFrameManagerLabelsDefaultDevice::makeValuesPtr(const Eigen::Tensor<TensorArray32<char>, 2>& values, std::shared_ptr<TensorData<TensorArray32<char>, Eigen::DefaultDevice, 2>>& values_ptr) {
+    TensorDataDefaultDevice<TensorArray32<char>, 2> values_data(Eigen::array<Eigen::Index, 2>({ values.dimension(0), values.dimension(1) }));
+    values_data.setData(values);
+    values_ptr = std::make_shared<TensorDataDefaultDevice<TensorArray32<char>, 2>>(values_data);
+  }
+
+  /*
+  @brief Specialized `DataFrameManager` for the DefaultDevice case
+  */
+  class DataFrameManagerImage2DDefaultDevice : public DataFrameManagerImage2D<int, float, Eigen::DefaultDevice> {
+  public:
+    using DataFrameManagerImage2D::DataFrameManagerImage2D;
+    void makeLabelsPtr(const Eigen::Tensor<int, 2>& labels, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& labels_ptr);
+    void makeValuesPtr(const Eigen::Tensor<float, 4>& values, std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 4>>& values_ptr);
+  };
+
+  /*
+  @brief Specialized `DataFrameManager` for the DefaultDevice case
+  */
+  class DataFrameManagerIsValidDefaultDevice : public DataFrameManagerIsValid<int, int, Eigen::DefaultDevice> {
+  public:
+    using DataFrameManagerIsValid::DataFrameManagerIsValid;
+    void makeLabelsPtr(const Eigen::Tensor<int, 2>& labels, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& labels_ptr);
+    void makeValuesPtr(const Eigen::Tensor<int, 2>& values, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& values_ptr);
+  };
 
 	/*
 	@brief A class for running 1 line insertion, deletion, and update benchmarks
 	*/
-	class BenchmarkDataFrame1TimePointDefaultDevice : public BenchmarkDataFrame1TimePoint<Eigen::DefaultDevice> {
+	class BenchmarkDataFrame1TimePointDefaultDevice : public BenchmarkDataFrame1TimePoint<DataFrameManagerTimeDefaultDevice, DataFrameManagerLabelsDefaultDevice, DataFrameManagerImage2DDefaultDevice, DataFrameManagerIsValidDefaultDevice, Eigen::DefaultDevice> {
 	protected:
 		void insert1TimePoint(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `insert1TimePoint0D`
 		void update1TimePoint(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `update1TimePoint0D`
 		void delete1TimePoint(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `delete1TimePoint0D`
 	};
-	void Benchmark1TimePointDefaultDevice<LabelsT, TensorT>::insert1TimePoint(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const {
-		DataFrameManager0DDefaultDevice<LabelsT, TensorT> dataframe_manager(data_size, false);
-		this->insert1TimePoint0D_(dataframe_manager, transaction_manager, data_size, in_memory, device);
+	void BenchmarkDataFrame1TimePointDefaultDevice::insert1TimePoint(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const {
+    DataFrameManagerTimeDefaultDevice dataframe_manager_time(data_size, false);
+    DataFrameManagerLabelsDefaultDevice dataframe_manager_labels(data_size, false);
+    DataFrameManagerImage2DDefaultDevice dataframe_manager_image_2d(data_size, false);
+    DataFrameManagerIsValidDefaultDevice dataframe_manager_is_valid(data_size, false);
+		this->insert1TimePoint0D_(dataframe_manager_time, dataframe_manager_labels, dataframe_manager_image_2d, dataframe_manager_is_valid, transaction_manager, data_size, in_memory, device);
 	}
-	void Benchmark1TimePointDefaultDevice<LabelsT, TensorT>::update1TimePoint(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const {
-		DataFrameManager0DDefaultDevice<LabelsT, TensorT> dataframe_manager(data_size, true);
-		this->update1TimePoint0D_(dataframe_manager, transaction_manager, data_size, in_memory, device);
+	void BenchmarkDataFrame1TimePointDefaultDevice::update1TimePoint(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const {
+    DataFrameManagerTimeDefaultDevice dataframe_manager_time(data_size, true);
+    DataFrameManagerLabelsDefaultDevice dataframe_manager_labels(data_size, true);
+    DataFrameManagerImage2DDefaultDevice dataframe_manager_image_2d(data_size, true);
+    DataFrameManagerIsValidDefaultDevice dataframe_manager_is_valid(data_size, true);
+		this->update1TimePoint0D_(dataframe_manager_time, dataframe_manager_labels, dataframe_manager_image_2d, dataframe_manager_is_valid, transaction_manager, data_size, in_memory, device);
 	}
-	void Benchmark1TimePointDefaultDevice<LabelsT, TensorT>::delete1TimePoint(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const {
-		DataFrameManager0DDefaultDevice<LabelsT, TensorT> dataframe_manager(data_size, true);
+	void BenchmarkDataFrame1TimePointDefaultDevice::delete1TimePoint(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const {
+    DataFrameManagerTimeDefaultDevice dataframe_manager_time(data_size, true);
+    DataFrameManagerLabelsDefaultDevice dataframe_manager_labels(data_size, true);
+    DataFrameManagerImage2DDefaultDevice dataframe_manager_image_2d(data_size, true);
+    DataFrameManagerIsValidDefaultDevice dataframe_manager_is_valid(data_size, true);
 		int span = data_size / std::pow(data_size, 0.25);
 		for (int i = 0; i < data_size - 1; i += span) {
    //   std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>> labels_ptr;
@@ -72,9 +118,9 @@ namespace TensorBaseBenchmarks
 
 	class DataFrameTensorCollectionGeneratorDefaultDevice : public DataFrameTensorCollectionGenerator<Eigen::DefaultDevice> {
 	public:
-    std::shared_ptr<TensorCollection<DeviceT>> makeTensorCollection(const int& data_size, const double& shard_span_perc, const bool& is_columnar, Eigen::DefaultDevice& device) const override;
+    std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> makeTensorCollection(const int& data_size, const double& shard_span_perc, const bool& is_columnar, Eigen::DefaultDevice& device) const override;
   };
-	std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> DataFrameTensorCollectionGeneratorDefaultDevice<LabelsT, TensorT>::makeTensorCollection(const int& data_size, const double& shard_span_perc, const bool& is_columnar, Eigen::DefaultDevice& device) const
+	std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> DataFrameTensorCollectionGeneratorDefaultDevice::makeTensorCollection(const int& data_size, const double& shard_span_perc, const bool& is_columnar, Eigen::DefaultDevice& device) const
 	{
 		// Setup the axes
 		Eigen::Tensor<std::string, 1> dimensions_1(1), dimensions_2(1), dimensions_3_t(1), dimensions_3_x(1), dimensions_3_y(1);
@@ -97,7 +143,7 @@ namespace TensorBaseBenchmarks
     labels_3_y = labels_3_y.constant(1).cumsum(1);
 
 		// Setup the tables
-		std::shared_ptr<TensorTable<int, Eigen::DefaultDevice, 3>> table_1_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(TensorTableDefaultDevice<int, 3>("DataFrame_time"));
+		std::shared_ptr<TensorTable<int, Eigen::DefaultDevice, 3>> table_1_ptr = std::make_shared<TensorTableDefaultDevice<int, 3>>(TensorTableDefaultDevice<int, 3>("DataFrame_time"));
 		auto table_1_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray32<char>>>(TensorAxisDefaultDevice<TensorArray32<char>>("1_columns", dimensions_1, labels_1_1));
 		auto table_1_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2_indices", 1, 0));
     auto table_1_axis_3_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray8<char>>>(TensorAxisDefaultDevice<TensorArray8<char>>("3_time", dimensions_3_t, labels_3_t));
@@ -113,8 +159,8 @@ namespace TensorBaseBenchmarks
     shard_span_1.emplace("1_columns", 1);
     shard_span_1.emplace("2_indices", TensorCollectionShardHelper::round_1(data_size, shard_span_perc));
     shard_span_1.emplace("3_time", 6);
-		table_1_ptr->setShardSpans(shard_span);
-    table_1_ptr->setMaximumDimensions(Eigen::array<Eigen::Index, 2>({ 1, data_size, 6}));
+		table_1_ptr->setShardSpans(shard_span_1);
+    table_1_ptr->setMaximumDimensions(Eigen::array<Eigen::Index, 3>({ 1, data_size, 6}));
 
     // Setup the tables
 		std::shared_ptr<TensorTable<TensorArray32<char>, Eigen::DefaultDevice, 2>> table_2_ptr = std::make_shared<TensorTableDefaultDevice<TensorArray32<char>, 2>>(TensorTableDefaultDevice<TensorArray32<char>, 2>("DataFrame_label"));
@@ -130,11 +176,11 @@ namespace TensorBaseBenchmarks
     std::map<std::string, int> shard_span_2;
     shard_span_2.emplace("1_columns", 1);
     shard_span_2.emplace("2_indices", TensorCollectionShardHelper::round_1(data_size, shard_span_perc));
-    table_2_ptr->setShardSpans(shard_span);
+    table_2_ptr->setShardSpans(shard_span_2);
     table_2_ptr->setMaximumDimensions(Eigen::array<Eigen::Index, 2>({ 1, data_size}));
 
     // Setup the tables
-    std::shared_ptr<TensorTable<float, Eigen::DefaultDevice, 4>> table_3_ptr = std::make_shared<TensorTableDefaultDevice<float, 2>>(TensorTableDefaultDevice<float, 4>("DataFrame_image_2D"));
+    std::shared_ptr<TensorTable<float, Eigen::DefaultDevice, 4>> table_3_ptr = std::make_shared<TensorTableDefaultDevice<float, 4>>(TensorTableDefaultDevice<float, 4>("DataFrame_image_2D"));
     auto table_3_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray32<char>>>(TensorAxisDefaultDevice<TensorArray32<char>>("1_columns", dimensions_1, labels_1_3));
     auto table_3_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2_indices", 1, 0));
     auto table_3_axis_3_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3_x", dimensions_3_x, labels_3_x));
@@ -148,13 +194,13 @@ namespace TensorBaseBenchmarks
 
     // Setup the table data
     table_3_ptr->setData();
-    std::map<std::string, int> shard_span_1;
-    shard_span_1.emplace("1_columns", 1);
-    shard_span_1.emplace("2_indices", TensorCollectionShardHelper::round_1(data_size, shard_span_perc));
-    shard_span_1.emplace("3_x", 28);
-    shard_span_1.emplace("3_y", 28);
-    table_3_ptr->setShardSpans(shard_span);
-    table_3_ptr->setMaximumDimensions(Eigen::array<Eigen::Index, 2>({ 1, data_size, 28, 28 }));
+    std::map<std::string, int> shard_span_3;
+    shard_span_3.emplace("1_columns", 1);
+    shard_span_3.emplace("2_indices", TensorCollectionShardHelper::round_1(data_size, shard_span_perc));
+    shard_span_3.emplace("3_x", 28);
+    shard_span_3.emplace("3_y", 28);
+    table_3_ptr->setShardSpans(shard_span_3);
+    table_3_ptr->setMaximumDimensions(Eigen::array<Eigen::Index, 4>({ 1, data_size, 28, 28 }));
 
     // Setup the tables
     std::shared_ptr<TensorTable<int, Eigen::DefaultDevice, 2>> table_4_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(TensorTableDefaultDevice<int, 2>("DataFrame_is_valid"));
@@ -167,7 +213,7 @@ namespace TensorBaseBenchmarks
 
     // Setup the table data
     table_4_ptr->setData();
-    table_4_ptr->setShardSpans(shard_span);
+    table_4_ptr->setShardSpans(shard_span_2);
     table_4_ptr->setMaximumDimensions(Eigen::array<Eigen::Index, 2>({ 1, data_size }));
 
 		// Setup the collection
