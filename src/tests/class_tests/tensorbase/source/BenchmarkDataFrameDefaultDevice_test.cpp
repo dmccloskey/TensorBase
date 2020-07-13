@@ -17,21 +17,22 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteDefaultDevice)
   const int n_dims = 0;
   const int data_size = 1296;
   const bool in_memory = true;
+  const bool is_columnar = true;
   const double shard_span_perc = 1;
   const int n_engines = 1;
   const int dim_span = std::pow(data_size, 0.25);
 
   // Setup the Benchmarking suite
-  Benchmark1TimePointDefaultDevice<int, int> benchmark_1_tp;
+  BenchmarkDataFrame1TimePointDefaultDevice benchmark_1_tp;
 
   // Setup the DataFrameTensorCollectionGenerator
-  DataFrameTensorCollectionGeneratorDefaultDevice<int, int> tensor_collection_generator;
+  DataFrameTensorCollectionGeneratorDefaultDevice tensor_collection_generator;
 
   // Setup the device
   Eigen::DefaultDevice device;
 
   // Make the nD TensorTables
-  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true, device);
+  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(data_size, shard_span_perc, is_columnar, device);
 
   // Setup the transaction manager
   TransactionManager<Eigen::DefaultDevice> transaction_manager;
@@ -211,21 +212,22 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteShardingDefaultDevice)
   const int n_dims = 0;
   const int data_size = 1296;
   const bool in_memory = false;
+  const bool is_columnar = true;
   const double shard_span_perc = 0.05;
   const int n_engines = 1;
   const int dim_span = std::pow(data_size, 0.25);
 
   // Setup the Benchmarking suite
-  Benchmark1TimePointDefaultDevice<int, int> benchmark_1_tp;
+  BenchmarkDataFrame1TimePointDefaultDevice benchmark_1_tp;
 
   // Setup the DataFrameTensorCollectionGenerator
-  DataFrameTensorCollectionGeneratorDefaultDevice<int, int> tensor_collection_generator;
+  DataFrameTensorCollectionGeneratorDefaultDevice tensor_collection_generator;
 
   // Setup the device
   Eigen::DefaultDevice device;
 
   // Make the nD TensorTables
-  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(n_dims, data_size, shard_span_perc, true, device);
+  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(data_size, shard_span_perc, is_columnar, device);
 
   // Setup the transaction manager
   TransactionManager<Eigen::DefaultDevice> transaction_manager;

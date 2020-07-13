@@ -7,6 +7,8 @@ set(sources_list_h
 	BenchmarkArrayCpu.h
 	BenchmarkArrayDefaultDevice.h
 	BenchmarkArrayGpu.h
+	BenchmarkDataFrame.h
+	BenchmarkDataFrameDefaultDevice.h
 	BenchmarkPixels.h
 	BenchmarkPixelsCpu.h
 	BenchmarkPixelsDefaultDevice.h

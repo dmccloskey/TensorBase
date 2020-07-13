@@ -620,26 +620,6 @@ namespace TensorBaseBenchmarks
 		}
 	}
 
-  /// Helper set of methods for calculating the shard_span, shard_id, and shard_index
-  struct TensorCollectionShardHelper {
-    /// Round to 1 if below 1
-    static int round_1(const int& dim_size, const double& shard_span_perc) {
-      int shard_span = dim_size * shard_span_perc;
-      if (shard_span <= 0) shard_span = 1;
-      return shard_span;
-    };
-    /// Calculate the shard ID
-    static int calc_shard_id(const int& shard_span, const int& i) {
-      int shard_id = i / shard_span + 1;
-      return shard_id;
-    };
-    /// Calculate the shard Index
-    static int calc_shard_index(const int& shard_span, const int& i) {
-      int shard_index = i % shard_span + 1;
-      return shard_index;
-    };
-  };
-
 	/*
 	@brief Simulate a typical database table where one axis will be the headers (x, y, z, and t)
 		and the other axis will be the index starting from 1
