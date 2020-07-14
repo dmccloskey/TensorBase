@@ -487,8 +487,8 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteShardingDefaultDevice)
   for (int i = 0; i < data_size; ++i) {
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getIndices().at("1_indices")->getData()(i), i + 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getIndicesView().at("1_indices")->getData()(i), i + 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getIsModified().at("1_indices")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getNotInMemory().at("1_indices")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getIsModified().at("1_indices")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getNotInMemory().at("1_indices")->getData()(i), 1);
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getShardId().at("1_indices")->getData()(i), TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(data_size, shard_span_perc), i));
     BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getShardIndices().at("1_indices")->getData()(i), TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(data_size, shard_span_perc), i));
   }
