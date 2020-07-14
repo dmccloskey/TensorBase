@@ -99,8 +99,16 @@ namespace TensorBase
     virtual void getDataPointer(std::shared_ptr<double[]>& data_copy) = 0;
     virtual void getDataPointer(std::shared_ptr<char[]>& data_copy) = 0;
     virtual void getDataPointer(std::shared_ptr<TensorArray8<char>[]>& data_copy) = 0;
+    virtual void getDataPointer(std::shared_ptr<TensorArray32<char>[]>& data_copy) = 0;
+    virtual void getDataPointer(std::shared_ptr<TensorArray128<char>[]>& data_copy) = 0;
+    virtual void getDataPointer(std::shared_ptr<TensorArray512<char>[]>& data_copy) = 0;
+    virtual void getDataPointer(std::shared_ptr<TensorArray2048<char>[]>& data_copy) = 0;
 #if COMPILE_WITH_CUDA
     virtual void getDataPointer(std::shared_ptr<TensorArrayGpu8<char>[]>& data_copy) = 0;
+    virtual void getDataPointer(std::shared_ptr<TensorArrayGpu32<char>[]>& data_copy) = 0;
+    virtual void getDataPointer(std::shared_ptr<TensorArrayGpu128<char>[]>& data_copy) = 0;
+    virtual void getDataPointer(std::shared_ptr<TensorArrayGpu512<char>[]>& data_copy) = 0;
+    virtual void getDataPointer(std::shared_ptr<TensorArrayGpu2048<char>[]>& data_copy) = 0;
 #endif
 
     /*
@@ -1049,8 +1057,32 @@ namespace TensorBase
     void getDataPointer(std::shared_ptr<TensorArray8<char>[]>& data_copy) override {
       tensor_table_->getDataPointer(data_copy);
     };
+    void getDataPointer(std::shared_ptr<TensorArray32<char>[]>& data_copy) override {
+      tensor_table_->getDataPointer(data_copy);
+    };
+    void getDataPointer(std::shared_ptr<TensorArray128<char>[]>& data_copy) override {
+      tensor_table_->getDataPointer(data_copy);
+    };
+    void getDataPointer(std::shared_ptr<TensorArray512<char>[]>& data_copy) override {
+      tensor_table_->getDataPointer(data_copy);
+    };
+    void getDataPointer(std::shared_ptr<TensorArray2048<char>[]>& data_copy) override {
+      tensor_table_->getDataPointer(data_copy);
+    };
 #if COMPILE_WITH_CUDA
     void getDataPointer(std::shared_ptr<TensorArrayGpu8<char>[]>& data_copy) override {
+      tensor_table_->getDataPointer(data_copy);
+    };
+    void getDataPointer(std::shared_ptr<TensorArrayGpu32<char>[]>& data_copy) override {
+      tensor_table_->getDataPointer(data_copy);
+    };
+    void getDataPointer(std::shared_ptr<TensorArrayGpu128<char>[]>& data_copy) override {
+      tensor_table_->getDataPointer(data_copy);
+    };
+    void getDataPointer(std::shared_ptr<TensorArrayGpu512<char>[]>& data_copy) override {
+      tensor_table_->getDataPointer(data_copy);
+    };
+    void getDataPointer(std::shared_ptr<TensorArrayGpu2048<char>[]>& data_copy) override {
       tensor_table_->getDataPointer(data_copy);
     };
 #endif

@@ -39,7 +39,7 @@ namespace TensorBaseBenchmarks
 			SelectClause<LabelsT, DeviceT> select_clause1("TTable", "indices", this->select_labels_);
 			TensorSelect tensorSelect;
 			tensorSelect.selectClause(tensor_collection, select_clause1, device);
-			if (this->apply_select_) tensorSelect.applySelect(tensor_collection, { "TTable" }, device);
+			if (this->apply_select_) tensorSelect.applySelect(tensor_collection, { "TTable" }, { "TTable" }, device);
 		}
 	};
 
@@ -52,7 +52,7 @@ namespace TensorBaseBenchmarks
 			SelectClause<LabelsT, DeviceT> select_clause1("TTable", "xyzt", this->select_labels_);
 			TensorSelect tensorSelect;
 			tensorSelect.selectClause(tensor_collection, select_clause1, device);
-			if (this->apply_select_) tensorSelect.applySelect(tensor_collection, { "TTable" }, device);
+			if (this->apply_select_) tensorSelect.applySelect(tensor_collection, { "TTable" }, { "TTable" }, device);
 		}
 	};
 
@@ -65,7 +65,7 @@ namespace TensorBaseBenchmarks
 			SelectClause<LabelsT, DeviceT> select_clause1("TTable", "t", this->select_labels_);
 			TensorSelect tensorSelect;
 			tensorSelect.selectClause(tensor_collection, select_clause1, device);
-			if (this->apply_select_) tensorSelect.applySelect(tensor_collection, { "TTable" }, device);
+			if (this->apply_select_) tensorSelect.applySelect(tensor_collection, { "TTable" }, { "TTable" }, device);
 		}
 	};
 

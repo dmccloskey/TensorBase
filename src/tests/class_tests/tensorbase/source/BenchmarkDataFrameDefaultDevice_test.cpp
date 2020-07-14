@@ -40,168 +40,239 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteDefaultDevice)
   transaction_manager.setTensorCollection(n_dim_tensor_collection);
 
   // Test the initial tensor collection
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("columns")->getNDimensions(), 1);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("columns")->getNLabels(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNDimensions(), 1);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNLabels(), 0);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardSpans().at("xyztv"), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardSpans().at("indices"), data_size);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("2_columns")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("2_columns")->getNLabels(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getNLabels(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("3_time")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("3_time")->getNLabels(), 6);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getDataTensorSize(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getShardSpans().at("2_columns"), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getShardSpans().at("1_indices"), TensorCollectionShardHelper::round_1(data_size, shard_span_perc));
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getShardSpans().at("3_time"), 6);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getMaxDimSizeFromAxisName("2_columns"), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getMaxDimSizeFromAxisName("1_indices"), data_size);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getMaxDimSizeFromAxisName("3_time"), 6);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_label")->getAxes().at("2_columns")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_label")->getAxes().at("2_columns")->getNLabels(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_label")->getAxes().at("1_indices")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_label")->getAxes().at("1_indices")->getNLabels(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_label")->getDataTensorSize(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_label")->getShardSpans().at("2_columns"), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_label")->getShardSpans().at("1_indices"), TensorCollectionShardHelper::round_1(data_size, shard_span_perc));
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_label")->getMaxDimSizeFromAxisName("2_columns"), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_label")->getMaxDimSizeFromAxisName("1_indices"), data_size);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getAxes().at("2_columns")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getAxes().at("2_columns")->getNLabels(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getAxes().at("1_indices")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getAxes().at("1_indices")->getNLabels(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getAxes().at("3_x")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getAxes().at("3_x")->getNLabels(), 28);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getAxes().at("3_y")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getAxes().at("3_y")->getNLabels(), 28);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getDataTensorSize(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getShardSpans().at("2_columns"), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getShardSpans().at("1_indices"), TensorCollectionShardHelper::round_1(data_size, shard_span_perc));
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getShardSpans().at("3_x"), 28);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getShardSpans().at("3_y"), 28);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getMaxDimSizeFromAxisName("2_columns"), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getMaxDimSizeFromAxisName("1_indices"), data_size);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getMaxDimSizeFromAxisName("3_x"), 28);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getMaxDimSizeFromAxisName("3_y"), 28);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getAxes().at("2_columns")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getAxes().at("2_columns")->getNLabels(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getAxes().at("1_indices")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getAxes().at("1_indices")->getNLabels(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getDataTensorSize(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getShardSpans().at("2_columns"), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getShardSpans().at("1_indices"), TensorCollectionShardHelper::round_1(data_size, shard_span_perc));
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getMaxDimSizeFromAxisName("2_columns"), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getMaxDimSizeFromAxisName("1_indices"), data_size);
 
-  // Make the expected tensor axes labels and tensor data
-  Eigen::Tensor<TensorArray8<char>, 2> labels_xyztv(1, 5);
-  labels_xyztv.setValues({ { TensorArray8<char>("x"), TensorArray8<char>("y"), TensorArray8<char>("z"), TensorArray8<char>("t"), TensorArray8<char>("v")} });
-  Eigen::Tensor<int, 2> values(data_size, 5);
-  Eigen::Tensor<int, 2> labels_indices(1, data_size);
-  for (int i = 0; i < data_size; ++i) {
-    values(i, 0) = int(floor(float(i) / float(std::pow(dim_span, 0)))) % dim_span + 1;
-    values(i, 1) = int(floor(float(i) / float(std::pow(dim_span, 1)))) % dim_span + 1;
-    values(i, 2) = int(floor(float(i) / float(std::pow(dim_span, 2)))) % dim_span + 1;
-    values(i, 3) = int(floor(float(i) / float(std::pow(dim_span, 3)))) % dim_span + 1;
-    values(i, 4) = int(i);
-    labels_indices(0, i) = int(i);
-  }
+  // Make the expected tensor axes labels and tensor data after insert
+  DataFrameManagerTimeDefaultDevice dataframe_manager_time(data_size, false);
+  DataFrameManagerLabelDefaultDevice dataframe_manager_labels(data_size, false);
+  DataFrameManagerImage2DDefaultDevice dataframe_manager_image_2d(data_size, false);
+  DataFrameManagerIsValidDefaultDevice dataframe_manager_is_valid(data_size, false);
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_time_ptr;
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>> values_time_ptr;
+  dataframe_manager_time.getInsertData(0, data_size, labels_time_ptr, values_time_ptr);
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_labels_ptr;
+  std::shared_ptr<TensorData<TensorArray32<char>, Eigen::DefaultDevice, 2>> values_labels_ptr;
+  dataframe_manager_labels.getInsertData(0, data_size, labels_labels_ptr, values_labels_ptr);
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_image_2d_ptr;
+  std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 4>> values_image_2d_ptr;
+  dataframe_manager_image_2d.getInsertData(0, data_size, labels_image_2d_ptr, values_image_2d_ptr);
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_is_valid_ptr;
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> values_is_valid_ptr;
+  dataframe_manager_is_valid.getInsertData(0, data_size, labels_is_valid_ptr, values_is_valid_ptr);
 
   // Test the expected tensor collection after insert
   benchmark_1_tp.insert1TimePoint(transaction_manager, data_size, in_memory, device);
 
   // Test the expected tensor axes after insert
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNDimensions(), 1);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNLabels(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNDimensions(), 1);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNLabels(), 1296);
-  std::shared_ptr<TensorArray8<char>[]> labels_xyztv_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getLabelsDataPointer(labels_xyztv_insert_data);
-  Eigen::TensorMap<Eigen::Tensor<TensorArray8<char>, 2>> labels_xyztv_insert_values(labels_xyztv_insert_data.get(), 5, 1);
-  for (int i = 0; i < 5; ++i) {
-    for (int j = 0; j < 1; ++j) {
-      BOOST_CHECK_EQUAL(labels_xyztv_insert_values(i, j), labels_xyztv(i, j));
-    }
-  }
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getNLabels(), data_size);
   std::shared_ptr<int[]> labels_indices_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getLabelsDataPointer(labels_indices_insert_data);
+  n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getLabelsDataPointer(labels_indices_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_indices_insert_values(labels_indices_insert_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
-      BOOST_CHECK_EQUAL(labels_indices_insert_values(i, j), labels_indices(i, j));
+      BOOST_CHECK_EQUAL(labels_indices_insert_values(i, j), labels_time_ptr->getData()(i, j));
     }
   }
 
-  // Test the expected axis indices after insert
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("xyztv")->getTensorSize(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("xyztv")->getTensorSize(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("xyztv")->getTensorSize(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("xyztv")->getTensorSize(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xyztv")->getTensorSize(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xyztv")->getTensorSize(), 5);
-  for (int i = 0; i < 5; ++i) {
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("xyztv")->getData()(i), i+1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("xyztv")->getData()(i), i + 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("xyztv")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("xyztv")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xyztv")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xyztv")->getData()(i), i + 1);
-  }
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("indices")->getTensorSize(), data_size);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("indices")->getTensorSize(), data_size);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("indices")->getTensorSize(), data_size);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("indices")->getTensorSize(), data_size);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("indices")->getTensorSize(), data_size);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("indices")->getTensorSize(), data_size);
+  // Test the expected axis 1_indices after insert
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getIndices().at("1_indices")->getTensorSize(), data_size);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getIndicesView().at("1_indices")->getTensorSize(), data_size);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getIsModified().at("1_indices")->getTensorSize(), data_size);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getNotInMemory().at("1_indices")->getTensorSize(), data_size);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getShardId().at("1_indices")->getTensorSize(), data_size);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getShardIndices().at("1_indices")->getTensorSize(), data_size);
   for (int i = 0; i < data_size; ++i) {
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("indices")->getData()(i), i + 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("indices")->getData()(i), i + 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("indices")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("indices")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("indices")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("indices")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getIndices().at("1_indices")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getIndicesView().at("1_indices")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getIsModified().at("1_indices")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getNotInMemory().at("1_indices")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getShardId().at("1_indices")->getData()(i), TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(data_size, shard_span_perc), i));
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getShardIndices().at("1_indices")->getData()(i), TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(data_size, shard_span_perc), i));
   }
 
   // Test the expected data after insert
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 6480);
-  std::shared_ptr<int[]> data_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_insert_data);
-  Eigen::TensorMap<Eigen::Tensor<int, 2>> data_insert_values(data_insert_data.get(), data_size, 5);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getDataTensorSize(), 1 * data_size * 6);
+  std::shared_ptr<int[]> data_insert_data_time;
+  n_dim_tensor_collection->tables_.at("DataFrame_time")->getDataPointer(data_insert_data_time);
+  Eigen::TensorMap<Eigen::Tensor<int, 3>> data_insert_values_time(data_insert_data_time.get(), data_size, 1, 6);
   for (int i = 0; i < data_size; ++i) {
-    for (int j = 0; j < 5; ++j) {
-      BOOST_CHECK_EQUAL(data_insert_values(i, j), values(i, j));
+    for (int j = 0; j < 6; ++j) {
+      BOOST_CHECK_EQUAL(data_insert_values_time(i, 0, j), values_time_ptr->getData()(i, 0, j));
     }
   }
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_label")->getDataTensorSize(), 1 * data_size);
+  std::shared_ptr<TensorArray32<char>[]> data_insert_data_labels;
+  n_dim_tensor_collection->tables_.at("DataFrame_label")->getDataPointer(data_insert_data_labels);
+  Eigen::TensorMap<Eigen::Tensor<TensorArray32<char>, 2>> data_insert_values_labels(data_insert_data_labels.get(), data_size, 1);
+  for (int i = 0; i < data_size; ++i) {
+    BOOST_CHECK_EQUAL(data_insert_values_labels(i, 0), values_labels_ptr->getData()(i, 0));
+  }
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getDataTensorSize(), 1 * data_size * 28 * 28);
+  std::shared_ptr<float[]> data_insert_data_image_2d;
+  n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getDataPointer(data_insert_data_image_2d);
+  Eigen::TensorMap<Eigen::Tensor<float, 4>> data_insert_values_image_2d(data_insert_data_image_2d.get(), data_size, 1, 28, 28);
+  for (int i = 0; i < data_size; ++i) {
+    for (int j = 0; j < 28; ++j) {
+      for (int k = 0; k < 28; ++k) {
+        BOOST_CHECK_EQUAL(data_insert_values_image_2d(i, 0, j, k), values_image_2d_ptr->getData()(i, 0, j, k));
+      }
+    }
+  }
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getDataTensorSize(), 1 * data_size);
+  std::shared_ptr<int[]> data_insert_data_is_valid;
+  n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getDataPointer(data_insert_data_is_valid);
+  Eigen::TensorMap<Eigen::Tensor<int, 2>> data_insert_values_is_valid(data_insert_data_is_valid.get(), data_size, 1);
+  for (int i = 0; i < data_size; ++i) {
+    BOOST_CHECK_EQUAL(data_insert_values_is_valid(i, 0), values_is_valid_ptr->getData()(i, 0));
+  }
+
+  // Make the expected tensor axes labels and tensor data after update
+  dataframe_manager_time.setUseRandomValues(true);
+  dataframe_manager_labels.setUseRandomValues(true);
+  dataframe_manager_image_2d.setUseRandomValues(true);
+  dataframe_manager_is_valid.setUseRandomValues(true);
+  labels_time_ptr.reset();
+  values_time_ptr.reset();
+  dataframe_manager_time.getInsertData(0, data_size, labels_time_ptr, values_time_ptr);
+  labels_labels_ptr.reset();
+  values_labels_ptr.reset();
+  dataframe_manager_labels.getInsertData(0, data_size, labels_labels_ptr, values_labels_ptr);
+  labels_image_2d_ptr.reset();
+  values_image_2d_ptr.reset();
+  dataframe_manager_image_2d.getInsertData(0, data_size, labels_image_2d_ptr, values_image_2d_ptr);
+  labels_is_valid_ptr.reset();
+  values_is_valid_ptr.reset();
+  dataframe_manager_is_valid.getInsertData(0, data_size, labels_is_valid_ptr, values_is_valid_ptr);
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(transaction_manager, data_size, in_memory, device);
 
   // Test the expected tensor axes after update
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNDimensions(), 1);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNLabels(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNDimensions(), 1);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNLabels(), 1296);
-  std::shared_ptr<TensorArray8<char>[]> labels_xyztv_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getLabelsDataPointer(labels_xyztv_update_data);
-  Eigen::TensorMap<Eigen::Tensor<TensorArray8<char>, 2>> labels_xyztv_update_values(labels_xyztv_update_data.get(), 5, 1);
-  for (int i = 0; i < 5; ++i) {
-    for (int j = 0; j < 1; ++j) {
-      BOOST_CHECK_EQUAL(labels_xyztv_update_values(i, j), labels_xyztv(i, j));
-    }
-  }
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getNLabels(), data_size);
   std::shared_ptr<int[]> labels_indices_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getLabelsDataPointer(labels_indices_update_data);
+  n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getLabelsDataPointer(labels_indices_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_indices_update_values(labels_indices_update_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
-      BOOST_CHECK_EQUAL(labels_indices_update_values(i, j), labels_indices(i, j));
+      BOOST_CHECK_EQUAL(labels_indices_update_values(i, j), labels_time_ptr->getData()(i, j));
     }
   }
 
-  // Test the expected axis indices after update
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("xyztv")->getTensorSize(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("xyztv")->getTensorSize(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("xyztv")->getTensorSize(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("xyztv")->getTensorSize(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xyztv")->getTensorSize(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xyztv")->getTensorSize(), 5);
-  for (int i = 0; i < 5; ++i) {
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("xyztv")->getData()(i), i + 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("xyztv")->getData()(i), i + 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("xyztv")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("xyztv")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xyztv")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xyztv")->getData()(i), i + 1);
-  }
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("indices")->getTensorSize(), data_size);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("indices")->getTensorSize(), data_size);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("indices")->getTensorSize(), data_size);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("indices")->getTensorSize(), data_size);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("indices")->getTensorSize(), data_size);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("indices")->getTensorSize(), data_size);
+  // Test the expected axis 1_indices after update
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getIndices().at("1_indices")->getTensorSize(), data_size);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getIndicesView().at("1_indices")->getTensorSize(), data_size);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getIsModified().at("1_indices")->getTensorSize(), data_size);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getNotInMemory().at("1_indices")->getTensorSize(), data_size);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getShardId().at("1_indices")->getTensorSize(), data_size);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getShardIndices().at("1_indices")->getTensorSize(), data_size);
   for (int i = 0; i < data_size; ++i) {
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("indices")->getData()(i), i + 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("indices")->getData()(i), i + 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("indices")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("indices")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("indices")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("indices")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getIndices().at("1_indices")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getIndicesView().at("1_indices")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getIsModified().at("1_indices")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getNotInMemory().at("1_indices")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getShardId().at("1_indices")->getData()(i), TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(data_size, shard_span_perc), i));
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getShardIndices().at("1_indices")->getData()(i), TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(data_size, shard_span_perc), i));
   }
 
   // Test the expected data after update
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 6480);
-  std::shared_ptr<int[]> data_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_update_data);
-  Eigen::TensorMap<Eigen::Tensor<int, 2>> data_update_values(data_update_data.get(), data_size, 5);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getDataTensorSize(), 1 * data_size * 6);
+  std::shared_ptr<int[]> data_update_data_time;
+  n_dim_tensor_collection->tables_.at("DataFrame_time")->getDataPointer(data_update_data_time);
+  Eigen::TensorMap<Eigen::Tensor<int, 3>> data_update_values(data_update_data_time.get(), data_size, 1, 6);
   for (int i = 0; i < data_size; ++i) {
-    for (int j = 0; j < 5; ++j) {
-      if (j==4) BOOST_CHECK_EQUAL(data_update_values(i, j), -1);
-      else BOOST_CHECK_EQUAL(data_update_values(i, j), values(i, j));
+    for (int j = 0; j < 6; ++j) {
+      BOOST_CHECK_EQUAL(data_update_values(i, 0, j), values_time_ptr->getData()(i, 0, j));
     }
+  }
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_label")->getDataTensorSize(), 1 * data_size);
+  std::shared_ptr<TensorArray32<char>[]> data_update_data_labels;
+  n_dim_tensor_collection->tables_.at("DataFrame_label")->getDataPointer(data_update_data_labels);
+  Eigen::TensorMap<Eigen::Tensor<TensorArray32<char>, 2>> data_update_values_labels(data_update_data_labels.get(), data_size, 1);
+  for (int i = 0; i < data_size; ++i) {
+    BOOST_CHECK_EQUAL(data_update_values_labels(i, 0), values_labels_ptr->getData()(i, 0));
+  }
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getDataTensorSize(), 1 * data_size * 28 * 28);
+  std::shared_ptr<float[]> data_update_data_image_2d;
+  n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getDataPointer(data_update_data_image_2d);
+  Eigen::TensorMap<Eigen::Tensor<float, 4>> data_update_values_image_2d(data_update_data_image_2d.get(), data_size, 1, 28, 28);
+  for (int i = 0; i < data_size; ++i) {
+    for (int j = 0; j < 28; ++j) {
+      for (int k = 0; k < 28; ++k) {
+        BOOST_CHECK_EQUAL(data_update_values_image_2d(i, 0, j, k), values_image_2d_ptr->getData()(i, 0, j, k));
+      }
+    }
+  }
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getDataTensorSize(), 1 * data_size);
+  std::shared_ptr<int[]> data_update_data_is_valid;
+  n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getDataPointer(data_update_data_is_valid);
+  Eigen::TensorMap<Eigen::Tensor<int, 2>> data_update_values_is_valid(data_update_data_is_valid.get(), data_size, 1);
+  for (int i = 0; i < data_size; ++i) {
+    BOOST_CHECK_EQUAL(data_update_values_is_valid(i, 0), values_is_valid_ptr->getData()(i, 0));
   }
 
   // Test the expected tensor collection after deletion
   benchmark_1_tp.delete1TimePoint(transaction_manager, data_size, in_memory, device);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNDimensions(), 1);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNLabels(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNDimensions(), 1);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNLabels(), 0);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getNLabels(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getDataTensorSize(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_label")->getAxes().at("1_indices")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_label")->getAxes().at("1_indices")->getNLabels(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_label")->getDataTensorSize(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getAxes().at("1_indices")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getAxes().at("1_indices")->getNLabels(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getDataTensorSize(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getAxes().at("1_indices")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getAxes().at("1_indices")->getNLabels(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getDataTensorSize(), 0);
 }
 
 // repeat with sharding
@@ -235,176 +306,247 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteShardingDefaultDevice)
   transaction_manager.setTensorCollection(n_dim_tensor_collection);
 
   // Test the initial tensor collection
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNDimensions(), 1);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNLabels(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNDimensions(), 1);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNLabels(), 0);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardSpans().at("xyztv"), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardSpans().at("indices"), TensorCollectionShardHelper::round_1(data_size, shard_span_perc));
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getMaxDimSizeFromAxisName("xyztv"), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getMaxDimSizeFromAxisName("indices"), data_size);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("2_columns")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("2_columns")->getNLabels(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getNLabels(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("3_time")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("3_time")->getNLabels(), 6);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getDataTensorSize(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getShardSpans().at("2_columns"), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getShardSpans().at("1_indices"), TensorCollectionShardHelper::round_1(data_size, shard_span_perc));
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getShardSpans().at("3_time"), 6);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getMaxDimSizeFromAxisName("2_columns"), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getMaxDimSizeFromAxisName("1_indices"), data_size);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getMaxDimSizeFromAxisName("3_time"), 6);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_label")->getAxes().at("2_columns")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_label")->getAxes().at("2_columns")->getNLabels(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_label")->getAxes().at("1_indices")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_label")->getAxes().at("1_indices")->getNLabels(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_label")->getDataTensorSize(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_label")->getShardSpans().at("2_columns"), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_label")->getShardSpans().at("1_indices"), TensorCollectionShardHelper::round_1(data_size, shard_span_perc));
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_label")->getMaxDimSizeFromAxisName("2_columns"), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_label")->getMaxDimSizeFromAxisName("1_indices"), data_size);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getAxes().at("2_columns")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getAxes().at("2_columns")->getNLabels(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getAxes().at("1_indices")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getAxes().at("1_indices")->getNLabels(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getAxes().at("3_x")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getAxes().at("3_x")->getNLabels(), 28);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getAxes().at("3_y")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getAxes().at("3_y")->getNLabels(), 28);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getDataTensorSize(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getShardSpans().at("2_columns"), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getShardSpans().at("1_indices"), TensorCollectionShardHelper::round_1(data_size, shard_span_perc));
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getShardSpans().at("3_x"), 28);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getShardSpans().at("3_y"), 28);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getMaxDimSizeFromAxisName("2_columns"), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getMaxDimSizeFromAxisName("1_indices"), data_size);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getMaxDimSizeFromAxisName("3_x"), 28);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getMaxDimSizeFromAxisName("3_y"), 28);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getAxes().at("2_columns")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getAxes().at("2_columns")->getNLabels(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getAxes().at("1_indices")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getAxes().at("1_indices")->getNLabels(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getDataTensorSize(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getShardSpans().at("2_columns"), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getShardSpans().at("1_indices"), TensorCollectionShardHelper::round_1(data_size, shard_span_perc));
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getMaxDimSizeFromAxisName("2_columns"), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getMaxDimSizeFromAxisName("1_indices"), data_size);
 
-  // Make the expected tensor axes labels and tensor data
-  Eigen::Tensor<TensorArray8<char>, 2> labels_xyztv(1, 5);
-  labels_xyztv.setValues({ { TensorArray8<char>("x"), TensorArray8<char>("y"), TensorArray8<char>("z"), TensorArray8<char>("t"), TensorArray8<char>("v")} });
-  Eigen::Tensor<int, 2> values(data_size, 5);
-  Eigen::Tensor<int, 2> labels_indices(1, data_size);
-  for (int i = 0; i < data_size; ++i) {
-    values(i, 0) = int(floor(float(i) / float(std::pow(dim_span, 0)))) % dim_span + 1;
-    values(i, 1) = int(floor(float(i) / float(std::pow(dim_span, 1)))) % dim_span + 1;
-    values(i, 2) = int(floor(float(i) / float(std::pow(dim_span, 2)))) % dim_span + 1;
-    values(i, 3) = int(floor(float(i) / float(std::pow(dim_span, 3)))) % dim_span + 1;
-    values(i, 4) = int(i);
-    labels_indices(0, i) = int(i);
-  }
+  // Make the expected tensor axes labels and tensor data after insert
+  DataFrameManagerTimeDefaultDevice dataframe_manager_time(data_size, false);
+  DataFrameManagerLabelDefaultDevice dataframe_manager_labels(data_size, false);
+  DataFrameManagerImage2DDefaultDevice dataframe_manager_image_2d(data_size, false);
+  DataFrameManagerIsValidDefaultDevice dataframe_manager_is_valid(data_size, false);
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_time_ptr;
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>> values_time_ptr;
+  dataframe_manager_time.getInsertData(0, data_size, labels_time_ptr, values_time_ptr);
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_labels_ptr;
+  std::shared_ptr<TensorData<TensorArray32<char>, Eigen::DefaultDevice, 2>> values_labels_ptr;
+  dataframe_manager_labels.getInsertData(0, data_size, labels_labels_ptr, values_labels_ptr);
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_image_2d_ptr;
+  std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 4>> values_image_2d_ptr;
+  dataframe_manager_image_2d.getInsertData(0, data_size, labels_image_2d_ptr, values_image_2d_ptr);
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_is_valid_ptr;
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> values_is_valid_ptr;
+  dataframe_manager_is_valid.getInsertData(0, data_size, labels_is_valid_ptr, values_is_valid_ptr);
 
   // Test the expected tensor collection after insert
   benchmark_1_tp.insert1TimePoint(transaction_manager, data_size, in_memory, device);
 
   // Test the expected tensor axes after insert
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNDimensions(), 1);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNLabels(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNDimensions(), 1);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNLabels(), 1296);
-  std::shared_ptr<TensorArray8<char>[]> labels_xyztv_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getLabelsDataPointer(labels_xyztv_insert_data);
-  Eigen::TensorMap<Eigen::Tensor<TensorArray8<char>, 2>> labels_xyztv_insert_values(labels_xyztv_insert_data.get(), 5, 1);
-  for (int i = 0; i < 5; ++i) {
-    for (int j = 0; j < 1; ++j) {
-      BOOST_CHECK_EQUAL(labels_xyztv_insert_values(i, j), labels_xyztv(i, j));
-    }
-  }
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getNLabels(), data_size);
   std::shared_ptr<int[]> labels_indices_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getLabelsDataPointer(labels_indices_insert_data);
+  n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getLabelsDataPointer(labels_indices_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_indices_insert_values(labels_indices_insert_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
-      BOOST_CHECK_EQUAL(labels_indices_insert_values(i, j), labels_indices(i, j));
+      BOOST_CHECK_EQUAL(labels_indices_insert_values(i, j), labels_time_ptr->getData()(i, j));
     }
   }
 
-  // Test the expected axis indices after insert
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("xyztv")->getTensorSize(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("xyztv")->getTensorSize(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("xyztv")->getTensorSize(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("xyztv")->getTensorSize(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xyztv")->getTensorSize(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xyztv")->getTensorSize(), 5);
-  for (int i = 0; i < 5; ++i) {
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("xyztv")->getData()(i), i + 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("xyztv")->getData()(i), i + 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("xyztv")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("xyztv")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xyztv")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xyztv")->getData()(i), i + 1);
-  }
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("indices")->getTensorSize(), data_size);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("indices")->getTensorSize(), data_size);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("indices")->getTensorSize(), data_size);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("indices")->getTensorSize(), data_size);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("indices")->getTensorSize(), data_size);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("indices")->getTensorSize(), data_size);
+  // Test the expected axis 1_indices after insert
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getIndices().at("1_indices")->getTensorSize(), data_size);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getIndicesView().at("1_indices")->getTensorSize(), data_size);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getIsModified().at("1_indices")->getTensorSize(), data_size);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getNotInMemory().at("1_indices")->getTensorSize(), data_size);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getShardId().at("1_indices")->getTensorSize(), data_size);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getShardIndices().at("1_indices")->getTensorSize(), data_size);
   for (int i = 0; i < data_size; ++i) {
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("indices")->getData()(i), i + 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("indices")->getData()(i), i + 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("indices")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("indices")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("indices")->getData()(i), TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(data_size, shard_span_perc), i));
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("indices")->getData()(i), TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(data_size, shard_span_perc), i));
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getIndices().at("1_indices")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getIndicesView().at("1_indices")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getIsModified().at("1_indices")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getNotInMemory().at("1_indices")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getShardId().at("1_indices")->getData()(i), TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(data_size, shard_span_perc), i));
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getShardIndices().at("1_indices")->getData()(i), TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(data_size, shard_span_perc), i));
   }
 
   // Test the expected data after insert
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
-  n_dim_tensor_collection->tables_.at("TTable")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("TTable")->getDir(), device);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 6480);
-  std::shared_ptr<int[]> data_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_insert_data);
-  Eigen::TensorMap<Eigen::Tensor<int, 2>> data_insert_values(data_insert_data.get(), data_size, 5);
+  n_dim_tensor_collection->tables_.at("DataFrame_time")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("DataFrame_time")->getDir(), device);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getDataTensorSize(), 1 * data_size * 6);
+  std::shared_ptr<int[]> data_insert_data_time;
+  n_dim_tensor_collection->tables_.at("DataFrame_time")->getDataPointer(data_insert_data_time);
+  Eigen::TensorMap<Eigen::Tensor<int, 3>> data_insert_values_time(data_insert_data_time.get(), data_size, 1, 6);
   for (int i = 0; i < data_size; ++i) {
-    for (int j = 0; j < 5; ++j) {
-      BOOST_CHECK_EQUAL(data_insert_values(i, j), values(i, j));
+    for (int j = 0; j < 6; ++j) {
+      BOOST_CHECK_EQUAL(data_insert_values_time(i, 0, j), values_time_ptr->getData()(i, 0, j));
     }
   }
-  n_dim_tensor_collection->tables_.at("TTable")->initData(device);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
+  n_dim_tensor_collection->tables_.at("DataFrame_label")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("DataFrame_label")->getDir(), device);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_label")->getDataTensorSize(), 1 * data_size);
+  std::shared_ptr<TensorArray32<char>[]> data_insert_data_labels;
+  n_dim_tensor_collection->tables_.at("DataFrame_label")->getDataPointer(data_insert_data_labels);
+  Eigen::TensorMap<Eigen::Tensor<TensorArray32<char>, 2>> data_insert_values_labels(data_insert_data_labels.get(), data_size, 1);
+  for (int i = 0; i < data_size; ++i) {
+    BOOST_CHECK_EQUAL(data_insert_values_labels(i, 0), values_labels_ptr->getData()(i, 0));
+  }
+  n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getDir(), device);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getDataTensorSize(), 1 * data_size * 28 * 28);
+  std::shared_ptr<float[]> data_insert_data_image_2d;
+  n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getDataPointer(data_insert_data_image_2d);
+  Eigen::TensorMap<Eigen::Tensor<float, 4>> data_insert_values_image_2d(data_insert_data_image_2d.get(), data_size, 1, 28, 28);
+  for (int i = 0; i < data_size; ++i) {
+    for (int j = 0; j < 28; ++j) {
+      for (int k = 0; k < 28; ++k) {
+        BOOST_CHECK_EQUAL(data_insert_values_image_2d(i, 0, j, k), values_image_2d_ptr->getData()(i, 0, j, k));
+      }
+    }
+  }
+  n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getDir(), device);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getDataTensorSize(), 1 * data_size);
+  std::shared_ptr<int[]> data_insert_data_is_valid;
+  n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getDataPointer(data_insert_data_is_valid);
+  Eigen::TensorMap<Eigen::Tensor<int, 2>> data_insert_values_is_valid(data_insert_data_is_valid.get(), data_size, 1);
+  for (int i = 0; i < data_size; ++i) {
+    BOOST_CHECK_EQUAL(data_insert_values_is_valid(i, 0), values_is_valid_ptr->getData()(i, 0));
+  }
+
+  // Make the expected tensor axes labels and tensor data after update
+  dataframe_manager_time.setUseRandomValues(true);
+  dataframe_manager_labels.setUseRandomValues(true);
+  dataframe_manager_image_2d.setUseRandomValues(true);
+  dataframe_manager_is_valid.setUseRandomValues(true);
+  labels_time_ptr.reset();
+  values_time_ptr.reset();
+  dataframe_manager_time.getInsertData(0, data_size, labels_time_ptr, values_time_ptr);
+  labels_labels_ptr.reset();
+  values_labels_ptr.reset();
+  dataframe_manager_labels.getInsertData(0, data_size, labels_labels_ptr, values_labels_ptr);
+  labels_image_2d_ptr.reset();
+  values_image_2d_ptr.reset();
+  dataframe_manager_image_2d.getInsertData(0, data_size, labels_image_2d_ptr, values_image_2d_ptr);
+  labels_is_valid_ptr.reset();
+  values_is_valid_ptr.reset();
+  dataframe_manager_is_valid.getInsertData(0, data_size, labels_is_valid_ptr, values_is_valid_ptr);
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(transaction_manager, data_size, in_memory, device);
 
   // Test the expected tensor axes after update
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNDimensions(), 1);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNLabels(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNDimensions(), 1);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNLabels(), 1296);
-  std::shared_ptr<TensorArray8<char>[]> labels_xyztv_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getLabelsDataPointer(labels_xyztv_update_data);
-  Eigen::TensorMap<Eigen::Tensor<TensorArray8<char>, 2>> labels_xyztv_update_values(labels_xyztv_update_data.get(), 5, 1);
-  for (int i = 0; i < 5; ++i) {
-    for (int j = 0; j < 1; ++j) {
-      BOOST_CHECK_EQUAL(labels_xyztv_update_values(i, j), labels_xyztv(i, j));
-    }
-  }
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getNLabels(), data_size);
   std::shared_ptr<int[]> labels_indices_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getLabelsDataPointer(labels_indices_update_data);
+  n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getLabelsDataPointer(labels_indices_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_indices_update_values(labels_indices_update_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
-      BOOST_CHECK_EQUAL(labels_indices_update_values(i, j), labels_indices(i, j));
+      BOOST_CHECK_EQUAL(labels_indices_update_values(i, j), labels_time_ptr->getData()(i, j));
     }
   }
 
-  // Test the expected axis indices after update
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("xyztv")->getTensorSize(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("xyztv")->getTensorSize(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("xyztv")->getTensorSize(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("xyztv")->getTensorSize(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xyztv")->getTensorSize(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xyztv")->getTensorSize(), 5);
-  for (int i = 0; i < 5; ++i) {
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("xyztv")->getData()(i), i + 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("xyztv")->getData()(i), i + 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("xyztv")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("xyztv")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xyztv")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xyztv")->getData()(i), i + 1);
-  }
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("indices")->getTensorSize(), data_size);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("indices")->getTensorSize(), data_size);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("indices")->getTensorSize(), data_size);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("indices")->getTensorSize(), data_size);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("indices")->getTensorSize(), data_size);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("indices")->getTensorSize(), data_size);
+  // Test the expected axis 1_indices after update
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getIndices().at("1_indices")->getTensorSize(), data_size);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getIndicesView().at("1_indices")->getTensorSize(), data_size);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getIsModified().at("1_indices")->getTensorSize(), data_size);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getNotInMemory().at("1_indices")->getTensorSize(), data_size);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getShardId().at("1_indices")->getTensorSize(), data_size);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getShardIndices().at("1_indices")->getTensorSize(), data_size);
   for (int i = 0; i < data_size; ++i) {
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("indices")->getData()(i), i + 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("indices")->getData()(i), i + 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("indices")->getData()(i), 0);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("indices")->getData()(i), 1);
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("indices")->getData()(i), TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(data_size, shard_span_perc), i));
-    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("indices")->getData()(i), TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(data_size, shard_span_perc), i));
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getIndices().at("1_indices")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getIndicesView().at("1_indices")->getData()(i), i + 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getIsModified().at("1_indices")->getData()(i), 1);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getNotInMemory().at("1_indices")->getData()(i), 0);
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getShardId().at("1_indices")->getData()(i), TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(data_size, shard_span_perc), i));
+    BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getShardIndices().at("1_indices")->getData()(i), TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(data_size, shard_span_perc), i));
   }
 
   // Test the expected data after update
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
-  n_dim_tensor_collection->tables_.at("TTable")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("TTable")->getDir(), device);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 6480);
-  std::shared_ptr<int[]> data_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_update_data);
-  Eigen::TensorMap<Eigen::Tensor<int, 2>> data_update_values(data_update_data.get(), data_size, 5);
+  n_dim_tensor_collection->tables_.at("DataFrame_time")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("DataFrame_time")->getDir(), device);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getDataTensorSize(), 1 * data_size * 6);
+  std::shared_ptr<int[]> data_update_data_time;
+  n_dim_tensor_collection->tables_.at("DataFrame_time")->getDataPointer(data_update_data_time);
+  Eigen::TensorMap<Eigen::Tensor<int, 3>> data_update_values(data_update_data_time.get(), data_size, 1, 6);
   for (int i = 0; i < data_size; ++i) {
-    for (int j = 0; j < 5; ++j) {
-      if (j == 4) BOOST_CHECK_EQUAL(data_update_values(i, j), -1);
-      else BOOST_CHECK_EQUAL(data_update_values(i, j), values(i, j));
+    for (int j = 0; j < 6; ++j) {
+      BOOST_CHECK_EQUAL(data_update_values(i, 0, j), values_time_ptr->getData()(i, 0, j));
     }
+  }
+  n_dim_tensor_collection->tables_.at("DataFrame_label")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("DataFrame_label")->getDir(), device);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_label")->getDataTensorSize(), 1 * data_size);
+  std::shared_ptr<TensorArray32<char>[]> data_update_data_labels;
+  n_dim_tensor_collection->tables_.at("DataFrame_label")->getDataPointer(data_update_data_labels);
+  Eigen::TensorMap<Eigen::Tensor<TensorArray32<char>, 2>> data_update_values_labels(data_update_data_labels.get(), data_size, 1);
+  for (int i = 0; i < data_size; ++i) {
+    BOOST_CHECK_EQUAL(data_update_values_labels(i, 0), values_labels_ptr->getData()(i, 0));
+  }
+  n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getDir(), device);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getDataTensorSize(), 1 * data_size * 28 * 28);
+  std::shared_ptr<float[]> data_update_data_image_2d;
+  n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getDataPointer(data_update_data_image_2d);
+  Eigen::TensorMap<Eigen::Tensor<float, 4>> data_update_values_image_2d(data_update_data_image_2d.get(), data_size, 1, 28, 28);
+  for (int i = 0; i < data_size; ++i) {
+    for (int j = 0; j < 28; ++j) {
+      for (int k = 0; k < 28; ++k) {
+        BOOST_CHECK_EQUAL(data_update_values_image_2d(i, 0, j, k), values_image_2d_ptr->getData()(i, 0, j, k));
+      }
+    }
+  }
+  n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getDir(), device);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getDataTensorSize(), 1 * data_size);
+  std::shared_ptr<int[]> data_update_data_is_valid;
+  n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getDataPointer(data_update_data_is_valid);
+  Eigen::TensorMap<Eigen::Tensor<int, 2>> data_update_values_is_valid(data_update_data_is_valid.get(), data_size, 1);
+  for (int i = 0; i < data_size; ++i) {
+    BOOST_CHECK_EQUAL(data_update_values_is_valid(i, 0), values_is_valid_ptr->getData()(i, 0));
   }
 
   // Test the expected tensor collection after deletion
   benchmark_1_tp.delete1TimePoint(transaction_manager, data_size, in_memory, device);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNDimensions(), 1);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNLabels(), 5);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNDimensions(), 1);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNLabels(), 0);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getNLabels(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_time")->getDataTensorSize(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_label")->getAxes().at("1_indices")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_label")->getAxes().at("1_indices")->getNLabels(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_label")->getDataTensorSize(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getAxes().at("1_indices")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getAxes().at("1_indices")->getNLabels(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getDataTensorSize(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getAxes().at("1_indices")->getNDimensions(), 1);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getAxes().at("1_indices")->getNLabels(), 0);
+  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getDataTensorSize(), 0);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
