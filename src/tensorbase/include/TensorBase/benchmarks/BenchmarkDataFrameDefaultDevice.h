@@ -77,25 +77,68 @@ namespace TensorBaseBenchmarks
 	*/
 	class BenchmarkDataFrame1TimePointDefaultDevice : public BenchmarkDataFrame1TimePoint<DataFrameManagerTimeDefaultDevice, DataFrameManagerLabelsDefaultDevice, DataFrameManagerImage2DDefaultDevice, DataFrameManagerIsValidDefaultDevice, Eigen::DefaultDevice> {
 	protected:
-		void insert1TimePoint(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `insert1TimePoint0D`
-		void update1TimePoint(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `update1TimePoint0D`
-		void delete1TimePoint(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `delete1TimePoint0D`
+		void _insert1TimePoint(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `insert1TimePoint0D`
+		void _update1TimePoint(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `update1TimePoint0D`
+		void _delete1TimePoint(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `delete1TimePoint0D`
 	};
-	void BenchmarkDataFrame1TimePointDefaultDevice::insert1TimePoint(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const {
+	void BenchmarkDataFrame1TimePointDefaultDevice::_insert1TimePoint(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const {
     DataFrameManagerTimeDefaultDevice dataframe_manager_time(data_size, false);
     DataFrameManagerLabelsDefaultDevice dataframe_manager_labels(data_size, false);
     DataFrameManagerImage2DDefaultDevice dataframe_manager_image_2d(data_size, false);
     DataFrameManagerIsValidDefaultDevice dataframe_manager_is_valid(data_size, false);
-		this->insert1TimePoint0D_(dataframe_manager_time, dataframe_manager_labels, dataframe_manager_image_2d, dataframe_manager_is_valid, transaction_manager, data_size, in_memory, device);
+    int span = 1;
+    for (int i = 0; i < data_size; i += span) {
+      std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_time_ptr;
+      std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>> values_time_ptr;
+      dataframe_manager_time.getInsertData(i, span, labels_time_ptr, values_time_ptr);
+      TensorAppendToAxis<int, int, Eigen::DefaultDevice, 3> appendToAxis_time("DataFrame_time", "indices", labels_time_ptr, values_time_ptr);
+      std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> appendToAxis_time_ptr = std::make_shared<TensorAppendToAxis<int, int, Eigen::DefaultDevice, 3>>(appendToAxis_time);
+      transaction_manager.executeOperation(appendToAxis_time_ptr, device);
+      std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_labels_ptr;
+      std::shared_ptr<TensorData<TensorArray32<char>, Eigen::DefaultDevice, 2>> values_labels_ptr;
+      dataframe_manager_labels.getInsertData(i, span, labels_labels_ptr, values_labels_ptr);
+      TensorAppendToAxis<int, TensorArray32<char>, Eigen::DefaultDevice, 2> appendToAxis_labels("DataFrame_labels", "indices", labels_labels_ptr, values_labels_ptr);
+      std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> appendToAxis_labels_ptr = std::make_shared<TensorAppendToAxis<int, TensorArray32<char>, Eigen::DefaultDevice, 2>>(appendToAxis_labels);
+      transaction_manager.executeOperation(appendToAxis_labels_ptr, device);
+      std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_image_2d_ptr;
+      std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 4>> values_image_2d_ptr;
+      dataframe_manager_image_2d.getInsertData(i, span, labels_image_2d_ptr, values_image_2d_ptr);
+      TensorAppendToAxis<int, float, Eigen::DefaultDevice, 4> appendToAxis_image_2d("DataFrame_image_2d", "indices", labels_image_2d_ptr, values_image_2d_ptr);
+      std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> appendToAxis_image_2d_ptr = std::make_shared<TensorAppendToAxis<int, float, Eigen::DefaultDevice, 4>>(appendToAxis_image_2d);
+      transaction_manager.executeOperation(appendToAxis_image_2d_ptr, device);
+      std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_is_valid_ptr;
+      std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> values_is_valid_ptr;
+      dataframe_manager_is_valid.getInsertData(i, span, labels_is_valid_ptr, values_is_valid_ptr);
+      TensorAppendToAxis<int, int, Eigen::DefaultDevice, 2> appendToAxis_is_valid("DataFrame_is_valid", "indices", labels_is_valid_ptr, values_is_valid_ptr);
+      std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> appendToAxis_is_valid_ptr = std::make_shared<TensorAppendToAxis<int, int, Eigen::DefaultDevice, 2>>(appendToAxis_is_valid);
+      transaction_manager.executeOperation(appendToAxis_is_valid_ptr, device);
+      if (!in_memory) {
+        transaction_manager.commit(device);
+        transaction_manager.initTensorCollectionTensorData(device);
+      }
+    }
 	}
-	void BenchmarkDataFrame1TimePointDefaultDevice::update1TimePoint(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const {
+	void BenchmarkDataFrame1TimePointDefaultDevice::_update1TimePoint(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const {
     DataFrameManagerTimeDefaultDevice dataframe_manager_time(data_size, true);
     DataFrameManagerLabelsDefaultDevice dataframe_manager_labels(data_size, true);
     DataFrameManagerImage2DDefaultDevice dataframe_manager_image_2d(data_size, true);
     DataFrameManagerIsValidDefaultDevice dataframe_manager_is_valid(data_size, true);
-		this->update1TimePoint0D_(dataframe_manager_time, dataframe_manager_labels, dataframe_manager_image_2d, dataframe_manager_is_valid, transaction_manager, data_size, in_memory, device);
+    int span = 1;
+    //for (int i = 0; i < data_size; i += span) {
+    //  labels_ptr.reset();
+    //  values_ptr.reset();
+    //  dataframe_manager.getInsertData(i, span, labels_ptr, values_ptr);
+    //  SelectTable0D<LabelsT, DeviceT> selectClause(labels_ptr);
+    //  TensorUpdateValues<TensorT, DeviceT, 2> tensorUpdate("TTable", selectClause, values_ptr);
+    //  std::shared_ptr<TensorOperation<DeviceT>> tensorUpdate_ptr = std::make_shared<TensorUpdateValues<TensorT, DeviceT, 2>>(tensorUpdate);
+    //  transaction_manager.executeOperation(tensorUpdate_ptr, device);
+    //  if (!in_memory) {
+    //    transaction_manager.commit(device);
+    //    transaction_manager.initTensorCollectionTensorData(device);
+    //  }
+    //}
 	}
-	void BenchmarkDataFrame1TimePointDefaultDevice::delete1TimePoint(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const {
+	void BenchmarkDataFrame1TimePointDefaultDevice::_delete1TimePoint(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const {
     DataFrameManagerTimeDefaultDevice dataframe_manager_time(data_size, true);
     DataFrameManagerLabelsDefaultDevice dataframe_manager_labels(data_size, true);
     DataFrameManagerImage2DDefaultDevice dataframe_manager_image_2d(data_size, true);
