@@ -955,7 +955,7 @@ void test_applyIndicesSelectToIndicesViewGpu()
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
 
-void test_whereIndicesViewDataGpu()
+void test_whereIndicesViewData1Gpu()
 {
   // setup the table
   TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
@@ -1064,7 +1064,139 @@ void test_whereIndicesViewDataGpu()
   //  logicalContinuators::logicalContinuator::OR, logicalContinuators::logicalContinuator::AND, device);
   //tensorTable.syncIndicesViewHAndDData(device);
   //assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  //std::cout << "test_whereIndicesViewDataGpu Failing:" << std::endl;
+  //std::cout << "test_whereIndicesViewData1Gpu Failing:" << std::endl;
+  //std::cout << "tensorTable.getIndicesView().at(2)->getData()\n" << tensorTable.getIndicesView().at("2")->getData() << std::endl;
+  //std::cout << "tensorTable.getIndicesView().at(3)->getData()\n" << tensorTable.getIndicesView().at("3")->getData() << std::endl;
+  //for (int i = 0; i < nlabels; ++i) {
+  //  // indices view 1
+  //  assert(tensorTable.getIndicesView().at("1")->getData()(i) == i + 1); // Unchanged
+
+  //  //// indices view 2
+  //  //if (i == 2) // FIXME: i==0?
+  //  //  assert(tensorTable.getIndicesView().at("2")->getData()(i) == i + 1);
+  //  //else
+  //  //  assert(tensorTable.getIndicesView().at("2")->getData()(i) == 0);
+
+  //  //// indices view 3
+  //  //if (i == 1) // FIXME: i==3?
+  //  //  assert(tensorTable.getIndicesView().at("3")->getData()(i) == i + 1);
+  //  //else
+  //  //  assert(tensorTable.getIndicesView().at("3")->getData()(i) == 0);
+  //}
+
+  assert(cudaStreamDestroy(stream) == cudaSuccess);
+}
+
+void test_whereIndicesViewData2Gpu()
+{
+  // setup the table
+  TensorTableGpuClassT<TensorArrayGpu8, char, 3> tensorTable;
+
+  // Initialize the device
+  cudaStream_t stream;
+  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  Eigen::GpuStreamDevice stream_device(&stream, 0);
+  Eigen::GpuDevice device(&stream_device);
+
+  // setup the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels = 4;
+  Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels), labels3(1, nlabels);
+  labels1.setValues({ {0, 1, 2, 3} });
+  labels2.setValues({ {0, 1, 2, 3} });
+  labels3.setValues({ {0, 1, 2, 3} });
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1", dimensions1, labels1)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("2", dimensions2, labels2)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("3", dimensions3, labels3)));
+  tensorTable.setAxes(device);
+
+  // setup the tensor data
+  Eigen::Tensor<TensorArrayGpu8<char>, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  int iter = 0;
+  for (int i = 0; i < nlabels; ++i) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int k = 0; k < nlabels; ++k) {
+        tensor_values(i, j, k).setTensorArray(std::to_string(iter));
+        ++iter;
+      }
+    }
+  }
+  tensorTable.setData(tensor_values);
+
+  // sync the tensorTable
+  tensorTable.syncAxesAndIndicesDData(device);
+  tensorTable.syncDData(device);
+
+  // set up the selection labels
+  Eigen::Tensor<int, 2> select_labels_values(1, 2);
+  select_labels_values(0, 0) = 0; select_labels_values(0, 1) = 2;
+  TensorDataGpuPrimitiveT<int, 2> select_labels(Eigen::array<Eigen::Index, 2>({ 1,2 }));
+  select_labels.setData(select_labels_values);
+  std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>> select_labels_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 2>>(select_labels);
+  select_labels_ptr->syncHAndDData(device);
+
+  // set up the selection values
+  Eigen::Tensor<TensorArrayGpu8<char>, 1> select_values_values(2);
+  select_values_values(0).setTensorArray("9"); select_values_values(1).setTensorArray("9");
+  TensorDataGpuClassT<TensorArrayGpu8, char, 1> select_values(Eigen::array<Eigen::Index, 1>({ 2 }));
+  select_values.setData(select_values_values);
+  std::shared_ptr<TensorDataGpuClassT<TensorArrayGpu8, char, 1>> select_values_ptr = std::make_shared<TensorDataGpuClassT<TensorArrayGpu8, char, 1>>(select_values);
+  select_values_ptr->syncHAndDData(device);
+
+  // test
+  tensorTable.whereIndicesView("1", select_labels_ptr, select_values_ptr,
+    logicalComparitors::logicalComparitor::EQUAL_TO, logicalModifiers::logicalModifier::NONE,
+    logicalContinuators::logicalContinuator::OR, logicalContinuators::logicalContinuator::AND, device);
+  tensorTable.syncIndicesViewHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  for (int i = 0; i < nlabels; ++i) {
+    // indices view 1
+    assert(tensorTable.getIndicesView().at("1")->getData()(i) == i + 1); // Unchanged
+
+    // indices view 2
+    if (i == 2)
+      assert(tensorTable.getIndicesView().at("2")->getData()(i) == i + 1);
+    else
+      assert(tensorTable.getIndicesView().at("2")->getData()(i) == 0);
+
+    // indices view 3
+    if (i == 1)
+      assert(tensorTable.getIndicesView().at("3")->getData()(i) == i + 1);
+    else
+      assert(tensorTable.getIndicesView().at("3")->getData()(i) == 0);
+  }
+
+  // Write the original data to disk, clear the data, and repeat the tests
+  tensorTable.clear();
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1", dimensions1, labels1)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("2", dimensions2, labels2)));
+  tensorTable.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("3", dimensions3, labels3)));
+  tensorTable.setAxes(device);
+  tensorTable.setData(tensor_values);
+  tensorTable.syncIndicesHAndDData(device);
+  tensorTable.syncIndicesViewHAndDData(device);
+  tensorTable.syncNotInMemoryHAndDData(device);
+  tensorTable.syncIsModifiedHAndDData(device);
+  tensorTable.syncShardIdHAndDData(device);
+  tensorTable.syncShardIndicesHAndDData(device);
+  tensorTable.syncAxesHAndDData(device);
+  tensorTable.syncHAndDData(device);
+  tensorTable.storeTensorTableBinary("", device);
+  tensorTable.setData();
+  tensorTable.syncNotInMemoryHAndDData(device);
+  tensorTable.syncIsModifiedHAndDData(device);
+  tensorTable.syncHAndDData(device);
+
+  //// FIXME: call to whereIndicesView is causing assertion failures for TensorArrayGpu8 size
+  //tensorTable.whereIndicesView("1", select_labels_ptr, select_values_ptr,
+  //  logicalComparitors::logicalComparitor::EQUAL_TO, logicalModifiers::logicalModifier::NONE,
+  //  logicalContinuators::logicalContinuator::OR, logicalContinuators::logicalContinuator::AND, device);
+  //tensorTable.syncIndicesViewHAndDData(device);
+  //assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  //std::cout << "test_whereIndicesViewData1Gpu Failing:" << std::endl;
   //std::cout << "tensorTable.getIndicesView().at(2)->getData()\n" << tensorTable.getIndicesView().at("2")->getData() << std::endl;
   //std::cout << "tensorTable.getIndicesView().at(3)->getData()\n" << tensorTable.getIndicesView().at("3")->getData() << std::endl;
   //for (int i = 0; i < nlabels; ++i) {
@@ -4872,7 +5004,8 @@ int main(int argc, char** argv)
   test_extractTensorDataGpuClassT();
   test_selectTensorIndicesGpu();
   test_applyIndicesSelectToIndicesViewGpu();
-  test_whereIndicesViewDataGpu();
+  test_whereIndicesViewData1Gpu();
+  test_whereIndicesViewData2Gpu();
   test_sliceTensorForSortGpu();
   test_sortIndicesViewData1Gpu();
   test_sortIndicesViewData2Gpu();

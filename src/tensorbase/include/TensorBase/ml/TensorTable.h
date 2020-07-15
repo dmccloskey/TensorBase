@@ -273,6 +273,27 @@ namespace TensorBase
       const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device);
 
     /*
+    @brief Apply a where selection clause to the Tensor Axis View
+
+    @param[in] axis_name
+    @param[in] select_labels_data The full 2D axis labels
+    @param[in] values
+    @param[in] comparitor
+    @param[in] modifier
+    @param[in] within_continuator
+    @param[in] prepend_continuator
+    @param[in] device
+    */
+    template<typename LabelsT, typename T>
+    void whereIndicesViewConcept(const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<T, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device);
+    template<typename LabelsT>
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device);
+
+    /*
     @brief Broadcast the axis indices view across the entire tensor
       and allocate to memory
 
@@ -1514,6 +1535,52 @@ namespace TensorBase
     
     // update all other tensor indices view based on the selection criteria tensor
     for (const auto& axis_to_name: axes_to_dims_) {
+      if (axis_to_name.first == axis_name) continue;
+      applyIndicesSelectToIndicesView(indices_select, axis_name, axis_to_name.first, within_continuator, prepend_continuator, device);
+    }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  template<typename LabelsT, typename T>
+  inline void TensorTable<TensorT, DeviceT, TDim>::whereIndicesViewConcept(const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels, const std::shared_ptr<TensorData<T, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier, const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device)
+  {
+    if (std::is_same<T, TensorT>::value) {
+      const auto values_cast = std::reinterpret_pointer_cast<TensorData<TensorT, DeviceT, 1>>(values); // required for compilation: no conversion should be done
+      whereIndicesView(axis_name, select_labels, values_cast, comparitor, modifier, within_continuator, prepend_continuator, device);
+    }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  template<typename LabelsT>
+  inline void TensorTable<TensorT, DeviceT, TDim>::whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels, const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier, const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device)
+  {
+    // create a copy of the indices view
+    std::shared_ptr<TensorData<int, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copy(device);
+    assert(indices_view_copy->syncHAndDData(device));
+
+    // select the `labels` indices from the axis labels and store in the current indices view
+    selectIndicesView(axis_name, select_labels, device);
+
+    // check that the needed data is in memory
+    loadTensorTableBinary(dir_, device);
+
+    // Reduce the Tensor to `n_labels` using the `labels` indices as the selection criteria
+    std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_view_bcast;
+    broadcastSelectIndicesView(indices_view_bcast, axis_name, device);
+    std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> tensor_select;
+    reduceTensorDataToSelectIndices(indices_view_bcast, tensor_select, axis_name, select_labels->getDimensions().at(1), device);
+
+    // Determine the indices that pass the selection criteria
+    std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_select;
+    selectTensorIndicesOnReducedTensorData(indices_select, values, tensor_select, axis_name, select_labels->getDimensions().at(1), comparitor, modifier, device);
+
+    // revert back to the origin indices view
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indicies_view_values(indices_view_.at(axis_name)->getDataPointer().get(), indices_view_.at(axis_name)->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indicies_view_copy_values(indices_view_copy->getDataPointer().get(), indices_view_copy->getDimensions());
+    indicies_view_values.device(device) = indicies_view_copy_values;
+
+    // update all other tensor indices view based on the selection criteria tensor
+    for (const auto& axis_to_name : axes_to_dims_) {
       if (axis_to_name.first == axis_name) continue;
       applyIndicesSelectToIndicesView(indices_select, axis_name, axis_to_name.first, within_continuator, prepend_continuator, device);
     }

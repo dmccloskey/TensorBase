@@ -51,16 +51,16 @@ namespace TensorBaseBenchmarks
   template<typename LabelsT, typename TensorT, typename DeviceT>
   class SelectTableDataIsValid {
   public:
-    SelectTableDataIsValid(std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& select_labels, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& select_values) : select_labels_(select_labels), select_values_(select_values) {};
+    SelectTableDataIsValid(std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& select_values) : select_labels_(select_labels), select_values_(select_values) {};
     ~SelectTableDataIsValid() = default;
     void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) override {
-      WhereClause<LabelsT, TensorT, Eigen::DefaultDevice> where_clause1("DataFrame_label", "columns", "2_columns", select_labels_, select_values_, logicalComparitors::EQUAL_TO, logicalModifiers::NONE, logicalContinuators::AND, logicalContinuators::AND);
+      WhereClause<LabelsT, TensorT, Eigen::DefaultDevice> where_clause1("DataFrame_label", "2_columns", select_labels_, select_values_, logicalComparitors::EQUAL_TO, logicalModifiers::NONE, logicalContinuators::AND, logicalContinuators::AND);
       TensorSelect tensorSelect;
       tensorSelect.whereClause(tensor_collection, where_clause1, device);
       if (this->apply_select_) tensorSelect.applySelect(tensor_collection, { "DataFrame_label" }, { "DataFrame_label" }, device);
     }
   private:
-    std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& select_labels_;
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels_;
     std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& select_values_;
   };
 
