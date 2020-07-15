@@ -205,15 +205,16 @@ namespace TensorBase
   };
   /*
   @param Class defining the `Where` clause statements that filters axis indices based on the
-    selection criteria that is applied across all selected indices.  If the Tensor is of TDim > 2
-    an `OR` clause will be applied to aggregate all other non-target selection axis
+    selection criteria that is applied across all selected indices.
+
+  USAGE:
+    - The prepend_continuator specifies how the selected indices based on this where clause will be combined with the existing selected indices (i.e., the `indices_view`) that may or may not have been modified by previous queries
+    - The within_continuator specifies the logic to aggregate all other non-targeted selection axis for Tensors of TDim > 2
+    - The user can execute multiple select and where statements in a defined order in order to select the regions of interest
 
   TODO: 
     - Missing support for using another table's values as the RHS comparison.
     - Missing support for array-specific operators (i.e., STARTS_WITH, ENDS_WITH, CONTAINS)
-
-  NOTES:
-    - The user can execute multiple select and where statements in a defined order in order to select the regions of interest
   */
   template<typename LabelsT, typename TensorT, typename DeviceT>
   class WhereClause : public SelectClause<LabelsT, DeviceT> {

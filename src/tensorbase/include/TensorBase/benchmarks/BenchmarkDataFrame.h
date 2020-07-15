@@ -18,31 +18,51 @@ using namespace TensorBase;
 
 namespace TensorBaseBenchmarks
 {
-	/// Base class for all select functors
+	/// The select Functor for the DataFrame `indices`
 	template<typename LabelsT, typename DeviceT>
-	class DataFrameSelectTable {
+	class SelectTableDataIndices {
 	public:
-		DataFrameSelectTable(std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels, const std::string& table_name) : select_labels_(select_labels), table_name_(table_name){};
-		~DataFrameSelectTable() = default;
-		virtual void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) = 0;
-	protected:
-		std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels_;
-    std::string table_name_;
-		bool apply_select_ = false;
-	};
-
-	/// The select Functor for the DataFrame columns
-	template<typename LabelsT, typename DeviceT>
-	class SelectTableDataColumns: public DataFrameSelectTable<LabelsT, DeviceT> {
-	public:
-		using DataFrameSelectTable::DataFrameSelectTable;
-		void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) override {
+    SelectTableDataIndices(std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels, const std::string& table_name) : select_labels_(select_labels), table_name_(table_name) {};
+    ~SelectTableDataIndices() = default;
+		void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) {
 			SelectClause<LabelsT, DeviceT> select_clause1(this->table_name_, "1_indices", this->select_labels_);
 			TensorSelect tensorSelect;
 			tensorSelect.selectClause(tensor_collection, select_clause1, device);
 			if (this->apply_select_) tensorSelect.applySelect(tensor_collection, { this->table_name_ }, { this->table_name_ }, device);
 		}
+  protected:
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels_;
+    std::string table_name_;
+    bool apply_select_ = false;
 	};
+
+  /// The base select Functor for the DataFrame
+  template<typename LabelsT, typename TensorT, typename DeviceT>
+  class SelectTableData {
+  public:
+    SelectTableData(const bool& apply_select) : apply_select_(apply_select) {};
+    ~SelectTableData() = default;
+    virtual void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) = 0;
+  protected:
+    bool apply_select_ = false;
+  };
+
+  /// The select Functor for the DataFrame `is_valid` column
+  template<typename LabelsT, typename TensorT, typename DeviceT>
+  class SelectTableDataIsValid {
+  public:
+    SelectTableDataIsValid(std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& select_labels, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& select_values) : select_labels_(select_labels), select_values_(select_values) {};
+    ~SelectTableDataIsValid() = default;
+    void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) override {
+      WhereClause<LabelsT, TensorT, Eigen::DefaultDevice> where_clause1("DataFrame_label", "columns", "2_columns", select_labels_, select_values_, logicalComparitors::EQUAL_TO, logicalModifiers::NONE, logicalContinuators::AND, logicalContinuators::AND);
+      TensorSelect tensorSelect;
+      tensorSelect.whereClause(tensor_collection, where_clause1, device);
+      if (this->apply_select_) tensorSelect.applySelect(tensor_collection, { "DataFrame_label" }, { "DataFrame_label" }, device);
+    }
+  private:
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& select_labels_;
+    std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& select_values_;
+  };
 
 	/*
 	@brief Class for managing the generation of data for the DataFrame
@@ -101,10 +121,11 @@ namespace TensorBaseBenchmarks
       iss.imbue(std::locale(""));
       iss >> std::get_time(&time_start, "%d/%m/%Y %H:%M:%S");
     }
+    time_start.tm_isdst = true;
     for (int i = offset; i < offset + span; ++i) {
       labels(0, i - offset) = LabelsT(i);
-      //time_start.tm_sec += i * 10;
-      //std::mktime(&time_start);
+      time_start.tm_sec += i * 10;
+      std::mktime(&time_start);
       values(i - offset, 0, 0) = TensorT(time_start.tm_sec);
       values(i - offset, 0, 1) = TensorT(time_start.tm_min);
       values(i - offset, 0, 2) = TensorT(time_start.tm_hour);

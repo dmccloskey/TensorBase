@@ -144,17 +144,25 @@ namespace TensorBase
     // iterate through each table axis
     for (auto& axis : tensor_collection->tables_.at(where_clause.table_name)->getAxes()) {
       if (axis.first == where_clause.axis_name) {
-        // iterate through each axis dimensions
-        for (int d = 0; d < axis.second->getDimensions().size(); ++d) {
-          if (axis.second->getDimensions()(d) == where_clause.dimension_name) {
-            // select axis indices based on the where clause critiera
-            if (!where_clause.values->getDataStatus().second) where_clause.values->syncHAndDData(device);
-            if (!where_clause.labels->getDataStatus().second) where_clause.labels->syncHAndDData(device);
-            tensor_collection->tables_.at(where_clause.table_name)->syncAxesAndIndicesDData(device);
-            tensor_collection->tables_.at(where_clause.table_name)->whereIndicesView(
-              where_clause.axis_name, d, where_clause.labels, 
-              where_clause.values, where_clause.comparitor, where_clause.modifier, 
-              where_clause.within_continuator, where_clause.prepend_continuator, device);
+        // TODO: check for select_clause.axis_name == ""
+        if (select_clause.dimension_name == "" && select_clause.axis_labels != nullptr) {
+          // Select option 2
+          if (!select_clause.axis_labels->getDataStatus().second) select_clause.axis_labels->syncHAndDData(device);
+          // TODO
+        }
+        else {
+          // iterate through each axis dimensions
+          for (int d = 0; d < axis.second->getDimensions().size(); ++d) {
+            if (axis.second->getDimensions()(d) == where_clause.dimension_name) {
+              // select axis indices based on the where clause critiera
+              if (!where_clause.values->getDataStatus().second) where_clause.values->syncHAndDData(device);
+              if (!where_clause.labels->getDataStatus().second) where_clause.labels->syncHAndDData(device);
+              tensor_collection->tables_.at(where_clause.table_name)->syncAxesAndIndicesDData(device);
+              tensor_collection->tables_.at(where_clause.table_name)->whereIndicesView(
+                where_clause.axis_name, d, where_clause.labels,
+                where_clause.values, where_clause.comparitor, where_clause.modifier,
+                where_clause.within_continuator, where_clause.prepend_continuator, device);
+            }
           }
         }
       }
