@@ -54,14 +54,21 @@ namespace TensorBaseBenchmarks
     SelectTableDataIsValid(std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& select_values) : select_labels_(select_labels), select_values_(select_values) {};
     ~SelectTableDataIsValid() = default;
     void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) override {
-      WhereClause<LabelsT, TensorT, Eigen::DefaultDevice> where_clause1("DataFrame_label", "2_columns", select_labels_, select_values_, logicalComparitors::EQUAL_TO, logicalModifiers::NONE, logicalContinuators::AND, logicalContinuators::AND);
+      WhereClause<LabelsT, TensorT, Eigen::DefaultDevice> where_clause1("DataFrame_is_valid", "2_columns", select_labels_, select_values_, logicalComparitors::EQUAL_TO, logicalModifiers::NONE, logicalContinuators::AND, logicalContinuators::AND);
       TensorSelect tensorSelect;
       tensorSelect.whereClause(tensor_collection, where_clause1, device);
-      if (this->apply_select_) tensorSelect.applySelect(tensor_collection, { "DataFrame_label" }, { "DataFrame_label" }, device);
+      tensorSelect.applySelect(tensor_collection, { "DataFrame_is_valid" }, { "DataFrame_is_valid_true" }, device);
+      //ReductionClause<Eigen::DefaultDevice> reduction_clause1("DataFrame_is_valid_true", { "1_indices" ,"2_columns" }, reductionFunctions::SUM);
+      //tensorSelect.applyReduction(tensor_collection, reduction_clause1, device);
+      std::shared_ptr<TensorT[]> is_valid_true_data;
+      n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getDataPointer(is_valid_true_data);
+      Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> labels_indices_insert_values(is_valid_true_data.get(), 1, data_size);
     }
+    virtual void sumIsValid() = 0;
   private:
     std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels_;
     std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& select_values_;
+    std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& result_;
   };
 
 	/*

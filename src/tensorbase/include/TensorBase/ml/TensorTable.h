@@ -14,6 +14,7 @@
 #include <TensorBase/ml/TensorAxisConcept.h>
 #include <TensorBase/ml/TensorClauses.h>
 #include <TensorBase/ml/TensorShard.h>
+#include <TensorBase/ml/TensorFunctor.h>
 #include <TensorBase/io/DataFile.h>
 #include <map>
 #include <array>
@@ -842,6 +843,14 @@ namespace TensorBase
     // NOTE: IO methods for TensorTable indices components may not be needed because the call to setAxes remakes all of the indices on the fly
     //virtual bool storeTensorTableIndicesBinary(const std::string& dir, DeviceT& device) = 0; ///< Write tensor indices to disk
     //virtual bool loadTensorTableIndicesBinary(const std::string& dir, DeviceT& device) = 0; ///< Read tensor indices from disk
+
+    /**
+      @brief Apply an arbitrary functor on the existing table data
+
+      @param[in] tensor_functor
+      @param[in] device
+    */
+    void applyFunctor(TensorFunctor<TensorT, DeviceT, TDim>& tensor_functor, DeviceT& device);
 
   protected:
     static int getMaxInt() { return 2e9; }
@@ -2717,6 +2726,15 @@ namespace TensorBase
       Eigen::TensorMap<Eigen::Tensor<int, 1>> is_modified(is_modified_.at(axis_to_dim.first)->getDataPointer().get(), (int)is_modified_.at(axis_to_dim.first)->getTensorSize());
       is_modified.device(device) = is_modified.constant(1);
     }
+  }
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::applyFunctor(TensorFunctor<TensorT, DeviceT, TDim>& tensor_functor, DeviceT& device)
+  {
+    // Check that the needed data is in memory
+    loadTensorTableBinary(dir_, device);
+
+    // Apply the functor
+    tensor_functor(data_, device);
   }
 };
 #endif //TENSORBASE_TENSORTABLE_H

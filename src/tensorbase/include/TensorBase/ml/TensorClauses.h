@@ -5,6 +5,7 @@
 
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/ml/TensorData.h>
+#include <TensorBase/ml/TensorFunctor.h>
 
 namespace TensorBase
 {
@@ -262,6 +263,20 @@ namespace TensorBase
       SelectClause(table_name, axis_name, axis_labels), order_by(order_by) { };
     ~SortClause() = default;
     sortOrder::order order_by = sortOrder::ASC;
+  };
+
+  /*
+  @brief Class defining the Tensor Functor clause for applying user defined functors to a TensorTable's data
+  */
+  template<typename TensorT, typename DeviceT, int TDim>
+  class functorClause {
+  public:
+    functorClause() = default;
+    functorClause(const std::string& table_name, TensorFunctor<TensorT, DeviceT, TDim>& tensor_functor) :
+      table_name(table_name), tensor_functor(tensor_functor) { };
+    ~functorClause() = default;
+    std::string table_name;
+    TensorFunctor<TensorT, DeviceT, TDim>& tensor_functor; // to prevent the extra copy
   };
 };
 #endif //TENSORBASE_TENSORCLAUSE_H

@@ -30,6 +30,7 @@ set(sources_list_h
 	TensorDataCpu.h
 	TensorDataDefaultDevice.h
 	TensorDataGpu.h
+	TensorFunctor.h
 	TensorOperation.h
 	TensorOperationCpu.h
 	TensorOperationDefaultDevice.h
