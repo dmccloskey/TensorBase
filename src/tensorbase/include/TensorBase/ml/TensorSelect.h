@@ -100,6 +100,13 @@ namespace TensorBase
         tensor_collection->tables_.at(table_names.at(i))->syncAxesAndIndicesDData(device);
         tensor_collection->tables_.at(table_names.at(i))->selectTensorData(device);
       }
+      else {
+        auto tensor_table_copy = tensor_collection->tables_.at(table_names.at(i))->copy(device);
+        // add the tensortableconcept
+        tensor_collection->tables_.at(table_names_new.at(i))->syncAxesAndIndicesDData(device);
+        tensor_collection->tables_.at(table_names_new.at(i))->selectTensorData(device);
+
+      }
     }
   };
 

@@ -122,6 +122,7 @@ namespace TensorBase
     size_t getTensorSize() const { return tensor_size_; }; ///< the size of the dimensions
     int getDimFromAxisName(const std::string& axis_name) const { return axes_to_dims_.at(axis_name); }
 		std::map<std::string, int> getAxesToDims() const { return axes_to_dims_; }  ///< axes_to_dims getter
+    TensorTable<TensorT, DeviceT, TDim> copy(DeviceT& device); ///< copy the tensor table
     void clear(const bool& clear_shard_spans = true);  ///< clears the axes and all associated data
 
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> getData() { return data_->getData(); } ///< data_->getData() wrapper
@@ -942,6 +943,22 @@ namespace TensorBase
       return dimensions_maximum_;
     else
       return TensorShard::getDefaultMaxDimensions<TDim>(getAxesToDims(), getShardSpans());
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline TensorTable<TensorT, DeviceT, TDim> TensorTable<TensorT, DeviceT, TDim>::copy(DeviceT& device)
+  {
+    TensorTable<TensorT, DeviceT, TDim> tensor_table_copy;
+
+    // copy the axes and indices
+    for (auto& axis_to_dim : axes_to_dims_) {
+      //todo
+      tensor_table_copy.getIndicesView().emplace(axis_to_dim.first, indices_view_.at(axis_name)->copy(device));
+      //todo
+      tensor_table_copy.getDimensions().at(axis_to_dim.second) = dimensions_.at(axis_to_dim.second);
+    }
+    tensor_table_copy.setShardSpans(getShardSpans());
+    tensor_table_copy.setData(data_->copy(device));
   }
 
   template<typename TensorT, typename DeviceT, int TDim>

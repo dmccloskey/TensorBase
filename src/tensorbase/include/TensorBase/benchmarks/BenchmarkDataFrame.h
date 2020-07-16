@@ -51,20 +51,27 @@ namespace TensorBaseBenchmarks
   template<typename LabelsT, typename TensorT, typename DeviceT>
   class SelectTableDataIsValid {
   public:
-    SelectTableDataIsValid(std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& select_values) : select_labels_(select_labels), select_values_(select_values) {};
+    SelectTableDataIsValid(std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& select_values, std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& result) : select_labels_(select_labels), select_values_(select_values), result_(result) {};
     ~SelectTableDataIsValid() = default;
     void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) override {
+      // Make and apply the where clause
       WhereClause<LabelsT, TensorT, Eigen::DefaultDevice> where_clause1("DataFrame_is_valid", "2_columns", select_labels_, select_values_, logicalComparitors::EQUAL_TO, logicalModifiers::NONE, logicalContinuators::AND, logicalContinuators::AND);
       TensorSelect tensorSelect;
       tensorSelect.whereClause(tensor_collection, where_clause1, device);
       tensorSelect.applySelect(tensor_collection, { "DataFrame_is_valid" }, { "DataFrame_is_valid_true" }, device);
-      //ReductionClause<Eigen::DefaultDevice> reduction_clause1("DataFrame_is_valid_true", { "1_indices" ,"2_columns" }, reductionFunctions::SUM);
-      //tensorSelect.applyReduction(tensor_collection, reduction_clause1, device);
-      std::shared_ptr<TensorT[]> is_valid_true_data;
-      n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getDataPointer(is_valid_true_data);
-      Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> labels_indices_insert_values(is_valid_true_data.get(), 1, data_size);
+
+      // Make and apply the reduction clause
+      ReductionClause<Eigen::DefaultDevice> reduction_clause1("DataFrame_is_valid_true", reductionFunctions::SUM);
+      tensorSelect.applyReduction(tensor_collection, reduction_clause1, device);
+
+      // Copy out the results
+      if (!result_->getDataStatus().second) result_->syncHAndDData(device);
+      std::shared_ptr<TensorT[]> data_is_valid;
+      tensor_collection->tables_.at("DataFrame_is_valid")->getDataPointer(data_is_valid);
+      Eigen::TensorMap<Eigen::Tensor<TensorT, 0>> data_is_valid_values(data_is_valid.get());
+      Eigen::TensorMap<Eigen::Tensor<TensorT, 0>> result_values(result_->getDataPointer.get());
+      result_values.device(device) = data_is_valid_values;
     }
-    virtual void sumIsValid() = 0;
   private:
     std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels_;
     std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& select_values_;
