@@ -86,10 +86,6 @@ namespace TensorBase
     /// Order the selected table/axis/dimension/labels
     template<typename LabelsT, typename DeviceT>
     void sortClause(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, SortClause<LabelsT, DeviceT>& sort_clause, DeviceT& device);
-
-    /// Interface to apply an arbitrary functor to a Table.  Use cases include e.g., capturing the data, applying a reduction/transformation, etc.
-    template<typename TensorT, typename DeviceT, int TDim>
-    void applyFunctor(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, functorClause<TensorT, DeviceT, TDim>& functor_clause, DeviceT& device);
   };
 
   template<typename DeviceT>
@@ -203,11 +199,6 @@ namespace TensorBase
         }
       }
     }
-  };
-
-  template<typename TensorT, typename DeviceT, int TDim>
-  void TensorSelect::applyFunctor(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, functorClause<TensorT, DeviceT, TDim>& functor_clause, DeviceT& device) {
-    tensor_collection->tables_.at(functor_clause.table_name)->applyFunctor(functor_clause.tensor_functor);
   };
   
   class TensorSelectUnion;

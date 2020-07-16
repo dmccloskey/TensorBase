@@ -137,7 +137,8 @@ namespace TensorBase
   /*
   @brief Class defining the `reduction` clause statements.  Specified axis from the same
     table will be reduced using the reduction function for all selected indices resulting in 
-    a tensor with dimensions = TDim - axes_names.size()
+    a tensor with apparent dimensions = TDim - axes_names.size().  Note that the actual dimensions
+    do not change, but the size of the axes specified in axes_names will be reduced to 1.
   */
   template<typename DeviceT>
   class ReductionClause {
@@ -263,20 +264,6 @@ namespace TensorBase
       SelectClause(table_name, axis_name, axis_labels), order_by(order_by) { };
     ~SortClause() = default;
     sortOrder::order order_by = sortOrder::ASC;
-  };
-
-  /*
-  @brief Class defining the Tensor Functor clause for applying user defined functors to a TensorTable's data
-  */
-  template<typename TensorT, typename DeviceT, int TDim>
-  class functorClause {
-  public:
-    functorClause() = default;
-    functorClause(const std::string& table_name, TensorFunctor<TensorT, DeviceT, TDim>& tensor_functor) :
-      table_name(table_name), tensor_functor(tensor_functor) { };
-    ~functorClause() = default;
-    std::string table_name;
-    TensorFunctor<TensorT, DeviceT, TDim>& tensor_functor; // to prevent the extra copy
   };
 };
 #endif //TENSORBASE_TENSORCLAUSE_H
