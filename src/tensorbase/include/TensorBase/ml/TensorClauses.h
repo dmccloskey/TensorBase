@@ -162,7 +162,7 @@ namespace TensorBase
   };
   /*
   @brief Class defining the `scan` clause statements.  Specified axis from the same
-    table will be updated in-place using the running total of the scan operation.
+    table will be updated in-place and in order using the running total of the scan operation.
   */
   template<typename DeviceT>
   class ScanClause {

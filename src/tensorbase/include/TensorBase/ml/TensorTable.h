@@ -867,6 +867,19 @@ namespace TensorBase
     */
     void reduceTensorData(const reductionFunctions::reductionFunction& reduction_function, DeviceT& device);
 
+    /*
+    @brief Apply a scan clause to the Tensor data.  It is assumed that the user
+      has already run `selectTensorData` to reduce the data in place based on the
+      selected indices view.
+
+    TODO:
+      - Move each of the scan functions to the TensorFunctor class
+
+    @param[in] reduction_function The reduction function to apply
+    @param[in] device
+    */
+    void scanTensorData(const std::vector<std::string>& axes_names, const scanFunctions::scanFunction& scan_function, DeviceT& device);
+
   protected:
     static int getMaxInt() { return 2e9; }
     int id_ = -1;
@@ -2791,6 +2804,22 @@ namespace TensorBase
 
     // update the data dimensions
     data_->setDimensions(new_dimensions);
+  }
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::scanTensorData(const std::vector<std::string>& axes_names, const scanFunctions::scanFunction& scan_function, DeviceT& device)
+  {
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(getDataPointer().get(), getDataDimensions());
+    for (const std::string& axis_name : axes_names) {
+      if (scan_function == scanFunctions::CUMSUM) {
+        data_values.device(device) = data_values.cumsum(getAxesToDims().at(axis_name));
+      }
+      else if (scan_function == scanFunctions::CUMPROD) {
+        data_values.device(device) = data_values.cumprod(getAxesToDims().at(axis_name));
+      }
+      else {
+        std::cout << "Scan function was not recognized.  No scan operation will be applied." << std::endl;
+      }
+    }
   }
 };
 #endif //TENSORBASE_TENSORTABLE_H
