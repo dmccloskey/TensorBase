@@ -130,7 +130,7 @@ namespace TensorBase
     size_t getDataTensorBytes() const { return data_->getTensorBytes(); } ///< data_->getTensorBytes() wrapper
     size_t getDataTensorSize() const { return data_->getTensorSize(); } ///< data_->getTensorSize() wrapper
     std::shared_ptr<TensorT[]> getDataPointer() { return data_->getDataPointer(); } ///< data_->getDataPointer() wrapper
-
+    void setDataDimensions(const Eigen::array<Eigen::Index, TDim>& dimensions) { data_->setDimensions(dimensions); };
     void setData(const Eigen::Tensor<TensorT, TDim>& data); ///< data setter (NOTE: must sync the `data` AND `not_in_memory`/`is_modified` attributes!)
     void setData(); ///< data setter (NOTE: must sync the `data` AND `not_in_memory`/`is_modified` attributes!)
 
@@ -847,33 +847,43 @@ namespace TensorBase
     /**
       @brief Apply an arbitrary functor on the existing table data
 
+      EXPERIMENTAL: can only be used for internal methods due to the TensorT and TDim template parameters.
+
       @param[in] tensor_functor
       @param[in] device
     */
     void applyFunctor(TensorFunctor<TensorT, DeviceT, TDim>& tensor_functor, DeviceT& device);
 
+    /*
+    @brief Apply a reduction clause to the Tensor data.  It is assumed that the user
+      has already run `selectTensorData` to reduce the data in place based on the
+      selected indices view.
+
+    TODO:
+      - Move each of the reduction functions to the TensorFunctor class
+
+    @param[in] reduction_function The reduction function to apply
+    @param[in] device
+    */
+    void reduceTensorData(const reductionFunctions::reductionFunction& reduction_function, DeviceT& device);
+
   protected:
     static int getMaxInt() { return 2e9; }
-
     int id_ = -1;
     std::string name_ = "";
     std::string dir_ = "";
-
     Eigen::array<Eigen::Index, TDim> dimensions_ = Eigen::array<Eigen::Index, TDim>(); ///< dimensions of the tensor table (dimensions_ and data_->dimensions_ need not be the same)
     Eigen::array<Eigen::Index, TDim> dimensions_maximum_ = Eigen::array<Eigen::Index, TDim>(); ///< The maximum dimensions of the tensor table
     size_t tensor_size_ = 0; /// < size of the tensor table (tensor_size_ and data_->tensor_size_ need not be the same)
     std::map<std::string, std::shared_ptr<TensorAxisConcept<DeviceT>>> axes_; ///< primary axis is dim=0
-
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> indices_; ///< starting at 1
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> indices_view_; ///< sorted and/or selected indices
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> is_modified_;
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> not_in_memory_;
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> shard_id_;
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> shard_indices_;
-
     std::map<std::string, int> axes_to_dims_;
     std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> data_; ///< The actual tensor data
-
     std::map<std::string, int> shard_spans_; ///< the shard span in each dimension
     
   private:
@@ -2735,6 +2745,52 @@ namespace TensorBase
 
     // Apply the functor
     tensor_functor(data_, device);
+  }
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::reduceTensorData(const reductionFunctions::reductionFunction& reduction_function, DeviceT& device)
+  {
+    // prepare the new dimensions
+    Eigen::array<Eigen::Index, TDim> new_dimensions, reduction_dims;
+    Eigen::array<Eigen::Index, 2*TDim> dims_2x;
+    for (int i = 0; i < TDim; ++i) {
+      new_dimensions.at(i) = 1;
+      reduction_dims.at(i) = i;
+      dims_2x.at(i) = getDataDimensions().at(i);
+      dims_2x.at(i + TDim) = 1;
+    }
+
+    // reduce the original data
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(getDataPointer().get(), getDataDimensions());
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 0>> data_values_zero(getDataPointer().get());
+    if (reduction_function == reductionFunctions::MIN) {
+      data_values_zero.device(device) = data_values.minimum();
+    }
+    else if (reduction_function == reductionFunctions::MAX) {
+      data_values_zero.device(device) = data_values.maximum();
+    }
+    else if (reduction_function == reductionFunctions::MEAN) {
+      data_values_zero.device(device) = data_values.mean(reduction_dims);
+    }
+    else if (reduction_function == reductionFunctions::VAR) {
+      Eigen::TensorMap<Eigen::Tensor<TensorT, 2*TDim>> data_values_2x(getDataPointer().get(), dims_2x);
+      auto mean = data_values_2x.mean(reduction_dims);
+      data_values_zero.device(device) = ((mean.broadcast(getDataDimensions()) - data_values).pow(2) / data_values.constant(TensorT(getDataTensorSize()))).sum();
+    }
+    else if (reduction_function == reductionFunctions::SUM) {
+      data_values_zero.device(device) = data_values.sum();
+    }
+    else if (reduction_function == reductionFunctions::PROD) {
+      data_values_zero.device(device) = data_values.prod();
+    }
+    else if (reduction_function == reductionFunctions::SUM) {
+      data_values_zero.device(device) = data_values.sum();
+    }
+    else {
+      std::cout << "Reduction function was not recognized.  No reduction will be applied." << std::endl;
+    }
+
+    // update the data dimensions
+    data_->setDimensions(new_dimensions);
   }
 };
 #endif //TENSORBASE_TENSORTABLE_H

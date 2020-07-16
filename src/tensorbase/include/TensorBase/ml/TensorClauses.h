@@ -127,7 +127,7 @@ namespace TensorBase
       MIN,
       MAX,
       MEAN,
-      COUNT,
+      VAR, // TODO
       SUM,
       PROD,
       CUSTOM, // TODO: example implementation for StDev and %RSD
@@ -135,22 +135,19 @@ namespace TensorBase
     };
   };
   /*
-  @brief Class defining the `reduction` clause statements.  Specified axis from the same
-    table will be reduced using the reduction function for all selected indices resulting in 
-    a tensor with apparent dimensions = TDim - axes_names.size().  Note that the actual dimensions
-    do not change, but the size of the axes specified in axes_names will be reduced to 1.
+  @brief Class defining the `reduction` clause statements.  All axis from the same
+    table will be reduced using the reduction function for all selected indices.
+    Note that the actual number of dimensions do not change, 
+    but the size of the axes will be reduced to 1.
   */
   template<typename DeviceT>
   class ReductionClause {
   public:
     ReductionClause() = default;
-    ReductionClause(const std::string& table_name, const std::vector<std::string>& axes_names,
-      const reductionFunctions::reductionFunction& reduction_function) :
-      table_name(table_name), axes_names(axes_names),
-      reduction_function(reduction_function) { };
+    ReductionClause(const std::string& table_name, const reductionFunctions::reductionFunction& reduction_function) :
+      table_name(table_name), reduction_function(reduction_function) { };
     ~ReductionClause() = default;
     std::string table_name;
-    std::vector<std::string> axes_names;
     reductionFunctions::reductionFunction reduction_function; ///< the reduction_function to apply across each of the labels
   };
 
@@ -165,8 +162,7 @@ namespace TensorBase
   };
   /*
   @brief Class defining the `scan` clause statements.  Specified axis from the same
-    table will be reduced using the reduction function and replaced in-place using
-    the running total of the scan operation
+    table will be updated in-place using the running total of the scan operation.
   */
   template<typename DeviceT>
   class ScanClause {
