@@ -1320,8 +1320,8 @@ namespace TensorBase
     /*
     All DeviceT combos of reduction and scan methods
     */
-    virtual void reduceTensorData(const reductionFunctions::reductionFunction& reduction_function, DeviceT& device) = 0;
-    virtual void scanTensorData(const std::vector<std::string>& axes_names, const scanFunctions::scanFunction& scan_function, DeviceT& device) = 0;
+    virtual void reduceTensorDataConcept(const reductionFunctions::reductionFunction& reduction_function, DeviceT& device) = 0;
+    virtual void scanTensorDataConcept(const std::vector<std::string>& axes_names, const scanFunctions::scanFunction& scan_function, DeviceT& device) = 0;
     
   private:
     friend class cereal::access;
@@ -3931,8 +3931,8 @@ namespace TensorBase
       tensor_table_->insertIntoTableFromCsv(data_new, device);
     }
 
-    void reduceTensorData(const reductionFunctions::reductionFunction& reduction_function, DeviceT& device) override { tensor_table_->reduceTensorData(reduction_function, device); }
-    void scanTensorData(const std::vector<std::string>& axes_names, const scanFunctions::scanFunction& scan_function, DeviceT& device) override { tensor_table_->scanTensorData(axes_names, scan_function, device); }
+    void reduceTensorDataConcept(const reductionFunctions::reductionFunction& reduction_function, DeviceT& device) override { tensor_table_->reduceTensorDataConcept(reduction_function, device); }
+    void scanTensorDataConcept(const std::vector<std::string>& axes_names, const scanFunctions::scanFunction& scan_function, DeviceT& device) override { tensor_table_->scanTensorDataConcept(axes_names, scan_function, device); }
 
   private:
     friend class cereal::access;

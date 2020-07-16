@@ -866,7 +866,11 @@ namespace TensorBase
     @param[in] reduction_function The reduction function to apply
     @param[in] device
     */
+    void reduceTensorDataConcept(const reductionFunctions::reductionFunction& reduction_function, DeviceT& device);
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, int>::value || std::is_same<T, float>::value || std::is_same<T, double>::value || std::is_same<T, bool>::value, int> = 0>
     void reduceTensorData(const reductionFunctions::reductionFunction& reduction_function, DeviceT& device);
+    template<typename T = TensorT, std::enable_if_t<!std::is_same<T, int>::value && !std::is_same<T, float>::value && !std::is_same<T, double>::value && !std::is_same<T, bool>::value, int> = 0>
+    void reduceTensorData(const reductionFunctions::reductionFunction& reduction_function, DeviceT& device) { /*Not applicable to class types*/ };
 
     /*
     @brief Apply a scan clause to the Tensor data.  It is assumed that the user
@@ -879,7 +883,11 @@ namespace TensorBase
     @param[in] reduction_function The reduction function to apply
     @param[in] device
     */
+    void scanTensorDataConcept(const std::vector<std::string>& axes_names, const scanFunctions::scanFunction& scan_function, DeviceT& device);
+    template<typename T = TensorT, std::enable_if_t<std::is_same<T, int>::value || std::is_same<T, float>::value || std::is_same<T, double>::value || std::is_same<T, bool>::value, int> = 0>
     void scanTensorData(const std::vector<std::string>& axes_names, const scanFunctions::scanFunction& scan_function, DeviceT& device);
+    template<typename T = TensorT, std::enable_if_t<!std::is_same<T, int>::value && !std::is_same<T, float>::value && !std::is_same<T, double>::value && !std::is_same<T, bool>::value, int> = 0>
+    void scanTensorData(const std::vector<std::string>& axes_names, const scanFunctions::scanFunction& scan_function, DeviceT& device) { /*Not applicable to class types*/ };
 
   protected:
     static int getMaxInt() { return 2e9; }
@@ -2761,6 +2769,14 @@ namespace TensorBase
     tensor_functor(data_, device);
   }
   template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::reduceTensorDataConcept(const reductionFunctions::reductionFunction& reduction_function, DeviceT& device)
+  {
+    if (std::is_same<TensorT, int>::value || std::is_same<TensorT, float>::value || std::is_same<TensorT, double>::value || std::is_same<TensorT, bool>::value) {
+      reduceTensorData(reduction_function, device);
+    }
+  }
+  template<typename TensorT, typename DeviceT, int TDim>
+  template<typename T, std::enable_if_t<std::is_same<T, int>::value || std::is_same<T, float>::value || std::is_same<T, double>::value || std::is_same<T, bool>::value, int>>
   inline void TensorTable<TensorT, DeviceT, TDim>::reduceTensorData(const reductionFunctions::reductionFunction& reduction_function, DeviceT& device)
   {
     // prepare the new dimensions
@@ -2809,6 +2825,14 @@ namespace TensorBase
     }
   }
   template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::scanTensorDataConcept(const std::vector<std::string>& axes_names, const scanFunctions::scanFunction& scan_function, DeviceT& device)
+  {
+    if (std::is_same<TensorT, int>::value || std::is_same<TensorT, float>::value || std::is_same<TensorT, double>::value || std::is_same<TensorT, bool>::value) {
+      scanTensorData(axes_names, scan_function, device);
+    }
+  }
+  template<typename TensorT, typename DeviceT, int TDim>
+  template<typename T, std::enable_if_t<std::is_same<T, int>::value || std::is_same<T, float>::value || std::is_same<T, double>::value || std::is_same<T, bool>::value, int>>
   inline void TensorTable<TensorT, DeviceT, TDim>::scanTensorData(const std::vector<std::string>& axes_names, const scanFunctions::scanFunction& scan_function, DeviceT& device)
   {
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(getDataPointer().get(), getDataDimensions());

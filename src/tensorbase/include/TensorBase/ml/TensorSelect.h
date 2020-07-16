@@ -145,12 +145,12 @@ namespace TensorBase
   template<typename DeviceT>
   inline void TensorSelect::applyReduction(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, ReductionClause<DeviceT>& reduction_clause, DeviceT& device)
   {
-    tensor_collection->tables_.at(reduction_clause.table_name)->reducTensorData(reduction_clause.reduction_function, device);
+    tensor_collection->tables_.at(reduction_clause.table_name)->reduceTensorDataConcept(reduction_clause.reduction_function, device);
   }
   template<typename DeviceT>
   inline void TensorSelect::applyScan(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, ScanClause<DeviceT>& scan_clause, DeviceT& device)
   {
-    tensor_collection->tables_.at(scan_clause.table_name)->reducTensorData(scan_clause.axes_names, scan_clause.scan_function, device);
+    tensor_collection->tables_.at(scan_clause.table_name)->scanTensorDataConcept(scan_clause.axes_names, scan_clause.scan_function, device);
   }
   template<typename LabelsT, typename TensorT, typename DeviceT>
   void TensorSelect::whereClause(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, WhereClause<LabelsT, TensorT, DeviceT>& where_clause, DeviceT& device) {

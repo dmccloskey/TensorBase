@@ -138,8 +138,8 @@ namespace TensorBase
   /*
   @brief Class defining the `reduction` clause statements.  All axis from the same
     table will be reduced using the reduction function for all selected indices.
-    Note that the actual number of dimensions do not change, 
-    but the size of the axes will be reduced to 1.
+    Note that there is no change in dimensions or sizes: all values are replaced
+    by the results of the reduction operation.
   */
   template<typename DeviceT>
   class ReductionClause {
