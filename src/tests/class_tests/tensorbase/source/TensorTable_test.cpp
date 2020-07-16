@@ -4333,33 +4333,38 @@ BOOST_AUTO_TEST_CASE(reduceTensorDataDefaultDevice)
   tensorTable.setData(tensor_values);
 
   // test using the different reduction functions
+  tensorTable.reduceTensorData(reductionFunctions::COUNT, device);
+  BOOST_CHECK_CLOSE(tensorTable.getData()(0, 0, 0), tensor_values.size(), 1e-3);
+  BOOST_CHECK_CLOSE(tensorTable.getData()(nlabels - 1, nlabels - 1, nlabels - 1), tensor_values.size(), 1e-3);
+  tensorTable.setData(tensor_values);
   tensorTable.reduceTensorData(reductionFunctions::MIN, device);
   Eigen::Tensor<float, 0> results_expected = tensor_values.minimum();
   BOOST_CHECK_CLOSE(tensorTable.getData()(0,0,0), results_expected(0), 1e-3);
-  tensorTable.setDataDimensions(Eigen::array<Eigen::Index, 3>({nlabels, nlabels, nlabels}));
+  BOOST_CHECK_CLOSE(tensorTable.getData()(nlabels-1,nlabels-1,nlabels-1), results_expected(0), 1e-3);
   tensorTable.setData(tensor_values);
   tensorTable.reduceTensorData(reductionFunctions::MAX, device);
   results_expected = tensor_values.maximum();
   BOOST_CHECK_CLOSE(tensorTable.getData()(0, 0, 0), results_expected(0), 1e-3);
-  tensorTable.setDataDimensions(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  BOOST_CHECK_CLOSE(tensorTable.getData()(nlabels - 1, nlabels - 1, nlabels - 1), results_expected(0), 1e-3);
   tensorTable.setData(tensor_values);
   tensorTable.reduceTensorData(reductionFunctions::MEAN, device);
   results_expected = tensor_values.mean();
   BOOST_CHECK_CLOSE(tensorTable.getData()(0, 0, 0), results_expected(0), 1e-3);
-  tensorTable.setDataDimensions(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  BOOST_CHECK_CLOSE(tensorTable.getData()(nlabels - 1, nlabels - 1, nlabels - 1), results_expected(0), 1e-3);
   tensorTable.setData(tensor_values);
   tensorTable.reduceTensorData(reductionFunctions::VAR, device);
   BOOST_CHECK_CLOSE(tensorTable.getData()(0, 0, 0), 60.6666641, 1e-3);
-  tensorTable.setDataDimensions(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  BOOST_CHECK_CLOSE(tensorTable.getData()(nlabels - 1, nlabels - 1, nlabels - 1), 60.6666641, 1e-3);
   tensorTable.setData(tensor_values);
   tensorTable.reduceTensorData(reductionFunctions::SUM, device);
   results_expected = tensor_values.sum();
   BOOST_CHECK_CLOSE(tensorTable.getData()(0, 0, 0), results_expected(0), 1e-3);
-  tensorTable.setDataDimensions(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  BOOST_CHECK_CLOSE(tensorTable.getData()(nlabels - 1, nlabels - 1, nlabels - 1), results_expected(0), 1e-3);
   tensorTable.setData(tensor_values);
   tensorTable.reduceTensorData(reductionFunctions::PROD, device);
   results_expected = tensor_values.prod();
   BOOST_CHECK_CLOSE(tensorTable.getData()(0, 0, 0), results_expected(0), 1e-3);
+  BOOST_CHECK_CLOSE(tensorTable.getData()(nlabels - 1, nlabels - 1, nlabels - 1), results_expected(0), 1e-3);
 }
 
 BOOST_AUTO_TEST_CASE(scanTensorDataDefaultDevice)

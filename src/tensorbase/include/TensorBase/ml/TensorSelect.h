@@ -71,9 +71,13 @@ namespace TensorBase
     template<typename LabelsT, typename DeviceT>
     void applyAggregate(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, AggregateClause<LabelsT, DeviceT>& aggregate_clause, DeviceT& device);
 
-    /// TODO Reduce the table by a reduction function
+    /// Reduce the table by a reduction function
     template<typename DeviceT>
     void applyReduction(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, ReductionClause<DeviceT>& reduction_clause, DeviceT& device);
+
+    /// Update the values in the table using a scan function
+    template<typename DeviceT>
+    void applyScan(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, ScanClause<DeviceT>& scan_clause, DeviceT& device);
 
     /// TODO Merge two tables into one
     template<typename LabelsT, typename DeviceT>
@@ -137,8 +141,17 @@ namespace TensorBase
 				}
       }
     }
-  };
-
+  }
+  template<typename DeviceT>
+  inline void TensorSelect::applyReduction(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, ReductionClause<DeviceT>& reduction_clause, DeviceT& device)
+  {
+    tensor_collection->tables_.at(reduction_clause.table_name)->reducTensorData(reduction_clause.reduction_function, device);
+  }
+  template<typename DeviceT>
+  inline void TensorSelect::applyScan(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, ScanClause<DeviceT>& scan_clause, DeviceT& device)
+  {
+    tensor_collection->tables_.at(scan_clause.table_name)->reducTensorData(scan_clause.axes_names, scan_clause.scan_function, device);
+  }
   template<typename LabelsT, typename TensorT, typename DeviceT>
   void TensorSelect::whereClause(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, WhereClause<LabelsT, TensorT, DeviceT>& where_clause, DeviceT& device) {
     // iterate through each table axis

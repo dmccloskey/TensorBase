@@ -124,6 +124,7 @@ namespace TensorBase
   struct reductionFunctions {
     enum reductionFunction {
       // Wrappers around Eigen::Tensor Reduction operations
+      COUNT,
       MIN,
       MAX,
       MEAN,

@@ -857,7 +857,8 @@ namespace TensorBase
     /*
     @brief Apply a reduction clause to the Tensor data.  It is assumed that the user
       has already run `selectTensorData` to reduce the data in place based on the
-      selected indices view.
+      selected indices view.  Note that there is no change in dimension size: the resulting
+      value from the reduction clause is broadcasted to all values of the tensor data.
 
     TODO:
       - Move each of the reduction functions to the TensorFunctor class
@@ -2764,46 +2765,48 @@ namespace TensorBase
   {
     // prepare the new dimensions
     Eigen::array<Eigen::Index, TDim> new_dimensions, reduction_dims;
-    Eigen::array<Eigen::Index, 2*TDim> dims_2x;
+    Eigen::array<Eigen::Index, 2 * TDim> dims_2x;
+    Eigen::array<Eigen::Index, 3 * TDim> dims_3x;
     for (int i = 0; i < TDim; ++i) {
       new_dimensions.at(i) = 1;
       reduction_dims.at(i) = i;
       dims_2x.at(i) = getDataDimensions().at(i);
       dims_2x.at(i + TDim) = 1;
+      dims_3x.at(i) = getDataDimensions().at(i);
+      dims_3x.at(i + TDim) = 1;
+      dims_3x.at(i + 2 * TDim) = 1;
+
     }
 
     // reduce the original data
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 2 * TDim>> data_values_2x(getDataPointer().get(), dims_2x);
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(getDataPointer().get(), getDataDimensions());
-    Eigen::TensorMap<Eigen::Tensor<TensorT, 0>> data_values_zero(getDataPointer().get());
-    if (reduction_function == reductionFunctions::MIN) {
-      data_values_zero.device(device) = data_values.minimum();
+    if (reduction_function == reductionFunctions::COUNT) {
+      data_values.device(device) = data_values.constant(TensorT(getDataTensorSize()));
+    }
+    else if (reduction_function == reductionFunctions::MIN) {
+      data_values.device(device) = data_values_2x.minimum(reduction_dims).eval().broadcast(getDataDimensions());
     }
     else if (reduction_function == reductionFunctions::MAX) {
-      data_values_zero.device(device) = data_values.maximum();
+      data_values.device(device) = data_values_2x.maximum(reduction_dims).eval().broadcast(getDataDimensions());
     }
     else if (reduction_function == reductionFunctions::MEAN) {
-      data_values_zero.device(device) = data_values.mean(reduction_dims);
+      data_values.device(device) = data_values_2x.mean(reduction_dims).eval().broadcast(getDataDimensions());
     }
     else if (reduction_function == reductionFunctions::VAR) {
-      Eigen::TensorMap<Eigen::Tensor<TensorT, 2*TDim>> data_values_2x(getDataPointer().get(), dims_2x);
-      auto mean = data_values_2x.mean(reduction_dims);
-      data_values_zero.device(device) = ((mean.broadcast(getDataDimensions()) - data_values).pow(2) / data_values.constant(TensorT(getDataTensorSize()))).sum();
+      Eigen::TensorMap<Eigen::Tensor<TensorT, 3*TDim>> data_values_3x(getDataPointer().get(), dims_3x);
+      auto mean_2x = data_values_3x.mean(reduction_dims).eval();
+      data_values.device(device) = ((mean_2x.broadcast(dims_2x) - data_values_2x).pow(2) / data_values_2x.constant(TensorT(getDataTensorSize()))).sum(reduction_dims).eval().broadcast(getDataDimensions());
     }
     else if (reduction_function == reductionFunctions::SUM) {
-      data_values_zero.device(device) = data_values.sum();
+      data_values.device(device) = data_values_2x.sum(reduction_dims).eval().broadcast(getDataDimensions());
     }
     else if (reduction_function == reductionFunctions::PROD) {
-      data_values_zero.device(device) = data_values.prod();
-    }
-    else if (reduction_function == reductionFunctions::SUM) {
-      data_values_zero.device(device) = data_values.sum();
+      data_values.device(device) = data_values_2x.prod(reduction_dims).eval().broadcast(getDataDimensions());
     }
     else {
       std::cout << "Reduction function was not recognized.  No reduction will be applied." << std::endl;
     }
-
-    // update the data dimensions
-    data_->setDimensions(new_dimensions);
   }
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorTable<TensorT, DeviceT, TDim>::scanTensorData(const std::vector<std::string>& axes_names, const scanFunctions::scanFunction& scan_function, DeviceT& device)
