@@ -102,10 +102,11 @@ namespace TensorBase
       }
       else {
         auto tensor_table_copy = tensor_collection->tables_.at(table_names.at(i))->copy(device);
-        // add the tensortableconcept
+        tensor_table_copy->setName(table_names_new.at(i));
+        tensor_collection->addTensorTableConcept(tensor_table_copy, tensor_collection->addTensorTableConcept(table_names.at(i)));
         tensor_collection->tables_.at(table_names_new.at(i))->syncAxesAndIndicesDData(device);
+        tensor_collection->tables_.at(table_names_new.at(i))->syncDData(device);
         tensor_collection->tables_.at(table_names_new.at(i))->selectTensorData(device);
-
       }
     }
   };

@@ -134,6 +134,27 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   BOOST_CHECK_EQUAL(tensoraxis.getLabels()(2, 4), 1);
 }
 
+BOOST_AUTO_TEST_CASE(copyDefaultDevice)
+{
+  Eigen::Tensor<std::string, 1> dimensions(3);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  dimensions(2) = "TensorDimension3";
+  Eigen::Tensor<int, 2> labels(3, 5);
+  labels.setConstant(1);
+  TensorAxisDefaultDevice<int> tensoraxis1("1", dimensions, labels);
+
+  // Test expected
+  Eigen::DefaultDevice device;
+  auto tensoraxis_copy = tensoraxis1.copy(device);
+  BOOST_CHECK(*(tensoraxis_copy.get()) == tensoraxis1);
+  for (int i = 0; i < 3; ++i) {
+    for (int j = 0; j < 5; ++j) {
+      BOOST_CHECK_EQUAL(tensoraxis_copy->getLabels()(i, j), labels(i,j));
+    }
+  }
+}
+
 BOOST_AUTO_TEST_CASE(getLabelsDataPointerDefaultDevice)
 {
   Eigen::Tensor<std::string, 1> dimensions(3);

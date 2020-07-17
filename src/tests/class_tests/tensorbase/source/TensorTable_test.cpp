@@ -4426,4 +4426,53 @@ BOOST_AUTO_TEST_CASE(scanTensorDataDefaultDevice)
   }
 }
 
+BOOST_AUTO_TEST_CASE(copyDefaultDevice)
+{
+  // Set up the device
+  Eigen::DefaultDevice device;
+
+  // setup the table
+  TensorTableDefaultDevice<float, 3> tensorTable;
+
+  // setup the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels = 3;
+  Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels), labels3(1, nlabels);
+  labels1.setValues({ {0, 1, 2} });
+  labels2.setValues({ {0, 1, 2} });
+  labels3.setValues({ {0, 1, 2} });
+  auto axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1));
+  auto axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2));
+  auto axis_3_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3));
+  tensorTable.addTensorAxis(axis_1_ptr);
+  tensorTable.addTensorAxis(axis_2_ptr);
+  tensorTable.addTensorAxis(axis_3_ptr);
+  tensorTable.setAxes(device);
+
+  // setup the tensor data
+  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  for (int k = 0; k < nlabels; ++k) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int i = 0; i < nlabels; ++i) {
+        tensor_values(i, j, k) = i + j * nlabels + k * nlabels * nlabels;
+      }
+    }
+  }
+  tensorTable.setData(tensor_values);
+
+  // test using the different reduction functions
+  auto tensorTableCopy = tensorTable.copy(device);
+  BOOST_CHECK(*(tensorTableCopy.get()) == tensorTable);
+  for (int k = 0; k < nlabels; ++k) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int i = 0; i < nlabels; ++i) {
+        BOOST_CHECK_CLOSE(tensorTableCopy->getData()(i, j, k), tensor_values(i, j, k), 1e-3);
+      }
+    }
+  }
+}
+
 BOOST_AUTO_TEST_SUITE_END()

@@ -44,7 +44,8 @@ namespace TensorBase
     template<typename TensorTOther, typename DeviceTOther, int TDimOther>
     inline bool operator==(const TensorTable<TensorTOther, DeviceTOther, TDimOther>& other) const
     {
-      bool meta_equal = std::tie(id_, name_, dimensions_, axes_to_dims_) == std::tie(other.id_, other.name_, other.dimensions_, other.axes_to_dims_);
+      bool meta_equal = std::tie(id_, name_, dimensions_, axes_to_dims_, shard_spans_, dimensions_maximum_) == std::tie(
+        other.id_, other.name_, other.dimensions_, other.axes_to_dims_, other.shard_spans_, other.dimensions_maximum_);
       auto compare_maps = [](auto lhs, auto rhs) {return *(lhs.second.get()) == *(rhs.second.get()); };
       bool axes_equal = std::equal(axes_.begin(), axes_.end(), other.axes_.begin(), compare_maps);
       bool indices_equal = std::equal(indices_.begin(), indices_.end(), other.indices_.begin(), compare_maps);
@@ -122,7 +123,7 @@ namespace TensorBase
     size_t getTensorSize() const { return tensor_size_; }; ///< the size of the dimensions
     int getDimFromAxisName(const std::string& axis_name) const { return axes_to_dims_.at(axis_name); }
 		std::map<std::string, int> getAxesToDims() const { return axes_to_dims_; }  ///< axes_to_dims getter
-    TensorTable<TensorT, DeviceT, TDim> copy(DeviceT& device); ///< copy the tensor table
+    virtual std::shared_ptr<TensorTable<TensorT, DeviceT, TDim>> copy(DeviceT& device) = 0; ///< copy the tensor table
     void clear(const bool& clear_shard_spans = true);  ///< clears the axes and all associated data
 
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> getData() { return data_->getData(); } ///< data_->getData() wrapper
@@ -132,6 +133,7 @@ namespace TensorBase
     size_t getDataTensorSize() const { return data_->getTensorSize(); } ///< data_->getTensorSize() wrapper
     std::shared_ptr<TensorT[]> getDataPointer() { return data_->getDataPointer(); } ///< data_->getDataPointer() wrapper
     void setDataDimensions(const Eigen::array<Eigen::Index, TDim>& dimensions) { data_->setDimensions(dimensions); };
+    void setData(const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& data) { data_ = data; }; ///< data setter via shared_ptr
     void setData(const Eigen::Tensor<TensorT, TDim>& data); ///< data setter (NOTE: must sync the `data` AND `not_in_memory`/`is_modified` attributes!)
     void setData(); ///< data setter (NOTE: must sync the `data` AND `not_in_memory`/`is_modified` attributes!)
 
@@ -943,22 +945,6 @@ namespace TensorBase
       return dimensions_maximum_;
     else
       return TensorShard::getDefaultMaxDimensions<TDim>(getAxesToDims(), getShardSpans());
-  }
-
-  template<typename TensorT, typename DeviceT, int TDim>
-  inline TensorTable<TensorT, DeviceT, TDim> TensorTable<TensorT, DeviceT, TDim>::copy(DeviceT& device)
-  {
-    TensorTable<TensorT, DeviceT, TDim> tensor_table_copy;
-
-    // copy the axes and indices
-    for (auto& axis_to_dim : axes_to_dims_) {
-      //todo
-      tensor_table_copy.getIndicesView().emplace(axis_to_dim.first, indices_view_.at(axis_name)->copy(device));
-      //todo
-      tensor_table_copy.getDimensions().at(axis_to_dim.second) = dimensions_.at(axis_to_dim.second);
-    }
-    tensor_table_copy.setShardSpans(getShardSpans());
-    tensor_table_copy.setData(data_->copy(device));
   }
 
   template<typename TensorT, typename DeviceT, int TDim>

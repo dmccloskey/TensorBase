@@ -81,6 +81,8 @@ namespace TensorBase
 
     template<typename T>
     void getLabelsHDataPointer(std::shared_ptr<T[]>& data_copy); ///< TensorAxisConcept labels getter
+
+    virtual std::shared_ptr<TensorAxis<TensorT, DeviceT>> copy(DeviceT& device) = 0;
     
     /*
     @brief Delete from axis based on a selection index
