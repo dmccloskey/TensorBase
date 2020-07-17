@@ -47,6 +47,7 @@ namespace TensorBase
     virtual size_t getNLabels() const = 0;
     virtual size_t getNDimensions() const = 0;
     virtual Eigen::TensorMap<Eigen::Tensor<std::string, 1>> getDimensions() = 0;
+    virtual std::shared_ptr<TensorAxisConcept<DeviceT>> copy(DeviceT& device) = 0;
     virtual void setLabels() = 0;
 
     // All TensorT combos of `getLabelsDatapointer`
@@ -164,6 +165,11 @@ namespace TensorBase
     size_t getNLabels() const override { return tensor_axis_->getNLabels(); };
     size_t getNDimensions() const override { return tensor_axis_->getNDimensions(); };
     Eigen::TensorMap<Eigen::Tensor<std::string, 1>> getDimensions() override { return tensor_axis_->getDimensions(); };
+    std::shared_ptr<TensorAxisConcept<DeviceT>> copy(DeviceT& device) override {
+      const auto tensor_axis_copy = tensor_axis_->copy(device);
+      TensorAxisWrapper<T, DeviceT> tensor_axis_concept(tensor_axis_copy);
+      return std::make_shared<TensorAxisWrapper<T, DeviceT>>(tensor_axis_concept);
+    }
     void setLabels() override { tensor_axis_->setLabels(); }
 
     void getLabelsDataPointer(std::shared_ptr<int[]>& data_copy) override {
