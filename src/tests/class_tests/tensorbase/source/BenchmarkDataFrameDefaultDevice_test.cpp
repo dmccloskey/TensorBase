@@ -174,6 +174,11 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteDefaultDevice)
     BOOST_CHECK_EQUAL(data_insert_values_is_valid(i, 0), values_is_valid_ptr->getData()(i, 0));
   }
 
+  // Query for the number of valid entries
+  SelectTableDataIsValidDefaultDevice select_is_valid;
+  select_is_valid(n_dim_tensor_collection, device);
+  BOOST_CHECK_EQUAL(select_is_valid.result_->getData()(0), data_size / 2);
+
   // Make the expected tensor axes labels and tensor data after update
   dataframe_manager_time.setUseRandomValues(true);
   dataframe_manager_labels.setUseRandomValues(true);
@@ -443,6 +448,11 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteShardingDefaultDevice)
   for (int i = 0; i < data_size; ++i) {
     BOOST_CHECK_EQUAL(data_insert_values_is_valid(i, 0), values_is_valid_ptr->getData()(i, 0));
   }
+
+  // Query for the number of valid entries
+  SelectTableDataIsValidDefaultDevice select_is_valid;
+  select_is_valid(n_dim_tensor_collection, device);
+  BOOST_CHECK_EQUAL(select_is_valid.result_->getData()(0), data_size / 2);
 
   // Make the expected tensor axes labels and tensor data after update
   dataframe_manager_time.setUseRandomValues(true);

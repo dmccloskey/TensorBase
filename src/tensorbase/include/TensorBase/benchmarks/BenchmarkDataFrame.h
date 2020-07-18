@@ -47,35 +47,43 @@ namespace TensorBaseBenchmarks
     bool apply_select_ = false;
   };
 
-  /// The select Functor for the DataFrame `is_valid` column
+  /* 
+  @class The select Functor for the DataFrame `is_valid` column
+
+  The query selectes all data where `is_valid = 1` and performs a reduction sum on the
+  `is_valid` column to count the number of valid entries.  The results are copied over
+  to `results_` where they can be synced to the cpu and viewed.
+  */
   template<typename LabelsT, typename TensorT, typename DeviceT>
   class SelectTableDataIsValid {
   public:
-    SelectTableDataIsValid(std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& select_values, std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& result) : select_labels_(select_labels), select_values_(select_values), result_(result) {};
-    ~SelectTableDataIsValid() = default;
-    void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) override {
+    std::shared_ptr<TensorData<TensorT, DeviceT, 1>> result_; ///< The results of the query
+    void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) {
+      setLabelsValuesResult(device);
       // Make and apply the where clause
       WhereClause<LabelsT, TensorT, Eigen::DefaultDevice> where_clause1("DataFrame_is_valid", "2_columns", select_labels_, select_values_, logicalComparitors::EQUAL_TO, logicalModifiers::NONE, logicalContinuators::AND, logicalContinuators::AND);
       TensorSelect tensorSelect;
       tensorSelect.whereClause(tensor_collection, where_clause1, device);
       tensorSelect.applySelect(tensor_collection, { "DataFrame_is_valid" }, { "DataFrame_is_valid_true" }, device);
 
+      // Reset the indices
+      tensor_collection->tables_.at("DataFrame_is_valid")->resetIndicesView(device);
+
       // Make and apply the reduction clause
       ReductionClause<Eigen::DefaultDevice> reduction_clause1("DataFrame_is_valid_true", reductionFunctions::SUM);
       tensorSelect.applyReduction(tensor_collection, reduction_clause1, device);
 
       // Copy out the results
-      if (!result_->getDataStatus().second) result_->syncHAndDData(device);
       std::shared_ptr<TensorT[]> data_is_valid;
-      tensor_collection->tables_.at("DataFrame_is_valid")->getDataPointer(data_is_valid);
-      Eigen::TensorMap<Eigen::Tensor<TensorT, 0>> data_is_valid_values(data_is_valid.get());
-      Eigen::TensorMap<Eigen::Tensor<TensorT, 0>> result_values(result_->getDataPointer.get());
+      tensor_collection->tables_.at("DataFrame_is_valid_true")->getDataPointer(data_is_valid);
+      Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> data_is_valid_values(data_is_valid.get(), 1);
+      Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> result_values(result_->getDataPointer().get(), 1);
       result_values.device(device) = data_is_valid_values;
     }
-  private:
-    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels_;
-    std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& select_values_;
-    std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& result_;
+    virtual void setLabelsValuesResult(DeviceT& device) = 0;
+  protected:
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> select_labels_; ///< The labels to select (i.e., 
+    std::shared_ptr<TensorData<TensorT, DeviceT, 1>> select_values_; ///< The values to select
   };
 
 	/*

@@ -12,8 +12,41 @@ using namespace TensorBase;
 
 namespace TensorBaseBenchmarks
 {
+
+  /*
+  @class Specialized `SelectTableDataIsValid` for the DefaultDevice case
+  */
+  class SelectTableDataIsValidDefaultDevice: public SelectTableDataIsValid<TensorArray32<char>, int, Eigen::DefaultDevice> {
+  public:
+    void setLabelsValuesResult(Eigen::DefaultDevice& device) override;
+  };
+  inline void SelectTableDataIsValidDefaultDevice::setLabelsValuesResult(Eigen::DefaultDevice& device)
+  {
+    // make the labels and sync to the device
+    Eigen::Tensor<TensorArray32<char>, 2> select_labels_values(1, 1);
+    select_labels_values.setConstant(TensorArray32<char>("is_valid"));
+    TensorDataDefaultDevice<TensorArray32<char>, 2> select_labels(select_labels_values.dimensions());
+    select_labels.setData(select_labels_values);
+    select_labels.syncHAndDData(device);
+    this->select_labels_ = std::make_shared<TensorDataDefaultDevice<TensorArray32<char>, 2>>(select_labels);
+
+    // make the corresponding values and sync to the device
+    Eigen::Tensor<int, 1> select_values_values(1);
+    select_values_values.setConstant(1);
+    TensorDataDefaultDevice<int, 1> select_values(select_values_values.dimensions());
+    select_values.setData(select_values_values);
+    select_values.syncHAndDData(device);
+    this->select_values_ = std::make_shared<TensorDataDefaultDevice<int, 1>>(select_values);
+
+    // allocate memory for the results
+    TensorDataDefaultDevice<int, 1> results(Eigen::array<Eigen::Index, 1>({1}));
+    results.setData();
+    results.syncHAndDData(device);
+    this->result_ = std::make_shared<TensorDataDefaultDevice<int, 1>>(results);
+  }
+
 	/*
-	@brief Specialized `DataFrameManager` for the DefaultDevice case
+	@class Specialized `DataFrameManager` for the DefaultDevice case
 	*/
 	class DataFrameManagerTimeDefaultDevice : public DataFrameManagerTime<int, int, Eigen::DefaultDevice> {
 	public:
@@ -33,7 +66,7 @@ namespace TensorBaseBenchmarks
 	}
 
   /*
-  @brief Specialized `DataFrameManager` for the DefaultDevice case
+  @class Specialized `DataFrameManager` for the DefaultDevice case
   */
   class DataFrameManagerLabelDefaultDevice : public DataFrameManagerLabel<int, TensorArray32<char>, Eigen::DefaultDevice> {
   public:
@@ -53,7 +86,7 @@ namespace TensorBaseBenchmarks
   }
 
   /*
-  @brief Specialized `DataFrameManager` for the DefaultDevice case
+  @class Specialized `DataFrameManager` for the DefaultDevice case
   */
   class DataFrameManagerImage2DDefaultDevice : public DataFrameManagerImage2D<int, float, Eigen::DefaultDevice> {
   public:
@@ -73,7 +106,7 @@ namespace TensorBaseBenchmarks
   }
 
   /*
-  @brief Specialized `DataFrameManager` for the DefaultDevice case
+  @class Specialized `DataFrameManager` for the DefaultDevice case
   */
   class DataFrameManagerIsValidDefaultDevice : public DataFrameManagerIsValid<int, int, Eigen::DefaultDevice> {
   public:
@@ -93,7 +126,7 @@ namespace TensorBaseBenchmarks
   }
 
 	/*
-	@brief A class for running 1 line insertion, deletion, and update benchmarks
+	@class A class for running 1 line insertion, deletion, and update benchmarks
 	*/
 	class BenchmarkDataFrame1TimePointDefaultDevice : public BenchmarkDataFrame1TimePoint<DataFrameManagerTimeDefaultDevice, DataFrameManagerLabelDefaultDevice, DataFrameManagerImage2DDefaultDevice, DataFrameManagerIsValidDefaultDevice, Eigen::DefaultDevice> {
 	protected:

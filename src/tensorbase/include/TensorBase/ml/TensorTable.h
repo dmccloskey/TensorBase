@@ -234,7 +234,8 @@ namespace TensorBase
     */
     template<typename LabelsT>
     void selectIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels, DeviceT& device);
-    
+
+    void resetIndicesView(DeviceT& device); ///< copy over the indices values to the indices view for all axes
     void resetIndicesView(const std::string& axis_name, DeviceT& device); ///< copy over the indices values to the indices view
     void zeroIndicesView(const std::string& axis_name, DeviceT& device); ///< set the indices view to zero
 
@@ -1628,6 +1629,16 @@ namespace TensorBase
     for (const auto& axis_to_name : axes_to_dims_) {
       if (axis_to_name.first == axis_name) continue;
       applyIndicesSelectToIndicesView(indices_select, axis_name, axis_to_name.first, within_continuator, prepend_continuator, device);
+    }
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::resetIndicesView(DeviceT& device)
+  {
+    for (const auto& axis_to_dim : axes_to_dims_) {
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_to_dim.first)->getDataPointer().get(), indices_view_.at(axis_to_dim.first)->getDimensions());
+      Eigen::TensorMap<Eigen::Tensor<int, 1>> indices(indices_.at(axis_to_dim.first)->getDataPointer().get(), indices_.at(axis_to_dim.first)->getDimensions());
+      indices_view.device(device) = indices;
     }
   }
 

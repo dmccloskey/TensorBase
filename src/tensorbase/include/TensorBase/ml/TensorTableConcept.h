@@ -78,6 +78,7 @@ namespace TensorBase
     virtual std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getNotInMemory() const = 0;
     virtual std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getShardId() const = 0;
     virtual std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getShardIndices() const = 0;
+    virtual void resetIndicesView(DeviceT& device) = 0;
     virtual void resetIndicesView(const std::string& axis_name, DeviceT& device) = 0;
     virtual void makeIndicesFromIndicesView(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) = 0;
     virtual int getDimSizeFromAxisName(const std::string& axis_name) const = 0;
@@ -1357,6 +1358,7 @@ namespace TensorBase
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getNotInMemory() const override { return tensor_table_->getNotInMemory(); };
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getShardId() const override { return tensor_table_->getShardId(); };
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getShardIndices() const override { return tensor_table_->getShardIndices(); };
+    void resetIndicesView(DeviceT& device) override { tensor_table_->resetIndicesView(device); };
     void resetIndicesView(const std::string& axis_name, DeviceT& device) override { tensor_table_->resetIndicesView(axis_name, device); };
     void makeIndicesFromIndicesView(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) override { 
       tensor_table_->makeIndicesFromIndicesView(axis_name, indices, device);
