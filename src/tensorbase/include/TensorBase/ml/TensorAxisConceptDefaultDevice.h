@@ -8,16 +8,6 @@
 #include <TensorBase/ml/TensorAxisDefaultDevice.h>
 
 // Cereal registration of TensorTs: float, int, char, double and DeviceTs: Default, ThreadPool, Gpu
-//CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisDefaultDevice<int>, Eigen::DefaultDevice>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisDefaultDevice<float>, Eigen::DefaultDevice>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisDefaultDevice<double>, Eigen::DefaultDevice>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisDefaultDevice<char>, Eigen::DefaultDevice>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisDefaultDevice<TensorBase::TensorArray8<char>>, Eigen::DefaultDevice>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisDefaultDevice<TensorBase::TensorArray32<char>>, Eigen::DefaultDevice>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisDefaultDevice<TensorBase::TensorArray128<char>>, Eigen::DefaultDevice>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisDefaultDevice<TensorBase::TensorArray512<char>>, Eigen::DefaultDevice>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisDefaultDevice<TensorBase::TensorArray2048<char>>, Eigen::DefaultDevice>);
-
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxis<int, Eigen::DefaultDevice>, Eigen::DefaultDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxis<float, Eigen::DefaultDevice>, Eigen::DefaultDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxis<double, Eigen::DefaultDevice>, Eigen::DefaultDevice>);

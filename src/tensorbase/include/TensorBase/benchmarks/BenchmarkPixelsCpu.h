@@ -325,10 +325,10 @@ namespace TensorBaseBenchmarks
 		// Setup the tables
 		// TODO: refactor for the case where LabelsT != TensorT
 		std::shared_ptr<TensorTable<TensorT, Eigen::ThreadPoolDevice, 2>> table_1_ptr = std::make_shared<TensorTableCpu<TensorT, 2>>(TensorTableCpu<TensorT, 2>("TTable"));
-		auto table_1_axis_1_ptr = std::make_shared<TensorAxisCpu<TensorArray8<char>>>(TensorAxisCpu<TensorArray8<char>>("xyztv", dimensions_1, labels_1));
-		//auto table_1_axis_1_ptr = std::make_shared<TensorAxisCpu<TensorArray8<char>>>(TensorAxisCpu<TensorArray8<char>>("xyzt", dimensions_1a, labels_1a));
-		//auto table_1_axis_1_ptr = std::make_shared<TensorAxisCpu<TensorArray8<char>>>(TensorAxisCpu<TensorArray8<char>>("v", dimensions_1b, labels_1b));
-		auto table_1_axis_2_ptr = std::make_shared<TensorAxisCpu<LabelsT>>(TensorAxisCpu<LabelsT>("indices", 1, 0));
+		std::shared_ptr<TensorAxis<TensorArray8<char>, Eigen::ThreadPoolDevice>> table_1_axis_1_ptr = std::make_shared<TensorAxisCpu<TensorArray8<char>>>(TensorAxisCpu<TensorArray8<char>>("xyztv", dimensions_1, labels_1));
+		//std::shared_ptr<TensorAxis<TensorArray8<char>, Eigen::ThreadPoolDevice>> table_1_axis_1_ptr = std::make_shared<TensorAxisCpu<TensorArray8<char>>>(TensorAxisCpu<TensorArray8<char>>("xyzt", dimensions_1a, labels_1a));
+		//std::shared_ptr<TensorAxis<TensorArray8<char>, Eigen::ThreadPoolDevice>> table_1_axis_1_ptr = std::make_shared<TensorAxisCpu<TensorArray8<char>>>(TensorAxisCpu<TensorArray8<char>>("v", dimensions_1b, labels_1b));
+    std::shared_ptr<TensorAxis<LabelsT, Eigen::ThreadPoolDevice>> table_1_axis_2_ptr = std::make_shared<TensorAxisCpu<LabelsT>>(TensorAxisCpu<LabelsT>("indices", 1, 0));
 		table_1_axis_2_ptr->setDimensions(dimensions_2);
 		table_1_ptr->addTensorAxis(table_1_axis_1_ptr);
 		table_1_ptr->addTensorAxis(table_1_axis_2_ptr);
@@ -356,8 +356,8 @@ namespace TensorBaseBenchmarks
 
 		// Setup the tables
 		std::shared_ptr<TensorTable<TensorT, Eigen::ThreadPoolDevice, 2>> table_1_ptr = std::make_shared<TensorTableCpu<TensorT, 2>>(TensorTableCpu<TensorT, 2>("TTable"));
-		auto table_1_axis_1_ptr = std::make_shared<TensorAxisCpu<TensorArray8<char>>>(TensorAxisCpu<TensorArray8<char>>("values", dimensions_1, labels_v));
-		auto table_1_axis_2_ptr = std::make_shared<TensorAxisCpu<LabelsT>>(TensorAxisCpu<LabelsT>("xyzt", 4, 0));
+		std::shared_ptr<TensorAxis<TensorArray8<char>, Eigen::ThreadPoolDevice>> table_1_axis_1_ptr = std::make_shared<TensorAxisCpu<TensorArray8<char>>>(TensorAxisCpu<TensorArray8<char>>("values", dimensions_1, labels_v));
+    std::shared_ptr<TensorAxis<LabelsT, Eigen::ThreadPoolDevice>> table_1_axis_2_ptr = std::make_shared<TensorAxisCpu<LabelsT>>(TensorAxisCpu<LabelsT>("xyzt", 4, 0));
 		table_1_axis_2_ptr->setDimensions(dimensions_2);
 		table_1_ptr->addTensorAxis(table_1_axis_1_ptr);
 		table_1_ptr->addTensorAxis(table_1_axis_2_ptr);
@@ -390,8 +390,8 @@ namespace TensorBaseBenchmarks
 
 		// Setup the tables
 		std::shared_ptr<TensorTable<TensorT, Eigen::ThreadPoolDevice, 2>> table_1_ptr = std::make_shared<TensorTableCpu<TensorT, 2>>(TensorTableCpu<TensorT, 2>("TTable"));
-		auto table_1_axis_1_ptr = std::make_shared<TensorAxisCpu<LabelsT>>(TensorAxisCpu<LabelsT>("xyz", dimensions_1, labels_1));
-		auto table_1_axis_2_ptr = std::make_shared<TensorAxisCpu<LabelsT>>(TensorAxisCpu<LabelsT>("t", 1, 0));
+    std::shared_ptr<TensorAxis<LabelsT, Eigen::ThreadPoolDevice>> table_1_axis_1_ptr = std::make_shared<TensorAxisCpu<LabelsT>>(TensorAxisCpu<LabelsT>("xyz", dimensions_1, labels_1));
+    std::shared_ptr<TensorAxis<LabelsT, Eigen::ThreadPoolDevice>> table_1_axis_2_ptr = std::make_shared<TensorAxisCpu<LabelsT>>(TensorAxisCpu<LabelsT>("t", 1, 0));
 		table_1_axis_2_ptr->setDimensions(dimensions_2);
 		table_1_ptr->addTensorAxis(table_1_axis_1_ptr);
 		table_1_ptr->addTensorAxis(table_1_axis_2_ptr);
@@ -428,9 +428,9 @@ namespace TensorBaseBenchmarks
 
 		// Setup the tables
 		std::shared_ptr<TensorTable<TensorT, Eigen::ThreadPoolDevice, 3>> table_1_ptr = std::make_shared<TensorTableCpu<TensorT, 3>>(TensorTableCpu<TensorT, 3>("TTable"));
-		auto table_1_axis_1_ptr = std::make_shared<TensorAxisCpu<LabelsT>>(TensorAxisCpu<LabelsT>("xy", dimensions_1, labels_1));
-		auto table_1_axis_2_ptr = std::make_shared<TensorAxisCpu<LabelsT>>(TensorAxisCpu<LabelsT>("z", dimensions_2, labels_2));
-		auto table_1_axis_3_ptr = std::make_shared<TensorAxisCpu<LabelsT>>(TensorAxisCpu<LabelsT>("t", 1, 0));
+    std::shared_ptr<TensorAxis<LabelsT, Eigen::ThreadPoolDevice>> table_1_axis_1_ptr = std::make_shared<TensorAxisCpu<LabelsT>>(TensorAxisCpu<LabelsT>("xy", dimensions_1, labels_1));
+    std::shared_ptr<TensorAxis<LabelsT, Eigen::ThreadPoolDevice>> table_1_axis_2_ptr = std::make_shared<TensorAxisCpu<LabelsT>>(TensorAxisCpu<LabelsT>("z", dimensions_2, labels_2));
+    std::shared_ptr<TensorAxis<LabelsT, Eigen::ThreadPoolDevice>> table_1_axis_3_ptr = std::make_shared<TensorAxisCpu<LabelsT>>(TensorAxisCpu<LabelsT>("t", 1, 0));
 		table_1_axis_3_ptr->setDimensions(dimensions_3);
 		table_1_ptr->addTensorAxis(table_1_axis_1_ptr);
 		table_1_ptr->addTensorAxis(table_1_axis_2_ptr);
@@ -468,10 +468,10 @@ namespace TensorBaseBenchmarks
 
 		// Setup the tables
 		std::shared_ptr<TensorTable<TensorT, Eigen::ThreadPoolDevice, 4>> table_1_ptr = std::make_shared<TensorTableCpu<TensorT, 4>>(TensorTableCpu<TensorT, 4>("TTable"));
-		auto table_1_axis_1_ptr = std::make_shared<TensorAxisCpu<LabelsT>>(TensorAxisCpu<LabelsT>("x", dimensions_1, labels_1));
-		auto table_1_axis_2_ptr = std::make_shared<TensorAxisCpu<LabelsT>>(TensorAxisCpu<LabelsT>("y", dimensions_2, labels_2));
-		auto table_1_axis_3_ptr = std::make_shared<TensorAxisCpu<LabelsT>>(TensorAxisCpu<LabelsT>("z", dimensions_3, labels_3));
-		auto table_1_axis_4_ptr = std::make_shared<TensorAxisCpu<LabelsT>>(TensorAxisCpu<LabelsT>("t", 1, 0));
+    std::shared_ptr<TensorAxis<LabelsT, Eigen::ThreadPoolDevice>> table_1_axis_1_ptr = std::make_shared<TensorAxisCpu<LabelsT>>(TensorAxisCpu<LabelsT>("x", dimensions_1, labels_1));
+    std::shared_ptr<TensorAxis<LabelsT, Eigen::ThreadPoolDevice>> table_1_axis_2_ptr = std::make_shared<TensorAxisCpu<LabelsT>>(TensorAxisCpu<LabelsT>("y", dimensions_2, labels_2));
+    std::shared_ptr<TensorAxis<LabelsT, Eigen::ThreadPoolDevice>> table_1_axis_3_ptr = std::make_shared<TensorAxisCpu<LabelsT>>(TensorAxisCpu<LabelsT>("z", dimensions_3, labels_3));
+    std::shared_ptr<TensorAxis<LabelsT, Eigen::ThreadPoolDevice>> table_1_axis_4_ptr = std::make_shared<TensorAxisCpu<LabelsT>>(TensorAxisCpu<LabelsT>("t", 1, 0));
 		table_1_axis_4_ptr->setDimensions(dimensions_4);
 		table_1_ptr->addTensorAxis(table_1_axis_1_ptr);
 		table_1_ptr->addTensorAxis(table_1_axis_2_ptr);

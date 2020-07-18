@@ -43,24 +43,24 @@ void test_comparisonGpu()
   labels3.setConstant(3);
 
   TensorTableGpuPrimitiveT<float, 3> tensorTable1("1");
-  tensorTable1.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1", dimensions1, labels1)));
-  tensorTable1.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("2", dimensions2, labels2)));
-  tensorTable1.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("3", dimensions3, labels3)));
+  tensorTable1.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>>)std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1", dimensions1, labels1)));
+  tensorTable1.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>>)std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("2", dimensions2, labels2)));
+  tensorTable1.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>>)std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("3", dimensions3, labels3)));
   tensorTable1.setAxes(device);
-  std::shared_ptr<TensorTableGpuPrimitiveT<float, 3>> tensorTable1_ptr = std::make_shared<TensorTableGpuPrimitiveT<float, 3>>(tensorTable1);
+  std::shared_ptr<TensorTable<float, Eigen::GpuDevice, 3>> tensorTable1_ptr = std::make_shared<TensorTableGpuPrimitiveT<float, 3>>(tensorTable1);
 
   TensorTableGpuPrimitiveT<int, 2> tensorTable2("2");
-  tensorTable2.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1", dimensions1, labels1)));
-  tensorTable2.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("2", dimensions2, labels2)));
+  tensorTable2.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>>)std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1", dimensions1, labels1)));
+  tensorTable2.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>>)std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("2", dimensions2, labels2)));
   tensorTable2.setAxes(device);
-  std::shared_ptr<TensorTableGpuPrimitiveT<int, 2>> tensorTable2_ptr = std::make_shared<TensorTableGpuPrimitiveT<int, 2>>(tensorTable2);
+  std::shared_ptr<TensorTable<int, Eigen::GpuDevice, 2>> tensorTable2_ptr = std::make_shared<TensorTableGpuPrimitiveT<int, 2>>(tensorTable2);
 
   TensorTableGpuPrimitiveT<char, 3> tensorTable3("3");
-  tensorTable3.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1", dimensions1, labels1)));
-  tensorTable3.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("2", dimensions2, labels2)));
-  tensorTable3.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("3", dimensions3, labels3)));
+  tensorTable3.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>>)std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1", dimensions1, labels1)));
+  tensorTable3.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>>)std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("2", dimensions2, labels2)));
+  tensorTable3.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>>)std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("3", dimensions3, labels3)));
   tensorTable3.setAxes(device);
-  std::shared_ptr<TensorTableGpuPrimitiveT<char, 3>> tensorTable3_ptr = std::make_shared<TensorTableGpuPrimitiveT<char, 3>>(tensorTable3);
+  std::shared_ptr<TensorTable<char, Eigen::GpuDevice, 3>> tensorTable3_ptr = std::make_shared<TensorTableGpuPrimitiveT<char, 3>>(tensorTable3);
 
   // Test collection
   TensorCollectionGpu tensorCollection_test("1");
@@ -102,24 +102,24 @@ void test_gettersAndSettersGpu()
   labels3.setConstant(3);
 
   TensorTableGpuPrimitiveT<float, 3> tensorTable1("1");
-  tensorTable1.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1", dimensions1, labels1)));
-  tensorTable1.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("2", dimensions2, labels2)));
-  tensorTable1.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("3", dimensions3, labels3)));
+  tensorTable1.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>>)std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1", dimensions1, labels1)));
+  tensorTable1.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>>)std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("2", dimensions2, labels2)));
+  tensorTable1.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>>)std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("3", dimensions3, labels3)));
   tensorTable1.setAxes(device);
-  std::shared_ptr<TensorTableGpuPrimitiveT<float, 3>> tensorTable1_ptr = std::make_shared<TensorTableGpuPrimitiveT<float, 3>>(tensorTable1);
+  std::shared_ptr<TensorTable<float, Eigen::GpuDevice, 3>> tensorTable1_ptr = std::make_shared<TensorTableGpuPrimitiveT<float, 3>>(tensorTable1);
 
   TensorTableGpuPrimitiveT<int, 2> tensorTable2("2");
-  tensorTable2.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1", dimensions1, labels1)));
-  tensorTable2.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("2", dimensions2, labels2)));
+  tensorTable2.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>>)std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1", dimensions1, labels1)));
+  tensorTable2.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>>)std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("2", dimensions2, labels2)));
   tensorTable2.setAxes(device);
-  std::shared_ptr<TensorTableGpuPrimitiveT<int, 2>> tensorTable2_ptr = std::make_shared<TensorTableGpuPrimitiveT<int, 2>>(tensorTable2);
+  std::shared_ptr<TensorTable<int, Eigen::GpuDevice, 2>> tensorTable2_ptr = std::make_shared<TensorTableGpuPrimitiveT<int, 2>>(tensorTable2);
 
   TensorTableGpuPrimitiveT<char, 3> tensorTable3("3");
-  tensorTable3.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1", dimensions1, labels1)));
-  tensorTable3.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("2", dimensions2, labels2)));
-  tensorTable3.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("3", dimensions3, labels3)));
+  tensorTable3.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>>)std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1", dimensions1, labels1)));
+  tensorTable3.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>>)std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("2", dimensions2, labels2)));
+  tensorTable3.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>>)std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("3", dimensions3, labels3)));
   tensorTable3.setAxes(device);
-  std::shared_ptr<TensorTableGpuPrimitiveT<char, 3>> tensorTable3_ptr = std::make_shared<TensorTableGpuPrimitiveT<char, 3>>(tensorTable3);
+  std::shared_ptr<TensorTable<char, Eigen::GpuDevice, 3>> tensorTable3_ptr = std::make_shared<TensorTableGpuPrimitiveT<char, 3>>(tensorTable3);
 
   TensorCollectionGpu tensorCollection;
   tensorCollection.addTensorTable(tensorTable1_ptr, "1");
@@ -170,24 +170,24 @@ void test_addTensorTableConceptGpu()
   labels3.setConstant(3);
 
   TensorTableGpuPrimitiveT<float, 3> tensorTable1("1");
-  tensorTable1.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1", dimensions1, labels1)));
-  tensorTable1.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("2", dimensions2, labels2)));
-  tensorTable1.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("3", dimensions3, labels3)));
+  tensorTable1.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>>)std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1", dimensions1, labels1)));
+  tensorTable1.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>>)std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("2", dimensions2, labels2)));
+  tensorTable1.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>>)std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("3", dimensions3, labels3)));
   tensorTable1.setAxes(device);
-  std::shared_ptr<TensorTableGpuPrimitiveT<float, 3>> tensorTable1_ptr = std::make_shared<TensorTableGpuPrimitiveT<float, 3>>(tensorTable1);
+  std::shared_ptr<TensorTable<float, Eigen::GpuDevice, 3>> tensorTable1_ptr = std::make_shared<TensorTableGpuPrimitiveT<float, 3>>(tensorTable1);
 
   TensorTableGpuPrimitiveT<int, 2> tensorTable2("2");
-  tensorTable2.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1", dimensions1, labels1)));
-  tensorTable2.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("2", dimensions2, labels2)));
+  tensorTable2.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>>)std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1", dimensions1, labels1)));
+  tensorTable2.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>>)std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("2", dimensions2, labels2)));
   tensorTable2.setAxes(device);
-  std::shared_ptr<TensorTableGpuPrimitiveT<int, 2>> tensorTable2_ptr = std::make_shared<TensorTableGpuPrimitiveT<int, 2>>(tensorTable2);
+  std::shared_ptr<TensorTable<int, Eigen::GpuDevice, 2>> tensorTable2_ptr = std::make_shared<TensorTableGpuPrimitiveT<int, 2>>(tensorTable2);
 
   TensorTableGpuPrimitiveT<char, 3> tensorTable3("3");
-  tensorTable3.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1", dimensions1, labels1)));
-  tensorTable3.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("2", dimensions2, labels2)));
-  tensorTable3.addTensorAxis(std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("3", dimensions3, labels3)));
+  tensorTable3.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>>)std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1", dimensions1, labels1)));
+  tensorTable3.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>>)std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("2", dimensions2, labels2)));
+  tensorTable3.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>>)std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("3", dimensions3, labels3)));
   tensorTable3.setAxes(device);
-  std::shared_ptr<TensorTableGpuPrimitiveT<char, 3>> tensorTable3_ptr = std::make_shared<TensorTableGpuPrimitiveT<char, 3>>(tensorTable3);
+  std::shared_ptr<TensorTable<char, Eigen::GpuDevice, 3>> tensorTable3_ptr = std::make_shared<TensorTableGpuPrimitiveT<char, 3>>(tensorTable3);
 
   TensorCollectionGpu tensorCollection;
   tensorCollection.addTensorTable(tensorTable1_ptr, "1");

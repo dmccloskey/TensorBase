@@ -44,8 +44,8 @@ namespace TensorBase
       return !(*this == other);
     }
 
-    template<typename T>
-    void addTensorTable(const std::shared_ptr<T>& tensor_table, const std::string& user_table_name);  ///< Tensor table adder
+    template<typename T, int TDim>
+    void addTensorTable(const std::shared_ptr<TensorTable<T, DeviceT, TDim>>& tensor_table, const std::string& user_table_name);  ///< Tensor table adder
     void addTensorTableConcept(const std::shared_ptr<TensorTableConcept<DeviceT>>& tensor_table, const std::string& user_table_name);  ///< Tensor table concept adder
     void removeTensorTable(const std::string& table_name); ///< Tensor table remover
     std::shared_ptr<TensorTableConcept<DeviceT>> getTensorTableConcept(const std::string& table_name) const; ///< Tensor table concept getter
@@ -111,13 +111,12 @@ namespace TensorBase
       archive(id_, name_, tables_, user_table_names_to_tensor_table_names_);
     }
   };
-
   template<typename DeviceT>
-  template<typename T>
-  inline void TensorCollection<DeviceT>::addTensorTable(const std::shared_ptr<T>& tensor_table, const std::string& user_table_name)
+  template<typename T, int TDim>
+  inline void TensorCollection<DeviceT>::addTensorTable(const std::shared_ptr<TensorTable<T, DeviceT, TDim>>& tensor_table, const std::string& user_table_name)
   {
     // Add the tensor table
-    auto found_table = tables_.emplace(tensor_table->getName(), std::shared_ptr<TensorTableConcept<DeviceT>>(new TensorTableWrapper<T, DeviceT>(tensor_table)));
+    auto found_table = tables_.emplace(tensor_table->getName(), std::make_shared<TensorTableWrapper<TensorTable<T, DeviceT, TDim>, DeviceT>>(tensor_table));
     if (!found_table.second)
       std::cout << "The table " << tensor_table->getName() << " already exists in the collection." << std::endl;
 
@@ -126,9 +125,7 @@ namespace TensorBase
     auto found_user_table = user_table_names_to_tensor_table_names_.emplace(user_table_name, table_names);
     if (!found_user_table.second)
       user_table_names_to_tensor_table_names_.at(user_table_name).insert(tensor_table->getName());
-
   }
-
   template<typename DeviceT>
   inline void TensorCollection<DeviceT>::addTensorTableConcept(const std::shared_ptr<TensorTableConcept<DeviceT>>& tensor_table, const std::string& user_table_name)
   {
@@ -143,7 +140,6 @@ namespace TensorBase
     if (!found_user_table.second)
       user_table_names_to_tensor_table_names_.at(user_table_name).insert(tensor_table->getName());
   }
-
   template<typename DeviceT>
   inline void TensorCollection<DeviceT>::removeTensorTable(const std::string & table_name)
   {
@@ -160,9 +156,7 @@ namespace TensorBase
       if (tables_it != user_table_names_map.second.end())
         user_table_names_map.second.erase(tables_it);
     }
-
   }
-
   template<typename DeviceT>
   inline std::shared_ptr<TensorTableConcept<DeviceT>> TensorCollection<DeviceT>::getTensorTableConcept(const std::string & table_name) const
   {
@@ -174,7 +168,6 @@ namespace TensorBase
       return nullptr;
     }
   }
-
   template<typename DeviceT>
   inline void TensorCollection<DeviceT>::clear()
   {
@@ -191,7 +184,6 @@ namespace TensorBase
     }
     return names;
   }
-
   template<typename DeviceT>
   inline std::set<std::string> TensorCollection<DeviceT>::getTableNamesFromUserName(const std::string & user_table_name) const
   {
@@ -207,7 +199,6 @@ namespace TensorBase
       return std::set<std::string>();
     }
   }
-
   template<typename DeviceT>
   inline std::string TensorCollection<DeviceT>::getUserNameFromTableName(const std::string & table_name) const
   {

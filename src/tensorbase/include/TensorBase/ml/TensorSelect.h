@@ -98,12 +98,13 @@ namespace TensorBase
     for (int i = 0; i < table_names.size(); ++i) {
       if (table_names.at(i) == table_names_new.at(i)) {
         tensor_collection->tables_.at(table_names.at(i))->syncAxesAndIndicesDData(device);
+        tensor_collection->tables_.at(table_names.at(i))->syncDData(device);
         tensor_collection->tables_.at(table_names.at(i))->selectTensorData(device);
       }
       else {
         auto tensor_table_copy = tensor_collection->tables_.at(table_names.at(i))->copy(device);
         tensor_table_copy->setName(table_names_new.at(i));
-        tensor_collection->addTensorTableConcept(tensor_table_copy, tensor_collection->addTensorTableConcept(table_names.at(i)));
+        tensor_collection->addTensorTableConcept(tensor_table_copy, tensor_collection->getUserNameFromTableName(table_names.at(i)));
         tensor_collection->tables_.at(table_names_new.at(i))->syncAxesAndIndicesDData(device);
         tensor_collection->tables_.at(table_names_new.at(i))->syncDData(device);
         tensor_collection->tables_.at(table_names_new.at(i))->selectTensorData(device);
@@ -117,7 +118,16 @@ namespace TensorBase
     for (int i = 0; i < table_names.size(); ++i) {
       if (table_names.at(i) == table_names_new.at(i)) {
         tensor_collection->tables_.at(table_names.at(i))->syncAxesAndIndicesDData(device);
+        tensor_collection->tables_.at(table_names.at(i))->syncDData(device);
         tensor_collection->tables_.at(table_names.at(i))->sortTensorData(device);
+      }
+      else {
+        auto tensor_table_copy = tensor_collection->tables_.at(table_names.at(i))->copy(device);
+        tensor_table_copy->setName(table_names_new.at(i));
+        tensor_collection->addTensorTableConcept(tensor_table_copy, tensor_collection->getUserNameFromTableName(table_names.at(i)));
+        tensor_collection->tables_.at(table_names_new.at(i))->syncAxesAndIndicesDData(device);
+        tensor_collection->tables_.at(table_names_new.at(i))->syncDData(device);
+        tensor_collection->tables_.at(table_names_new.at(i))->sortTensorData(device);
       }
     }
   };

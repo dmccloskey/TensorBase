@@ -916,7 +916,7 @@ namespace TensorBase
   	template<class Archive>
   	void serialize(Archive& archive) {
   		archive(id_, name_, dimensions_, axes_, indices_, indices_view_, is_modified_, not_in_memory_, shard_id_, shard_indices_,
-        axes_to_dims_, data_, shard_spans_);
+        axes_to_dims_, data_, shard_spans_, dimensions_maximum_);
   	}
   };
 

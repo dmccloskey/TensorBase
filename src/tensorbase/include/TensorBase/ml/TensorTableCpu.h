@@ -27,6 +27,7 @@ namespace TensorBase
 		void setAxes(Eigen::ThreadPoolDevice& device) override;
     void initData(Eigen::ThreadPoolDevice& device) override;
     void initData(const Eigen::array<Eigen::Index, TDim>& new_dimensions, Eigen::ThreadPoolDevice& device) override;
+    std::shared_ptr<TensorTable<TensorT, Eigen::ThreadPoolDevice, TDim>> copy(Eigen::ThreadPoolDevice& device) override;
 		// Select methods
 		void broadcastSelectIndicesView(std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices_view_bcast, const std::string& axis_name, Eigen::ThreadPoolDevice& device) override;
 		void reduceTensorDataToSelectIndices(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices_view_bcast, std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, Eigen::ThreadPoolDevice& device) override;
@@ -160,6 +161,36 @@ namespace TensorBase
       Eigen::TensorMap<Eigen::Tensor<int, 1>> not_in_memory(this->not_in_memory_.at(axis_to_dim.first)->getDataPointer().get(), (int)this->not_in_memory_.at(axis_to_dim.first)->getTensorSize());
       not_in_memory.device(device) = not_in_memory.constant(1);
     }
+  }
+
+  template<typename TensorT, int TDim>
+  inline std::shared_ptr<TensorTable<TensorT, Eigen::ThreadPoolDevice, TDim>> TensorTableCpu<TensorT, TDim>::copy(Eigen::ThreadPoolDevice& device)
+  {
+    TensorTableCpu<TensorT, TDim> tensor_table_copy;
+    // copy the metadata
+    tensor_table_copy.setId(this->getId());
+    tensor_table_copy.setName(this->getName());
+    tensor_table_copy.setDir(this->getDir());
+    tensor_table_copy.axes_to_dims_ = this->getAxesToDims();
+    tensor_table_copy.dimensions_ = this->getDimensions();
+    tensor_table_copy.setShardSpans(this->getShardSpans());
+    tensor_table_copy.setMaximumDimensions(this->getMaximumDimensions());
+
+    // copy the axes and indices
+    for (auto& axis_to_dim : this->getAxesToDims()) {
+      tensor_table_copy.getAxes().emplace(axis_to_dim.first, this->getAxes().at(axis_to_dim.first)->copy(device));
+      tensor_table_copy.getIndices().emplace(axis_to_dim.first, this->getIndices().at(axis_to_dim.first)->copy(device));
+      tensor_table_copy.getIndicesView().emplace(axis_to_dim.first, this->getIndicesView().at(axis_to_dim.first)->copy(device));
+      tensor_table_copy.getIsModified().emplace(axis_to_dim.first, this->getIsModified().at(axis_to_dim.first)->copy(device));
+      tensor_table_copy.getNotInMemory().emplace(axis_to_dim.first, this->getNotInMemory().at(axis_to_dim.first)->copy(device));
+      tensor_table_copy.getShardId().emplace(axis_to_dim.first, this->getShardId().at(axis_to_dim.first)->copy(device));
+      tensor_table_copy.getShardIndices().emplace(axis_to_dim.first, this->getShardIndices().at(axis_to_dim.first)->copy(device));
+      tensor_table_copy.getDimensions().at(axis_to_dim.second) = this->getDimensions().at(axis_to_dim.second);
+    }
+
+    // copy the data
+    tensor_table_copy.setData(data_->copy(device));
+    return std::make_shared<TensorTableCpu<TensorT, TDim>>(tensor_table_copy);
   }
 
 	template<typename TensorT, int TDim>

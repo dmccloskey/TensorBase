@@ -249,9 +249,9 @@ namespace TensorBaseBenchmarks
 
 		// Setup the tables
 		std::shared_ptr<TensorTable<int, Eigen::DefaultDevice, 3>> table_1_ptr = std::make_shared<TensorTableDefaultDevice<int, 3>>(TensorTableDefaultDevice<int, 3>("DataFrame_time"));
-		auto table_1_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray32<char>>>(TensorAxisDefaultDevice<TensorArray32<char>>("2_columns", dimensions_1, labels_1_1));
-		auto table_1_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1_indices", 1, 0));
-    auto table_1_axis_3_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray8<char>>>(TensorAxisDefaultDevice<TensorArray8<char>>("3_time", dimensions_3_t, labels_3_t));
+		std::shared_ptr<TensorAxis<TensorArray32<char>, Eigen::DefaultDevice>> table_1_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray32<char>>>(TensorAxisDefaultDevice<TensorArray32<char>>("2_columns", dimensions_1, labels_1_1));
+    std::shared_ptr<TensorAxis<int, Eigen::DefaultDevice>> table_1_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1_indices", 1, 0));
+    std::shared_ptr<TensorAxis<TensorArray8<char>, Eigen::DefaultDevice>> table_1_axis_3_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray8<char>>>(TensorAxisDefaultDevice<TensorArray8<char>>("3_time", dimensions_3_t, labels_3_t));
 		table_1_axis_2_ptr->setDimensions(dimensions_2);
 		table_1_ptr->addTensorAxis(table_1_axis_1_ptr);
 		table_1_ptr->addTensorAxis(table_1_axis_2_ptr);
@@ -269,8 +269,8 @@ namespace TensorBaseBenchmarks
 
     // Setup the tables
 		std::shared_ptr<TensorTable<TensorArray32<char>, Eigen::DefaultDevice, 2>> table_2_ptr = std::make_shared<TensorTableDefaultDevice<TensorArray32<char>, 2>>(TensorTableDefaultDevice<TensorArray32<char>, 2>("DataFrame_label"));
-		auto table_2_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray32<char>>>(TensorAxisDefaultDevice<TensorArray32<char>>("2_columns", dimensions_1, labels_1_1));
-		auto table_2_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1_indices", 1, 0));
+    std::shared_ptr<TensorAxis<TensorArray32<char>, Eigen::DefaultDevice>> table_2_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray32<char>>>(TensorAxisDefaultDevice<TensorArray32<char>>("2_columns", dimensions_1, labels_1_1));
+    std::shared_ptr<TensorAxis<int, Eigen::DefaultDevice>> table_2_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1_indices", 1, 0));
 		table_2_axis_2_ptr->setDimensions(dimensions_2);
     table_2_ptr->addTensorAxis(table_2_axis_1_ptr);
 		table_2_ptr->addTensorAxis(table_2_axis_2_ptr);
@@ -286,10 +286,10 @@ namespace TensorBaseBenchmarks
 
     // Setup the tables
     std::shared_ptr<TensorTable<float, Eigen::DefaultDevice, 4>> table_3_ptr = std::make_shared<TensorTableDefaultDevice<float, 4>>(TensorTableDefaultDevice<float, 4>("DataFrame_image_2D"));
-    auto table_3_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray32<char>>>(TensorAxisDefaultDevice<TensorArray32<char>>("2_columns", dimensions_1, labels_1_3));
-    auto table_3_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1_indices", 1, 0));
-    auto table_3_axis_3_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3_x", dimensions_3_x, labels_3_x));
-    auto table_3_axis_4_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3_y", dimensions_3_y, labels_3_y));
+    std::shared_ptr<TensorAxis<TensorArray32<char>, Eigen::DefaultDevice>> table_3_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray32<char>>>(TensorAxisDefaultDevice<TensorArray32<char>>("2_columns", dimensions_1, labels_1_3));
+    std::shared_ptr<TensorAxis<int, Eigen::DefaultDevice>> table_3_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1_indices", 1, 0));
+    std::shared_ptr<TensorAxis<int, Eigen::DefaultDevice>> table_3_axis_3_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3_x", dimensions_3_x, labels_3_x));
+    std::shared_ptr<TensorAxis<int, Eigen::DefaultDevice>> table_3_axis_4_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3_y", dimensions_3_y, labels_3_y));
     table_3_axis_2_ptr->setDimensions(dimensions_2);
     table_3_ptr->addTensorAxis(table_3_axis_1_ptr);
     table_3_ptr->addTensorAxis(table_3_axis_2_ptr);
@@ -309,8 +309,8 @@ namespace TensorBaseBenchmarks
 
     // Setup the tables
     std::shared_ptr<TensorTable<int, Eigen::DefaultDevice, 2>> table_4_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(TensorTableDefaultDevice<int, 2>("DataFrame_is_valid"));
-    auto table_4_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray32<char>>>(TensorAxisDefaultDevice<TensorArray32<char>>("2_columns", dimensions_1, labels_1_1));
-    auto table_4_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1_indices", 1, 0));
+    std::shared_ptr<TensorAxis<TensorArray32<char>, Eigen::DefaultDevice>> table_4_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray32<char>>>(TensorAxisDefaultDevice<TensorArray32<char>>("2_columns", dimensions_1, labels_1_1));
+    std::shared_ptr<TensorAxis<int, Eigen::DefaultDevice>> table_4_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1_indices", 1, 0));
     table_4_axis_2_ptr->setDimensions(dimensions_2);
     table_4_ptr->addTensorAxis(table_4_axis_1_ptr);
     table_4_ptr->addTensorAxis(table_4_axis_2_ptr);

@@ -13,16 +13,6 @@
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/ml/TensorAxisConcept.h>
 
-//CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisGpuPrimitiveT<int>, Eigen::GpuDevice>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisGpuPrimitiveT<float>, Eigen::GpuDevice>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisGpuPrimitiveT<double>, Eigen::GpuDevice>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisGpuPrimitiveT<char>, Eigen::GpuDevice>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisGpuClassT<TensorBase::TensorArrayGpu8, char>, Eigen::GpuDevice>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisGpuClassT<TensorBase::TensorArrayGpu32, char>, Eigen::GpuDevice>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisGpuClassT<TensorBase::TensorArrayGpu128, char>, Eigen::GpuDevice>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisGpuClassT<TensorBase::TensorArrayGpu512, char>, Eigen::GpuDevice>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxisGpuClassT<TensorBase::TensorArrayGpu2048, char>, Eigen::GpuDevice>);
-
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxis<int, Eigen::GpuDevice>, Eigen::GpuDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxis<float, Eigen::GpuDevice>, Eigen::GpuDevice>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorAxisWrapper<TensorBase::TensorAxis<double, Eigen::GpuDevice>, Eigen::GpuDevice>);
