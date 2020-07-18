@@ -173,6 +173,8 @@ namespace TensorBase
     tensor_table_copy.setId(this->getId());
     tensor_table_copy.setName(this->getName());
     tensor_table_copy.setDir(this->getDir());
+    tensor_table_copy.axes_to_dims_ = this->getAxesToDims();
+    tensor_table_copy.dimensions_ = this->getDimensions();
     tensor_table_copy.setShardSpans(this->getShardSpans());
     tensor_table_copy.setMaximumDimensions(this->getMaximumDimensions());
 

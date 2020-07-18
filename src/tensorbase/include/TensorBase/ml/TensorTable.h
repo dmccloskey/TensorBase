@@ -44,8 +44,8 @@ namespace TensorBase
     template<typename TensorTOther, typename DeviceTOther, int TDimOther>
     inline bool operator==(const TensorTable<TensorTOther, DeviceTOther, TDimOther>& other) const
     {
-      bool meta_equal = std::tie(id_, name_, dimensions_, axes_to_dims_, shard_spans_, dimensions_maximum_) == std::tie(
-        other.id_, other.name_, other.dimensions_, other.axes_to_dims_, other.shard_spans_, other.dimensions_maximum_);
+      bool meta_equal = std::tie(id_, name_, dimensions_, axes_to_dims_, shard_spans_, getMaximumDimensions()) == std::tie(
+        other.id_, other.name_, other.dimensions_, other.axes_to_dims_, other.shard_spans_, other.getMaximumDimensions());
       auto compare_maps = [](auto lhs, auto rhs) {return *(lhs.second.get()) == *(rhs.second.get()); };
       bool axes_equal = std::equal(axes_.begin(), axes_.end(), other.axes_.begin(), compare_maps);
       bool indices_equal = std::equal(indices_.begin(), indices_.end(), other.indices_.begin(), compare_maps);
@@ -72,7 +72,7 @@ namespace TensorBase
     std::string getDir() const { return dir_; }; ///< dir getter
 
     template<typename T>
-    void addTensorAxis(const std::shared_ptr<T>& tensor_axis);  ///< Tensor axis adder
+    void addTensorAxis(const std::shared_ptr<TensorAxis<T, DeviceT>>& tensor_axis);  ///< Tensor axis adder
 
     /**
       @brief Tensor Axes setter
@@ -922,9 +922,10 @@ namespace TensorBase
 
   template<typename TensorT, typename DeviceT, int TDim>
   template<typename T>
-  inline void TensorTable<TensorT, DeviceT, TDim>::addTensorAxis(const std::shared_ptr<T>& tensor_axis)
+  inline void TensorTable<TensorT, DeviceT, TDim>::addTensorAxis(const std::shared_ptr<TensorAxis<T, DeviceT>>& tensor_axis)
   {
-    auto found = axes_.emplace(tensor_axis->getName(), std::shared_ptr<TensorAxisConcept<DeviceT>>(new TensorAxisWrapper<T, DeviceT>(tensor_axis)));
+    TensorAxisWrapper<TensorAxis<T, DeviceT>, DeviceT> tensorAxisWrapper(tensor_axis);
+    auto found = axes_.emplace(tensor_axis->getName(), std::make_shared<TensorAxisWrapper<TensorAxis<T, DeviceT>, DeviceT>>(tensorAxisWrapper));
   }
 
   template<typename TensorT, typename DeviceT, int TDim>

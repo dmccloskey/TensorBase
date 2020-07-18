@@ -166,9 +166,8 @@ namespace TensorBase
     size_t getNDimensions() const override { return tensor_axis_->getNDimensions(); };
     Eigen::TensorMap<Eigen::Tensor<std::string, 1>> getDimensions() override { return tensor_axis_->getDimensions(); };
     std::shared_ptr<TensorAxisConcept<DeviceT>> copy(DeviceT& device) override {
-      const auto tensor_axis_copy = tensor_axis_->copy(device);
-      TensorAxisWrapper<T, DeviceT> tensor_axis_concept(tensor_axis_copy);
-      return std::make_shared<TensorAxisWrapper<T, DeviceT>>(tensor_axis_concept);
+      auto tensor_axis_copy = tensor_axis_->copy(device);
+      return std::make_shared<TensorAxisWrapper<T, DeviceT>>(tensor_axis_copy);
     }
     void setLabels() override { tensor_axis_->setLabels(); }
 
