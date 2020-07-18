@@ -33,6 +33,7 @@ namespace TensorBase
     void setAxes(Eigen::GpuDevice& device) override;
     void initData(Eigen::GpuDevice& device) override;
     void initData(const Eigen::array<Eigen::Index, TDim>& new_dimensions, Eigen::GpuDevice& device) override;
+    std::shared_ptr<TensorTable<TensorT, Eigen::GpuDevice, TDim>> copy(Eigen::GpuDevice& device) override;
     // Select methods
     void broadcastSelectIndicesView(std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices_view_bcast, const std::string& axis_name, Eigen::GpuDevice& device) override;
     void reduceTensorDataToSelectIndices(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices_view_bcast, std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, Eigen::GpuDevice& device) override;
