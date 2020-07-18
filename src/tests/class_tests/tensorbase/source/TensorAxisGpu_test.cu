@@ -103,6 +103,36 @@ void test_gettersAndSettersGpuPrimitiveT()
   assert(tensoraxis.getLabels()(2, 4) == 1);
 }
 
+void test_copyGpuPrimitiveT()
+{
+  Eigen::Tensor<std::string, 1> dimensions(3);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  dimensions(2) = "TensorDimension3";
+  Eigen::Tensor<int, 2> labels(3, 5);
+  labels.setConstant(1);
+  TensorAxisGpuPrimitiveT<int> tensoraxis1("1", dimensions, labels);
+
+  // Initialize the device
+  cudaStream_t stream;
+  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  Eigen::GpuStreamDevice stream_device(&stream, 0);
+  Eigen::GpuDevice device(&stream_device);
+
+  // Test expected
+  tensoraxis1.syncHAndDData(device);
+  auto tensoraxis_copy = tensoraxis1.copy(device);
+  tensoraxis1.syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  assert(*(tensoraxis_copy.get()) == tensoraxis1);
+  for (int i = 0; i < 3; ++i) {
+    for (int j = 0; j < 5; ++j) {
+      assert(tensoraxis_copy->getLabels()(i, j) == labels(i, j));
+    }
+  }
+}
+
 void test_deleteFromAxisGpuPrimitiveT()
 {
   // Setup the axis
@@ -699,6 +729,36 @@ void test_gettersAndSettersGpuClassT()
   assert(tensoraxis.getLabels()(2, 4).getTensorArray()(0) == 1);
 }
 
+void test_copyGpuClassT()
+{
+  Eigen::Tensor<std::string, 1> dimensions(3);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  dimensions(2) = "TensorDimension3";
+  Eigen::Tensor<TensorArrayGpu8<int>, 2> labels(3, 5);
+  labels.setConstant(TensorArrayGpu8<int>({ 1, 1, 1, 1, 1, 1, 1, 1 }));
+  TensorAxisGpuClassT<TensorArrayGpu8, int> tensoraxis1("1", dimensions, labels);
+
+  // Initialize the device
+  cudaStream_t stream;
+  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  Eigen::GpuStreamDevice stream_device(&stream, 0);
+  Eigen::GpuDevice device(&stream_device);
+
+  // Test expected
+  tensoraxis1.syncHAndDData(device);
+  auto tensoraxis_copy = tensoraxis1.copy(device);
+  tensoraxis1.syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  assert(*(tensoraxis_copy.get()) == tensoraxis1);
+  for (int i = 0; i < 3; ++i) {
+    for (int j = 0; j < 5; ++j) {
+      assert(tensoraxis_copy->getLabels()(i, j) == labels(i, j));
+    }
+  }
+}
+
 void test_deleteFromAxisGpuClassT()
 {
   // Setup the axis
@@ -834,6 +894,7 @@ void test_appendLabelsToAxis2GpuClassT()
   dimensions(0) = "TensorDimension1";
   dimensions(1) = "TensorDimension2";
   TensorAxisGpuClassT<TensorArrayGpu8, char> tensoraxis("1", n_dimensions, 0);
+  tensoraxis.setDimensions(dimensions);
 
   // Setup the new labels
   Eigen::Tensor<TensorArrayGpu8<char>, 2> labels_values(Eigen::array<Eigen::Index, 2>({ n_dimensions, n_labels }));
@@ -1136,6 +1197,7 @@ int main(int argc, char** argv)
   test_constructor1GpuPrimitiveT();
   test_constructor2GpuPrimitiveT();
   test_gettersAndSettersGpuPrimitiveT();
+  test_copyGpuPrimitiveT();
   test_deleteFromAxisGpuPrimitiveT();
   test_appendLabelsToAxis1GpuPrimitiveT();
   test_appendLabelsToAxis2GpuPrimitiveT();
@@ -1151,6 +1213,7 @@ int main(int argc, char** argv)
   test_constructor1GpuClassT(); 
   test_constructor2GpuClassT();
   test_gettersAndSettersGpuClassT();
+  test_copyGpuClassT();
   test_deleteFromAxisGpuClassT();
   test_appendLabelsToAxis1GpuClassT();
   test_appendLabelsToAxis2GpuClassT();

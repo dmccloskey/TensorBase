@@ -46,12 +46,28 @@ BOOST_AUTO_TEST_CASE(selectClause1DefaultDevice)
   tensorTable1.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::DefaultDevice>>)std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
   tensorTable1.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::DefaultDevice>>)std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3)));
   tensorTable1.setAxes(device);
+  Eigen::Tensor<float, 3> tensor_values1(Eigen::array<Eigen::Index, 3>({ nlabels1, nlabels2, nlabels3 }));
+  for (int k = 0; k < nlabels3; ++k) {
+    for (int j = 0; j < nlabels2; ++j) {
+      for (int i = 0; i < nlabels1; ++i) {
+        tensor_values1(i, j, k) = i + j * nlabels1 + k * nlabels1 * nlabels2;
+      }
+    }
+  }
+  tensorTable1.setData(tensor_values1);
   std::shared_ptr<TensorTable<float, Eigen::DefaultDevice, 3>> tensorTable1_ptr = std::make_shared<TensorTableDefaultDevice<float, 3>>(tensorTable1);
 
   TensorTableDefaultDevice<int, 2> tensorTable2("2");
   tensorTable2.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::DefaultDevice>>)std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
   tensorTable2.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::DefaultDevice>>)std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
   tensorTable2.setAxes(device);
+  Eigen::Tensor<int, 2> tensor_values2(Eigen::array<Eigen::Index, 2>({ nlabels1, nlabels2 }));
+  for (int j = 0; j < nlabels2; ++j) {
+    for (int i = 0; i < nlabels1; ++i) {
+      tensor_values2(i, j) = i + j * nlabels1;
+    }
+  }
+  tensorTable2.setData(tensor_values2);
   std::shared_ptr<TensorTable<int, Eigen::DefaultDevice, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(tensorTable2);
 
   // Set up the collection
@@ -99,6 +115,32 @@ BOOST_AUTO_TEST_CASE(selectClause1DefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 1);
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(1), 0);
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 3);
+
+  // Test the expected data sizes after the apply commend
+  tensorSelect.applySelect(collection_1_ptr, {"1","2"}, {"1","2a"}, device);
+  BOOST_CHECK(collection_1_ptr->getTableNames() == std::vector<std::string>({ "1","2","2a" }));
+  BOOST_CHECK_EQUAL(collection_1_ptr->getTensorTableConcept("1")->getDataTensorSize(), (nlabels1 - 1) * nlabels2 * nlabels3);
+  std::shared_ptr<float[]> table_1_data_ptr;
+  collection_1_ptr->getTensorTableConcept("1")->getDataPointer(table_1_data_ptr);
+  Eigen::TensorMap<Eigen::Tensor<float, 3>> table_1_values(table_1_data_ptr.get(), (nlabels1 - 1), nlabels2, nlabels3);
+  for (int k = 0; k < nlabels3; ++k) {
+    for (int j = 0; j < nlabels2; ++j) {
+      for (int i = 1; i < nlabels1; ++i) {
+        BOOST_CHECK_EQUAL(table_1_values(i-1,j,k), tensor_values1(i, j, k));
+      }
+    }
+  }
+  BOOST_CHECK_EQUAL(collection_1_ptr->getTensorTableConcept("2")->getDataTensorSize(), nlabels1 * nlabels2); // unchanged
+  BOOST_CHECK_EQUAL(collection_1_ptr->getTensorTableConcept("2a")->getDataTensorSize(), nlabels1 * (nlabels2 - 1));
+  std::shared_ptr<int[]> table_2a_data_ptr;
+  collection_1_ptr->getTensorTableConcept("2a")->getDataPointer(table_2a_data_ptr);
+  Eigen::TensorMap<Eigen::Tensor<int, 2>> table_2a_values(table_2a_data_ptr.get(), nlabels1, nlabels2-1);
+  for (int j = 0; j < nlabels2; ++j) {
+    for (int i = 0; i < nlabels1; ++i) {
+      if (j < 1) BOOST_CHECK_EQUAL(table_2a_values(i, j), tensor_values2(i, j));
+      else if (j > 1) BOOST_CHECK_EQUAL(table_2a_values(i, j-1), tensor_values2(i, j));
+    }
+  }
 }
 
 BOOST_AUTO_TEST_CASE(selectClause2DefaultDevice)
@@ -121,12 +163,28 @@ BOOST_AUTO_TEST_CASE(selectClause2DefaultDevice)
 	tensorTable1.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::DefaultDevice>>)std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
 	tensorTable1.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::DefaultDevice>>)std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("3", dimensions3, labels3)));
 	tensorTable1.setAxes(device);
+  Eigen::Tensor<float, 3> tensor_values1(Eigen::array<Eigen::Index, 3>({ nlabels1, nlabels2, nlabels3 }));
+  for (int k = 0; k < nlabels3; ++k) {
+    for (int j = 0; j < nlabels2; ++j) {
+      for (int i = 0; i < nlabels1; ++i) {
+        tensor_values1(i, j, k) = i + j * nlabels1 + k * nlabels1 * nlabels2;
+      }
+    }
+  }
+  tensorTable1.setData(tensor_values1);
 	std::shared_ptr<TensorTable<float, Eigen::DefaultDevice, 3>> tensorTable1_ptr = std::make_shared<TensorTableDefaultDevice<float, 3>>(tensorTable1);
 
 	TensorTableDefaultDevice<int, 2> tensorTable2("2");
 	tensorTable2.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::DefaultDevice>>)std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1", dimensions1, labels1)));
 	tensorTable2.addTensorAxis((std::shared_ptr<TensorAxis<int, Eigen::DefaultDevice>>)std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("2", dimensions2, labels2)));
 	tensorTable2.setAxes(device);
+  Eigen::Tensor<int, 2> tensor_values2(Eigen::array<Eigen::Index, 2>({ nlabels1, nlabels2 }));
+  for (int j = 0; j < nlabels2; ++j) {
+    for (int i = 0; i < nlabels1; ++i) {
+      tensor_values2(i, j) = i + j * nlabels1;
+    }
+  }
+  tensorTable2.setData(tensor_values2);
 	std::shared_ptr<TensorTable<int, Eigen::DefaultDevice, 2>> tensorTable2_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(tensorTable2);
 
 	// Set up the collection
@@ -174,6 +232,32 @@ BOOST_AUTO_TEST_CASE(selectClause2DefaultDevice)
 	BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 1);
 	BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(1), 0);
 	BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 3);
+
+  // Test the expected data indices after the apply commend
+  tensorSelect.applySelect(collection_1_ptr, { "1","2" }, { "1","2a" }, device);
+  BOOST_CHECK(collection_1_ptr->getTableNames() == std::vector<std::string>({ "1","2","2a" }));
+  BOOST_CHECK_EQUAL(collection_1_ptr->getTensorTableConcept("1")->getDataTensorSize(), (nlabels1 - 1) * nlabels2 * nlabels3);
+  std::shared_ptr<float[]> table_1_data_ptr;
+  collection_1_ptr->getTensorTableConcept("1")->getDataPointer(table_1_data_ptr);
+  Eigen::TensorMap<Eigen::Tensor<float, 3>> table_1_values(table_1_data_ptr.get(), (nlabels1 - 1), nlabels2, nlabels3);
+  for (int k = 0; k < nlabels3; ++k) {
+    for (int j = 0; j < nlabels2; ++j) {
+      for (int i = 1; i < nlabels1; ++i) {
+        BOOST_CHECK_EQUAL(table_1_values(i - 1, j, k), tensor_values1(i, j, k));
+      }
+    }
+  }
+  BOOST_CHECK_EQUAL(collection_1_ptr->getTensorTableConcept("2")->getDataTensorSize(), nlabels1 * nlabels2); // unchanged
+  BOOST_CHECK_EQUAL(collection_1_ptr->getTensorTableConcept("2a")->getDataTensorSize(), nlabels1 * (nlabels2 - 1));
+  std::shared_ptr<int[]> table_2a_data_ptr;
+  collection_1_ptr->getTensorTableConcept("2a")->getDataPointer(table_2a_data_ptr);
+  Eigen::TensorMap<Eigen::Tensor<int, 2>> table_2a_values(table_2a_data_ptr.get(), nlabels1, nlabels2 - 1);
+  for (int j = 0; j < nlabels2; ++j) {
+    for (int i = 0; i < nlabels1; ++i) {
+      if (j < 1) BOOST_CHECK_EQUAL(table_2a_values(i, j), tensor_values2(i, j));
+      else if (j > 1) BOOST_CHECK_EQUAL(table_2a_values(i, j - 1), tensor_values2(i, j));
+    }
+  }
 }
 
 BOOST_AUTO_TEST_CASE(whereClause1DefaultDevice)
@@ -533,7 +617,7 @@ BOOST_AUTO_TEST_CASE(sortClause1DefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 1);
 
   // Apply the select clause
-  tensorSelect.applySort(collection_1_ptr, { "1", "2" }, { "1", "2" }, device);
+  tensorSelect.applySort(collection_1_ptr, { "1", "2" }, { "1", "2a" }, device);
 
   // Test for the expected table attributes
   Eigen::array<Eigen::Index, 3> dimensions1_test = { nlabels1, nlabels2, nlabels3 };
@@ -551,6 +635,18 @@ BOOST_AUTO_TEST_CASE(sortClause1DefaultDevice)
   BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(2), 3);
   BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(3), 4);
   BOOST_CHECK_EQUAL(tensorTable1_ptr->getIndicesView().at("3")->getData()(4), 5);
+  BOOST_CHECK(collection_1_ptr->getTableNames() == std::vector<std::string>({ "1","2","2a" }));
+  BOOST_CHECK_EQUAL(collection_1_ptr->getTensorTableConcept("1")->getDataTensorSize(), nlabels1 * nlabels2 * nlabels3);
+  std::shared_ptr<float[]> table_1_data_ptr;
+  collection_1_ptr->getTensorTableConcept("1")->getDataPointer(table_1_data_ptr);
+  Eigen::TensorMap<Eigen::Tensor<float, 3>> table_1_values(table_1_data_ptr.get(), nlabels1, nlabels2, nlabels3);
+  for (int k = 0; k < nlabels3; ++k) {
+    for (int j = 0; j < nlabels2; ++j) {
+      for (int i = 0; i < nlabels1; ++i) {
+        BOOST_CHECK_EQUAL(table_1_values(i, j, k), tensor_values1(nlabels1 - i - 1, j, nlabels3 - k - 1));
+      }
+    }
+  }
 
   Eigen::array<Eigen::Index, 2> dimensions2_test = { nlabels1, nlabels2 };
   for (int i = 0; i < 2; ++i) {
@@ -559,9 +655,25 @@ BOOST_AUTO_TEST_CASE(sortClause1DefaultDevice)
   }
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("1")->getData()(0), 1);
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("1")->getData()(1), 2);
-  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 1);
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 3);
   BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(1), 2);
-  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 3);
+  BOOST_CHECK_EQUAL(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 1);
+  BOOST_CHECK_EQUAL(collection_1_ptr->getTensorTableConcept("2")->getDataTensorSize(), nlabels1 * nlabels2);
+
+  BOOST_CHECK_EQUAL(collection_1_ptr->getTensorTableConcept("2a")->getIndicesView().at("1")->getData()(0), 1);
+  BOOST_CHECK_EQUAL(collection_1_ptr->getTensorTableConcept("2a")->getIndicesView().at("1")->getData()(1), 2);
+  BOOST_CHECK_EQUAL(collection_1_ptr->getTensorTableConcept("2a")->getIndicesView().at("2")->getData()(0), 1);
+  BOOST_CHECK_EQUAL(collection_1_ptr->getTensorTableConcept("2a")->getIndicesView().at("2")->getData()(1), 2);
+  BOOST_CHECK_EQUAL(collection_1_ptr->getTensorTableConcept("2a")->getIndicesView().at("2")->getData()(2), 3);
+  BOOST_CHECK_EQUAL(collection_1_ptr->getTensorTableConcept("2a")->getDataTensorSize(), nlabels1 * nlabels2);
+  std::shared_ptr<double[]> table_2a_data_ptr;
+  collection_1_ptr->getTensorTableConcept("2a")->getDataPointer(table_2a_data_ptr);
+  Eigen::TensorMap<Eigen::Tensor<double, 2>> table_2a_values(table_2a_data_ptr.get(), nlabels1, nlabels2);
+  for (int j = 0; j < nlabels2; ++j) {
+    for (int i = 0; i < nlabels1; ++i) {
+      BOOST_CHECK_EQUAL(table_2a_values(i, j), tensor_values2(i, nlabels2 - j -1));
+    }
+  }
 }
 
 BOOST_AUTO_TEST_CASE(sortClause2DefaultDevice)
