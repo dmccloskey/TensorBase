@@ -239,9 +239,11 @@ namespace TensorBaseBenchmarks
   template<typename LabelsT, typename TensorT, typename DeviceT>
   inline void DataFrameManagerTime<LabelsT, TensorT, DeviceT>::initTime()
   {
-    std::istringstream iss("01/01/2008 00:00:00");
-    iss.imbue(std::locale(""));
-    iss >> std::get_time(&time_, "%d/%m/%Y %H:%M:%S");
+    time_ = { 0 };
+    //// The below is not defined in CUDA c++11...
+    //std::istringstream iss("01/01/2008 00:00:00");
+    //iss.imbue(std::locale(""));
+    //iss >> std::get_time(&time_, "%d/%m/%Y %H:%M:%S");
     time_.tm_isdst = false;
   }
 

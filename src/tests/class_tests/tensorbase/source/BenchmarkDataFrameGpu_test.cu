@@ -28,6 +28,9 @@ void test_InsertUpdateDeleteGpu()
   // Setup the device
   cudaStream_t stream; assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess); Eigen::GpuStreamDevice stream_device(&stream, 0); Eigen::GpuDevice device(&stream_device);
 
+  // Make the nD TensorTables
+  std::shared_ptr<TensorCollection<Eigen::GpuDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(data_size, shard_span_perc, is_columnar, device);
+
   // Setup the transaction manager
   TransactionManager<Eigen::GpuDevice> transaction_manager;
   transaction_manager.setMaxOperations(data_size + 1);
@@ -92,7 +95,7 @@ void test_InsertUpdateDeleteGpu()
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 3>> values_time_ptr;
   dataframe_manager_time.getInsertData(0, data_size, labels_time_ptr, values_time_ptr);
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>> labels_labels_ptr;
-  std::shared_ptr<TensorData<TensorArray32<char>, Eigen::GpuDevice, 2>> values_labels_ptr;
+  std::shared_ptr<TensorData<TensorArrayGpu32<char>, Eigen::GpuDevice, 2>> values_labels_ptr;
   dataframe_manager_labels.getInsertData(0, data_size, labels_labels_ptr, values_labels_ptr);
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>> labels_image_2d_ptr;
   std::shared_ptr<TensorData<float, Eigen::GpuDevice, 4>> values_image_2d_ptr;
@@ -148,9 +151,9 @@ void test_InsertUpdateDeleteGpu()
     }
   }
   assert(n_dim_tensor_collection->tables_.at("DataFrame_label")->getDataTensorSize() == 1 * data_size);
-  std::shared_ptr<TensorArray32<char>[]> data_insert_data_labels;
+  std::shared_ptr<TensorArrayGpu32<char>[]> data_insert_data_labels;
   n_dim_tensor_collection->tables_.at("DataFrame_label")->getDataPointer(data_insert_data_labels);
-  Eigen::TensorMap<Eigen::Tensor<TensorArray32<char>, 2>> data_insert_values_labels(data_insert_data_labels.get(), data_size, 1);
+  Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu32<char>, 2>> data_insert_values_labels(data_insert_data_labels.get(), data_size, 1);
   for (int i = 0; i < data_size; ++i) {
     assert(data_insert_values_labels(i, 0) == values_labels_ptr->getData()(i, 0));
   }
@@ -253,9 +256,9 @@ void test_InsertUpdateDeleteGpu()
     }
   }
   assert(n_dim_tensor_collection->tables_.at("DataFrame_label")->getDataTensorSize() == 1 * data_size);
-  std::shared_ptr<TensorArray32<char>[]> data_update_data_labels;
+  std::shared_ptr<TensorArrayGpu32<char>[]> data_update_data_labels;
   n_dim_tensor_collection->tables_.at("DataFrame_label")->getDataPointer(data_update_data_labels);
-  Eigen::TensorMap<Eigen::Tensor<TensorArray32<char>, 2>> data_update_values_labels(data_update_data_labels.get(), data_size, 1);
+  Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu32<char>, 2>> data_update_values_labels(data_update_data_labels.get(), data_size, 1);
   for (int i = 0; i < data_size; ++i) {
     assert(data_update_values_labels(i, 0) == values_labels_ptr->getData()(i, 0));
   }

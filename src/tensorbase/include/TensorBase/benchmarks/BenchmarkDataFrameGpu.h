@@ -20,7 +20,9 @@ namespace TensorBaseBenchmarks
   /*
   @class Specialized `SelectTableDataIsValid` for the Gpu case
   */
-  class SelectTableDataIsValidGpu: public SelectTableDataIsValid<TensorArrayGpu32<char>, int, Eigen::GpuDevice> {
+  template<template<class> class ArrayT, class TensorT>
+  class SelectTableDataIsValidGpuT: public SelectTableDataIsValid<ArrayT<TensorT>, int, Eigen::GpuDevice> {};
+  class SelectTableDataIsValidGpu : public SelectTableDataIsValidGpuT<TensorArrayGpu32, char> {
   public:
     void setLabelsValuesResult(Eigen::GpuDevice& device) override;
   };
@@ -52,7 +54,9 @@ namespace TensorBaseBenchmarks
   /*
   @class Specialized `SelectTableDataLabel` for the Gpu case
   */
-  class SelectTableDataLabelGpu : public SelectTableDataLabel<TensorArrayGpu32<char>, TensorArrayGpu32<char>, Eigen::GpuDevice> {
+  template<template<class> class ArrayT1, class TensorT1, template<class> class ArrayT2, class TensorT2>
+  class SelectTableDataLabelGpuT : public SelectTableDataLabel<ArrayT1<TensorT1>, ArrayT1<TensorT1>, Eigen::GpuDevice> {};
+  class SelectTableDataLabelGpu : public SelectTableDataLabelGpuT<TensorArrayGpu32, char, TensorArrayGpu32, char> {
   public:
     void setLabelsValuesResult(Eigen::GpuDevice& device) override;
   };
@@ -78,7 +82,9 @@ namespace TensorBaseBenchmarks
   /*
   @class Specialized `SelectTableDataImage2D` for the Gpu case
   */
-  class SelectTableDataImage2DGpu : public SelectTableDataImage2D<TensorArrayGpu8<char>, int, float, Eigen::GpuDevice> {
+  template<template<class> class ArrayT, class TensorT>
+  class SelectTableDataImage2DGpuT : public SelectTableDataImage2D<ArrayT<TensorT>, int, float, Eigen::GpuDevice> {};
+  class SelectTableDataImage2DGpu : public SelectTableDataImage2DGpuT<TensorArrayGpu8, char> {
   public:
     void setLabelsValuesResult(Eigen::GpuDevice& device) override;
   };
@@ -290,29 +296,29 @@ namespace TensorBaseBenchmarks
       std::shared_ptr<TensorData<int, Eigen::GpuDevice, 3>> values_time_ptr;
       dataframe_manager_time.getInsertData(i, span, labels_time_ptr, values_time_ptr);
       SelectTableDataIndices<int, Eigen::GpuDevice> selectClause_time(labels_time_ptr, "DataFrame_time");
-      TensorDeleteFromAxisGpu<int, int, 3> tensorDelete_time("DataFrame_time", "1_indices", selectClause_time);
-      std::shared_ptr<TensorOperation<Eigen::GpuDevice>> tensorDelete_time_ptr = std::make_shared<TensorDeleteFromAxisGpu<int, int, 3>>(tensorDelete_time);
+      TensorDeleteFromAxisGpuPrimitiveT<int, int, 3> tensorDelete_time("DataFrame_time", "1_indices", selectClause_time);
+      std::shared_ptr<TensorOperation<Eigen::GpuDevice>> tensorDelete_time_ptr = std::make_shared<TensorDeleteFromAxisGpuPrimitiveT<int, int, 3>>(tensorDelete_time);
       transaction_manager.executeOperation(tensorDelete_time_ptr, device);
       std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>> labels_labels_ptr;
       std::shared_ptr<TensorData<TensorArrayGpu32<char>, Eigen::GpuDevice, 2>> values_labels_ptr;
       dataframe_manager_labels.getInsertData(i, span, labels_labels_ptr, values_labels_ptr);
       SelectTableDataIndices<int, Eigen::GpuDevice> selectClause_labels(labels_labels_ptr, "DataFrame_label");
-      TensorDeleteFromAxisGpu<int, TensorArrayGpu32<char>, 2> tensorDelete_labels("DataFrame_label", "1_indices", selectClause_labels);
-      std::shared_ptr<TensorOperation<Eigen::GpuDevice>> tensorDelete_labels_ptr = std::make_shared<TensorDeleteFromAxisGpu<int, TensorArrayGpu32<char>, 2>>(tensorDelete_labels);
+      TensorDeleteFromAxisGpuClassT<int, TensorArrayGpu32, char, 2> tensorDelete_labels("DataFrame_label", "1_indices", selectClause_labels);
+      std::shared_ptr<TensorOperation<Eigen::GpuDevice>> tensorDelete_labels_ptr = std::make_shared<TensorDeleteFromAxisGpuClassT<int, TensorArrayGpu32, char, 2>>(tensorDelete_labels);
       transaction_manager.executeOperation(tensorDelete_labels_ptr, device);
       std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>> labels_image_2d_ptr;
       std::shared_ptr<TensorData<float, Eigen::GpuDevice, 4>> values_image_2d_ptr;
       dataframe_manager_image_2d.getInsertData(i, span, labels_image_2d_ptr, values_image_2d_ptr);
       SelectTableDataIndices<int, Eigen::GpuDevice> selectClause_image_2d(labels_image_2d_ptr, "DataFrame_image_2D");
-      TensorDeleteFromAxisGpu<int, float, 4> tensorDelete_image_2d("DataFrame_image_2D", "1_indices", selectClause_image_2d);
-      std::shared_ptr<TensorOperation<Eigen::GpuDevice>> tensorDelete_image_2d_ptr = std::make_shared<TensorDeleteFromAxisGpu<int, float, 4>>(tensorDelete_image_2d);
+      TensorDeleteFromAxisGpuPrimitiveT<int, float, 4> tensorDelete_image_2d("DataFrame_image_2D", "1_indices", selectClause_image_2d);
+      std::shared_ptr<TensorOperation<Eigen::GpuDevice>> tensorDelete_image_2d_ptr = std::make_shared<TensorDeleteFromAxisGpuPrimitiveT<int, float, 4>>(tensorDelete_image_2d);
       transaction_manager.executeOperation(tensorDelete_image_2d_ptr, device);
       std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>> labels_is_valid_ptr;
       std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>> values_is_valid_ptr;
       dataframe_manager_is_valid.getInsertData(i, span, labels_is_valid_ptr, values_is_valid_ptr);
       SelectTableDataIndices<int, Eigen::GpuDevice> selectClause_is_valid(labels_is_valid_ptr, "DataFrame_is_valid");
-      TensorDeleteFromAxisGpu<int, int, 2> tensorDelete_is_valid("DataFrame_is_valid", "1_indices", selectClause_is_valid);
-      std::shared_ptr<TensorOperation<Eigen::GpuDevice>> tensorDelete_is_valid_ptr = std::make_shared<TensorDeleteFromAxisGpu<int, int, 2>>(tensorDelete_is_valid);
+      TensorDeleteFromAxisGpuPrimitiveT<int, int, 2> tensorDelete_is_valid("DataFrame_is_valid", "1_indices", selectClause_is_valid);
+      std::shared_ptr<TensorOperation<Eigen::GpuDevice>> tensorDelete_is_valid_ptr = std::make_shared<TensorDeleteFromAxisGpuPrimitiveT<int, int, 2>>(tensorDelete_is_valid);
       transaction_manager.executeOperation(tensorDelete_is_valid_ptr, device);
       if (!in_memory) {
         transaction_manager.commit(device);
@@ -348,10 +354,10 @@ namespace TensorBaseBenchmarks
     labels_3_y = labels_3_y.constant(1).cumsum(1);
 
 		// Setup the tables
-		std::shared_ptr<TensorTable<int, Eigen::GpuDevice, 3>> table_1_ptr = std::make_shared<TensorTableGpu<int, 3>>(TensorTableGpu<int, 3>("DataFrame_time"));
-		std::shared_ptr<TensorAxis<TensorArrayGpu32<char>, Eigen::GpuDevice>> table_1_axis_1_ptr = std::make_shared<TensorAxisGpu<TensorArrayGpu32<char>>>(TensorAxisGpu<TensorArrayGpu32<char>>("2_columns", dimensions_1, labels_1_1));
-    std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>> table_1_axis_2_ptr = std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("1_indices", 1, 0));
-    std::shared_ptr<TensorAxis<TensorArrayGpu8<char>, Eigen::GpuDevice>> table_1_axis_3_ptr = std::make_shared<TensorAxisGpu<TensorArrayGpu8<char>>>(TensorAxisGpu<TensorArrayGpu8<char>>("3_time", dimensions_3_t, labels_3_t));
+		std::shared_ptr<TensorTable<int, Eigen::GpuDevice, 3>> table_1_ptr = std::make_shared<TensorTableGpuPrimitiveT<int, 3>>(TensorTableGpuPrimitiveT<int, 3>("DataFrame_time"));
+		std::shared_ptr<TensorAxis<TensorArrayGpu32<char>, Eigen::GpuDevice>> table_1_axis_1_ptr = std::make_shared<TensorAxisGpuClassT<TensorArrayGpu32, char>>(TensorAxisGpuClassT<TensorArrayGpu32, char>("2_columns", dimensions_1, labels_1_1));
+    std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>> table_1_axis_2_ptr = std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1_indices", 1, 0));
+    std::shared_ptr<TensorAxis<TensorArrayGpu8<char>, Eigen::GpuDevice>> table_1_axis_3_ptr = std::make_shared<TensorAxisGpuClassT<TensorArrayGpu8, char>>(TensorAxisGpuClassT<TensorArrayGpu8, char>("3_time", dimensions_3_t, labels_3_t));
 		table_1_axis_2_ptr->setDimensions(dimensions_2);
 		table_1_ptr->addTensorAxis(table_1_axis_1_ptr);
 		table_1_ptr->addTensorAxis(table_1_axis_2_ptr);
@@ -368,9 +374,9 @@ namespace TensorBaseBenchmarks
     table_1_ptr->setMaximumDimensions(Eigen::array<Eigen::Index, 3>({ data_size, 1, 6}));
 
     // Setup the tables
-		std::shared_ptr<TensorTable<TensorArrayGpu32<char>, Eigen::GpuDevice, 2>> table_2_ptr = std::make_shared<TensorTableGpu<TensorArrayGpu32<char>, 2>>(TensorTableGpu<TensorArrayGpu32<char>, 2>("DataFrame_label"));
-    std::shared_ptr<TensorAxis<TensorArrayGpu32<char>, Eigen::GpuDevice>> table_2_axis_1_ptr = std::make_shared<TensorAxisGpu<TensorArrayGpu32<char>>>(TensorAxisGpu<TensorArrayGpu32<char>>("2_columns", dimensions_1, labels_1_1));
-    std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>> table_2_axis_2_ptr = std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("1_indices", 1, 0));
+		std::shared_ptr<TensorTable<TensorArrayGpu32<char>, Eigen::GpuDevice, 2>> table_2_ptr = std::make_shared<TensorTableGpuClassT<TensorArrayGpu32, char, 2>>(TensorTableGpuClassT<TensorArrayGpu32, char, 2>("DataFrame_label"));
+    std::shared_ptr<TensorAxis<TensorArrayGpu32<char>, Eigen::GpuDevice>> table_2_axis_1_ptr = std::make_shared<TensorAxisGpuClassT<TensorArrayGpu32, char>>(TensorAxisGpuClassT<TensorArrayGpu32, char>("2_columns", dimensions_1, labels_1_1));
+    std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>> table_2_axis_2_ptr = std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1_indices", 1, 0));
 		table_2_axis_2_ptr->setDimensions(dimensions_2);
     table_2_ptr->addTensorAxis(table_2_axis_1_ptr);
 		table_2_ptr->addTensorAxis(table_2_axis_2_ptr);
@@ -385,11 +391,11 @@ namespace TensorBaseBenchmarks
     table_2_ptr->setMaximumDimensions(Eigen::array<Eigen::Index, 2>({ data_size, 1}));
 
     // Setup the tables
-    std::shared_ptr<TensorTable<float, Eigen::GpuDevice, 4>> table_3_ptr = std::make_shared<TensorTableGpu<float, 4>>(TensorTableGpu<float, 4>("DataFrame_image_2D"));
-    std::shared_ptr<TensorAxis<TensorArrayGpu32<char>, Eigen::GpuDevice>> table_3_axis_1_ptr = std::make_shared<TensorAxisGpu<TensorArrayGpu32<char>>>(TensorAxisGpu<TensorArrayGpu32<char>>("2_columns", dimensions_1, labels_1_3));
-    std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>> table_3_axis_2_ptr = std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("1_indices", 1, 0));
-    std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>> table_3_axis_3_ptr = std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("3_x", dimensions_3_x, labels_3_x));
-    std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>> table_3_axis_4_ptr = std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("3_y", dimensions_3_y, labels_3_y));
+    std::shared_ptr<TensorTable<float, Eigen::GpuDevice, 4>> table_3_ptr = std::make_shared<TensorTableGpuPrimitiveT<float, 4>>(TensorTableGpuPrimitiveT<float, 4>("DataFrame_image_2D"));
+    std::shared_ptr<TensorAxis<TensorArrayGpu32<char>, Eigen::GpuDevice>> table_3_axis_1_ptr = std::make_shared<TensorAxisGpuClassT<TensorArrayGpu32, char>>(TensorAxisGpuClassT<TensorArrayGpu32, char>("2_columns", dimensions_1, labels_1_3));
+    std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>> table_3_axis_2_ptr = std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1_indices", 1, 0));
+    std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>> table_3_axis_3_ptr = std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("3_x", dimensions_3_x, labels_3_x));
+    std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>> table_3_axis_4_ptr = std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("3_y", dimensions_3_y, labels_3_y));
     table_3_axis_2_ptr->setDimensions(dimensions_2);
     table_3_ptr->addTensorAxis(table_3_axis_1_ptr);
     table_3_ptr->addTensorAxis(table_3_axis_2_ptr);
@@ -408,9 +414,9 @@ namespace TensorBaseBenchmarks
     table_3_ptr->setMaximumDimensions(Eigen::array<Eigen::Index, 4>({ data_size, 1, 28, 28 }));
 
     // Setup the tables
-    std::shared_ptr<TensorTable<int, Eigen::GpuDevice, 2>> table_4_ptr = std::make_shared<TensorTableGpu<int, 2>>(TensorTableGpu<int, 2>("DataFrame_is_valid"));
-    std::shared_ptr<TensorAxis<TensorArrayGpu32<char>, Eigen::GpuDevice>> table_4_axis_1_ptr = std::make_shared<TensorAxisGpu<TensorArrayGpu32<char>>>(TensorAxisGpu<TensorArrayGpu32<char>>("2_columns", dimensions_1, labels_1_1));
-    std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>> table_4_axis_2_ptr = std::make_shared<TensorAxisGpu<int>>(TensorAxisGpu<int>("1_indices", 1, 0));
+    std::shared_ptr<TensorTable<int, Eigen::GpuDevice, 2>> table_4_ptr = std::make_shared<TensorTableGpuPrimitiveT<int, 2>>(TensorTableGpuPrimitiveT<int, 2>("DataFrame_is_valid"));
+    std::shared_ptr<TensorAxis<TensorArrayGpu32<char>, Eigen::GpuDevice>> table_4_axis_1_ptr = std::make_shared<TensorAxisGpuClassT<TensorArrayGpu32, char>>(TensorAxisGpuClassT<TensorArrayGpu32, char>("2_columns", dimensions_1, labels_1_1));
+    std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>> table_4_axis_2_ptr = std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("1_indices", 1, 0));
     table_4_axis_2_ptr->setDimensions(dimensions_2);
     table_4_ptr->addTensorAxis(table_4_axis_1_ptr);
     table_4_ptr->addTensorAxis(table_4_axis_2_ptr);
