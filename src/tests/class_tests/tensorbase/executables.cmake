@@ -1,5 +1,7 @@
 set(benchmarks_executables_list
+  BenchmarkDataFrameCpu_test
   BenchmarkDataFrameDefaultDevice_test
+  BenchmarkDataFrameGpu_test
   BenchmarkPixelsCpu_test
   BenchmarkPixelsDefaultDevice_test
   BenchmarkPixelsGpu_test

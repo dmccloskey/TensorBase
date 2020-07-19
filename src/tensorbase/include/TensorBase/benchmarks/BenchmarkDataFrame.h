@@ -50,7 +50,7 @@ namespace TensorBaseBenchmarks
     void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) {
       setLabelsValuesResult(device);
       // Make and apply the where clause
-      WhereClause<LabelsT, TensorT, Eigen::DefaultDevice> where_clause1("DataFrame_is_valid", "2_columns", select_labels_, select_values_, logicalComparitors::EQUAL_TO, logicalModifiers::NONE, logicalContinuators::AND, logicalContinuators::AND);
+      WhereClause<LabelsT, TensorT, DeviceT> where_clause1("DataFrame_is_valid", "2_columns", select_labels_, select_values_, logicalComparitors::EQUAL_TO, logicalModifiers::NONE, logicalContinuators::AND, logicalContinuators::AND);
       TensorSelect tensorSelect;
       tensorSelect.whereClause(tensor_collection, where_clause1, device);
       tensorSelect.applySelect(tensor_collection, { "DataFrame_is_valid" }, { "DataFrame_is_valid_true" }, device);
@@ -59,7 +59,7 @@ namespace TensorBaseBenchmarks
       tensor_collection->tables_.at("DataFrame_is_valid")->resetIndicesView(device);
 
       // Make and apply the reduction clause
-      ReductionClause<Eigen::DefaultDevice> reduction_clause1("DataFrame_is_valid_true", reductionFunctions::SUM);
+      ReductionClause<DeviceT> reduction_clause1("DataFrame_is_valid_true", reductionFunctions::SUM);
       tensorSelect.applyReduction(tensor_collection, reduction_clause1, device);
 
       // Copy out the results
@@ -91,7 +91,7 @@ namespace TensorBaseBenchmarks
     void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) {
       setLabelsValuesResult(device);
       // Make and apply the where clause
-      WhereClause<LabelsT, TensorT, Eigen::DefaultDevice> where_clause1("DataFrame_label", "2_columns", select_labels_, select_values_, logicalComparitors::EQUAL_TO, logicalModifiers::NONE, logicalContinuators::AND, logicalContinuators::AND);
+      WhereClause<LabelsT, TensorT, DeviceT> where_clause1("DataFrame_label", "2_columns", select_labels_, select_values_, logicalComparitors::EQUAL_TO, logicalModifiers::NONE, logicalContinuators::AND, logicalContinuators::AND);
       TensorSelect tensorSelect;
       tensorSelect.whereClause(tensor_collection, where_clause1, device);
       tensorSelect.applySelect(tensor_collection, { "DataFrame_label" }, { "DataFrame_label_one" }, device);
@@ -100,7 +100,7 @@ namespace TensorBaseBenchmarks
       tensor_collection->tables_.at("DataFrame_label")->resetIndicesView(device);
 
       // Make and apply the reduction clause
-      ReductionClause<Eigen::DefaultDevice> reduction_clause1("DataFrame_label_one", reductionFunctions::COUNT);
+      ReductionClause<DeviceT> reduction_clause1("DataFrame_label_one", reductionFunctions::COUNT);
       tensorSelect.applyReduction(tensor_collection, reduction_clause1, device);
 
       // Copy out the results
@@ -130,9 +130,9 @@ namespace TensorBaseBenchmarks
       setLabelsValuesResult(device);
       TensorSelect tensorSelect;
       // Make the where clause on the time table
-      WhereClause<LabelsT, TensorT1, Eigen::DefaultDevice> where_clause1("DataFrame_time", "3_time", select_labels_, select_values_lt_, logicalComparitors::LESS_THAN_OR_EQUAL_TO, logicalModifiers::NONE, logicalContinuators::AND, logicalContinuators::AND);
+      WhereClause<LabelsT, TensorT1, DeviceT> where_clause1("DataFrame_time", "3_time", select_labels_, select_values_lt_, logicalComparitors::LESS_THAN_OR_EQUAL_TO, logicalModifiers::NONE, logicalContinuators::AND, logicalContinuators::AND);
       tensorSelect.whereClause(tensor_collection, where_clause1, device);
-      WhereClause<LabelsT, TensorT1, Eigen::DefaultDevice> where_clause2("DataFrame_time", "3_time", select_labels_, select_values_gt_, logicalComparitors::GREATER_THAN_OR_EQUAL_TO, logicalModifiers::NONE, logicalContinuators::AND, logicalContinuators::AND);
+      WhereClause<LabelsT, TensorT1, DeviceT> where_clause2("DataFrame_time", "3_time", select_labels_, select_values_gt_, logicalComparitors::GREATER_THAN_OR_EQUAL_TO, logicalModifiers::NONE, logicalContinuators::AND, logicalContinuators::AND);
       tensorSelect.whereClause(tensor_collection, where_clause2, device);
 
       // Copy the indice view from time to image_2D
@@ -146,7 +146,7 @@ namespace TensorBaseBenchmarks
       tensor_collection->tables_.at("DataFrame_image_2D")->resetIndicesView(device);
 
       // Make and apply the reduction clause
-      ReductionClause<Eigen::DefaultDevice> reduction_clause1("DataFrame_image_2D_jan", reductionFunctions::MEAN);
+      ReductionClause<DeviceT> reduction_clause1("DataFrame_image_2D_jan", reductionFunctions::MEAN);
       tensorSelect.applyReduction(tensor_collection, reduction_clause1, device);
 
       // Copy out the results
@@ -201,11 +201,11 @@ namespace TensorBaseBenchmarks
 	*/
 	template<typename LabelsT, typename TensorT, typename DeviceT>
 	class DataFrameManagerTime : public DataFrameManager<LabelsT, TensorT, DeviceT, 3> {
-    void initTime();
     std::tm time_ = { 0 };
 	public:
     DataFrameManagerTime(const int& data_size, const bool& use_random_values = false) : DataFrameManager(data_size, use_random_values) { initTime(); };
 		void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 3>>& values_ptr);
+    void initTime();
   };
   template<typename LabelsT, typename TensorT, typename DeviceT>
 	void DataFrameManagerTime<LabelsT, TensorT, DeviceT>::getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 3>>& values_ptr) {

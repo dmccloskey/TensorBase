@@ -1,16 +1,16 @@
 /**TODO:  Add copyright*/
 
-#define BOOST_TEST_MODULE BenchmarkDataFrameDefaultDefice test suite 
+#define BOOST_TEST_MODULE BenchmarkDataFrameCpu test suite 
 #include <boost/test/included/unit_test.hpp>
-#include <TensorBase/benchmarks/BenchmarkDataFrameDefaultDevice.h>
+#include <TensorBase/benchmarks/BenchmarkDataFrameCpu.h>
 
 using namespace TensorBase;
 using namespace TensorBaseBenchmarks;
 using namespace std;
 
-BOOST_AUTO_TEST_SUITE(benchmarkPixelsDefaultDevice)
+BOOST_AUTO_TEST_SUITE(benchmarkDataFrameCpu)
 
-BOOST_AUTO_TEST_CASE(InsertUpdateDeleteDefaultDevice)
+BOOST_AUTO_TEST_CASE(InsertUpdateDeleteCpu)
 {
   // Parameters for the test
   std::string data_dir = "";
@@ -23,19 +23,19 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteDefaultDevice)
   const int dim_span = std::pow(data_size, 0.25);
 
   // Setup the Benchmarking suite
-  BenchmarkDataFrame1TimePointDefaultDevice benchmark_1_tp;
+  BenchmarkDataFrame1TimePointCpu benchmark_1_tp;
 
   // Setup the DataFrameTensorCollectionGenerator
-  DataFrameTensorCollectionGeneratorDefaultDevice tensor_collection_generator;
+  DataFrameTensorCollectionGeneratorCpu tensor_collection_generator;
 
   // Setup the device
-  Eigen::DefaultDevice device;
+  Eigen::ThreadPool pool(1);  Eigen::ThreadPoolDevice device(&pool, 2);
 
   // Make the nD TensorTables
-  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(data_size, shard_span_perc, is_columnar, device);
+  std::shared_ptr<TensorCollection<Eigen::ThreadPoolDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(data_size, shard_span_perc, is_columnar, device);
 
   // Setup the transaction manager
-  TransactionManager<Eigen::DefaultDevice> transaction_manager;
+  TransactionManager<Eigen::ThreadPoolDevice> transaction_manager;
   transaction_manager.setMaxOperations(data_size + 1);
   transaction_manager.setTensorCollection(n_dim_tensor_collection);
 
@@ -90,21 +90,21 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteDefaultDevice)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getMaxDimSizeFromAxisName("1_indices"), data_size);
 
   // Make the expected tensor axes labels and tensor data after insert
-  DataFrameManagerTimeDefaultDevice dataframe_manager_time(data_size, false);
-  DataFrameManagerLabelDefaultDevice dataframe_manager_labels(data_size, false);
-  DataFrameManagerImage2DDefaultDevice dataframe_manager_image_2d(data_size, false);
-  DataFrameManagerIsValidDefaultDevice dataframe_manager_is_valid(data_size, false);
-  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_time_ptr;
-  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>> values_time_ptr;
+  DataFrameManagerTimeCpu dataframe_manager_time(data_size, false);
+  DataFrameManagerLabelCpu dataframe_manager_labels(data_size, false);
+  DataFrameManagerImage2DCpu dataframe_manager_image_2d(data_size, false);
+  DataFrameManagerIsValidCpu dataframe_manager_is_valid(data_size, false);
+  std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>> labels_time_ptr;
+  std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 3>> values_time_ptr;
   dataframe_manager_time.getInsertData(0, data_size, labels_time_ptr, values_time_ptr);
-  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_labels_ptr;
-  std::shared_ptr<TensorData<TensorArray32<char>, Eigen::DefaultDevice, 2>> values_labels_ptr;
+  std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>> labels_labels_ptr;
+  std::shared_ptr<TensorData<TensorArray32<char>, Eigen::ThreadPoolDevice, 2>> values_labels_ptr;
   dataframe_manager_labels.getInsertData(0, data_size, labels_labels_ptr, values_labels_ptr);
-  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_image_2d_ptr;
-  std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 4>> values_image_2d_ptr;
+  std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>> labels_image_2d_ptr;
+  std::shared_ptr<TensorData<float, Eigen::ThreadPoolDevice, 4>> values_image_2d_ptr;
   dataframe_manager_image_2d.getInsertData(0, data_size, labels_image_2d_ptr, values_image_2d_ptr);
-  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_is_valid_ptr;
-  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> values_is_valid_ptr;
+  std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>> labels_is_valid_ptr;
+  std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>> values_is_valid_ptr;
   dataframe_manager_is_valid.getInsertData(0, data_size, labels_is_valid_ptr, values_is_valid_ptr);
 
   // Test the expected tensor collection after insert
@@ -175,17 +175,17 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteDefaultDevice)
   }
 
   // Query for the number of valid entries
-  SelectTableDataIsValidDefaultDevice select_is_valid;
+  SelectTableDataIsValidCpu select_is_valid;
   select_is_valid(n_dim_tensor_collection, device);
   BOOST_CHECK_EQUAL(select_is_valid.result_->getData()(0), data_size / 2);
 
   // Query for the number of labels = "one"
-  SelectTableDataLabelDefaultDevice select_label_ones;
+  SelectTableDataLabelCpu select_label_ones;
   select_label_ones(n_dim_tensor_collection, device);
   BOOST_CHECK_EQUAL(select_label_ones.result_, 130);
 
   // Query for the average pixel intensity in the first two weeks of January
-  SelectTableDataImage2DDefaultDevice select_2D_image;
+  SelectTableDataImage2DCpu select_2D_image;
   select_2D_image(n_dim_tensor_collection, device);
   BOOST_CHECK_CLOSE(select_2D_image.result_->getData()(0), 0, 1e-3);
 
@@ -292,7 +292,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteDefaultDevice)
 }
 
 // repeat with sharding
-BOOST_AUTO_TEST_CASE(InsertUpdateDeleteShardingDefaultDevice)
+BOOST_AUTO_TEST_CASE(InsertUpdateDeleteShardingCpu)
 {
   // Parameters for the test
   std::string data_dir = "";
@@ -305,19 +305,19 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteShardingDefaultDevice)
   const int dim_span = std::pow(data_size, 0.25);
 
   // Setup the Benchmarking suite
-  BenchmarkDataFrame1TimePointDefaultDevice benchmark_1_tp;
+  BenchmarkDataFrame1TimePointCpu benchmark_1_tp;
 
   // Setup the DataFrameTensorCollectionGenerator
-  DataFrameTensorCollectionGeneratorDefaultDevice tensor_collection_generator;
+  DataFrameTensorCollectionGeneratorCpu tensor_collection_generator;
 
   // Setup the device
-  Eigen::DefaultDevice device;
+  Eigen::ThreadPool pool(1);  Eigen::ThreadPoolDevice device(&pool, 2);
 
   // Make the nD TensorTables
-  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(data_size, shard_span_perc, is_columnar, device);
+  std::shared_ptr<TensorCollection<Eigen::ThreadPoolDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(data_size, shard_span_perc, is_columnar, device);
 
   // Setup the transaction manager
-  TransactionManager<Eigen::DefaultDevice> transaction_manager;
+  TransactionManager<Eigen::ThreadPoolDevice> transaction_manager;
   transaction_manager.setMaxOperations(data_size + 1);
   transaction_manager.setTensorCollection(n_dim_tensor_collection);
 
@@ -372,21 +372,21 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteShardingDefaultDevice)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getMaxDimSizeFromAxisName("1_indices"), data_size);
 
   // Make the expected tensor axes labels and tensor data after insert
-  DataFrameManagerTimeDefaultDevice dataframe_manager_time(data_size, false);
-  DataFrameManagerLabelDefaultDevice dataframe_manager_labels(data_size, false);
-  DataFrameManagerImage2DDefaultDevice dataframe_manager_image_2d(data_size, false);
-  DataFrameManagerIsValidDefaultDevice dataframe_manager_is_valid(data_size, false);
-  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_time_ptr;
-  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>> values_time_ptr;
+  DataFrameManagerTimeCpu dataframe_manager_time(data_size, false);
+  DataFrameManagerLabelCpu dataframe_manager_labels(data_size, false);
+  DataFrameManagerImage2DCpu dataframe_manager_image_2d(data_size, false);
+  DataFrameManagerIsValidCpu dataframe_manager_is_valid(data_size, false);
+  std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>> labels_time_ptr;
+  std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 3>> values_time_ptr;
   dataframe_manager_time.getInsertData(0, data_size, labels_time_ptr, values_time_ptr);
-  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_labels_ptr;
-  std::shared_ptr<TensorData<TensorArray32<char>, Eigen::DefaultDevice, 2>> values_labels_ptr;
+  std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>> labels_labels_ptr;
+  std::shared_ptr<TensorData<TensorArray32<char>, Eigen::ThreadPoolDevice, 2>> values_labels_ptr;
   dataframe_manager_labels.getInsertData(0, data_size, labels_labels_ptr, values_labels_ptr);
-  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_image_2d_ptr;
-  std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 4>> values_image_2d_ptr;
+  std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>> labels_image_2d_ptr;
+  std::shared_ptr<TensorData<float, Eigen::ThreadPoolDevice, 4>> values_image_2d_ptr;
   dataframe_manager_image_2d.getInsertData(0, data_size, labels_image_2d_ptr, values_image_2d_ptr);
-  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_is_valid_ptr;
-  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> values_is_valid_ptr;
+  std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>> labels_is_valid_ptr;
+  std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>> values_is_valid_ptr;
   dataframe_manager_is_valid.getInsertData(0, data_size, labels_is_valid_ptr, values_is_valid_ptr);
 
   // Test the expected tensor collection after insert
@@ -461,17 +461,17 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteShardingDefaultDevice)
   }
 
   // Query for the number of valid entries
-  SelectTableDataIsValidDefaultDevice select_is_valid;
+  SelectTableDataIsValidCpu select_is_valid;
   select_is_valid(n_dim_tensor_collection, device);
   BOOST_CHECK_EQUAL(select_is_valid.result_->getData()(0), data_size / 2);
 
   // Query for the number of labels = "one"
-  SelectTableDataLabelDefaultDevice select_label_ones;
+  SelectTableDataLabelCpu select_label_ones;
   select_label_ones(n_dim_tensor_collection, device);
   BOOST_CHECK_EQUAL(select_label_ones.result_, 130);
 
   // Query for the average pixel intensity in the first two weeks of January
-  SelectTableDataImage2DDefaultDevice select_2D_image;
+  SelectTableDataImage2DCpu select_2D_image;
   select_2D_image(n_dim_tensor_collection, device);
   BOOST_CHECK_CLOSE(select_2D_image.result_->getData()(0), 0, 1e-3);
 
