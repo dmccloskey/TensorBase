@@ -4215,4 +4215,231 @@ BOOST_AUTO_TEST_CASE(insertIntoTableFromCsvCpu)
   }
 }
 
+BOOST_AUTO_TEST_CASE(applyFunctorCpu)
+{
+  // Set up the device
+  Eigen::ThreadPool pool(1);  Eigen::ThreadPoolDevice device(&pool, 2);
+
+  // setup the table
+  TensorTableCpu<float, 3> tensorTable;
+
+  // setup the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels = 3;
+  Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels), labels3(1, nlabels);
+  labels1.setValues({ {0, 1, 2} });
+  labels2.setValues({ {0, 1, 2} });
+  labels3.setValues({ {0, 1, 2} });
+  std::shared_ptr<TensorAxis<int, Eigen::ThreadPoolDevice>> axis_1_ptr = std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1));
+  std::shared_ptr<TensorAxis<int, Eigen::ThreadPoolDevice>> axis_2_ptr = std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2));
+  std::shared_ptr<TensorAxis<int, Eigen::ThreadPoolDevice>> axis_3_ptr = std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3));
+  tensorTable.addTensorAxis(axis_1_ptr);
+  tensorTable.addTensorAxis(axis_2_ptr);
+  tensorTable.addTensorAxis(axis_3_ptr);
+  tensorTable.setAxes(device);
+
+  // setup the tensor data
+  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  for (int k = 0; k < nlabels; ++k) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int i = 0; i < nlabels; ++i) {
+        tensor_values(i, j, k) = i + j * nlabels + k * nlabels * nlabels;
+      }
+    }
+  }
+  tensorTable.setData(tensor_values);
+
+  // test using the sum functor
+  TensorDataCpu<float, 1> results(Eigen::array<Eigen::Index, 1>({ 1 }));
+  results.setData();
+  std::shared_ptr<TensorData<float, Eigen::ThreadPoolDevice, 1>> results_ptr = std::make_shared<TensorDataCpu<float, 1>>(results);
+  TensorSumReduction<float, Eigen::ThreadPoolDevice, 3> sumReduction(results_ptr);
+  tensorTable.applyFunctor(sumReduction, device);
+  Eigen::Tensor<float, 0> results_expected = tensor_values.sum();
+  BOOST_CHECK_CLOSE(sumReduction.results_->getData()(0), results_expected(0), 1e-3);
+}
+
+BOOST_AUTO_TEST_CASE(reduceTensorDataCpu)
+{
+  // Set up the device
+  Eigen::ThreadPool pool(1);  Eigen::ThreadPoolDevice device(&pool, 2);
+
+  // setup the table
+  TensorTableCpu<float, 3> tensorTable;
+
+  // setup the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels = 3;
+  Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels), labels3(1, nlabels);
+  labels1.setValues({ {0, 1, 2} });
+  labels2.setValues({ {0, 1, 2} });
+  labels3.setValues({ {0, 1, 2} });
+  std::shared_ptr<TensorAxis<int, Eigen::ThreadPoolDevice>> axis_1_ptr = std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1));
+  std::shared_ptr<TensorAxis<int, Eigen::ThreadPoolDevice>> axis_2_ptr = std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2));
+  std::shared_ptr<TensorAxis<int, Eigen::ThreadPoolDevice>> axis_3_ptr = std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3));
+  tensorTable.addTensorAxis(axis_1_ptr);
+  tensorTable.addTensorAxis(axis_2_ptr);
+  tensorTable.addTensorAxis(axis_3_ptr);
+  tensorTable.setAxes(device);
+
+  // setup the tensor data
+  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  for (int k = 0; k < nlabels; ++k) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int i = 0; i < nlabels; ++i) {
+        tensor_values(i, j, k) = i + j * nlabels + k * nlabels * nlabels;
+      }
+    }
+  }
+  tensorTable.setData(tensor_values);
+
+  // test using the different reduction functions
+  tensorTable.reduceTensorData(reductionFunctions::COUNT, device);
+  BOOST_CHECK_CLOSE(tensorTable.getData()(0, 0, 0), tensor_values.size(), 1e-3);
+  BOOST_CHECK_CLOSE(tensorTable.getData()(nlabels - 1, nlabels - 1, nlabels - 1), tensor_values.size(), 1e-3);
+  tensorTable.setData(tensor_values);
+  tensorTable.reduceTensorData(reductionFunctions::MIN, device);
+  Eigen::Tensor<float, 0> results_expected = tensor_values.minimum();
+  BOOST_CHECK_CLOSE(tensorTable.getData()(0, 0, 0), results_expected(0), 1e-3);
+  BOOST_CHECK_CLOSE(tensorTable.getData()(nlabels - 1, nlabels - 1, nlabels - 1), results_expected(0), 1e-3);
+  tensorTable.setData(tensor_values);
+  tensorTable.reduceTensorData(reductionFunctions::MAX, device);
+  results_expected = tensor_values.maximum();
+  BOOST_CHECK_CLOSE(tensorTable.getData()(0, 0, 0), results_expected(0), 1e-3);
+  BOOST_CHECK_CLOSE(tensorTable.getData()(nlabels - 1, nlabels - 1, nlabels - 1), results_expected(0), 1e-3);
+  tensorTable.setData(tensor_values);
+  tensorTable.reduceTensorData(reductionFunctions::MEAN, device);
+  results_expected = tensor_values.mean();
+  BOOST_CHECK_CLOSE(tensorTable.getData()(0, 0, 0), results_expected(0), 1e-3);
+  BOOST_CHECK_CLOSE(tensorTable.getData()(nlabels - 1, nlabels - 1, nlabels - 1), results_expected(0), 1e-3);
+  tensorTable.setData(tensor_values);
+  tensorTable.reduceTensorData(reductionFunctions::VAR, device);
+  BOOST_CHECK_CLOSE(tensorTable.getData()(0, 0, 0), 60.6666641, 1e-3);
+  BOOST_CHECK_CLOSE(tensorTable.getData()(nlabels - 1, nlabels - 1, nlabels - 1), 60.6666641, 1e-3);
+  tensorTable.setData(tensor_values);
+  tensorTable.reduceTensorData(reductionFunctions::SUM, device);
+  results_expected = tensor_values.sum();
+  BOOST_CHECK_CLOSE(tensorTable.getData()(0, 0, 0), results_expected(0), 1e-3);
+  BOOST_CHECK_CLOSE(tensorTable.getData()(nlabels - 1, nlabels - 1, nlabels - 1), results_expected(0), 1e-3);
+  tensorTable.setData(tensor_values);
+  tensorTable.reduceTensorData(reductionFunctions::PROD, device);
+  results_expected = tensor_values.prod();
+  BOOST_CHECK_CLOSE(tensorTable.getData()(0, 0, 0), results_expected(0), 1e-3);
+  BOOST_CHECK_CLOSE(tensorTable.getData()(nlabels - 1, nlabels - 1, nlabels - 1), results_expected(0), 1e-3);
+}
+
+BOOST_AUTO_TEST_CASE(scanTensorDataCpu)
+{
+  // Set up the device
+  Eigen::ThreadPool pool(1);  Eigen::ThreadPoolDevice device(&pool, 2);
+
+  // setup the table
+  TensorTableCpu<float, 3> tensorTable;
+
+  // setup the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels = 3;
+  Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels), labels3(1, nlabels);
+  labels1.setValues({ {0, 1, 2} });
+  labels2.setValues({ {0, 1, 2} });
+  labels3.setValues({ {0, 1, 2} });
+  std::shared_ptr<TensorAxis<int, Eigen::ThreadPoolDevice>> axis_1_ptr = std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1));
+  std::shared_ptr<TensorAxis<int, Eigen::ThreadPoolDevice>> axis_2_ptr = std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2));
+  std::shared_ptr<TensorAxis<int, Eigen::ThreadPoolDevice>> axis_3_ptr = std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3));
+  tensorTable.addTensorAxis(axis_1_ptr);
+  tensorTable.addTensorAxis(axis_2_ptr);
+  tensorTable.addTensorAxis(axis_3_ptr);
+  tensorTable.setAxes(device);
+
+  // setup the tensor data
+  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  for (int k = 0; k < nlabels; ++k) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int i = 0; i < nlabels; ++i) {
+        tensor_values(i, j, k) = i + j * nlabels + k * nlabels * nlabels;
+      }
+    }
+  }
+  tensorTable.setData(tensor_values);
+
+  // test using the different reduction functions
+  tensorTable.scanTensorData({ "1", "2" }, scanFunctions::CUMSUM, device);
+  Eigen::Tensor<float, 3> results_expected = tensor_values.cumsum(0).cumsum(1);
+  for (int k = 0; k < nlabels; ++k) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int i = 0; i < nlabels; ++i) {
+        BOOST_CHECK_CLOSE(tensorTable.getData()(i, j, k), results_expected(i, j, k), 1e-3);
+      }
+    }
+  }
+  tensorTable.setData(tensor_values);
+  tensorTable.scanTensorData({ "1", "2" }, scanFunctions::CUMPROD, device);
+  results_expected = tensor_values.cumprod(0).cumprod(1);
+  for (int k = 0; k < nlabels; ++k) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int i = 0; i < nlabels; ++i) {
+        BOOST_CHECK_CLOSE(tensorTable.getData()(i, j, k), results_expected(i, j, k), 1e-3);
+      }
+    }
+  }
+}
+
+BOOST_AUTO_TEST_CASE(copyCpu)
+{
+  // Set up the device
+  Eigen::ThreadPool pool(1);  Eigen::ThreadPoolDevice device(&pool, 2);
+
+  // setup the table
+  TensorTableCpu<float, 3> tensorTable;
+
+  // setup the axes
+  Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
+  dimensions1(0) = "x";
+  dimensions2(0) = "y";
+  dimensions3(0) = "z";
+  int nlabels = 3;
+  Eigen::Tensor<int, 2> labels1(1, nlabels), labels2(1, nlabels), labels3(1, nlabels);
+  labels1.setValues({ {0, 1, 2} });
+  labels2.setValues({ {0, 1, 2} });
+  labels3.setValues({ {0, 1, 2} });
+  std::shared_ptr<TensorAxis<int, Eigen::ThreadPoolDevice>> axis_1_ptr = std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("1", dimensions1, labels1));
+  std::shared_ptr<TensorAxis<int, Eigen::ThreadPoolDevice>> axis_2_ptr = std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("2", dimensions2, labels2));
+  std::shared_ptr<TensorAxis<int, Eigen::ThreadPoolDevice>> axis_3_ptr = std::make_shared<TensorAxisCpu<int>>(TensorAxisCpu<int>("3", dimensions3, labels3));
+  tensorTable.addTensorAxis(axis_1_ptr);
+  tensorTable.addTensorAxis(axis_2_ptr);
+  tensorTable.addTensorAxis(axis_3_ptr);
+  tensorTable.setAxes(device);
+
+  // setup the tensor data
+  Eigen::Tensor<float, 3> tensor_values(Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels }));
+  for (int k = 0; k < nlabels; ++k) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int i = 0; i < nlabels; ++i) {
+        tensor_values(i, j, k) = i + j * nlabels + k * nlabels * nlabels;
+      }
+    }
+  }
+  tensorTable.setData(tensor_values);
+
+  // test using the different reduction functions
+  auto tensorTableCopy = tensorTable.copy(device);
+  BOOST_CHECK(*(tensorTableCopy.get()) == tensorTable);
+  for (int k = 0; k < nlabels; ++k) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int i = 0; i < nlabels; ++i) {
+        BOOST_CHECK_CLOSE(tensorTableCopy->getData()(i, j, k), tensor_values(i, j, k), 1e-3);
+      }
+    }
+  }
+}
+
 BOOST_AUTO_TEST_SUITE_END()
