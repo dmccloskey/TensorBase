@@ -179,6 +179,16 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteDefaultDevice)
   select_is_valid(n_dim_tensor_collection, device);
   BOOST_CHECK_EQUAL(select_is_valid.result_->getData()(0), data_size / 2);
 
+  // Query for the number of labels = "one"
+  SelectTableDataLabelDefaultDevice select_label_ones;
+  select_label_ones(n_dim_tensor_collection, device);
+  BOOST_CHECK_EQUAL(select_label_ones.result_, 130);
+
+  // Query for the average pixel intensity in the first two weeks of January
+  SelectTableDataImage2DDefaultDevice select_2D_image;
+  select_2D_image(n_dim_tensor_collection, device);
+  BOOST_CHECK_CLOSE(select_2D_image.result_->getData()(0), 0, 1e-3);
+
   // Make the expected tensor axes labels and tensor data after update
   dataframe_manager_time.setUseRandomValues(true);
   dataframe_manager_labels.setUseRandomValues(true);
@@ -453,6 +463,16 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteShardingDefaultDevice)
   SelectTableDataIsValidDefaultDevice select_is_valid;
   select_is_valid(n_dim_tensor_collection, device);
   BOOST_CHECK_EQUAL(select_is_valid.result_->getData()(0), data_size / 2);
+
+  // Query for the number of labels = "one"
+  SelectTableDataLabelDefaultDevice select_label_ones;
+  select_label_ones(n_dim_tensor_collection, device);
+  BOOST_CHECK_EQUAL(select_label_ones.result_, 130);
+
+  // Query for the average pixel intensity in the first two weeks of January
+  SelectTableDataImage2DDefaultDevice select_2D_image;
+  select_2D_image(n_dim_tensor_collection, device);
+  BOOST_CHECK_CLOSE(select_2D_image.result_->getData()(0), 0, 1e-3);
 
   // Make the expected tensor axes labels and tensor data after update
   dataframe_manager_time.setUseRandomValues(true);

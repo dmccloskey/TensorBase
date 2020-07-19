@@ -12,7 +12,6 @@ using namespace TensorBase;
 
 namespace TensorBaseBenchmarks
 {
-
   /*
   @class Specialized `SelectTableDataIsValid` for the DefaultDevice case
   */
@@ -43,6 +42,69 @@ namespace TensorBaseBenchmarks
     results.setData();
     results.syncHAndDData(device);
     this->result_ = std::make_shared<TensorDataDefaultDevice<int, 1>>(results);
+  }
+
+  /*
+  @class Specialized `SelectTableDataLabel` for the DefaultDevice case
+  */
+  class SelectTableDataLabelDefaultDevice : public SelectTableDataLabel<TensorArray32<char>, TensorArray32<char>, Eigen::DefaultDevice> {
+  public:
+    void setLabelsValuesResult(Eigen::DefaultDevice& device) override;
+  };
+  inline void SelectTableDataLabelDefaultDevice::setLabelsValuesResult(Eigen::DefaultDevice& device)
+  {
+    // make the labels and sync to the device
+    Eigen::Tensor<TensorArray32<char>, 2> select_labels_values(1, 1);
+    select_labels_values.setConstant(TensorArray32<char>("label"));
+    TensorDataDefaultDevice<TensorArray32<char>, 2> select_labels(select_labels_values.dimensions());
+    select_labels.setData(select_labels_values);
+    select_labels.syncHAndDData(device);
+    this->select_labels_ = std::make_shared<TensorDataDefaultDevice<TensorArray32<char>, 2>>(select_labels);
+
+    // make the corresponding values and sync to the device
+    Eigen::Tensor<TensorArray32<char>, 1> select_values_values(1);
+    select_values_values.setConstant(TensorArray32<char>("one"));
+    TensorDataDefaultDevice<TensorArray32<char>, 1> select_values(select_values_values.dimensions());
+    select_values.setData(select_values_values);
+    select_values.syncHAndDData(device);
+    this->select_values_ = std::make_shared<TensorDataDefaultDevice<TensorArray32<char>, 1>>(select_values);
+  }
+  
+  /*
+  @class Specialized `SelectTableDataImage2D` for the DefaultDevice case
+  */
+  class SelectTableDataImage2DDefaultDevice : public SelectTableDataImage2D<TensorArray8<char>, int, float, Eigen::DefaultDevice> {
+  public:
+    void setLabelsValuesResult(Eigen::DefaultDevice& device) override;
+  };
+  inline void SelectTableDataImage2DDefaultDevice::setLabelsValuesResult(Eigen::DefaultDevice& device)
+  {
+    // make the labels and sync to the device
+    Eigen::Tensor<TensorArray8<char>, 2> select_labels_values(1, 2);
+    select_labels_values.setValues({ { TensorArray8<char>("day"),TensorArray8<char>("month") } });
+    TensorDataDefaultDevice<TensorArray8<char>, 2> select_labels(select_labels_values.dimensions());
+    select_labels.setData(select_labels_values);
+    select_labels.syncHAndDData(device);
+    this->select_labels_ = std::make_shared<TensorDataDefaultDevice<TensorArray8<char>, 2>>(select_labels);
+
+    // make the corresponding values and sync to the device
+    Eigen::Tensor<int, 1> select_values_values(2);
+    select_values_values.setValues({14, 1});
+    TensorDataDefaultDevice<int, 1> select_values_lt(select_values_values.dimensions());
+    select_values_lt.setData(select_values_values);
+    select_values_lt.syncHAndDData(device);
+    this->select_values_lt_ = std::make_shared<TensorDataDefaultDevice<int, 1>>(select_values_lt);
+    select_values_values.setValues({ 0, 1 });
+    TensorDataDefaultDevice<int, 1> select_values_gt(select_values_values.dimensions());
+    select_values_gt.setData(select_values_values);
+    select_values_gt.syncHAndDData(device);
+    this->select_values_gt_ = std::make_shared<TensorDataDefaultDevice<int, 1>>(select_values_gt);
+
+    // allocate memory for the results
+    TensorDataDefaultDevice<float, 1> results(Eigen::array<Eigen::Index, 1>({ 1 }));
+    results.setData();
+    results.syncHAndDData(device);
+    this->result_ = std::make_shared<TensorDataDefaultDevice<float, 1>>(results);
   }
 
 	/*

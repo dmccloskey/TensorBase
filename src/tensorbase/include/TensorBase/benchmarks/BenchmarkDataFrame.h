@@ -36,17 +36,6 @@ namespace TensorBaseBenchmarks
     bool apply_select_ = false;
 	};
 
-  /// The base select Functor for the DataFrame
-  template<typename LabelsT, typename TensorT, typename DeviceT>
-  class SelectTableData {
-  public:
-    SelectTableData(const bool& apply_select) : apply_select_(apply_select) {};
-    ~SelectTableData() = default;
-    virtual void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) = 0;
-  protected:
-    bool apply_select_ = false;
-  };
-
   /* 
   @class The select Functor for the DataFrame `is_valid` column
 
@@ -79,11 +68,102 @@ namespace TensorBaseBenchmarks
       Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> data_is_valid_values(data_is_valid.get(), 1);
       Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> result_values(result_->getDataPointer().get(), 1);
       result_values.device(device) = data_is_valid_values;
+
+      // Remove the intermediate tables
+      tensor_collection->removeTensorTable("DataFrame_is_valid_true");
     }
     virtual void setLabelsValuesResult(DeviceT& device) = 0;
   protected:
-    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> select_labels_; ///< The labels to select (i.e., 
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> select_labels_; ///< The labels to select
     std::shared_ptr<TensorData<TensorT, DeviceT, 1>> select_values_; ///< The values to select
+  };
+
+  /*
+  @class The select Functor for the DataFrame `label` column
+
+  The query selects and aggregates all data where `label = "one"`, and counts the number of resulting indices.  
+  The results are copied over to `results_` where they can be viewed.
+  */
+  template<typename LabelsT, typename TensorT, typename DeviceT>
+  class SelectTableDataLabel {
+  public:
+    int result_; ///< The results of the query
+    void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) {
+      setLabelsValuesResult(device);
+      // Make and apply the where clause
+      WhereClause<LabelsT, TensorT, Eigen::DefaultDevice> where_clause1("DataFrame_label", "2_columns", select_labels_, select_values_, logicalComparitors::EQUAL_TO, logicalModifiers::NONE, logicalContinuators::AND, logicalContinuators::AND);
+      TensorSelect tensorSelect;
+      tensorSelect.whereClause(tensor_collection, where_clause1, device);
+      tensorSelect.applySelect(tensor_collection, { "DataFrame_label" }, { "DataFrame_label_one" }, device);
+
+      // Reset the indices
+      tensor_collection->tables_.at("DataFrame_label")->resetIndicesView(device);
+
+      // Make and apply the reduction clause
+      ReductionClause<Eigen::DefaultDevice> reduction_clause1("DataFrame_label_one", reductionFunctions::COUNT);
+      tensorSelect.applyReduction(tensor_collection, reduction_clause1, device);
+
+      // Copy out the results
+      result_ = tensor_collection->tables_.at("DataFrame_label_one")->getDimSizeFromAxisName("1_indices");
+
+      // Remove the intermediate tables
+      tensor_collection->removeTensorTable("DataFrame_label_one");
+    }
+    virtual void setLabelsValuesResult(DeviceT& device) = 0;
+  protected:
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> select_labels_; ///< The labels to select
+    std::shared_ptr<TensorData<TensorT, DeviceT, 1>> select_values_; ///< The values to select
+  };
+
+  /*
+  @class The select Functor for the DataFrame `image_2D` column
+
+  The query selectes all data in the first two weeks of January and performs a reduction MEAN on the
+  `image_2D` column to determine the average pixel intensity.  The results are copied over
+  to `results_` where they can be synced to the cpu and viewed.
+  */
+  template<typename LabelsT, typename TensorT1, typename TensorT2, typename DeviceT>
+  class SelectTableDataImage2D {
+  public:
+    std::shared_ptr<TensorData<TensorT2, DeviceT, 1>> result_; ///< The results of the query
+    void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) {
+      setLabelsValuesResult(device);
+      TensorSelect tensorSelect;
+      // Make the where clause on the time table
+      WhereClause<LabelsT, TensorT1, Eigen::DefaultDevice> where_clause1("DataFrame_time", "3_time", select_labels_, select_values_lt_, logicalComparitors::LESS_THAN_OR_EQUAL_TO, logicalModifiers::NONE, logicalContinuators::AND, logicalContinuators::AND);
+      tensorSelect.whereClause(tensor_collection, where_clause1, device);
+      WhereClause<LabelsT, TensorT1, Eigen::DefaultDevice> where_clause2("DataFrame_time", "3_time", select_labels_, select_values_gt_, logicalComparitors::GREATER_THAN_OR_EQUAL_TO, logicalModifiers::NONE, logicalContinuators::AND, logicalContinuators::AND);
+      tensorSelect.whereClause(tensor_collection, where_clause2, device);
+
+      // Copy the indice view from time to image_2D
+      tensor_collection->tables_.at("DataFrame_image_2D")->replaceIndicesView("1_indices", tensor_collection->tables_.at("DataFrame_time")->getIndicesView().at("1_indices"), device);
+
+      // Apply the where clause on the image_2d table
+      tensorSelect.applySelect(tensor_collection, { "DataFrame_image_2D" }, { "DataFrame_image_2D_jan" }, device);
+
+      // Reset the indices
+      tensor_collection->tables_.at("DataFrame_time")->resetIndicesView(device);
+      tensor_collection->tables_.at("DataFrame_image_2D")->resetIndicesView(device);
+
+      // Make and apply the reduction clause
+      ReductionClause<Eigen::DefaultDevice> reduction_clause1("DataFrame_image_2D_jan", reductionFunctions::MEAN);
+      tensorSelect.applyReduction(tensor_collection, reduction_clause1, device);
+
+      // Copy out the results
+      std::shared_ptr<TensorT2[]> data_image_2D;
+      tensor_collection->tables_.at("DataFrame_image_2D_jan")->getDataPointer(data_image_2D);
+      Eigen::TensorMap<Eigen::Tensor<TensorT2, 1>> data_image_2D_values(data_image_2D.get(), 1);
+      Eigen::TensorMap<Eigen::Tensor<TensorT2, 1>> result_values(result_->getDataPointer().get(), 1);
+      result_values.device(device) = data_image_2D_values;
+
+      // Remove the intermediate tables
+      tensor_collection->removeTensorTable("DataFrame_image_2D_jan");
+    }
+    virtual void setLabelsValuesResult(DeviceT& device) = 0;
+  protected:
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> select_labels_; ///< The labels to select
+    std::shared_ptr<TensorData<TensorT1, DeviceT, 1>> select_values_lt_; ///< The values to select
+    std::shared_ptr<TensorData<TensorT1, DeviceT, 1>> select_values_gt_; ///< The values to select
   };
 
 	/*
@@ -121,8 +201,10 @@ namespace TensorBaseBenchmarks
 	*/
 	template<typename LabelsT, typename TensorT, typename DeviceT>
 	class DataFrameManagerTime : public DataFrameManager<LabelsT, TensorT, DeviceT, 3> {
+    void initTime();
+    std::tm time_ = { 0 };
 	public:
-		using DataFrameManager::DataFrameManager;
+    DataFrameManagerTime(const int& data_size, const bool& use_random_values = false) : DataFrameManager(data_size, use_random_values) { initTime(); };
 		void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 3>>& values_ptr);
   };
   template<typename LabelsT, typename TensorT, typename DeviceT>
@@ -132,22 +214,17 @@ namespace TensorBaseBenchmarks
 		Eigen::Tensor<TensorT, 3> values(span, 1, 6);
 
     // Make the fixed starting time
-    std::tm time_start;
-    if (this->use_random_values_) {
-      std::istringstream iss("01/01/2008 00:00:00");
-      iss.imbue(std::locale(""));
-      iss >> std::get_time(&time_start, "%d/%m/%Y %H:%M:%S");
-    }
-    else {
-      std::istringstream iss("01/01/2018 00:00:00");
-      iss.imbue(std::locale(""));
-      iss >> std::get_time(&time_start, "%d/%m/%Y %H:%M:%S");
-    }
-    time_start.tm_isdst = true;
+    std::tm time_start = time_;
     for (int i = offset; i < offset + span; ++i) {
       labels(0, i - offset) = LabelsT(i);
-      time_start.tm_sec += i * 10;
-      std::mktime(&time_start);
+      if (this->use_random_values_) {
+        time_start.tm_hour += 2;
+        std::mktime(&time_start);
+      }
+      else {
+        time_start.tm_hour += 1;
+        std::mktime(&time_start);
+      }
       values(i - offset, 0, 0) = TensorT(time_start.tm_sec);
       values(i - offset, 0, 1) = TensorT(time_start.tm_min);
       values(i - offset, 0, 2) = TensorT(time_start.tm_hour);
@@ -155,9 +232,18 @@ namespace TensorBaseBenchmarks
       values(i - offset, 0, 4) = TensorT(time_start.tm_mon);
       values(i - offset, 0, 5) = TensorT(time_start.tm_year);
     }
+    time_ = time_start;
 		this->makeLabelsPtr(labels, labels_ptr);
 		this->makeValuesPtr(values, values_ptr);
 	}
+  template<typename LabelsT, typename TensorT, typename DeviceT>
+  inline void DataFrameManagerTime<LabelsT, TensorT, DeviceT>::initTime()
+  {
+    std::istringstream iss("01/01/2008 00:00:00");
+    iss.imbue(std::locale(""));
+    iss >> std::get_time(&time_, "%d/%m/%Y %H:%M:%S");
+    time_.tm_isdst = false;
+  }
 
   /*
   @brief Specialized `DataFrameManager` for generating labels

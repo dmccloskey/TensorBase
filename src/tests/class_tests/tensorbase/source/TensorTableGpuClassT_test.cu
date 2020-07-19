@@ -415,6 +415,24 @@ void test_zeroIndicesViewAndResetIndicesViewGpu()
     assert(tensorTable.getIndicesView().at("1")->getData()(i) == i + 1);
   }
 
+  // test zero
+  tensorTable.getIndicesView().at("1")->setDataStatus(false, true);
+  tensorTable.zeroIndicesView("1", device);
+  tensorTable.getIndicesView().at("1")->syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  for (int i = 0; i < nlabels; ++i) {
+    assert(tensorTable.getIndicesView().at("1")->getData()(i) == 0);
+  }
+
+  // test replace
+  tensorTable.getIndicesView().at("1")->setDataStatus(false, true);
+  tensorTable.replaceIndicesView("1", tensorTable.getIndicesView().at("2"), device);
+  tensorTable.getIndicesView().at("1")->syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  for (int i = 0; i < nlabels; ++i) {
+    assert(tensorTable.getIndicesView().at("1")->getData()(i) == i + 1);
+  }
+
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
 

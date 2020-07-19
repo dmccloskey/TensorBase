@@ -136,10 +136,8 @@ namespace TensorBase
     };
   };
   /*
-  @brief Class defining the `reduction` clause statements.  All axis from the same
-    table will be reduced using the reduction function for all selected indices.
-    Note that there is no change in dimensions or sizes: all values are replaced
-    by the results of the reduction operation.
+  @brief Class defining the `reduction` clause statement performs and applies an aggregation function to the (optionally previously selected and reduced) data 
+    resulting in a new entry with the reduced data broadcasted to all other dimensions of the Tensor.
   */
   template<typename DeviceT>
   class ReductionClause {

@@ -630,6 +630,16 @@ BOOST_AUTO_TEST_CASE(zeroIndicesViewAndResetIndicesViewCpu)
   for (int i = 0; i < nlabels; ++i) {
     BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->getData()(i), i+1);
   }
+  // test zero
+  tensorTable.zeroIndicesView("1", device);
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->getData()(i), 0);
+  }
+  // test replace
+  tensorTable.replaceIndicesView("1", tensorTable.getIndicesView().at("2"), device);
+  for (int i = 0; i < nlabels; ++i) {
+    BOOST_CHECK_EQUAL(tensorTable.getIndicesView().at("1")->getData()(i), i + 1);
+  }
 }
 
 BOOST_AUTO_TEST_CASE(selectIndicesView1Cpu)

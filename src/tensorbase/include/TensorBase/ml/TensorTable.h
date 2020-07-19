@@ -238,6 +238,7 @@ namespace TensorBase
     void resetIndicesView(DeviceT& device); ///< copy over the indices values to the indices view for all axes
     void resetIndicesView(const std::string& axis_name, DeviceT& device); ///< copy over the indices values to the indices view
     void zeroIndicesView(const std::string& axis_name, DeviceT& device); ///< set the indices view to zero
+    void replaceIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices_view, DeviceT& device); ///< set the indices view to the given values
 
     /*
     @brief Order Tensor Axis View
@@ -1456,7 +1457,7 @@ namespace TensorBase
     auto labels_names_selected_bcast = labels_names_selected_reshape.broadcast(Eigen::array<Eigen::Index, 3>({ 1, (int)axes_.at(axis_name)->getNLabels(), 1 }));
     
     // broadcast the axis labels the size of the labels queried
-    std::shared_ptr<LabelsT[]> labels_data;
+    std::shared_ptr<LabelsT[]> labels_data; // TODO: static assertion that the input LabelsT match the axes LabelsT
     axes_.at(axis_name)->getLabelsDataPointer(labels_data);
     Eigen::TensorMap<Eigen::Tensor<LabelsT, 3>> labels_reshape(labels_data.get(), (int)axes_.at(axis_name)->getNDimensions(), (int)axes_.at(axis_name)->getNLabels(), 1);
     auto labels_bcast = labels_reshape.broadcast(Eigen::array<Eigen::Index, 3>({ 1, 1, select_labels->getDimensions().at(1) }));
@@ -1655,6 +1656,15 @@ namespace TensorBase
   {
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_name)->getDataPointer().get(), indices_view_.at(axis_name)->getDimensions());
     indices_view.device(device) = indices_view.constant(0);
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::replaceIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices_view, DeviceT& device)
+  {
+    assert(indices_view->getDimensions() == indices_view_.at(axis_name)->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_current(indices_view_.at(axis_name)->getDataPointer().get(), indices_view_.at(axis_name)->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_new(indices_view->getDataPointer().get(), indices_view->getDimensions());
+    indices_view_current.device(device) = indices_view_new;
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
