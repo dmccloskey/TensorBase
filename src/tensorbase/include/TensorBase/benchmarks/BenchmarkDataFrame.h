@@ -157,7 +157,6 @@ namespace TensorBaseBenchmarks
     tensor_collection->tables_.at("DataFrame_image_2D")->replaceIndicesView("1_indices", tensor_collection->tables_.at("DataFrame_time")->getIndicesView().at("1_indices"), device);
 
     // Apply the where clause on the image_2d table
-    std::cout << tensor_collection->tables_.at("DataFrame_image_2D")->getIndicesView().at("1_indices") << std::endl;
     tensorSelect.applySelect(tensor_collection, { "DataFrame_image_2D" }, { "DataFrame_image_2D_jan" }, device);
 
     // Reset the indices
@@ -253,10 +252,10 @@ namespace TensorBaseBenchmarks
   inline void DataFrameManagerTime<LabelsT, TensorT, DeviceT>::initTime()
   {
     time_ = { 0 };
-    //// The below is not defined in CUDA c++11...
-    //std::istringstream iss("01/01/2008 00:00:00");
-    //iss.imbue(std::locale(""));
-    //iss >> std::get_time(&time_, "%d/%m/%Y %H:%M:%S");
+    // The below is not defined in CUDA c++11...
+    std::istringstream iss("01/01/2008 00:00:00");
+    iss.imbue(std::locale(""));
+    iss >> get_time(&time_, "%d/%m/%Y %H:%M:%S");
     time_.tm_isdst = false;
   }
 
