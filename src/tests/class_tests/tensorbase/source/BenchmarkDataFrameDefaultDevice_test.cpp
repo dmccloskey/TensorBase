@@ -8,7 +8,7 @@ using namespace TensorBase;
 using namespace TensorBaseBenchmarks;
 using namespace std;
 
-BOOST_AUTO_TEST_SUITE(benchmarkPixelsDefaultDevice)
+BOOST_AUTO_TEST_SUITE(benchmarkDataFrameDefaultDevice)
 
 BOOST_AUTO_TEST_CASE(InsertUpdateDeleteDefaultDevice)
 {
@@ -175,12 +175,12 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteDefaultDevice)
   }
 
   // Query for the number of valid entries
-  SelectTableDataIsValidDefaultDevice select_is_valid;
+  SelectAndSumIsValidDefaultDevice select_is_valid;
   select_is_valid(n_dim_tensor_collection, device);
   BOOST_CHECK_EQUAL(select_is_valid.result_->getData()(0), data_size / 2);
 
   // Query for the number of labels = "one"
-  SelectTableDataLabelDefaultDevice select_label_ones;
+  SelectAndCountLabelsDefaultDevice select_label_ones;
   select_label_ones(n_dim_tensor_collection, device);
   BOOST_CHECK_EQUAL(select_label_ones.result_, 130);
 
@@ -461,12 +461,12 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteShardingDefaultDevice)
   }
 
   // Query for the number of valid entries
-  SelectTableDataIsValidDefaultDevice select_is_valid;
+  SelectAndSumIsValidDefaultDevice select_is_valid;
   select_is_valid(n_dim_tensor_collection, device);
   BOOST_CHECK_EQUAL(select_is_valid.result_->getData()(0), data_size / 2);
 
   // Query for the number of labels = "one"
-  SelectTableDataLabelDefaultDevice select_label_ones;
+  SelectAndCountLabelsDefaultDevice select_label_ones;
   select_label_ones(n_dim_tensor_collection, device);
   BOOST_CHECK_EQUAL(select_label_ones.result_, 130);
 

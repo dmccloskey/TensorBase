@@ -239,7 +239,7 @@ namespace TensorBase
     friend class cereal::access;
     template<class Archive>
     void serialize(Archive& archive) {
-      archive(cereal::base_class<TensorData<TensorT, Eigen::GpuDevice, TDim>>(this));
+      archive(cereal::base_class<TensorDataGpu<TensorT, TDim>>(this));
     }
   };
   template<typename TensorT, int TDim>
@@ -564,7 +564,7 @@ namespace TensorBase
     friend class cereal::access;
     template<class Archive>
     void serialize(Archive& archive) {
-      archive(cereal::base_class<TensorData<ArrayT<TensorT>, Eigen::GpuDevice, TDim>>(this));
+      archive(cereal::base_class<TensorDataGpu<ArrayT<TensorT>, TDim>>(this));
     }
   };
   template<template<class> class ArrayT, class TensorT, int TDim>

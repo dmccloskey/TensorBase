@@ -83,6 +83,163 @@ namespace TensorBaseBenchmarks
 		using SelectTable2D::SelectTable2D;
 	};
 
+  /// Base class to select a region of pixels (x,y,z,t [0, 4] and compute the sum
+  template<typename LabelsT, typename TensorT, typename DeviceT>
+  class SelectAndSumPixels {
+  public:
+    SelectAndSumPixels(const int& data_size) : data_size_(data_size) { span_ = std::ceil(std::pow(float(data_size), 0.25) * 0.25); };
+    ~SelectAndSumPixels() = default;
+    void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
+    virtual void executeSelectClause(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) = 0;
+    virtual void setLabelsValuesResults() = 0;
+  protected:
+    int data_size_;
+    int span_;
+  };
+  template<typename LabelsT, typename TensorT, typename DeviceT>
+  inline void SelectAndSumPixels<LabelsT, TensorT, DeviceT>::operator()(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
+  {
+    // Make the labels/values/results and execute the query
+    setLabelsValuesResults();
+    executeSelectClause();
+
+    // Apply and then reset the indices
+    TensorSelect tensorSelect;
+    tensorSelect.applySelect(tensor_collection, { "TTable" }, { "TTable_selected" }, device);
+    tensor_collection->tables_.at("TTable")->resetIndicesView(device);
+
+    // Make and apply the reduction clause
+    ReductionClause<DeviceT> reduction_clause1("TTable_selected", reductionFunctions::SUM);
+    tensorSelect.applyReduction(tensor_collection, reduction_clause1, device);
+
+    // Copy out the results
+    std::shared_ptr<TensorT[]> selected_pixels_data;
+    tensor_collection->tables_.at("TTable_selected")->getDataPointer(selected_pixels_data);
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> selected_pixels_values(selected_pixels_data.get(), 1);
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> result_values(result_->getDataPointer().get(), 1);
+    result_values.device(device) = selected_pixels_values;
+
+    // Remove the intermediate tables
+    tensor_collection->removeTensorTable("TTable_selected");
+  }
+
+  /// Specialized class to select a region of pixels and compute the sum for the 0D case
+  template<typename LabelsT, typename TensorT, typename DeviceT>
+  class SelectAndSumPixels0D: public SelectAndSumPixels<LabelsT, TensorT, DeviceT> {
+  public:
+    using SelectAndSumPixels::SelectAndSumPixels;
+    void executeSelectClause(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) override;
+    std::shared_ptr<TensorData<TensorT, DeviceT, 1>> result_; ///< The results of the query
+  protected:
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> select_labels_xyztv_; ///< The labels to select
+    std::shared_ptr<TensorData<TensorT, DeviceT, 1>> select_values_xyztv_lt_; ///< The values to select
+    std::shared_ptr<TensorData<TensorT, DeviceT, 1>> select_values_xyztv_gt_; ///< The values to select
+  };
+  template<typename LabelsT, typename TensorT, typename DeviceT>
+  inline void SelectAndSumPixels0D<LabelsT, TensorT, DeviceT>::executeSelectClause(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
+  {
+    TensorSelect tensorSelect;
+    // Make the where clause
+    WhereClause<LabelsT, TensorT, DeviceT> where_clause1("TTable", "xyztv", select_labels_xyztv_, select_values_xyztv_lt_, logicalComparitors::LESS_THAN_OR_EQUAL_TO, logicalModifiers::NONE, logicalContinuators::AND, logicalContinuators::AND);
+    tensorSelect.whereClause(tensor_collection, where_clause1, device);
+    WhereClause<LabelsT, TensorT, DeviceT> where_clause2("TTable", "xyztv", select_labels_xyztv_, select_values_xyztv_gt_, logicalComparitors::GREATER_THAN_OR_EQUAL_TO, logicalModifiers::NONE, logicalContinuators::AND, logicalContinuators::AND);
+    tensorSelect.whereClause(tensor_collection, where_clause2, device);
+  }
+
+  /// Specialized class to select a region of pixels and compute the sum for the 1D case
+  template<typename LabelsT, typename TensorT, typename DeviceT>
+  class SelectAndSumPixels1D : public SelectAndSumPixels<LabelsT, TensorT, DeviceT> {
+  public:
+    using SelectAndSumPixels::SelectAndSumPixels;
+    void executeSelectClause(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) override;
+    std::shared_ptr<TensorData<TensorT, DeviceT, 1>> result_; ///< The results of the query
+  protected:
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> select_labels_xyzt_; ///< The labels to select
+  };
+  template<typename LabelsT, typename TensorT, typename DeviceT>
+  inline void SelectAndSumPixels1D<LabelsT, TensorT, DeviceT>::executeSelectClause(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
+  {
+    // Make the select clause
+    SelectClause<LabelsT, DeviceT> select_clause1("TTable", "xyzt", select_labels_xyzt_);
+    TensorSelect tensorSelect;
+    tensorSelect.selectClause(tensor_collection, select_clause1, device);
+  }
+
+  /// Specialized class to select a region of pixels and compute the sum for the 2D case
+  template<typename LabelsT, typename TensorT, typename DeviceT>
+  class SelectAndSumPixels2D : public SelectAndSumPixels<LabelsT, TensorT, DeviceT> {
+  public:
+    using SelectAndSumPixels::SelectAndSumPixels;
+    void executeSelectClause(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) override;
+    std::shared_ptr<TensorData<TensorT, DeviceT, 1>> result_; ///< The results of the query
+  protected:
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> select_labels_xyz_; ///< The labels to select
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> select_labels_t_; ///< The labels to select
+  };
+  template<typename LabelsT, typename TensorT, typename DeviceT>
+  inline void SelectAndSumPixels2D<LabelsT, TensorT, DeviceT>::executeSelectClause(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
+  {
+    TensorSelect tensorSelect;
+    // Make the select clause
+    SelectClause<LabelsT, DeviceT> select_clause1("TTable", "xyz", select_labels_xyz_);
+    tensorSelect.selectClause(tensor_collection, select_clause1, device);
+    SelectClause<LabelsT, DeviceT> select_clause2("TTable", "t", select_labels_t_);
+    tensorSelect.selectClause(tensor_collection, select_clause2, device);
+  }
+
+  /// Specialized class to select a region of pixels and compute the sum for the 3D case
+  template<typename LabelsT, typename TensorT, typename DeviceT>
+  class SelectAndSumPixels3D : public SelectAndSumPixels<LabelsT, TensorT, DeviceT> {
+  public:
+    using SelectAndSumPixels::SelectAndSumPixels;
+    void executeSelectClause(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) override;
+    std::shared_ptr<TensorData<TensorT, DeviceT, 1>> result_; ///< The results of the query
+  protected:
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> select_labels_xy_; ///< The labels to select
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> select_labels_z_; ///< The labels to select
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> select_labels_t_; ///< The labels to select
+  };
+  template<typename LabelsT, typename TensorT, typename DeviceT>
+  inline void SelectAndSumPixels3D<LabelsT, TensorT, DeviceT>::executeSelectClause(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
+  {
+    TensorSelect tensorSelect;
+    // Make the select clause
+    SelectClause<LabelsT, DeviceT> select_clause1("TTable", "xy", select_labels_xy_);
+    tensorSelect.selectClause(tensor_collection, select_clause1, device);
+    SelectClause<LabelsT, DeviceT> select_clause2("TTable", "z", select_labels_z_);
+    tensorSelect.selectClause(tensor_collection, select_clause2, device);
+    SelectClause<LabelsT, DeviceT> select_clause3("TTable", "t", select_labels_t_);
+    tensorSelect.selectClause(tensor_collection, select_clause3, device);
+  }
+
+  /// Specialized class to select a region of pixels and compute the sum for the 3D case
+  template<typename LabelsT, typename TensorT, typename DeviceT>
+  class SelectAndSumPixels4D : public SelectAndSumPixels<LabelsT, TensorT, DeviceT> {
+  public:
+    using SelectAndSumPixels::SelectAndSumPixels;
+    void executeSelectClause(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) override;
+    std::shared_ptr<TensorData<TensorT, DeviceT, 1>> result_; ///< The results of the query
+  protected:
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> select_labels_x_; ///< The labels to select
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> select_labels_y_; ///< The labels to select
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> select_labels_z_; ///< The labels to select
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> select_labels_t_; ///< The labels to select
+  };
+  template<typename LabelsT, typename TensorT, typename DeviceT>
+  inline void SelectAndSumPixels4D<LabelsT, TensorT, DeviceT>::executeSelectClause(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
+  {
+    TensorSelect tensorSelect;
+    // Make the select clause
+    SelectClause<LabelsT, DeviceT> select_clause0("TTable", "x", select_labels_xy_);
+    tensorSelect.selectClause(tensor_collection, select_clause0, device);
+    SelectClause<LabelsT, DeviceT> select_clause1("TTable", "y", select_labels_y_);
+    tensorSelect.selectClause(tensor_collection, select_clause1, device);
+    SelectClause<LabelsT, DeviceT> select_clause2("TTable", "z", select_labels_z_);
+    tensorSelect.selectClause(tensor_collection, select_clause2, device);
+    SelectClause<LabelsT, DeviceT> select_clause3("TTable", "t", select_labels_t_);
+    tensorSelect.selectClause(tensor_collection, select_clause3, device);
+  }
+
 	/*
 	@brief Class for managing the generation of random pixels in a 4D (3D + time) space
 	*/

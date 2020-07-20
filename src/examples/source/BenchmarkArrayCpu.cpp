@@ -1,5 +1,6 @@
 /**TODO:  Add copyright*/
 
+#define EIGEN_USE_THREADS
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/benchmarks/BenchmarkArrayCpu.h>
 

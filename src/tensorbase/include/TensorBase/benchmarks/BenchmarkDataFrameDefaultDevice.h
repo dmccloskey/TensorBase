@@ -13,13 +13,13 @@ using namespace TensorBase;
 namespace TensorBaseBenchmarks
 {
   /*
-  @class Specialized `SelectTableDataIsValid` for the DefaultDevice case
+  @class Specialized `SelectAndSumIsValid` for the DefaultDevice case
   */
-  class SelectTableDataIsValidDefaultDevice: public SelectTableDataIsValid<TensorArray32<char>, int, Eigen::DefaultDevice> {
+  class SelectAndSumIsValidDefaultDevice: public SelectAndSumIsValid<TensorArray32<char>, int, Eigen::DefaultDevice> {
   public:
     void setLabelsValuesResult(Eigen::DefaultDevice& device) override;
   };
-  inline void SelectTableDataIsValidDefaultDevice::setLabelsValuesResult(Eigen::DefaultDevice& device)
+  inline void SelectAndSumIsValidDefaultDevice::setLabelsValuesResult(Eigen::DefaultDevice& device)
   {
     // make the labels and sync to the device
     Eigen::Tensor<TensorArray32<char>, 2> select_labels_values(1, 1);
@@ -45,13 +45,13 @@ namespace TensorBaseBenchmarks
   }
 
   /*
-  @class Specialized `SelectTableDataLabel` for the DefaultDevice case
+  @class Specialized `SelectAndCountLabels` for the DefaultDevice case
   */
-  class SelectTableDataLabelDefaultDevice : public SelectTableDataLabel<TensorArray32<char>, TensorArray32<char>, Eigen::DefaultDevice> {
+  class SelectAndCountLabelsDefaultDevice : public SelectAndCountLabels<TensorArray32<char>, TensorArray32<char>, Eigen::DefaultDevice> {
   public:
     void setLabelsValuesResult(Eigen::DefaultDevice& device) override;
   };
-  inline void SelectTableDataLabelDefaultDevice::setLabelsValuesResult(Eigen::DefaultDevice& device)
+  inline void SelectAndCountLabelsDefaultDevice::setLabelsValuesResult(Eigen::DefaultDevice& device)
   {
     // make the labels and sync to the device
     Eigen::Tensor<TensorArray32<char>, 2> select_labels_values(1, 1);

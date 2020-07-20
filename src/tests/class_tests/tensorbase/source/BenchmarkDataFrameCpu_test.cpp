@@ -175,12 +175,12 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteCpu)
   }
 
   // Query for the number of valid entries
-  SelectTableDataIsValidCpu select_is_valid;
+  SelectAndSumIsValidCpu select_is_valid;
   select_is_valid(n_dim_tensor_collection, device);
   BOOST_CHECK_EQUAL(select_is_valid.result_->getData()(0), data_size / 2);
 
   // Query for the number of labels = "one"
-  SelectTableDataLabelCpu select_label_ones;
+  SelectAndCountLabelsCpu select_label_ones;
   select_label_ones(n_dim_tensor_collection, device);
   BOOST_CHECK_EQUAL(select_label_ones.result_, 130);
 
@@ -461,12 +461,12 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteShardingCpu)
   }
 
   // Query for the number of valid entries
-  SelectTableDataIsValidCpu select_is_valid;
+  SelectAndSumIsValidCpu select_is_valid;
   select_is_valid(n_dim_tensor_collection, device);
   BOOST_CHECK_EQUAL(select_is_valid.result_->getData()(0), data_size / 2);
 
   // Query for the number of labels = "one"
-  SelectTableDataLabelCpu select_label_ones;
+  SelectAndCountLabelsCpu select_label_ones;
   select_label_ones(n_dim_tensor_collection, device);
   BOOST_CHECK_EQUAL(select_label_ones.result_, 130);
 

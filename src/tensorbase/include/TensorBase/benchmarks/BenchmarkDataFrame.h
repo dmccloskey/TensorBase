@@ -24,99 +24,108 @@ namespace TensorBaseBenchmarks
 	public:
     SelectTableDataIndices(std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels, const std::string& table_name) : select_labels_(select_labels), table_name_(table_name) {};
     ~SelectTableDataIndices() = default;
-		void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) {
-			SelectClause<LabelsT, DeviceT> select_clause1(this->table_name_, "1_indices", this->select_labels_);
-			TensorSelect tensorSelect;
-			tensorSelect.selectClause(tensor_collection, select_clause1, device);
-			if (this->apply_select_) tensorSelect.applySelect(tensor_collection, { this->table_name_ }, { this->table_name_ }, device);
-		}
+    void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
   protected:
     std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels_;
     std::string table_name_;
     bool apply_select_ = false;
 	};
+  template<typename LabelsT, typename DeviceT>
+  inline void SelectTableDataIndices<LabelsT, DeviceT>::operator()(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
+  {
+    SelectClause<LabelsT, DeviceT> select_clause1(this->table_name_, "1_indices", this->select_labels_);
+    TensorSelect tensorSelect;
+    tensorSelect.selectClause(tensor_collection, select_clause1, device);
+    if (this->apply_select_) tensorSelect.applySelect(tensor_collection, { this->table_name_ }, { this->table_name_ }, device);
+  }
 
   /* 
-  @class The select Functor for the DataFrame `is_valid` column
+  @class The select and sum Functor for the DataFrame `is_valid` column
 
   The query selectes all data where `is_valid = 1` and performs a reduction sum on the
   `is_valid` column to count the number of valid entries.  The results are copied over
   to `results_` where they can be synced to the cpu and viewed.
   */
   template<typename LabelsT, typename TensorT, typename DeviceT>
-  class SelectTableDataIsValid {
+  class SelectAndSumIsValid {
   public:
     std::shared_ptr<TensorData<TensorT, DeviceT, 1>> result_; ///< The results of the query
-    void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) {
-      setLabelsValuesResult(device);
-      // Make and apply the where clause
-      WhereClause<LabelsT, TensorT, DeviceT> where_clause1("DataFrame_is_valid", "2_columns", select_labels_, select_values_, logicalComparitors::EQUAL_TO, logicalModifiers::NONE, logicalContinuators::AND, logicalContinuators::AND);
-      TensorSelect tensorSelect;
-      tensorSelect.whereClause(tensor_collection, where_clause1, device);
-      tensorSelect.applySelect(tensor_collection, { "DataFrame_is_valid" }, { "DataFrame_is_valid_true" }, device);
-
-      // Reset the indices
-      tensor_collection->tables_.at("DataFrame_is_valid")->resetIndicesView(device);
-
-      // Make and apply the reduction clause
-      ReductionClause<DeviceT> reduction_clause1("DataFrame_is_valid_true", reductionFunctions::SUM);
-      tensorSelect.applyReduction(tensor_collection, reduction_clause1, device);
-
-      // Copy out the results
-      std::shared_ptr<TensorT[]> data_is_valid;
-      tensor_collection->tables_.at("DataFrame_is_valid_true")->getDataPointer(data_is_valid);
-      Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> data_is_valid_values(data_is_valid.get(), 1);
-      Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> result_values(result_->getDataPointer().get(), 1);
-      result_values.device(device) = data_is_valid_values;
-
-      // Remove the intermediate tables
-      tensor_collection->removeTensorTable("DataFrame_is_valid_true");
-    }
+    void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
     virtual void setLabelsValuesResult(DeviceT& device) = 0;
   protected:
     std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> select_labels_; ///< The labels to select
     std::shared_ptr<TensorData<TensorT, DeviceT, 1>> select_values_; ///< The values to select
   };
+  template<typename LabelsT, typename TensorT, typename DeviceT>
+  inline void SelectAndSumIsValid<LabelsT, TensorT, DeviceT>::operator()(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
+  {
+    setLabelsValuesResult(device);
+    // Make and apply the where clause
+    WhereClause<LabelsT, TensorT, DeviceT> where_clause1("DataFrame_is_valid", "2_columns", select_labels_, select_values_, logicalComparitors::EQUAL_TO, logicalModifiers::NONE, logicalContinuators::AND, logicalContinuators::AND);
+    TensorSelect tensorSelect;
+    tensorSelect.whereClause(tensor_collection, where_clause1, device);
+    tensorSelect.applySelect(tensor_collection, { "DataFrame_is_valid" }, { "DataFrame_is_valid_true" }, device);
+
+    // Reset the indices
+    tensor_collection->tables_.at("DataFrame_is_valid")->resetIndicesView(device);
+
+    // Make and apply the reduction clause
+    ReductionClause<DeviceT> reduction_clause1("DataFrame_is_valid_true", reductionFunctions::SUM);
+    tensorSelect.applyReduction(tensor_collection, reduction_clause1, device);
+
+    // Copy out the results
+    std::shared_ptr<TensorT[]> data_is_valid;
+    tensor_collection->tables_.at("DataFrame_is_valid_true")->getDataPointer(data_is_valid);
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> data_is_valid_values(data_is_valid.get(), 1);
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> result_values(result_->getDataPointer().get(), 1);
+    result_values.device(device) = data_is_valid_values;
+
+    // Remove the intermediate tables
+    tensor_collection->removeTensorTable("DataFrame_is_valid_true");
+  }
 
   /*
-  @class The select Functor for the DataFrame `label` column
+  @class The select and count Functor for the DataFrame `label` column
 
   The query selects and aggregates all data where `label = "one"`, and counts the number of resulting indices.  
   The results are copied over to `results_` where they can be viewed.
   */
   template<typename LabelsT, typename TensorT, typename DeviceT>
-  class SelectTableDataLabel {
+  class SelectAndCountLabels {
   public:
     int result_; ///< The results of the query
-    void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) {
-      setLabelsValuesResult(device);
-      // Make and apply the where clause
-      WhereClause<LabelsT, TensorT, DeviceT> where_clause1("DataFrame_label", "2_columns", select_labels_, select_values_, logicalComparitors::EQUAL_TO, logicalModifiers::NONE, logicalContinuators::AND, logicalContinuators::AND);
-      TensorSelect tensorSelect;
-      tensorSelect.whereClause(tensor_collection, where_clause1, device);
-      tensorSelect.applySelect(tensor_collection, { "DataFrame_label" }, { "DataFrame_label_one" }, device);
-
-      // Reset the indices
-      tensor_collection->tables_.at("DataFrame_label")->resetIndicesView(device);
-
-      // Make and apply the reduction clause
-      ReductionClause<DeviceT> reduction_clause1("DataFrame_label_one", reductionFunctions::COUNT);
-      tensorSelect.applyReduction(tensor_collection, reduction_clause1, device);
-
-      // Copy out the results
-      result_ = tensor_collection->tables_.at("DataFrame_label_one")->getDimSizeFromAxisName("1_indices");
-
-      // Remove the intermediate tables
-      tensor_collection->removeTensorTable("DataFrame_label_one");
-    }
+    void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
     virtual void setLabelsValuesResult(DeviceT& device) = 0;
   protected:
     std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> select_labels_; ///< The labels to select
     std::shared_ptr<TensorData<TensorT, DeviceT, 1>> select_values_; ///< The values to select
   };
+  template<typename LabelsT, typename TensorT, typename DeviceT>
+  inline void SelectAndCountLabels<LabelsT, TensorT, DeviceT>::operator()(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
+  {
+    setLabelsValuesResult(device);
+    // Make and apply the where clause
+    WhereClause<LabelsT, TensorT, DeviceT> where_clause1("DataFrame_label", "2_columns", select_labels_, select_values_, logicalComparitors::EQUAL_TO, logicalModifiers::NONE, logicalContinuators::AND, logicalContinuators::AND);
+    TensorSelect tensorSelect;
+    tensorSelect.whereClause(tensor_collection, where_clause1, device);
+    tensorSelect.applySelect(tensor_collection, { "DataFrame_label" }, { "DataFrame_label_one" }, device);
+
+    // Reset the indices
+    tensor_collection->tables_.at("DataFrame_label")->resetIndicesView(device);
+
+    // Make and apply the reduction clause
+    ReductionClause<DeviceT> reduction_clause1("DataFrame_label_one", reductionFunctions::COUNT);
+    tensorSelect.applyReduction(tensor_collection, reduction_clause1, device);
+
+    // Copy out the results
+    result_ = tensor_collection->tables_.at("DataFrame_label_one")->getDimSizeFromAxisName("1_indices");
+
+    // Remove the intermediate tables
+    tensor_collection->removeTensorTable("DataFrame_label_one");
+  }
 
   /*
-  @class The select Functor for the DataFrame `image_2D` column
+  @class The select and average Functor for the DataFrame `image_2D` column
 
   The query selectes all data in the first two weeks of January and performs a reduction MEAN on the
   `image_2D` column to determine the average pixel intensity.  The results are copied over
@@ -126,45 +135,48 @@ namespace TensorBaseBenchmarks
   class SelectTableDataImage2D {
   public:
     std::shared_ptr<TensorData<TensorT2, DeviceT, 1>> result_; ///< The results of the query
-    void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) {
-      setLabelsValuesResult(device);
-      TensorSelect tensorSelect;
-      // Make the where clause on the time table
-      WhereClause<LabelsT, TensorT1, DeviceT> where_clause1("DataFrame_time", "3_time", select_labels_, select_values_lt_, logicalComparitors::LESS_THAN_OR_EQUAL_TO, logicalModifiers::NONE, logicalContinuators::AND, logicalContinuators::AND);
-      tensorSelect.whereClause(tensor_collection, where_clause1, device);
-      WhereClause<LabelsT, TensorT1, DeviceT> where_clause2("DataFrame_time", "3_time", select_labels_, select_values_gt_, logicalComparitors::GREATER_THAN_OR_EQUAL_TO, logicalModifiers::NONE, logicalContinuators::AND, logicalContinuators::AND);
-      tensorSelect.whereClause(tensor_collection, where_clause2, device);
-
-      // Copy the indice view from time to image_2D
-      tensor_collection->tables_.at("DataFrame_image_2D")->replaceIndicesView("1_indices", tensor_collection->tables_.at("DataFrame_time")->getIndicesView().at("1_indices"), device);
-
-      // Apply the where clause on the image_2d table
-      tensorSelect.applySelect(tensor_collection, { "DataFrame_image_2D" }, { "DataFrame_image_2D_jan" }, device);
-
-      // Reset the indices
-      tensor_collection->tables_.at("DataFrame_time")->resetIndicesView(device);
-      tensor_collection->tables_.at("DataFrame_image_2D")->resetIndicesView(device);
-
-      // Make and apply the reduction clause
-      ReductionClause<DeviceT> reduction_clause1("DataFrame_image_2D_jan", reductionFunctions::MEAN);
-      tensorSelect.applyReduction(tensor_collection, reduction_clause1, device);
-
-      // Copy out the results
-      std::shared_ptr<TensorT2[]> data_image_2D;
-      tensor_collection->tables_.at("DataFrame_image_2D_jan")->getDataPointer(data_image_2D);
-      Eigen::TensorMap<Eigen::Tensor<TensorT2, 1>> data_image_2D_values(data_image_2D.get(), 1);
-      Eigen::TensorMap<Eigen::Tensor<TensorT2, 1>> result_values(result_->getDataPointer().get(), 1);
-      result_values.device(device) = data_image_2D_values;
-
-      // Remove the intermediate tables
-      tensor_collection->removeTensorTable("DataFrame_image_2D_jan");
-    }
+    void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
     virtual void setLabelsValuesResult(DeviceT& device) = 0;
   protected:
     std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> select_labels_; ///< The labels to select
     std::shared_ptr<TensorData<TensorT1, DeviceT, 1>> select_values_lt_; ///< The values to select
     std::shared_ptr<TensorData<TensorT1, DeviceT, 1>> select_values_gt_; ///< The values to select
   };
+  template<typename LabelsT, typename TensorT1, typename TensorT2, typename DeviceT>
+  inline void SelectTableDataImage2D<LabelsT, TensorT1, TensorT2, DeviceT>::operator()(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
+  {
+    setLabelsValuesResult(device);
+    TensorSelect tensorSelect;
+    // Make the where clause on the time table
+    WhereClause<LabelsT, TensorT1, DeviceT> where_clause1("DataFrame_time", "3_time", select_labels_, select_values_lt_, logicalComparitors::LESS_THAN_OR_EQUAL_TO, logicalModifiers::NONE, logicalContinuators::AND, logicalContinuators::AND);
+    tensorSelect.whereClause(tensor_collection, where_clause1, device);
+    WhereClause<LabelsT, TensorT1, DeviceT> where_clause2("DataFrame_time", "3_time", select_labels_, select_values_gt_, logicalComparitors::GREATER_THAN_OR_EQUAL_TO, logicalModifiers::NONE, logicalContinuators::AND, logicalContinuators::AND);
+    tensorSelect.whereClause(tensor_collection, where_clause2, device);
+
+    // Copy the indice view from time to image_2D
+    tensor_collection->tables_.at("DataFrame_image_2D")->replaceIndicesView("1_indices", tensor_collection->tables_.at("DataFrame_time")->getIndicesView().at("1_indices"), device);
+
+    // Apply the where clause on the image_2d table
+    tensorSelect.applySelect(tensor_collection, { "DataFrame_image_2D" }, { "DataFrame_image_2D_jan" }, device);
+
+    // Reset the indices
+    tensor_collection->tables_.at("DataFrame_time")->resetIndicesView(device);
+    tensor_collection->tables_.at("DataFrame_image_2D")->resetIndicesView(device);
+
+    // Make and apply the reduction clause
+    ReductionClause<DeviceT> reduction_clause1("DataFrame_image_2D_jan", reductionFunctions::MEAN);
+    tensorSelect.applyReduction(tensor_collection, reduction_clause1, device);
+
+    // Copy out the results
+    std::shared_ptr<TensorT2[]> data_image_2D;
+    tensor_collection->tables_.at("DataFrame_image_2D_jan")->getDataPointer(data_image_2D);
+    Eigen::TensorMap<Eigen::Tensor<TensorT2, 1>> data_image_2D_values(data_image_2D.get(), 1);
+    Eigen::TensorMap<Eigen::Tensor<TensorT2, 1>> result_values(result_->getDataPointer().get(), 1);
+    result_values.device(device) = data_image_2D_values;
+
+    // Remove the intermediate tables
+    tensor_collection->removeTensorTable("DataFrame_image_2D_jan");
+  }
 
 	/*
 	@brief Class for managing the generation of data for the DataFrame

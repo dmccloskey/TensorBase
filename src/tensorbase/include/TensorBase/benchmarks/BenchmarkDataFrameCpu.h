@@ -14,13 +14,13 @@ using namespace TensorBase;
 namespace TensorBaseBenchmarks
 {
   /*
-  @class Specialized `SelectTableDataIsValid` for the Cpu case
+  @class Specialized `SelectAndSumIsValid` for the Cpu case
   */
-  class SelectTableDataIsValidCpu: public SelectTableDataIsValid<TensorArray32<char>, int, Eigen::ThreadPoolDevice> {
+  class SelectAndSumIsValidCpu: public SelectAndSumIsValid<TensorArray32<char>, int, Eigen::ThreadPoolDevice> {
   public:
     void setLabelsValuesResult(Eigen::ThreadPoolDevice& device) override;
   };
-  inline void SelectTableDataIsValidCpu::setLabelsValuesResult(Eigen::ThreadPoolDevice& device)
+  inline void SelectAndSumIsValidCpu::setLabelsValuesResult(Eigen::ThreadPoolDevice& device)
   {
     // make the labels and sync to the device
     Eigen::Tensor<TensorArray32<char>, 2> select_labels_values(1, 1);
@@ -46,13 +46,13 @@ namespace TensorBaseBenchmarks
   }
 
   /*
-  @class Specialized `SelectTableDataLabel` for the Cpu case
+  @class Specialized `SelectAndCountLabels` for the Cpu case
   */
-  class SelectTableDataLabelCpu : public SelectTableDataLabel<TensorArray32<char>, TensorArray32<char>, Eigen::ThreadPoolDevice> {
+  class SelectAndCountLabelsCpu : public SelectAndCountLabels<TensorArray32<char>, TensorArray32<char>, Eigen::ThreadPoolDevice> {
   public:
     void setLabelsValuesResult(Eigen::ThreadPoolDevice& device) override;
   };
-  inline void SelectTableDataLabelCpu::setLabelsValuesResult(Eigen::ThreadPoolDevice& device)
+  inline void SelectAndCountLabelsCpu::setLabelsValuesResult(Eigen::ThreadPoolDevice& device)
   {
     // make the labels and sync to the device
     Eigen::Tensor<TensorArray32<char>, 2> select_labels_values(1, 1);

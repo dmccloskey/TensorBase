@@ -18,15 +18,15 @@ using namespace TensorBase;
 namespace TensorBaseBenchmarks
 {
   /*
-  @class Specialized `SelectTableDataIsValid` for the Gpu case
+  @class Specialized `SelectAndSumIsValid` for the Gpu case
   */
   template<template<class> class ArrayT, class TensorT>
-  class SelectTableDataIsValidGpuT: public SelectTableDataIsValid<ArrayT<TensorT>, int, Eigen::GpuDevice> {};
-  class SelectTableDataIsValidGpu : public SelectTableDataIsValidGpuT<TensorArrayGpu32, char> {
+  class SelectAndSumIsValidGpuT: public SelectAndSumIsValid<ArrayT<TensorT>, int, Eigen::GpuDevice> {};
+  class SelectAndSumIsValidGpu : public SelectAndSumIsValidGpuT<TensorArrayGpu32, char> {
   public:
     void setLabelsValuesResult(Eigen::GpuDevice& device) override;
   };
-  inline void SelectTableDataIsValidGpu::setLabelsValuesResult(Eigen::GpuDevice& device)
+  inline void SelectAndSumIsValidGpu::setLabelsValuesResult(Eigen::GpuDevice& device)
   {
     // make the labels and sync to the device
     Eigen::Tensor<TensorArrayGpu32<char>, 2> select_labels_values(1, 1);
@@ -52,15 +52,15 @@ namespace TensorBaseBenchmarks
   }
 
   /*
-  @class Specialized `SelectTableDataLabel` for the Gpu case
+  @class Specialized `SelectAndCountLabels` for the Gpu case
   */
   template<template<class> class ArrayT1, class TensorT1, template<class> class ArrayT2, class TensorT2>
-  class SelectTableDataLabelGpuT : public SelectTableDataLabel<ArrayT1<TensorT1>, ArrayT1<TensorT1>, Eigen::GpuDevice> {};
-  class SelectTableDataLabelGpu : public SelectTableDataLabelGpuT<TensorArrayGpu32, char, TensorArrayGpu32, char> {
+  class SelectAndCountLabelsGpuT : public SelectAndCountLabels<ArrayT1<TensorT1>, ArrayT1<TensorT1>, Eigen::GpuDevice> {};
+  class SelectAndCountLabelsGpu : public SelectAndCountLabelsGpuT<TensorArrayGpu32, char, TensorArrayGpu32, char> {
   public:
     void setLabelsValuesResult(Eigen::GpuDevice& device) override;
   };
-  inline void SelectTableDataLabelGpu::setLabelsValuesResult(Eigen::GpuDevice& device)
+  inline void SelectAndCountLabelsGpu::setLabelsValuesResult(Eigen::GpuDevice& device)
   {
     // make the labels and sync to the device
     Eigen::Tensor<TensorArrayGpu32<char>, 2> select_labels_values(1, 1);
@@ -83,12 +83,12 @@ namespace TensorBaseBenchmarks
   @class Specialized `SelectTableDataImage2D` for the Gpu case
   */
   template<template<class> class ArrayT, class TensorT>
-  class SelectTableDataImage2DGpuT : public SelectTableDataImage2D<ArrayT<TensorT>, int, float, Eigen::GpuDevice> {};
-  class SelectTableDataImage2DGpu : public SelectTableDataImage2DGpuT<TensorArrayGpu8, char> {
+  class SelectAndMeanImage2DT : public SelectTableDataImage2D<ArrayT<TensorT>, int, float, Eigen::GpuDevice> {};
+  class SelectAndMeanImage2D : public SelectAndMeanImage2DT<TensorArrayGpu8, char> {
   public:
     void setLabelsValuesResult(Eigen::GpuDevice& device) override;
   };
-  inline void SelectTableDataImage2DGpu::setLabelsValuesResult(Eigen::GpuDevice& device)
+  inline void SelectAndMeanImage2D::setLabelsValuesResult(Eigen::GpuDevice& device)
   {
     // make the labels and sync to the device
     Eigen::Tensor<TensorArrayGpu8<char>, 2> select_labels_values(1, 2);
