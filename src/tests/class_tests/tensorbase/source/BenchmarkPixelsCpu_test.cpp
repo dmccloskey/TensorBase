@@ -125,6 +125,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DCpu)
     }
   }
 
+  // Test the select and sum query
+  auto select_sum_pixels_result = benchmark_1_tp.selectAndSumPixels(n_dims, transaction_manager, data_size, in_memory, device);
+  BOOST_CHECK_EQUAL(select_sum_pixels_result.second, 2072);
+
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
 
@@ -305,6 +309,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete1DCpu)
     }
   }
 
+  // Test the select and sum query
+  auto select_sum_pixels_result = benchmark_1_tp.selectAndSumPixels(n_dims, transaction_manager, data_size, in_memory, device);
+  BOOST_CHECK_EQUAL(select_sum_pixels_result.second, 2072);
+
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
 
@@ -415,7 +423,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DCpu)
   for (int i = 0; i < t_dim_size; ++i) {
     labels_t(0, i) = int(floor(float(i) / float(std::pow(dim_span, 0)))) % dim_span + 1;
     Eigen::Tensor<int, 1> new_values(xyz_dim_size);
-    new_values.setConstant(i * xyz_dim_size + 1);
+    new_values.setConstant(i * xyz_dim_size);
     new_values = new_values.cumsum(0);
     values.slice(Eigen::array<Eigen::Index, 2>({ i, 0 }), Eigen::array<Eigen::Index, 2>({ 1, xyz_dim_size })) = new_values.reshape(Eigen::array<Eigen::Index, 2>({ 1, xyz_dim_size }));
   }
@@ -493,6 +501,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DCpu)
       BOOST_CHECK_EQUAL(data_insert_values(i, j), values(i, j));
     }
   }
+
+  // Test the select and sum query
+  auto select_sum_pixels_result = benchmark_1_tp.selectAndSumPixels(n_dims, transaction_manager, data_size, in_memory, device);
+  BOOST_CHECK_EQUAL(select_sum_pixels_result.second, 38880);
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
@@ -615,7 +627,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DCpu)
   for (int i = 0; i < t_dim_size; ++i) {
     labels_t(0, i) = int(floor(float(i) / float(std::pow(dim_span, 0)))) % dim_span + 1;
     Eigen::Tensor<int, 1> new_values(xy_dim_size * z_dim_size);
-    new_values.setConstant(i * xy_dim_size * z_dim_size + 1);
+    new_values.setConstant(i * xy_dim_size * z_dim_size);
     new_values = new_values.cumsum(0);
     values.slice(Eigen::array<Eigen::Index, 3>({ i, 0, 0 }), Eigen::array<Eigen::Index, 3>({ 1, xy_dim_size, z_dim_size })) = new_values.reshape(Eigen::array<Eigen::Index, 3>({ 1, xy_dim_size, z_dim_size }));
   }
@@ -720,6 +732,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DCpu)
       }
     }
   }
+
+  // Test the select and sum query
+  auto select_sum_pixels_result = benchmark_1_tp.selectAndSumPixels(n_dims, transaction_manager, data_size, in_memory, device);
+  BOOST_CHECK_EQUAL(select_sum_pixels_result.second, 38880);
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
@@ -873,7 +889,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DCpu)
   for (int i = 0; i < t_dim_size; ++i) {
     labels_t(0, i) = int(floor(float(i) / float(std::pow(dim_span, 0)))) % dim_span + 1;
     Eigen::Tensor<int, 1> new_values(x_dim_size * y_dim_size * z_dim_size);
-    new_values.setConstant(i * x_dim_size * y_dim_size * z_dim_size + 1);
+    new_values.setConstant(i * x_dim_size * y_dim_size * z_dim_size);
     new_values = new_values.cumsum(0);
     values.slice(Eigen::array<Eigen::Index, 4>({ i, 0, 0, 0 }), Eigen::array<Eigen::Index, 4>({ 1, x_dim_size, y_dim_size, z_dim_size })) = new_values.reshape(Eigen::array<Eigen::Index, 4>({ 1, x_dim_size, y_dim_size, z_dim_size }));
   }
@@ -1003,6 +1019,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DCpu)
       }
     }
   }
+
+  // Test the select and sum query
+  auto select_sum_pixels_result = benchmark_1_tp.selectAndSumPixels(n_dims, transaction_manager, data_size, in_memory, device);
+  BOOST_CHECK_EQUAL(select_sum_pixels_result.second, 38880);
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
@@ -1258,6 +1278,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DShardingCpu)
   n_dim_tensor_collection->tables_.at("TTable")->initData(device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
 
+  // Test the select and sum query
+  auto select_sum_pixels_result = benchmark_1_tp.selectAndSumPixels(n_dims, transaction_manager, data_size, in_memory, device);
+  BOOST_CHECK_EQUAL(select_sum_pixels_result.second, 2072);
+
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
 
@@ -1449,6 +1473,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete1DShardingCpu)
   n_dim_tensor_collection->tables_.at("TTable")->initData(device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
 
+  // Test the select and sum query
+  auto select_sum_pixels_result = benchmark_1_tp.selectAndSumPixels(n_dims, transaction_manager, data_size, in_memory, device);
+  BOOST_CHECK_EQUAL(select_sum_pixels_result.second, 2072);
+
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
 
@@ -1565,7 +1593,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DShardingCpu)
   for (int i = 0; i < t_dim_size; ++i) {
     labels_t(0, i) = int(floor(float(i) / float(std::pow(dim_span, 0)))) % dim_span + 1;
     Eigen::Tensor<int, 1> new_values(xyz_dim_size);
-    new_values.setConstant(i * xyz_dim_size + 1);
+    new_values.setConstant(i * xyz_dim_size);
     new_values = new_values.cumsum(0);
     values.slice(Eigen::array<Eigen::Index, 2>({ i, 0 }), Eigen::array<Eigen::Index, 2>({ 1, xyz_dim_size })) = new_values.reshape(Eigen::array<Eigen::Index, 2>({ 1, xyz_dim_size }));
   }
@@ -1649,6 +1677,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DShardingCpu)
   }
   n_dim_tensor_collection->tables_.at("TTable")->initData(device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
+
+  // Test the select and sum query
+  auto select_sum_pixels_result = benchmark_1_tp.selectAndSumPixels(n_dims, transaction_manager, data_size, in_memory, device);
+  BOOST_CHECK_EQUAL(select_sum_pixels_result.second, 38880);
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
@@ -1783,7 +1815,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DShardingCpu)
   for (int i = 0; i < t_dim_size; ++i) {
     labels_t(0, i) = int(floor(float(i) / float(std::pow(dim_span, 0)))) % dim_span + 1;
     Eigen::Tensor<int, 1> new_values(xy_dim_size * z_dim_size);
-    new_values.setConstant(i * xy_dim_size * z_dim_size + 1);
+    new_values.setConstant(i * xy_dim_size * z_dim_size);
     new_values = new_values.cumsum(0);
     values.slice(Eigen::array<Eigen::Index, 3>({ i, 0, 0 }), Eigen::array<Eigen::Index, 3>({ 1, xy_dim_size, z_dim_size })) = new_values.reshape(Eigen::array<Eigen::Index, 3>({ 1, xy_dim_size, z_dim_size }));
   }
@@ -1899,6 +1931,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DShardingCpu)
   }
   n_dim_tensor_collection->tables_.at("TTable")->initData(device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
+
+  // Test the select and sum query
+  auto select_sum_pixels_result = benchmark_1_tp.selectAndSumPixels(n_dims, transaction_manager, data_size, in_memory, device);
+  BOOST_CHECK_EQUAL(select_sum_pixels_result.second, 38880);
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
@@ -2068,7 +2104,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DShardingCpu)
   for (int i = 0; i < t_dim_size; ++i) {
     labels_t(0, i) = int(floor(float(i) / float(std::pow(dim_span, 0)))) % dim_span + 1;
     Eigen::Tensor<int, 1> new_values(x_dim_size * y_dim_size * z_dim_size);
-    new_values.setConstant(i * x_dim_size * y_dim_size * z_dim_size + 1);
+    new_values.setConstant(i * x_dim_size * y_dim_size * z_dim_size);
     new_values = new_values.cumsum(0);
     values.slice(Eigen::array<Eigen::Index, 4>({ i, 0, 0, 0 }), Eigen::array<Eigen::Index, 4>({ 1, x_dim_size, y_dim_size, z_dim_size })) = new_values.reshape(Eigen::array<Eigen::Index, 4>({ 1, x_dim_size, y_dim_size, z_dim_size }));
   }
@@ -2210,6 +2246,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DShardingCpu)
   }
   n_dim_tensor_collection->tables_.at("TTable")->initData(device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
+
+  // Test the select and sum query
+  auto select_sum_pixels_result = benchmark_1_tp.selectAndSumPixels(n_dims, transaction_manager, data_size, in_memory, device);
+  BOOST_CHECK_EQUAL(select_sum_pixels_result.second, 38880);
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);

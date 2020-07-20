@@ -17,6 +17,211 @@ using namespace TensorBase;
 
 namespace TensorBaseBenchmarks
 {
+  /// Specialized class to select a region of pixels and compute the sum for the 0D and Gpu case
+  template<typename TensorT>
+  class SelectAndSumPixels0DGpu : public SelectAndSumPixels0D<TensorArrayGpu8<char>, TensorT, Eigen::GpuDevice> {
+  public:
+    using SelectAndSumPixels0D<TensorArrayGpu8<char>, TensorT, Eigen::GpuDevice>::SelectAndSumPixels0D;
+    void setLabelsValuesResults(Eigen::GpuDevice& device) override;
+  };
+  template< typename TensorT>
+  inline void SelectAndSumPixels0DGpu<TensorT>::setLabelsValuesResults(Eigen::GpuDevice& device)
+  {
+    // make the labels and sync to the device
+    Eigen::Tensor<TensorArrayGpu8<char>, 2> select_labels_xyztv_values(1, 4);
+    select_labels_xyztv_values.setValues({ { TensorArrayGpu8<char>("x"), TensorArrayGpu8<char>("y"), TensorArrayGpu8<char>("z"), TensorArrayGpu8<char>("t")} });
+    TensorDataGpu<TensorArrayGpu8<char>, 2> select_labels_xyztv(select_labels_xyztv_values.dimensions());
+    select_labels_xyztv.setData(select_labels_xyztv_values);
+    select_labels_xyztv.syncHAndDData(device);
+    this->select_labels_xyztv_ = std::make_shared<TensorDataGpu<TensorArrayGpu8<char>, 2>>(select_labels_xyztv);
+
+    // make the corresponding values and sync to the device
+    Eigen::Tensor<TensorT, 1> select_values_xyztv_values(4);
+    select_values_xyztv_values.setValues({ this->dim_span_, this->dim_span_, this->dim_span_, this->dim_span_ });
+    TensorDataGpu<TensorT, 1> select_values_xyztv_lt(select_values_xyztv_values.dimensions());
+    select_values_xyztv_lt.setData(select_values_xyztv_values);
+    select_values_xyztv_lt.syncHAndDData(device);
+    this->select_values_xyztv_lt_ = std::make_shared<TensorDataGpu<TensorT, 1>>(select_values_xyztv_lt);
+    select_values_xyztv_values.setValues({ 1, 1, 1, 1 });
+    TensorDataGpu<TensorT, 1> select_values_xyztv_gt(select_values_xyztv_values.dimensions());
+    select_values_xyztv_gt.setData(select_values_xyztv_values);
+    select_values_xyztv_gt.syncHAndDData(device);
+    this->select_values_xyztv_gt_ = std::make_shared<TensorDataGpu<TensorT, 1>>(select_values_xyztv_gt);
+
+    // make the labels and sync to the device
+    Eigen::Tensor<TensorArrayGpu8<char>, 2> select_labels_v_values(1, 1);
+    select_labels_v_values.setValues({ { TensorArrayGpu8<char>("v")} });
+    TensorDataGpu<TensorArrayGpu8<char>, 2> select_labels_v(select_labels_v_values.dimensions());
+    select_labels_v.setData(select_labels_v_values);
+    select_labels_v.syncHAndDData(device);
+    this->select_labels_v_ = std::make_shared<TensorDataGpu<TensorArrayGpu8<char>, 2>>(select_labels_v);
+
+    // allocate memory for the results
+    TensorDataGpu<TensorT, 1> results(Eigen::array<Eigen::Index, 1>({ 1 }));
+    results.setData();
+    results.syncHAndDData(device);
+    this->result_ = std::make_shared<TensorDataGpu<TensorT, 1>>(results);
+  }
+
+  /// Specialized class to select a region of pixels and compute the sum for the 1D and Gpu case
+  template<typename LabelsT, typename TensorT>
+  class SelectAndSumPixels1DGpu : public SelectAndSumPixels1D<LabelsT, TensorT, Eigen::GpuDevice> {
+  public:
+    using SelectAndSumPixels1D<LabelsT, TensorT, Eigen::GpuDevice>::SelectAndSumPixels1D;
+    void setLabelsValuesResults(Eigen::GpuDevice& device) override;
+  };
+  template<typename LabelsT, typename TensorT>
+  inline void SelectAndSumPixels1DGpu<LabelsT, TensorT>::setLabelsValuesResults(Eigen::GpuDevice& device)
+  {
+    // make the labels and sync to the device
+    const int data_span_xyzt = std::pow(this->dim_span_, 4);
+    Eigen::Tensor<LabelsT, 2> select_labels_xyzt_values(4, data_span_xyzt);
+    for (int i = 0; i < data_span_xyzt; ++i) {
+      select_labels_xyzt_values(0, i) = int(floor(float(i) / float(std::pow(this->dim_span_, 0)))) % this->dim_span_ + 1;
+      select_labels_xyzt_values(1, i) = int(floor(float(i) / float(std::pow(this->dim_span_, 1)))) % this->dim_span_ + 1;
+      select_labels_xyzt_values(2, i) = int(floor(float(i) / float(std::pow(this->dim_span_, 2)))) % this->dim_span_ + 1;
+      select_labels_xyzt_values(3, i) = int(floor(float(i) / float(std::pow(this->dim_span_, 3)))) % this->dim_span_ + 1;
+    }
+    TensorDataGpu<LabelsT, 2> select_labels_xyzt(select_labels_xyzt_values.dimensions());
+    select_labels_xyzt.setData(select_labels_xyzt_values);
+    select_labels_xyzt.syncHAndDData(device);
+    this->select_labels_xyzt_ = std::make_shared<TensorDataGpu<LabelsT, 2>>(select_labels_xyzt);
+
+    // allocate memory for the results
+    TensorDataGpu<TensorT, 1> results(Eigen::array<Eigen::Index, 1>({ 1 }));
+    results.setData();
+    results.syncHAndDData(device);
+    this->result_ = std::make_shared<TensorDataGpu<TensorT, 1>>(results);
+  }
+
+  /// Specialized class to select a region of pixels and compute the sum for the 2D and Gpu case
+  template<typename LabelsT, typename TensorT>
+  class SelectAndSumPixels2DGpu : public SelectAndSumPixels2D<LabelsT, TensorT, Eigen::GpuDevice> {
+  public:
+    using SelectAndSumPixels2D<LabelsT, TensorT, Eigen::GpuDevice>::SelectAndSumPixels2D;
+    void setLabelsValuesResults(Eigen::GpuDevice& device) override;
+  };
+  template<typename LabelsT, typename TensorT>
+  inline void SelectAndSumPixels2DGpu<LabelsT, TensorT>::setLabelsValuesResults(Eigen::GpuDevice& device)
+  {
+    // make the labels and sync to the device
+    const int data_span_xyz = std::pow(this->dim_span_, 3);
+    Eigen::Tensor<LabelsT, 2> select_labels_xyz_values(3, data_span_xyz);
+    for (int i = 0; i < data_span_xyz; ++i) {
+      select_labels_xyz_values(0, i) = int(floor(float(i) / float(std::pow(this->dim_span_, 0)))) % this->dim_span_ + 1;
+      select_labels_xyz_values(1, i) = int(floor(float(i) / float(std::pow(this->dim_span_, 1)))) % this->dim_span_ + 1;
+      select_labels_xyz_values(2, i) = int(floor(float(i) / float(std::pow(this->dim_span_, 2)))) % this->dim_span_ + 1;
+    }
+    TensorDataGpu<LabelsT, 2> select_labels_xyz(select_labels_xyz_values.dimensions());
+    select_labels_xyz.setData(select_labels_xyz_values);
+    select_labels_xyz.syncHAndDData(device);
+    this->select_labels_xyz_ = std::make_shared<TensorDataGpu<LabelsT, 2>>(select_labels_xyz);
+
+    Eigen::Tensor<LabelsT, 2> select_labels_t_values(1, this->dim_span_);
+    for (int i = 0; i < this->dim_span_; ++i) {
+      select_labels_t_values(0, i) = i + 1;
+    }
+    TensorDataGpu<LabelsT, 2> select_labels_t(select_labels_t_values.dimensions());
+    select_labels_t.setData(select_labels_t_values);
+    select_labels_t.syncHAndDData(device);
+    this->select_labels_t_ = std::make_shared<TensorDataGpu<LabelsT, 2>>(select_labels_t);
+
+    // allocate memory for the results
+    TensorDataGpu<TensorT, 1> results(Eigen::array<Eigen::Index, 1>({ 1 }));
+    results.setData();
+    results.syncHAndDData(device);
+    this->result_ = std::make_shared<TensorDataGpu<TensorT, 1>>(results);
+  }
+
+  /// Specialized class to select a region of pixels and compute the sum for the 3D and Gpu case
+  template<typename LabelsT, typename TensorT>
+  class SelectAndSumPixels3DGpu : public SelectAndSumPixels3D<LabelsT, TensorT, Eigen::GpuDevice> {
+  public:
+    using SelectAndSumPixels3D<LabelsT, TensorT, Eigen::GpuDevice>::SelectAndSumPixels3D;
+    void setLabelsValuesResults(Eigen::GpuDevice& device) override;
+  };
+  template<typename LabelsT, typename TensorT>
+  inline void SelectAndSumPixels3DGpu<LabelsT, TensorT>::setLabelsValuesResults(Eigen::GpuDevice& device)
+  {
+    // make the labels and sync to the device
+    const int data_span_xy = std::pow(this->dim_span_, 2);
+    Eigen::Tensor<LabelsT, 2> select_labels_xy_values(2, data_span_xy);
+    for (int i = 0; i < data_span_xy; ++i) {
+      select_labels_xy_values(0, i) = int(floor(float(i) / float(std::pow(this->dim_span_, 0)))) % this->dim_span_ + 1;
+      select_labels_xy_values(1, i) = int(floor(float(i) / float(std::pow(this->dim_span_, 1)))) % this->dim_span_ + 1;
+    }
+    TensorDataGpu<LabelsT, 2> select_labels_xy(select_labels_xy_values.dimensions());
+    select_labels_xy.setData(select_labels_xy_values);
+    select_labels_xy.syncHAndDData(device);
+    this->select_labels_xy_ = std::make_shared<TensorDataGpu<LabelsT, 2>>(select_labels_xy);
+
+    Eigen::Tensor<LabelsT, 2> select_labels_z_values(1, this->dim_span_);
+    Eigen::Tensor<LabelsT, 2> select_labels_t_values(1, this->dim_span_);
+    for (int i = 0; i < this->dim_span_; ++i) {
+      select_labels_z_values(0, i) = i + 1;
+      select_labels_t_values(0, i) = i + 1;
+    }
+    TensorDataGpu<LabelsT, 2> select_labels_z(select_labels_z_values.dimensions());
+    select_labels_z.setData(select_labels_z_values);
+    select_labels_z.syncHAndDData(device);
+    this->select_labels_z_ = std::make_shared<TensorDataGpu<LabelsT, 2>>(select_labels_z);
+    TensorDataGpu<LabelsT, 2> select_labels_t(select_labels_t_values.dimensions());
+    select_labels_t.setData(select_labels_t_values);
+    select_labels_t.syncHAndDData(device);
+    this->select_labels_t_ = std::make_shared<TensorDataGpu<LabelsT, 2>>(select_labels_t);
+
+    // allocate memory for the results
+    TensorDataGpu<TensorT, 1> results(Eigen::array<Eigen::Index, 1>({ 1 }));
+    results.setData();
+    results.syncHAndDData(device);
+    this->result_ = std::make_shared<TensorDataGpu<TensorT, 1>>(results);
+  }
+
+  /// Specialized class to select a region of pixels and compute the sum for the 4D and Gpu case
+  template<typename LabelsT, typename TensorT>
+  class SelectAndSumPixels4DGpu : public SelectAndSumPixels4D<LabelsT, TensorT, Eigen::GpuDevice> {
+  public:
+    using SelectAndSumPixels4D<LabelsT, TensorT, Eigen::GpuDevice>::SelectAndSumPixels4D;
+    void setLabelsValuesResults(Eigen::GpuDevice& device) override;
+  };
+  template<typename LabelsT, typename TensorT>
+  inline void SelectAndSumPixels4DGpu<LabelsT, TensorT>::setLabelsValuesResults(Eigen::GpuDevice& device)
+  {
+    // make the labels and sync to the device
+    Eigen::Tensor<LabelsT, 2> select_labels_x_values(1, this->dim_span_);
+    Eigen::Tensor<LabelsT, 2> select_labels_y_values(1, this->dim_span_);
+    Eigen::Tensor<LabelsT, 2> select_labels_z_values(1, this->dim_span_);
+    Eigen::Tensor<LabelsT, 2> select_labels_t_values(1, this->dim_span_);
+    for (int i = 0; i < this->dim_span_; ++i) {
+      select_labels_x_values(0, i) = i + 1;
+      select_labels_y_values(0, i) = i + 1;
+      select_labels_z_values(0, i) = i + 1;
+      select_labels_t_values(0, i) = i + 1;
+    }
+    TensorDataGpu<LabelsT, 2> select_labels_x(select_labels_x_values.dimensions());
+    select_labels_x.setData(select_labels_x_values);
+    select_labels_x.syncHAndDData(device);
+    this->select_labels_x_ = std::make_shared<TensorDataGpu<LabelsT, 2>>(select_labels_x);
+    TensorDataGpu<LabelsT, 2> select_labels_y(select_labels_y_values.dimensions());
+    select_labels_y.setData(select_labels_y_values);
+    select_labels_y.syncHAndDData(device);
+    this->select_labels_y_ = std::make_shared<TensorDataGpu<LabelsT, 2>>(select_labels_y);
+    TensorDataGpu<LabelsT, 2> select_labels_z(select_labels_z_values.dimensions());
+    select_labels_z.setData(select_labels_z_values);
+    select_labels_z.syncHAndDData(device);
+    this->select_labels_z_ = std::make_shared<TensorDataGpu<LabelsT, 2>>(select_labels_z);
+    TensorDataGpu<LabelsT, 2> select_labels_t(select_labels_t_values.dimensions());
+    select_labels_t.setData(select_labels_t_values);
+    select_labels_t.syncHAndDData(device);
+    this->select_labels_t_ = std::make_shared<TensorDataGpu<LabelsT, 2>>(select_labels_t);
+
+    // allocate memory for the results
+    TensorDataGpu<TensorT, 1> results(Eigen::array<Eigen::Index, 1>({ 1 }));
+    results.setData();
+    results.syncHAndDData(device);
+    this->result_ = std::make_shared<TensorDataGpu<TensorT, 1>>(results);
+  }
+
 	/*
 	@brief Specialized `PixelManager` for the 0D and Gpu case
 	*/
@@ -155,7 +360,13 @@ namespace TensorBaseBenchmarks
 		void delete1TimePoint2D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `delete1TimePoint2D`
 		void delete1TimePoint3D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `delete1TimePoint3D`
 		void delete1TimePoint4D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `delete1TimePoint4D`
-	};
+
+    TensorT selectAndSumPixels0D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `selectAndSumPixels0D`
+    TensorT selectAndSumPixels1D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `selectAndSumPixels1D`
+    TensorT selectAndSumPixels2D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `selectAndSumPixels2D`
+    TensorT selectAndSumPixels3D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `selectAndSumPixels3D`
+    TensorT selectAndSumPixels4D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `selectAndSumPixels4D`
+  };
 	template<typename LabelsT, typename TensorT>
 	void Benchmark1TimePointGpu<LabelsT, TensorT>::insert1TimePoint0D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const {
 		PixelManager0DGpu<LabelsT, TensorT> pixel_manager(data_size, false);
@@ -306,6 +517,66 @@ namespace TensorBaseBenchmarks
       }
 		}
 	}
+  template<typename LabelsT, typename TensorT>
+  inline TensorT Benchmark1TimePointGpu<LabelsT, TensorT>::selectAndSumPixels0D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const
+  {
+    SelectAndSumPixels0DGpu<int> select_sum_pixels(data_size);
+    select_sum_pixels(transaction_manager.getTensorCollection(), device);
+    if (!in_memory) {
+      transaction_manager.initTensorCollectionTensorData(device);
+    }
+    assert(cudaStreamSynchronize(stream) == cudaSuccess);
+    select_sum_pixels.result_->syncHAndDData(device);
+    return select_sum_pixels.result_->getData()(0);
+  }
+  template<typename LabelsT, typename TensorT>
+  inline TensorT Benchmark1TimePointGpu<LabelsT, TensorT>::selectAndSumPixels1D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const
+  {
+    SelectAndSumPixels1DGpu<int, int> select_sum_pixels(data_size);
+    select_sum_pixels(transaction_manager.getTensorCollection(), device);
+    if (!in_memory) {
+      transaction_manager.initTensorCollectionTensorData(device);
+    }
+    assert(cudaStreamSynchronize(stream) == cudaSuccess);
+    select_sum_pixels.result_->syncHAndDData(device);
+    return select_sum_pixels.result_->getData()(0);
+  }
+  template<typename LabelsT, typename TensorT>
+  inline TensorT Benchmark1TimePointGpu<LabelsT, TensorT>::selectAndSumPixels2D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const
+  {
+    SelectAndSumPixels2DGpu<int, int> select_sum_pixels(data_size);
+    select_sum_pixels(transaction_manager.getTensorCollection(), device);
+    if (!in_memory) {
+      transaction_manager.initTensorCollectionTensorData(device);
+    }
+    assert(cudaStreamSynchronize(stream) == cudaSuccess);
+    select_sum_pixels.result_->syncHAndDData(device);
+    return select_sum_pixels.result_->getData()(0);
+  }
+  template<typename LabelsT, typename TensorT>
+  inline TensorT Benchmark1TimePointGpu<LabelsT, TensorT>::selectAndSumPixels3D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const
+  {
+    SelectAndSumPixels3DGpu<int, int> select_sum_pixels(data_size);
+    select_sum_pixels(transaction_manager.getTensorCollection(), device);
+    if (!in_memory) {
+      transaction_manager.initTensorCollectionTensorData(device);
+    }
+    assert(cudaStreamSynchronize(stream) == cudaSuccess);
+    select_sum_pixels.result_->syncHAndDData(device);
+    return select_sum_pixels.result_->getData()(0);
+  }
+  template<typename LabelsT, typename TensorT>
+  inline TensorT Benchmark1TimePointGpu<LabelsT, TensorT>::selectAndSumPixels4D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const
+  {
+    SelectAndSumPixels4DGpu<int, int> select_sum_pixels(data_size);
+    select_sum_pixels(transaction_manager.getTensorCollection(), device);
+    if (!in_memory) {
+      transaction_manager.initTensorCollectionTensorData(device);
+    }
+    assert(cudaStreamSynchronize(stream) == cudaSuccess);
+    select_sum_pixels.result_->syncHAndDData(device);
+    return select_sum_pixels.result_->getData()(0);
+  }
 
 	template<typename LabelsT, typename TensorT>
 	class TensorCollectionGeneratorGpu : public PixelTensorCollectionGenerator<LabelsT, TensorT, Eigen::GpuDevice> {
