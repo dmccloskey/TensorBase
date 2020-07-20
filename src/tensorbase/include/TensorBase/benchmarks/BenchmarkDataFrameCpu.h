@@ -191,12 +191,15 @@ namespace TensorBaseBenchmarks
 	/*
 	@class A class for running 1 line insertion, deletion, and update benchmarks
 	*/
-	class BenchmarkDataFrame1TimePointCpu : public BenchmarkDataFrame1TimePoint<DataFrameManagerTimeCpu, DataFrameManagerLabelCpu, DataFrameManagerImage2DCpu, DataFrameManagerIsValidCpu, Eigen::ThreadPoolDevice> {
+	class BenchmarkDataFrame1TimePointCpu : public BenchmarkDataFrame1TimePoint<Eigen::ThreadPoolDevice> {
 	protected:
 		void _insert1TimePoint(TransactionManager<Eigen::ThreadPoolDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::ThreadPoolDevice& device) const override; ///< Device specific interface to call `insert1TimePoint0D`
 		void _update1TimePoint(TransactionManager<Eigen::ThreadPoolDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::ThreadPoolDevice& device) const override; ///< Device specific interface to call `update1TimePoint0D`
 		void _delete1TimePoint(TransactionManager<Eigen::ThreadPoolDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::ThreadPoolDevice& device) const override; ///< Device specific interface to call `delete1TimePoint0D`
-	};
+    int _selectAndSumIsValid(TransactionManager<Eigen::ThreadPoolDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::ThreadPoolDevice& device) const override; ///< Device specific interface to call `selectAndSumIsValid`
+    int _selectAndCountLabels(TransactionManager<Eigen::ThreadPoolDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::ThreadPoolDevice& device) const override; ///< Device specific interface to call `selectAndCountLabels`
+    float _selectAndMeanImage2D(TransactionManager<Eigen::ThreadPoolDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::ThreadPoolDevice& device) const override; ///< Device specific interface to call `selectAndMeanImage2D`
+  };
 	void BenchmarkDataFrame1TimePointCpu::_insert1TimePoint(TransactionManager<Eigen::ThreadPoolDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::ThreadPoolDevice& device) const {
     DataFrameManagerTimeCpu dataframe_manager_time(data_size, false);
     DataFrameManagerLabelCpu dataframe_manager_labels(data_size, false);
@@ -316,6 +319,38 @@ namespace TensorBaseBenchmarks
       }
 		}
 	}
+  inline int BenchmarkDataFrame1TimePointCpu::_selectAndSumIsValid(TransactionManager<Eigen::ThreadPoolDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::ThreadPoolDevice& device) const
+  {
+    SelectAndSumIsValidCpu select_and_sum;
+    select_and_sum(transaction_manager.getTensorCollection(), device);
+    if (!in_memory) {
+      transaction_manager.commit(device);
+      transaction_manager.initTensorCollectionTensorData(device);
+    }
+    select_and_sum.result_->syncHAndDData(device);
+    return select_and_sum.result_->getData()(0);
+  }
+  inline int BenchmarkDataFrame1TimePointCpu::_selectAndCountLabels(TransactionManager<Eigen::ThreadPoolDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::ThreadPoolDevice& device) const
+  {
+    SelectAndCountLabelsCpu select_and_sum;
+    select_and_sum(transaction_manager.getTensorCollection(), device);
+    if (!in_memory) {
+      transaction_manager.commit(device);
+      transaction_manager.initTensorCollectionTensorData(device);
+    }
+    return select_and_sum.result_;
+  }
+  inline float BenchmarkDataFrame1TimePointCpu::_selectAndMeanImage2D(TransactionManager<Eigen::ThreadPoolDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::ThreadPoolDevice& device) const
+  {
+    SelectTableDataImage2DCpu select_and_sum;
+    select_and_sum(transaction_manager.getTensorCollection(), device);
+    if (!in_memory) {
+      transaction_manager.commit(device);
+      transaction_manager.initTensorCollectionTensorData(device);
+    }
+    select_and_sum.result_->syncHAndDData(device);
+    return select_and_sum.result_->getData()(0);
+  }
 
 	class DataFrameTensorCollectionGeneratorCpu : public DataFrameTensorCollectionGenerator<Eigen::ThreadPoolDevice> {
 	public:

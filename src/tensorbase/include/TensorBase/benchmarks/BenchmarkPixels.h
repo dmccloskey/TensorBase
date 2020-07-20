@@ -878,6 +878,7 @@ namespace TensorBaseBenchmarks
 		// Run the table through the benchmarks
 		transaction_manager.setTensorCollection(n_dim_tensor_collection);
 		std::cout << n_dims << "D Tensor Table time-point insertion took " << benchmark_1_tp.insert1TimePoint(n_dims, transaction_manager, data_size, in_memory, device) << " milliseconds." << std::endl;
+    std::cout << n_dims << "D Tensor Table time-point selection and reduction took " << (benchmark_1_tp.selectAndSumPixels(n_dims, transaction_manager, data_size, in_memory, device)).first << " milliseconds." << std::endl;
 		std::cout << n_dims << "D Tensor Table time-point update took " << benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device) << " milliseconds." << std::endl;
 		std::cout << n_dims << "D Tensor Table time-point deletion took " << benchmark_1_tp.delete1TimePoint(n_dims, transaction_manager, data_size, in_memory, device) << " milliseconds." << std::endl;
 	}

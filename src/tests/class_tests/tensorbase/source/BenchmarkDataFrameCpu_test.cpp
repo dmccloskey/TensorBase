@@ -175,19 +175,16 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteCpu)
   }
 
   // Query for the number of valid entries
-  SelectAndSumIsValidCpu select_is_valid;
-  select_is_valid(n_dim_tensor_collection, device);
-  BOOST_CHECK_EQUAL(select_is_valid.result_->getData()(0), data_size / 2);
+  auto select_is_valid = benchmark_1_tp.selectAndSumIsValid(transaction_manager, data_size, in_memory, device);
+  BOOST_CHECK_EQUAL(select_is_valid.second, data_size / 2);
 
   // Query for the number of labels = "one"
-  SelectAndCountLabelsCpu select_label_ones;
-  select_label_ones(n_dim_tensor_collection, device);
-  BOOST_CHECK_EQUAL(select_label_ones.result_, 130);
+  auto select_label_ones = benchmark_1_tp.selectAndCountLabels(transaction_manager, data_size, in_memory, device);
+  BOOST_CHECK_EQUAL(select_label_ones.second, 130);
 
   // Query for the average pixel intensity in the first two weeks of January
-  SelectTableDataImage2DCpu select_2D_image;
-  select_2D_image(n_dim_tensor_collection, device);
-  BOOST_CHECK_CLOSE(select_2D_image.result_->getData()(0), 0, 1e-3);
+  auto select_2D_image = benchmark_1_tp.selectAndMeanImage2D(transaction_manager, data_size, in_memory, device);
+  BOOST_CHECK_CLOSE(select_2D_image.second, 0, 1e-3);
 
   // Make the expected tensor axes labels and tensor data after update
   dataframe_manager_time.initTime();
@@ -461,19 +458,16 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteShardingCpu)
   }
 
   // Query for the number of valid entries
-  SelectAndSumIsValidCpu select_is_valid;
-  select_is_valid(n_dim_tensor_collection, device);
-  BOOST_CHECK_EQUAL(select_is_valid.result_->getData()(0), data_size / 2);
+  auto select_is_valid = benchmark_1_tp.selectAndSumIsValid(transaction_manager, data_size, in_memory, device);
+  BOOST_CHECK_EQUAL(select_is_valid.second, data_size / 2);
 
   // Query for the number of labels = "one"
-  SelectAndCountLabelsCpu select_label_ones;
-  select_label_ones(n_dim_tensor_collection, device);
-  BOOST_CHECK_EQUAL(select_label_ones.result_, 130);
+  auto select_label_ones = benchmark_1_tp.selectAndCountLabels(transaction_manager, data_size, in_memory, device);
+  BOOST_CHECK_EQUAL(select_label_ones.second, 130);
 
   // Query for the average pixel intensity in the first two weeks of January
-  SelectTableDataImage2DCpu select_2D_image;
-  select_2D_image(n_dim_tensor_collection, device);
-  BOOST_CHECK_CLOSE(select_2D_image.result_->getData()(0), 0, 1e-3);
+  auto select_2D_image = benchmark_1_tp.selectAndMeanImage2D(transaction_manager, data_size, in_memory, device);
+  BOOST_CHECK_CLOSE(select_2D_image.second, 0, 1e-3);
 
   // Make the expected tensor axes labels and tensor data after update
   dataframe_manager_time.initTime();

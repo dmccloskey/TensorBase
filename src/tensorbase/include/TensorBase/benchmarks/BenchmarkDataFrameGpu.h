@@ -201,12 +201,15 @@ namespace TensorBaseBenchmarks
 	/*
 	@class A class for running 1 line insertion, deletion, and update benchmarks
 	*/
-	class BenchmarkDataFrame1TimePointGpu : public BenchmarkDataFrame1TimePoint<DataFrameManagerTimeGpu, DataFrameManagerLabelGpu, DataFrameManagerImage2DGpu, DataFrameManagerIsValidGpu, Eigen::GpuDevice> {
+	class BenchmarkDataFrame1TimePointGpu : public BenchmarkDataFrame1TimePoint<Eigen::GpuDevice> {
 	protected:
 		void _insert1TimePoint(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `insert1TimePoint0D`
 		void _update1TimePoint(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `update1TimePoint0D`
 		void _delete1TimePoint(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `delete1TimePoint0D`
-	};
+    int _selectAndSumIsValid(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `selectAndSumIsValid`
+    int _selectAndCountLabels(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `selectAndCountLabels`
+    float _selectAndMeanImage2D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const override; ///< Device specific interface to call `selectAndMeanImage2D`
+  };
 	void BenchmarkDataFrame1TimePointGpu::_insert1TimePoint(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const {
     DataFrameManagerTimeGpu dataframe_manager_time(data_size, false);
     DataFrameManagerLabelGpu dataframe_manager_labels(data_size, false);
@@ -326,6 +329,40 @@ namespace TensorBaseBenchmarks
       }
 		}
 	}
+  inline int BenchmarkDataFrame1TimePointGpu::_selectAndSumIsValid(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const
+  {
+    SelectAndSumIsValidGpu select_and_sum;
+    select_and_sum(transaction_manager.getTensorCollection(), device);
+    if (!in_memory) {
+      transaction_manager.commit(device);
+      transaction_manager.initTensorCollectionTensorData(device);
+    }
+    assert(cudaStreamSynchronize(stream) == cudaSuccess);
+    select_and_sum.result_->syncHAndDData(device);
+    return select_and_sum.result_->getData()(0);
+  }
+  inline int BenchmarkDataFrame1TimePointGpu::_selectAndCountLabels(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const
+  {
+    SelectAndCountLabelsGpu select_and_sum;
+    select_and_sum(transaction_manager.getTensorCollection(), device);
+    if (!in_memory) {
+      transaction_manager.commit(device);
+      transaction_manager.initTensorCollectionTensorData(device);
+    }
+    return select_and_sum.result_;
+  }
+  inline float BenchmarkDataFrame1TimePointGpu::_selectAndMeanImage2D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const
+  {
+    SelectTableDataImage2DGpu select_and_sum;
+    select_and_sum(transaction_manager.getTensorCollection(), device);
+    if (!in_memory) {
+      transaction_manager.commit(device);
+      transaction_manager.initTensorCollectionTensorData(device);
+    }
+    assert(cudaStreamSynchronize(stream) == cudaSuccess);
+    select_and_sum.result_->syncHAndDData(device);
+    return select_and_sum.result_->getData()(0);
+  }
 
 	class DataFrameTensorCollectionGeneratorGpu : public DataFrameTensorCollectionGenerator<Eigen::GpuDevice> {
 	public:

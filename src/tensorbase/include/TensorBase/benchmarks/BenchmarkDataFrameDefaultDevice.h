@@ -190,12 +190,15 @@ namespace TensorBaseBenchmarks
 	/*
 	@class A class for running 1 line insertion, deletion, and update benchmarks
 	*/
-	class BenchmarkDataFrame1TimePointDefaultDevice : public BenchmarkDataFrame1TimePoint<DataFrameManagerTimeDefaultDevice, DataFrameManagerLabelDefaultDevice, DataFrameManagerImage2DDefaultDevice, DataFrameManagerIsValidDefaultDevice, Eigen::DefaultDevice> {
+	class BenchmarkDataFrame1TimePointDefaultDevice : public BenchmarkDataFrame1TimePoint<Eigen::DefaultDevice> {
 	protected:
-		void _insert1TimePoint(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `insert1TimePoint0D`
-		void _update1TimePoint(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `update1TimePoint0D`
-		void _delete1TimePoint(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `delete1TimePoint0D`
-	};
+		void _insert1TimePoint(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `insert1TimePoint`
+		void _update1TimePoint(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `update1TimePoint`
+		void _delete1TimePoint(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `delete1TimePoint`
+    int _selectAndSumIsValid(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `selectAndSumIsValid`
+    int _selectAndCountLabels(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `selectAndCountLabels`
+    float _selectAndMeanImage2D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `selectAndMeanImage2D`
+  };
 	void BenchmarkDataFrame1TimePointDefaultDevice::_insert1TimePoint(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const {
     DataFrameManagerTimeDefaultDevice dataframe_manager_time(data_size, false);
     DataFrameManagerLabelDefaultDevice dataframe_manager_labels(data_size, false);
@@ -315,6 +318,38 @@ namespace TensorBaseBenchmarks
       }
 		}
 	}
+  inline int BenchmarkDataFrame1TimePointDefaultDevice::_selectAndSumIsValid(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const
+  {
+    SelectAndSumIsValidDefaultDevice select_and_sum;
+    select_and_sum(transaction_manager.getTensorCollection(), device);
+    if (!in_memory) {
+      transaction_manager.commit(device);
+      transaction_manager.initTensorCollectionTensorData(device);
+    }
+    select_and_sum.result_->syncHAndDData(device);
+    return select_and_sum.result_->getData()(0);
+  }
+  inline int BenchmarkDataFrame1TimePointDefaultDevice::_selectAndCountLabels(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const
+  {
+    SelectAndCountLabelsDefaultDevice select_and_sum;
+    select_and_sum(transaction_manager.getTensorCollection(), device);
+    if (!in_memory) {
+      transaction_manager.commit(device);
+      transaction_manager.initTensorCollectionTensorData(device);
+    }
+    return select_and_sum.result_;
+  }
+  inline float BenchmarkDataFrame1TimePointDefaultDevice::_selectAndMeanImage2D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const
+  {
+    SelectTableDataImage2DDefaultDevice select_and_sum;
+    select_and_sum(transaction_manager.getTensorCollection(), device);
+    if (!in_memory) {
+      transaction_manager.commit(device);
+      transaction_manager.initTensorCollectionTensorData(device);
+    }
+    select_and_sum.result_->syncHAndDData(device);
+    return select_and_sum.result_->getData()(0);
+  }
 
 	class DataFrameTensorCollectionGeneratorDefaultDevice : public DataFrameTensorCollectionGenerator<Eigen::DefaultDevice> {
 	public:

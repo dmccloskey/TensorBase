@@ -157,6 +157,7 @@ namespace TensorBaseBenchmarks
     tensor_collection->tables_.at("DataFrame_image_2D")->replaceIndicesView("1_indices", tensor_collection->tables_.at("DataFrame_time")->getIndicesView().at("1_indices"), device);
 
     // Apply the where clause on the image_2d table
+    std::cout << tensor_collection->tables_.at("DataFrame_image_2D")->getIndicesView().at("1_indices") << std::endl;
     tensorSelect.applySelect(tensor_collection, { "DataFrame_image_2D" }, { "DataFrame_image_2D_jan" }, device);
 
     // Reset the indices
@@ -340,7 +341,7 @@ namespace TensorBaseBenchmarks
 	/*
 	@brief A class for running 1 line insertion, deletion, and update benchmarks
 	*/
-	template<typename DataFrameManagerTimeT, typename DataFrameManagerLabelT, typename DataFrameManagerImage2DT, typename DataFrameManagerIsValidT, typename DeviceT>
+	template<typename DeviceT>
 	class BenchmarkDataFrame1TimePoint {
 	public:
 		BenchmarkDataFrame1TimePoint() = default;
@@ -357,13 +358,20 @@ namespace TensorBaseBenchmarks
 		std::string insert1TimePoint(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const;
 		std::string update1TimePoint(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const;
 		std::string delete1TimePoint(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const;
+    std::pair<std::string, int> selectAndSumIsValid(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const;
+    std::pair<std::string, int> selectAndCountLabels(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const;
+    std::pair<std::string, float> selectAndMeanImage2D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const;
+
 	protected:
 		virtual void _insert1TimePoint(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const = 0; ///< Device specific interface to call `insert1TimePoint0D`
 		virtual void _update1TimePoint(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const = 0; ///< Device specific interface to call `update1TimePoint0D`
 		virtual void _delete1TimePoint(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const = 0; ///< Device specific interface to call `delete1TimePoint0D`
+    virtual int _selectAndSumIsValid(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const = 0; ///< Device specific interface to call `selectAndSumIsValid0D`
+    virtual int _selectAndCountLabels(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const = 0; ///< Device specific interface to call `selectAndCountLabels0D`
+    virtual float _selectAndMeanImage2D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const = 0; ///< Device specific interface to call `selectAndMeanImage2D0D`
 	};
-	template<typename DataFrameManagerTimeT, typename DataFrameManagerLabelT, typename DataFrameManagerImage2DT, typename DataFrameManagerIsValidT, typename DeviceT>
-	std::string BenchmarkDataFrame1TimePoint<DataFrameManagerTimeT, DataFrameManagerLabelT, DataFrameManagerImage2DT, DataFrameManagerIsValidT, DeviceT>::insert1TimePoint(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
+	template<typename DeviceT>
+	std::string BenchmarkDataFrame1TimePoint<DeviceT>::insert1TimePoint(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
 	{
 		// Start the timer
 		auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
@@ -375,8 +383,8 @@ namespace TensorBaseBenchmarks
 		std::string milli_time = std::to_string(stop - start);
 		return milli_time;
 	}
-	template<typename DataFrameManagerTimeT, typename DataFrameManagerLabelT, typename DataFrameManagerImage2DT, typename DataFrameManagerIsValidT, typename DeviceT>
-	std::string BenchmarkDataFrame1TimePoint<DataFrameManagerTimeT, DataFrameManagerLabelT, DataFrameManagerImage2DT, DataFrameManagerIsValidT, DeviceT>::update1TimePoint(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
+	template<typename DeviceT>
+	std::string BenchmarkDataFrame1TimePoint<DeviceT>::update1TimePoint(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
 	{
 		// Start the timer
 		auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
@@ -388,8 +396,8 @@ namespace TensorBaseBenchmarks
 		std::string milli_time = std::to_string(stop - start);
 		return milli_time;
 	}
-	template<typename DataFrameManagerTimeT, typename DataFrameManagerLabelT, typename DataFrameManagerImage2DT, typename DataFrameManagerIsValidT, typename DeviceT>
-	std::string BenchmarkDataFrame1TimePoint<DataFrameManagerTimeT, DataFrameManagerLabelT, DataFrameManagerImage2DT, DataFrameManagerIsValidT, DeviceT>::delete1TimePoint(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
+	template<typename DeviceT>
+	std::string BenchmarkDataFrame1TimePoint<DeviceT>::delete1TimePoint(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
 	{
 		// Start the timer
 		auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
@@ -401,6 +409,45 @@ namespace TensorBaseBenchmarks
 		std::string milli_time = std::to_string(stop - start);
 		return milli_time;
 	}
+  template<typename DeviceT>
+  inline std::pair<std::string, int> BenchmarkDataFrame1TimePoint<DeviceT>::selectAndSumIsValid(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
+  {
+    // Start the timer
+    auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+
+    const int result = _selectAndSumIsValid(transaction_manager, data_size, in_memory, device);
+
+    // Stop the timer
+    auto stop = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+    std::string milli_time = std::to_string(stop - start);
+    return std::pair(milli_time, result);
+  }
+  template<typename DeviceT>
+  inline std::pair<std::string, int> BenchmarkDataFrame1TimePoint<DeviceT>::selectAndCountLabels(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
+  {
+    // Start the timer
+    auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+
+    const int result = _selectAndCountLabels(transaction_manager, data_size, in_memory, device);
+
+    // Stop the timer
+    auto stop = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+    std::string milli_time = std::to_string(stop - start);
+    return std::pair(milli_time, result);
+  }
+  template<typename DeviceT>
+  inline std::pair<std::string, float> BenchmarkDataFrame1TimePoint<DeviceT>::selectAndMeanImage2D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
+  {
+    // Start the timer
+    auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+
+    const float result = _selectAndMeanImage2D(transaction_manager, data_size, in_memory, device);
+
+    // Stop the timer
+    auto stop = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+    std::string milli_time = std::to_string(stop - start);
+    return std::pair(milli_time, result);
+  }
 
 	/*
 	@brief Simulate a typical dataframe with mixed column types and mixed entry dimensions
@@ -413,9 +460,9 @@ namespace TensorBaseBenchmarks
 		virtual std::shared_ptr<TensorCollection<DeviceT>> makeTensorCollection(const int& data_size, const double& shard_span_perc, const bool& is_columnar, DeviceT& device) const = 0;
 	};
 
-	template<typename DataFrameManagerTimeT, typename DataFrameManagerLabelT, typename DataFrameManagerImage2DT, typename DataFrameManagerIsValidT, typename DeviceT>
+	template<typename DeviceT>
 	static void runBenchmarkDataFrame(const std::string& data_dir, const int& data_size, const bool& in_memory, const bool& is_columnar, const double& shard_span_perc,
-		const BenchmarkDataFrame1TimePoint<DataFrameManagerTimeT, DataFrameManagerLabelT, DataFrameManagerImage2DT, DataFrameManagerIsValidT, DeviceT>& benchmark_1_tp,
+		const BenchmarkDataFrame1TimePoint<DeviceT>& benchmark_1_tp,
 		const DataFrameTensorCollectionGenerator<DeviceT>& tensor_collection_generator, DeviceT& device) {
 		std::cout << "Starting insert/delete/update DataFrame benchmarks for data_size=" << data_size << ", in_memory=" << in_memory << ", is_columnar=" << is_columnar << ", and shard_span_perc=" << shard_span_perc << std::endl;
 
@@ -429,7 +476,10 @@ namespace TensorBaseBenchmarks
 		// Run the table through the benchmarks
 		transaction_manager.setTensorCollection(n_dim_tensor_collection);
 		std::cout << "Tensor Table time-point insertion took " << benchmark_1_tp.insert1TimePoint(transaction_manager, data_size, in_memory, device) << " milliseconds." << std::endl;
-		std::cout << "Tensor Table time-point update took " << benchmark_1_tp.update1TimePoint(transaction_manager, data_size, in_memory, device) << " milliseconds." << std::endl;
+		std::cout << "Tensor Table time-point select and sum `is_valid` took " << (benchmark_1_tp.selectAndSumIsValid(transaction_manager, data_size, in_memory, device)).first << " milliseconds." << std::endl;
+    std::cout << "Tensor Table time-point select and count `labels` == 'one' took " << (benchmark_1_tp.selectAndCountLabels(transaction_manager, data_size, in_memory, device)).first << " milliseconds." << std::endl;
+    std::cout << "Tensor Table time-point select and mean `image_2d` in the first 14 days of Jan took " << (benchmark_1_tp.selectAndMeanImage2D(transaction_manager, data_size, in_memory, device)).first << " milliseconds." << std::endl;
+    std::cout << "Tensor Table time-point update took " << benchmark_1_tp.update1TimePoint(transaction_manager, data_size, in_memory, device) << " milliseconds." << std::endl;
 		std::cout << "Tensor Table time-point deletion took " << benchmark_1_tp.delete1TimePoint(transaction_manager, data_size, in_memory, device) << " milliseconds." << std::endl;
 	}
 
