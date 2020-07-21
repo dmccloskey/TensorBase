@@ -9,6 +9,7 @@ set(benchmarks_executables_list
 
 set(core_executables_list
   Helloworld_test
+  GraphGenerators_test
   Statistics_test
   StringParsing_test
 )

@@ -4,6 +4,8 @@ set(directory include/TensorBase/core)
 ### list all header files of the directory here
 set(sources_list_h
 	Helloworld.h
+	GraphGenerators.h
+	GraphGeneratorsDefaultDevice.h
 	Statistics.h
 	StringParsing.h
 )

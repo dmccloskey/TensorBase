@@ -458,7 +458,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteShardingDefaultDevice)
   }
 
   // Query for the number of valid entries
-  auto select_is_valid = benchmark_1_tp.selectAndSumIsValid(transaction_manager, data_size, in_memory, device);
+  auto select_is_valid = benchmark_1_tp.selectAndSumIsValid(transaction_manager, data_size, true, device);
   BOOST_CHECK_EQUAL(select_is_valid.second, data_size / 2);
 
   // Query for the number of labels = "one"
