@@ -1,6 +1,13 @@
 #ifndef TENSORBASE_GRAPHGENERATORS_H
 #define TENSORBASE_GRAPHGENERATORS_H
 
+#if COMPILE_WITH_CUDA
+#define EIGEN_DEFAULT_DENSE_INDEX_TYPE int
+#define EIGEN_USE_GPU
+#include <cuda.h>
+#include <cuda_runtime.h>
+#endif
+
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <math.h>
 #include <random>
@@ -31,8 +38,6 @@ namespace TensorBase
       with dimension 1 entries are node_in, node_out, and link IDs, respectively.
     */
     void makeKroneckerGraph(const int& scale, const int& edge_factor, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& weights, DeviceT& device) const;
-    // allocate memory for the kronecker graph
-    virtual void initKroneckerGraph(std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& weights, const int& M, DeviceT& device) const = 0;
     ///*
     //@brief Extract the list of unique Node IDs from the graph
 
@@ -45,6 +50,11 @@ namespace TensorBase
     //void getNodeAndLinkIds(const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& node_ids, std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& link_ids,DeviceT& device);
     ///// allocate memory for the IDs
     //virtual void initIDs(std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& node_or_link_ids, const int& N, DeviceT& device) const = 0;
+  protected:
+    // allocate memory for the kronecker graph
+    virtual void initKroneckerGraph(std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& weights, const int& M, DeviceT& device) const = 0;
+    // allocate temporary memory for the kronecker graph
+    virtual void initKroneckerGraphTmpData(std::shared_ptr<TensorData<float, DeviceT, 2>>& indices_float, const int& M, DeviceT& device) const = 0;
   };
   template<typename LabelsT, typename TensorT, typename DeviceT>
   inline void KroneckerGraphGenerator<LabelsT, TensorT, DeviceT>::makeKroneckerGraph(const int& scale, const int& edge_factor, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& weights, DeviceT& device) const
@@ -55,11 +65,15 @@ namespace TensorBase
 
     // Create index arrays and weights.
     initKroneckerGraph(indices, weights, M, device);
-    Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> indices_values(indices->getDataPointer().get(), indices->getDimensions());
-    indices_values.device(device) = indices_values.constant(LabelsT(1));
-    Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> weights_values(weights->getDataPointer().get(), weights->getDimensions());
+
+    // Create the temporary data structures
+    std::shared_ptr<TensorData<float, DeviceT, 2>> indices_float;
+    initKroneckerGraphTmpData(indices_float, M, device);
+    Eigen::TensorMap<Eigen::Tensor<float, 2>> indices_float_values(indices_float->getDataPointer().get(), indices_float->getDimensions());
+    indices_float_values.device(device) = indices_float_values.constant(1);
 
     // Generate weights
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> weights_values(weights->getDataPointer().get(), weights->getDimensions());
     weights_values.device(device) = weights_values.random().abs().clip(TensorT(0), TensorT(1));
 
     // Loop over each order of bit.
@@ -72,62 +86,93 @@ namespace TensorBase
     Eigen::array<Eigen::Index, 2> span_2 = { M, 1 };
     for (int ib = 0; ib < scale; ++ib) {
       // Compare with probabilities and set bits of indices.
-      auto ii_bit = indices_values.slice(offset_1, span_1).cast<float>().random().abs().clip(float(0), float(1)) > indices_values.slice(offset_1, span_1).cast<float>().constant(float(ab));
+      auto ii_bit = indices_float_values.slice(offset_1, span_1).random().abs().clip(float(0), float(1)) > indices_float_values.slice(offset_1, span_1).constant(float(ab));
       auto not_ii_bit = (ii_bit).select(ii_bit.constant(0), ii_bit.constant(1));
-      auto jj_bit = indices_values.slice(offset_2, span_2).cast<float>().random().abs().clip(float(0), float(1)) > (
-        indices_values.slice(offset_2, span_2).cast<float>().constant(float(c_norm)) * ii_bit.cast<float>() + indices_values.slice(offset_2, span_2).cast<float>().constant(float(a_norm)) * not_ii_bit.cast<float>() );
-      indices_values.slice(offset_1, span_1).device(device) = indices_values.slice(offset_1, span_1) + indices_values.slice(offset_1, span_1).constant(LabelsT(std::pow(2, ib))) * ii_bit.cast<LabelsT>();
-      indices_values.slice(offset_2, span_2).device(device) = indices_values.slice(offset_2, span_2) + indices_values.slice(offset_2, span_2).constant(LabelsT(std::pow(2, ib))) * jj_bit.cast<LabelsT>();
+      auto jj_bit = indices_float_values.slice(offset_2, span_2).random().abs().clip(float(0), float(1)) > (
+        indices_float_values.slice(offset_2, span_2).constant(float(c_norm)) * ii_bit + indices_float_values.slice(offset_2, span_2).constant(float(a_norm)) * not_ii_bit);
+      indices_float_values.slice(offset_1, span_1).device(device) = indices_float_values.slice(offset_1, span_1) + indices_float_values.slice(offset_1, span_1).constant(float(std::pow(2, ib))) * ii_bit;
+      indices_float_values.slice(offset_2, span_2).device(device) = indices_float_values.slice(offset_2, span_2) + indices_float_values.slice(offset_2, span_2).constant(float(std::pow(2, ib))) * jj_bit;
     }
+    //std::cout << "bit assignment\n" << indices_float_values << std::endl;
 
+    // Copy the current indices values
     Eigen::array<Eigen::IndexPair<int>, 1> product_dims = { Eigen::IndexPair<int>(1, 0) };
-    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> indices_copy = indices->copy(device);
+    std::shared_ptr<TensorData<float, DeviceT, 2>> indices_copy = indices_float->copy(device);
     indices_copy->syncHAndDData(device);
-    Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> indices_values_copy(indices_copy->getDataPointer().get(), indices_copy->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<float, 2>> indices_values_copy(indices_copy->getDataPointer().get(), indices_copy->getDimensions());
+
+    // allocate temporary memory
+    float* tmp_data;
+    if (typeid(device).name() != typeid(Eigen::GpuDevice).name()) {
+      tmp_data = new float[M*M];
+    }
+#if COMPILE_WITH_CUDA
+    else if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
+      size_t bytes = M * M * sizeof(float);
+      assert(cudaMalloc((void**)(&tmp_data), bytes) == cudaSuccess);
+    }
+#endif
+
     // Permute vertex labels (in)
     {
-      Eigen::TensorMap<Eigen::Tensor<LabelsT, 3>> vertex_permutation(indices->getDataPointer().get(), M, 1, 1);
-      auto v_perm_bcast = vertex_permutation.broadcast(Eigen::array<Eigen::Index, 3>({ 1, M, 1 })).cast<float>().eval();
+      Eigen::TensorMap<Eigen::Tensor<float, 3>> vertex_permutation(indices_float->getDataPointer().get(), M, 1, 1);
+      auto v_perm_bcast = vertex_permutation.broadcast(Eigen::array<Eigen::Index, 3>({ 1, M, 1 })).eval();
       auto v_perm_rand = v_perm_bcast.random().eval();
       auto v_perm_min_0 = v_perm_rand.minimum(Eigen::array<Eigen::Index, 1>({ 0 })).broadcast(Eigen::array<Eigen::Index, 2>({ 1, M })).shuffle(Eigen::array<Eigen::Index, 2>({ 1, 0 })).eval();
       auto v_perm_max_1 = v_perm_rand.maximum(Eigen::array<Eigen::Index, 1>({ 1 })).broadcast(Eigen::array<Eigen::Index, 2>({ 1, M })).eval();
-      auto v_perm_ind_a = (v_perm_rand.chip(0, 2) == v_perm_max_1 || v_perm_rand.chip(0, 2) == v_perm_min_0).select(v_perm_bcast.chip(0, 2).constant(1), v_perm_bcast.chip(0, 2).constant(0)).cast<LabelsT>().eval();
-      auto v_perm_ind_b = (v_perm_ind_a.cumsum(0) > v_perm_ind_a.constant(LabelsT(1))).select(v_perm_ind_a.constant(0), v_perm_ind_a);
-      auto v_perm_ind = (v_perm_ind_b.cumsum(1) > v_perm_ind_b.constant(LabelsT(1))).select(v_perm_ind_b.constant(0), v_perm_ind_b);
-      indices_values.slice(offset_1, span_1).device(device) = v_perm_ind.contract(indices_values.slice(offset_1, span_1).eval(), product_dims);
+      Eigen::TensorMap<Eigen::Tensor<float, 2>> v_perm_ind_a(tmp_data, M, M);
+      v_perm_ind_a.device(device) = (v_perm_rand.chip(0, 2) == v_perm_max_1 || v_perm_rand.chip(0, 2) == v_perm_min_0).select(v_perm_bcast.chip(0, 2).constant(1), v_perm_bcast.chip(0, 2).constant(0)).eval();
+      auto v_perm_ind_b = (v_perm_ind_a.cumsum(0).eval() > v_perm_ind_a.constant(1)).select(v_perm_ind_a.constant(0), v_perm_ind_a);
+      auto v_perm_ind = (v_perm_ind_b.cumsum(1).eval() > v_perm_ind_b.constant(1)).select(v_perm_ind_b.constant(0), v_perm_ind_b);
+      indices_float_values.slice(offset_1, span_1).device(device) = v_perm_ind.contract(indices_float_values.slice(offset_1, span_1).eval(), product_dims);
     }
 
     // Permute vertex labels (out)
     {
-      Eigen::TensorMap<Eigen::Tensor<LabelsT, 3>> vertex_permutation(indices->getDataPointer().get(), M, 1, 1);
-      auto v_perm_bcast = vertex_permutation.broadcast(Eigen::array<Eigen::Index, 3>({ 1, M, 1 })).cast<float>().eval();
+      Eigen::TensorMap<Eigen::Tensor<float, 3>> vertex_permutation(indices_float->getDataPointer().get(), M, 1, 1);
+      auto v_perm_bcast = vertex_permutation.broadcast(Eigen::array<Eigen::Index, 3>({ 1, M, 1 })).eval();
       auto v_perm_rand = v_perm_bcast.random().eval();
       auto v_perm_min_0 = v_perm_rand.minimum(Eigen::array<Eigen::Index, 1>({ 0 })).broadcast(Eigen::array<Eigen::Index, 2>({ 1, M })).shuffle(Eigen::array<Eigen::Index, 2>({ 1, 0 })).eval();
       auto v_perm_max_1 = v_perm_rand.maximum(Eigen::array<Eigen::Index, 1>({ 1 })).broadcast(Eigen::array<Eigen::Index, 2>({ 1, M })).eval();
-      auto v_perm_ind_a = (v_perm_rand.chip(0, 2) == v_perm_max_1 || v_perm_rand.chip(0, 2) == v_perm_min_0).select(v_perm_bcast.chip(0, 2).constant(1), v_perm_bcast.chip(0, 2).constant(0)).cast<LabelsT>().eval();
-      auto v_perm_ind_b = (v_perm_ind_a.cumsum(0) > v_perm_ind_a.constant(LabelsT(1))).select(v_perm_ind_a.constant(0), v_perm_ind_a);
-      auto v_perm_ind = (v_perm_ind_b.cumsum(1) > v_perm_ind_b.constant(LabelsT(1))).select(v_perm_ind_b.constant(0), v_perm_ind_b);
-      indices_values.slice(offset_2, span_2).device(device) = v_perm_ind.contract(indices_values.slice(offset_2, span_2).eval(), product_dims);
+      Eigen::TensorMap<Eigen::Tensor<float, 2>> v_perm_ind_a(tmp_data, M, M);
+      v_perm_ind_a.device(device) = (v_perm_rand.chip(0, 2) == v_perm_max_1 || v_perm_rand.chip(0, 2) == v_perm_min_0).select(v_perm_bcast.chip(0, 2).constant(1), v_perm_bcast.chip(0, 2).constant(0)).eval();
+      auto v_perm_ind_b = (v_perm_ind_a.cumsum(0).eval() > v_perm_ind_a.constant(1)).select(v_perm_ind_a.constant(0), v_perm_ind_a);
+      auto v_perm_ind = (v_perm_ind_b.cumsum(1).eval() > v_perm_ind_b.constant(1)).select(v_perm_ind_b.constant(0), v_perm_ind_b);
+      indices_float_values.slice(offset_2, span_2).device(device) = v_perm_ind.contract(indices_float_values.slice(offset_2, span_2).eval(), product_dims);
     }
-    indices_values.device(device) = (indices_values == indices_values.constant(0)).select(indices_values_copy, indices_values);
+    indices_float_values.device(device) = (indices_float_values == indices_float_values.constant(0)).select(indices_values_copy, indices_float_values);
+    //std::cout << "vertex permutation\n" << indices_float_values << std::endl;
 
     // Permute the edge list
     {
-      Eigen::TensorMap<Eigen::Tensor<LabelsT, 3>> vertex_permutation(indices->getDataPointer().get(), M, 1, 1);
-      auto v_perm_bcast = vertex_permutation.broadcast(Eigen::array<Eigen::Index, 3>({ 1, M, 1 })).cast<float>().eval();
+      Eigen::TensorMap<Eigen::Tensor<float, 3>> vertex_permutation(indices_float->getDataPointer().get(), M, 1, 1);
+      auto v_perm_bcast = vertex_permutation.broadcast(Eigen::array<Eigen::Index, 3>({ 1, M, 1 })).eval();
       auto v_perm_rand = v_perm_bcast.random().eval();
       auto v_perm_min_0 = v_perm_rand.minimum(Eigen::array<Eigen::Index, 1>({ 0 })).broadcast(Eigen::array<Eigen::Index, 2>({ 1, M })).shuffle(Eigen::array<Eigen::Index, 2>({ 1, 0 })).eval();
       auto v_perm_max_1 = v_perm_rand.maximum(Eigen::array<Eigen::Index, 1>({ 1 })).broadcast(Eigen::array<Eigen::Index, 2>({ 1, M })).eval();
-      auto v_perm_ind_a = (v_perm_rand.chip(0, 2) == v_perm_max_1 || v_perm_rand.chip(0, 2) == v_perm_min_0).select(v_perm_bcast.chip(0, 2).constant(1), v_perm_bcast.chip(0, 2).constant(0)).cast<LabelsT>().eval();
-      auto v_perm_ind_b = (v_perm_ind_a.cumsum(0) > v_perm_ind_a.constant(LabelsT(1))).select(v_perm_ind_a.constant(0), v_perm_ind_a);
-      auto v_perm_ind = (v_perm_ind_b.cumsum(1) > v_perm_ind_b.constant(LabelsT(1))).select(v_perm_ind_b.constant(0), v_perm_ind_b);
-      indices_values.slice(offset_1, span_1).device(device) = v_perm_ind.contract(indices_values.slice(offset_1, span_1).eval(), product_dims);
-      indices_values.slice(offset_2, span_2).device(device) = v_perm_ind.contract(indices_values.slice(offset_2, span_2).eval(), product_dims);
+      Eigen::TensorMap<Eigen::Tensor<float, 2>> v_perm_ind_a(tmp_data, M, M);
+      v_perm_ind_a.device(device) = (v_perm_rand.chip(0, 2) == v_perm_max_1 || v_perm_rand.chip(0, 2) == v_perm_min_0).select(v_perm_bcast.chip(0, 2).constant(1), v_perm_bcast.chip(0, 2).constant(0)).eval();
+      auto v_perm_ind_b = (v_perm_ind_a.cumsum(0).eval() > v_perm_ind_a.constant(1)).select(v_perm_ind_a.constant(0), v_perm_ind_a);
+      auto v_perm_ind = (v_perm_ind_b.cumsum(1).eval() > v_perm_ind_b.constant(1)).select(v_perm_ind_b.constant(0), v_perm_ind_b);
+      indices_float_values.slice(offset_1, span_1).device(device) = v_perm_ind.contract(indices_float_values.slice(offset_1, span_1).eval(), product_dims);
+      indices_float_values.slice(offset_2, span_2).device(device) = v_perm_ind.contract(indices_float_values.slice(offset_2, span_2).eval(), product_dims);
     }
-    indices_values.device(device) = (indices_values == indices_values.constant(0)).select(indices_values_copy, indices_values);
+    indices_float_values.device(device) = (indices_float_values == indices_float_values.constant(0)).select(indices_values_copy, indices_float_values);
+    //std::cout << "edge permutation\n" << indices_float_values << std::endl;
 
     // Adjust to zero-based labels.
-    indices_values.device(device) -= indices_values.constant(LabelsT(1));
+    Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> indices_values(indices->getDataPointer().get(), indices->getDimensions());
+    indices_values.device(device) = indices_float_values.cast<LabelsT>() - indices_values.constant(LabelsT(1));
+
+    // deallocate temporary memory
+    if (typeid(device).name() != typeid(Eigen::GpuDevice).name()) {
+      delete[] tmp_data;
+    }
+#if COMPILE_WITH_CUDA
+    else if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
+      assert(cudaFree(tmp_data) == cudaSuccess);
+    }
+#endif
   }
 }
 #endif //TENSORBASE_GRAPHGENERATORS_H

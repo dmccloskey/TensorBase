@@ -20,6 +20,8 @@ BOOST_AUTO_TEST_CASE(kroneckerGraphGeneratorMakeKroneckerGraph)
   BOOST_CHECK(indices->getDimensions() == indices_dims);
   Eigen::array<Eigen::Index, 2> weights_dims = { std::pow(2, 4) * 8, 1 };
   BOOST_CHECK(weights->getDimensions() == weights_dims);
+  //std::cout << "indices\n"<< indices->getData() <<std::endl;
+  //std::cout << "weights\n" << weights->getData() << std::endl;
 }
 
 BOOST_AUTO_TEST_SUITE_END()
