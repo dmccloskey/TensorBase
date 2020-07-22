@@ -36,29 +36,21 @@ namespace TensorBaseBenchmarks
 	template<typename LabelsT, typename TensorT, typename DeviceT, int NDim>
 	class GraphManager {
 	public:
-    GraphManager(const int& data_size, const bool& use_random_values = false) : data_size_(data_size), use_random_values_(use_random_values){};
+    GraphManager(const int& scale_, const int& edge_factor_, const bool& use_random_values = false) : scale_(scale), edge_factor_(edge_factor), use_random_values_(use_random_values){};
 		~GraphManager() = default;
 		virtual void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, NDim>>& values_ptr) = 0;
 		virtual void makeLabelsPtr(const Eigen::Tensor<int, 2>& labels, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr) = 0;
 		virtual void makeValuesPtr(const Eigen::Tensor<TensorT, NDim>& values, std::shared_ptr<TensorData<TensorT, DeviceT, NDim>>& values_ptr) = 0;
     void setUseRandomValues(const bool& use_random_values) { use_random_values_ = use_random_values; }
-
-		/*
-		@brief Generate a random value
-		*/
-		TensorT getRandomValue();
 	protected:
-		int data_size_;
+		int scale_;
+    int edge_factor_;
 		bool use_random_values_;
-    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> kronecker_graph_;
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> kronecker_graph_indices_;
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> kronecker_graph_weights_;
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> kronecker_graph_node_ids_;
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> kronecker_graph_link_ids_;
 	};
-	template<typename LabelsT, typename TensorT, typename DeviceT, int NDim>
-	TensorT GraphManager<LabelsT, TensorT, DeviceT, NDim>::getRandomValue() {
-		std::random_device rd{};
-		std::mt19937 gen{ rd() };
-		std::normal_distribution<> d{ 0.0f, 10.0f };
-		return TensorT(d(gen));
-	}
 
 	/*
 	@class Specialized `GraphManager` for generating sparse graph representation
