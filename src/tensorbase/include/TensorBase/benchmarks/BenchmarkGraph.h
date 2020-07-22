@@ -13,6 +13,7 @@
 #include <TensorBase/ml/TransactionManager.h>
 #include <TensorBase/ml/TensorCollection.h>
 #include <TensorBase/ml/TensorSelect.h>
+#include <TensorBase/core/GraphGenerators.h>
 
 using namespace TensorBase;
 
@@ -33,144 +34,79 @@ namespace TensorBaseBenchmarks
 	/*
 	@brief Class for managing the generation of data for the Graph
 	*/
-	template<typename LabelsT, typename TensorT, typename DeviceT, int NDim>
+	template<typename KGLabelsT, typename KGTensorT, typename LabelsT, typename TensorT, typename DeviceT, int NDim>
 	class GraphManager {
 	public:
-    GraphManager(const int& scale_, const int& edge_factor_, const bool& use_random_values = false) : scale_(scale), edge_factor_(edge_factor), use_random_values_(use_random_values){};
+    GraphManager(const bool& use_random_values = false) : use_random_values_(use_random_values){};
 		~GraphManager() = default;
-		virtual void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, NDim>>& values_ptr) = 0;
-		virtual void makeLabelsPtr(const Eigen::Tensor<int, 2>& labels, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr) = 0;
-		virtual void makeValuesPtr(const Eigen::Tensor<TensorT, NDim>& values, std::shared_ptr<TensorData<TensorT, DeviceT, NDim>>& values_ptr) = 0;
+		virtual void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, NDim>>& values_ptr, DeviceT& device) = 0;
+		virtual void makeLabelsPtr(const Eigen::array<Eigen::Index, 2>& dimensions, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, DeviceT& device) = 0;
+		virtual void makeValuesPtr(const Eigen::array<Eigen::Index, NDim>& dimensions, std::shared_ptr<TensorData<TensorT, DeviceT, NDim>>& values_ptr, DeviceT& device) = 0;
+    void makeKroneckerGraph(const int& scale, const int& edge_factor, DeviceT& device);
     void setUseRandomValues(const bool& use_random_values) { use_random_values_ = use_random_values; }
+    std::shared_ptr<TensorData<KGLabelsT, DeviceT, 2>> kronecker_graph_indices_;
+    std::shared_ptr<TensorData<KGTensorT, DeviceT, 2>> kronecker_graph_weights_;
+    std::shared_ptr<TensorData<KGLabelsT, DeviceT, 1>> kronecker_graph_node_ids_;
+    std::shared_ptr<TensorData<KGLabelsT, DeviceT, 1>> kronecker_graph_link_ids_;
 	protected:
-		int scale_;
-    int edge_factor_;
 		bool use_random_values_;
-    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> kronecker_graph_indices_;
-    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> kronecker_graph_weights_;
-    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> kronecker_graph_node_ids_;
-    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> kronecker_graph_link_ids_;
 	};
+  template<typename KGLabelsT, typename KGTensorT, typename LabelsT, typename TensorT, typename DeviceT, int NDim>
+  inline void GraphManager<KGLabelsT, KGTensorT, LabelsT, TensorT, DeviceT, NDim>::makeKroneckerGraph(const int& scale, const int& edge_factor, DeviceT& device) {
+    KroneckerGraphGeneratorDefaultDevice<KGLabelsT, KGTensorT> graph_generator;
+    graph_generator.makeKroneckerGraph(scale, edge_factor, kronecker_graph_indices_, kronecker_graph_weights_, device);
+    graph_generator.getNodeAndLinkIds(kronecker_graph_indices_, kronecker_graph_node_ids_, kronecker_graph_link_ids_, device);
+  }
 
 	/*
 	@class Specialized `GraphManager` for generating sparse graph representation
     that includes input and output `node_id`s, `link_id`s, and `weights`
 	*/
-	template<typename LabelsT, typename TensorT, typename DeviceT>
-	class GraphManagerSparse : public GraphManager<LabelsT, TensorT, DeviceT, 2> {
+  template<typename KGLabelsT, typename KGTensorT, typename LabelsT, typename TensorT, typename DeviceT>
+	class GraphManagerSparse : public GraphManager<KGLabelsT, KGTensorT, LabelsT, TensorT, DeviceT, 2> {
 	public:
-    using GraphManager<LabelsT, TensorT, DeviceT, 2>::GraphManager;
-		void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 3>>& values_ptr);
-    void initTime();
+    using GraphManager<KGLabelsT, KGTensorT, LabelsT, TensorT, DeviceT, 2>::GraphManager;
+		void getInsertData(std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& values_ptr, DeviceT& device);
   };
-  template<typename LabelsT, typename TensorT, typename DeviceT>
-	void GraphManagerSparse<LabelsT, TensorT, DeviceT>::getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 3>>& values_ptr) {
+  template<typename KGLabelsT, typename KGTensorT, typename LabelsT, typename TensorT, typename DeviceT>
+	void GraphManagerSparse<KGLabelsT, KGTensorT, LabelsT, TensorT, DeviceT>::getInsertData(std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& values_ptr, DeviceT& device) {
 		// Make the labels and values
-		Eigen::Tensor<LabelsT, 2> labels(3, span);
-		Eigen::Tensor<TensorT, 3> values(span, 1, 6);
+    Eigen::array<Eigen::Index, 2> labels_dims = { 3, span }; // node_in, node_out, link_id
+    Eigen::array<Eigen::Index, 2> values_dims = { span, 1 }; // indices by weights
+    this->makeLabelsPtr(labels_dims, labels_ptr);
+    this->makeValuesPtr(values_dims, values_ptr);
 
-    // Make the fixed starting time
-    for (int i = offset; i < offset + span; ++i) {
-      labels(0, i - offset) = LabelsT(i);
-      values(i - offset, 0, 0) = TensorT(time_start.tm_sec);
-      values(i - offset, 0, 1) = TensorT(time_start.tm_min);
-      values(i - offset, 0, 2) = TensorT(time_start.tm_hour);
-      values(i - offset, 0, 3) = TensorT(time_start.tm_mday);
-      values(i - offset, 0, 4) = TensorT(time_start.tm_mon);
-      values(i - offset, 0, 5) = TensorT(time_start.tm_year);
-    }
-    time_ = time_start;
-		this->makeLabelsPtr(labels, labels_ptr);
-		this->makeValuesPtr(values, values_ptr);
+    // Assign the labels data
+    Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> labels_values(labels_ptr->getDataPointer().get(), labels_ptr->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<KGLabelsT, 2>> indices_values(kronecker_graph_indices_->getDataPointer().get(), kronecker_graph_indices_->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<KGLabelsT, 2>> link_ids_values(kronecker_graph_link_ids_->getDataPointer().get(), 1, (int)kronecker_graph_link_ids_->getTensorSize());
+    labels_values.slice(Eigen::array<Eigen::Index, 2>({ 0, 0 }), Eigen::array<Eigen::Index, 2>({ 2, span })).device(device) = indices_values.slice(
+      Eigen::array<Eigen::Index, 2>({ offset, 0 }), Eigen::array<Eigen::Index, 2>({ span, 2 })).shuffle(Eigen::array<Eigen::Index, 2>({ 1, 0 }));
+    labels_values.slice(Eigen::array<Eigen::Index, 2>({ 2, 0 }), Eigen::array<Eigen::Index, 2>({ 1, span })).device(device) = link_ids_values.slice(
+      Eigen::array<Eigen::Index, 2>({ 0, offset }), Eigen::array<Eigen::Index, 2>({ 1, span }));
+
+    // Assign the values data
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> values_values(values_ptr->getDataPointer().get(), values_ptr->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<KGTensorT, 2>> weights_values(kronecker_graph_weights_->getDataPointer().get(), kronecker_graph_weights_->getDimensions());
+    values_values.slice(Eigen::array<Eigen::Index, 2>({ 0, 0 }), Eigen::array<Eigen::Index, 2>({ span, 1 })).device(device) = weights_values.slice(
+      Eigen::array<Eigen::Index, 2>({ offset, 0 }), Eigen::array<Eigen::Index, 2>({ span, 1 }));
 	}
-  template<typename LabelsT, typename TensorT, typename DeviceT>
-  inline void GraphManagerTime<LabelsT, TensorT, DeviceT>::initTime()
-  {
-    time_ = { 0 };
-    // The below is not defined in CUDA c++11...
-    std::istringstream iss("01/01/2008 00:00:00");
-    iss.imbue(std::locale(""));
-    iss >> std::get_time(&time_, "%d/%m/%Y %H:%M:%S");
-    time_.tm_isdst = false;
-  }
 
   /*
-  @brief Specialized `GraphManager` for generating labels
+  @brief Specialized `GraphManager` for generating the node properties
   */
-  template<typename LabelsT, typename TensorT, typename DeviceT>
-  class GraphManagerLabel : public GraphManager<LabelsT, TensorT, DeviceT, 2> {
+  template<typename KGLabelsT, typename KGTensorT, typename LabelsT, typename TensorT, typename DeviceT>
+  class GraphManagerNodeProperty : public GraphManager<KGLabelsT, KGTensorT, LabelsT, TensorT, DeviceT, 2> {
   public:
-    using GraphManager<LabelsT, TensorT, DeviceT, 2>::GraphManager;
-    void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& values_ptr);
+    using GraphManager<KGLabelsT, KGTensorT, LabelsT, TensorT, DeviceT, 2>::GraphManager;
+    void getInsertData(std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& values_ptr, DeviceT& device);
   private:
     std::vector<std::string> labels_ = { "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" };
   };
-  template<typename LabelsT, typename TensorT, typename DeviceT>
-  void GraphManagerLabel<LabelsT, TensorT, DeviceT>::getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& values_ptr) {
-    // Make the labels and values
-    Eigen::Tensor<LabelsT, 2> labels(1, span);
-    Eigen::Tensor<TensorT, 2> values(span, 1);
-
-    for (int i = offset; i < offset + span; ++i) {
-      labels(0, i - offset) = LabelsT(i);
-      if (this->use_random_values_) values(i - offset, 0) = TensorT("null");
-      else values(i - offset, 0) = TensorT(labels_.at(i % labels_.size()));
-    }
-    this->makeLabelsPtr(labels, labels_ptr);
-    this->makeValuesPtr(values, values_ptr);
-  }
 
   /*
-  @brief Specialized `GraphManager` for generating image_2d
-  */
-  template<typename LabelsT, typename TensorT, typename DeviceT>
-  class GraphManagerImage2D : public GraphManager<LabelsT, TensorT, DeviceT, 4> {
-  public:
-    using GraphManager::GraphManager;
-    void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 4>>& values_ptr);
-  };
-  template<typename LabelsT, typename TensorT, typename DeviceT>
-  inline void GraphManagerImage2D<LabelsT, TensorT, DeviceT>::getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 4>>& values_ptr)
-  {
-    // Make the labels and values
-    Eigen::Tensor<LabelsT, 2> labels(1, span);
-    Eigen::Tensor<TensorT, 4> values(span, 1, 28, 28);
-
-    for (int i = offset; i < offset + span; ++i) {
-      labels(0, i - offset) = LabelsT(i);
-      Eigen::Tensor<TensorT, 4> image(1, 1, 28, 28);
-      if (this->use_random_values_) image.setConstant(1);// image = image.random().abs(); // should be from 0 to 1
-      else image.setZero();
-      values.slice(Eigen::array<Eigen::Index, 4>({ i - offset, 0, 0, 0}), Eigen::array<Eigen::Index, 4>({ 1, 1, 28, 28 })) = image;
-    }
-    this->makeLabelsPtr(labels, labels_ptr);
-    this->makeValuesPtr(values, values_ptr);
-  }
-
-  /*
-  @brief Specialized `GraphManager` for generating is_valid
-  */
-  template<typename LabelsT, typename TensorT, typename DeviceT>
-  class GraphManagerIsValid : public GraphManager<LabelsT, TensorT, DeviceT, 2> {
-  public:
-    using GraphManager::GraphManager;
-    void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& values_ptr);
-  };
-  template<typename LabelsT, typename TensorT, typename DeviceT>
-  inline void GraphManagerIsValid<LabelsT, TensorT, DeviceT>::getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& values_ptr)
-  {
-    // Make the labels and values
-    Eigen::Tensor<LabelsT, 2> labels(1, span);
-    Eigen::Tensor<TensorT, 2> values(span, 1);
-
-    for (int i = offset; i < offset + span; ++i) {
-      labels(0, i - offset) = LabelsT(i);
-      if (this->use_random_values_) values(i - offset, 0) = TensorT(0); // all images are not valid
-      else values(i - offset, 0) = TensorT(i % 2); // every other image is not valid
-    }
-    this->makeLabelsPtr(labels, labels_ptr);
-    this->makeValuesPtr(values, values_ptr);
-  }
+  @brief Specialized `GraphManager` for generating the link properties
+  
 
 	/*
 	@brief A class for running 1 line insertion, deletion, and update benchmarks
