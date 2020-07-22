@@ -37,8 +37,8 @@ BOOST_AUTO_TEST_CASE(kroneckerGraphGeneratorMakeKroneckerGraph)
   }
   Eigen::array<Eigen::Index, 1> node_ids_dims = { std::pow(2, 4) * 8 };
   BOOST_CHECK(node_ids->getDimensions().at(0) <= std::pow(2, 4));
-  std::cout << "link_ids\n"<< link_ids->getData() <<std::endl;
-  std::cout << "node_ids\n" << node_ids->getData() << std::endl;
+  //std::cout << "link_ids\n"<< link_ids->getData() <<std::endl;
+  //std::cout << "node_ids\n" << node_ids->getData() << std::endl;
 }
 
 BOOST_AUTO_TEST_SUITE_END()
