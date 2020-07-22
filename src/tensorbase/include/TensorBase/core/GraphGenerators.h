@@ -92,8 +92,8 @@ namespace TensorBase
       auto v_perm_min_0 = v_perm_rand.minimum(Eigen::array<Eigen::Index, 1>({ 0 })).broadcast(Eigen::array<Eigen::Index, 2>({ 1, M })).shuffle(Eigen::array<Eigen::Index, 2>({ 1, 0 })).eval();
       auto v_perm_max_1 = v_perm_rand.maximum(Eigen::array<Eigen::Index, 1>({ 1 })).broadcast(Eigen::array<Eigen::Index, 2>({ 1, M })).eval();
       auto v_perm_ind_a = (v_perm_rand.chip(0, 2) == v_perm_max_1 || v_perm_rand.chip(0, 2) == v_perm_min_0).select(v_perm_bcast.chip(0, 2).constant(1), v_perm_bcast.chip(0, 2).constant(0)).cast<LabelsT>().eval();
-      auto v_perm_ind_b = (v_perm_ind_a.cumsum(0) > 1).select(v_perm_ind_a.constant(0), v_perm_ind_a);
-      auto v_perm_ind = (v_perm_ind_b.cumsum(1) > 1).select(v_perm_ind_b.constant(0), v_perm_ind_b);
+      auto v_perm_ind_b = (v_perm_ind_a.cumsum(0) > v_perm_ind_a.constant(LabelsT(1))).select(v_perm_ind_a.constant(0), v_perm_ind_a);
+      auto v_perm_ind = (v_perm_ind_b.cumsum(1) > v_perm_ind_b.constant(LabelsT(1))).select(v_perm_ind_b.constant(0), v_perm_ind_b);
       indices_values.slice(offset_1, span_1).device(device) = v_perm_ind.contract(indices_values.slice(offset_1, span_1).eval(), product_dims);
     }
 
@@ -105,8 +105,8 @@ namespace TensorBase
       auto v_perm_min_0 = v_perm_rand.minimum(Eigen::array<Eigen::Index, 1>({ 0 })).broadcast(Eigen::array<Eigen::Index, 2>({ 1, M })).shuffle(Eigen::array<Eigen::Index, 2>({ 1, 0 })).eval();
       auto v_perm_max_1 = v_perm_rand.maximum(Eigen::array<Eigen::Index, 1>({ 1 })).broadcast(Eigen::array<Eigen::Index, 2>({ 1, M })).eval();
       auto v_perm_ind_a = (v_perm_rand.chip(0, 2) == v_perm_max_1 || v_perm_rand.chip(0, 2) == v_perm_min_0).select(v_perm_bcast.chip(0, 2).constant(1), v_perm_bcast.chip(0, 2).constant(0)).cast<LabelsT>().eval();
-      auto v_perm_ind_b = (v_perm_ind_a.cumsum(0) > 1).select(v_perm_ind_a.constant(0), v_perm_ind_a);
-      auto v_perm_ind = (v_perm_ind_b.cumsum(1) > 1).select(v_perm_ind_b.constant(0), v_perm_ind_b);
+      auto v_perm_ind_b = (v_perm_ind_a.cumsum(0) > v_perm_ind_a.constant(LabelsT(1))).select(v_perm_ind_a.constant(0), v_perm_ind_a);
+      auto v_perm_ind = (v_perm_ind_b.cumsum(1) > v_perm_ind_b.constant(LabelsT(1))).select(v_perm_ind_b.constant(0), v_perm_ind_b);
       indices_values.slice(offset_2, span_2).device(device) = v_perm_ind.contract(indices_values.slice(offset_2, span_2).eval(), product_dims);
     }
     indices_values.device(device) = (indices_values == indices_values.constant(0)).select(indices_values_copy, indices_values);
@@ -119,8 +119,8 @@ namespace TensorBase
       auto v_perm_min_0 = v_perm_rand.minimum(Eigen::array<Eigen::Index, 1>({ 0 })).broadcast(Eigen::array<Eigen::Index, 2>({ 1, M })).shuffle(Eigen::array<Eigen::Index, 2>({ 1, 0 })).eval();
       auto v_perm_max_1 = v_perm_rand.maximum(Eigen::array<Eigen::Index, 1>({ 1 })).broadcast(Eigen::array<Eigen::Index, 2>({ 1, M })).eval();
       auto v_perm_ind_a = (v_perm_rand.chip(0, 2) == v_perm_max_1 || v_perm_rand.chip(0, 2) == v_perm_min_0).select(v_perm_bcast.chip(0, 2).constant(1), v_perm_bcast.chip(0, 2).constant(0)).cast<LabelsT>().eval();
-      auto v_perm_ind_b = (v_perm_ind_a.cumsum(0) > 1).select(v_perm_ind_a.constant(0), v_perm_ind_a);
-      auto v_perm_ind = (v_perm_ind_b.cumsum(1) > 1).select(v_perm_ind_b.constant(0), v_perm_ind_b);
+      auto v_perm_ind_b = (v_perm_ind_a.cumsum(0) > v_perm_ind_a.constant(LabelsT(1))).select(v_perm_ind_a.constant(0), v_perm_ind_a);
+      auto v_perm_ind = (v_perm_ind_b.cumsum(1) > v_perm_ind_b.constant(LabelsT(1))).select(v_perm_ind_b.constant(0), v_perm_ind_b);
       indices_values.slice(offset_1, span_1).device(device) = v_perm_ind.contract(indices_values.slice(offset_1, span_1).eval(), product_dims);
       indices_values.slice(offset_2, span_2).device(device) = v_perm_ind.contract(indices_values.slice(offset_2, span_2).eval(), product_dims);
     }
