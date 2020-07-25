@@ -13,7 +13,7 @@ using namespace TensorBase;
 namespace TensorBaseBenchmarks
 {
 	/// Specialized class for selecting and counting nodes with particular properties for the DefaultDevice case
-	template<typename LabelsT, typename TensorT, typename DeviceT>
+	template<typename LabelsT, typename TensorT>
 	class SelectAndCountNodePropertyDefaultDevice: public SelectAndCountNodeProperty<LabelsT, TensorT, Eigen::DefaultDevice> {
 	public:
 		using SelectAndCountNodeProperty<LabelsT, TensorT, Eigen::DefaultDevice>::SelectAndCountNodeProperty;
@@ -21,7 +21,7 @@ namespace TensorBaseBenchmarks
 	};
 
 	/// Specialized class for selecting and counting nodes with particular properties for the DefaultDevice case
-	template<typename LabelsT, typename TensorT, typename DeviceT>
+	template<typename LabelsT, typename TensorT>
 	class SelectAndCountLinkPropertyDefaultDevice : public SelectAndCountLinkProperty<LabelsT, TensorT, Eigen::DefaultDevice> {
 	public:
 		using SelectAndCountLinkProperty<LabelsT, TensorT, Eigen::DefaultDevice>::SelectAndCountLinkProperty;
@@ -29,7 +29,7 @@ namespace TensorBaseBenchmarks
 	};
 
 	/// Specialized class for selecting and counting nodes with particular properties for the DefaultDevice case
-	template<typename LabelsT, typename TensorT, typename DeviceT>
+	template<typename LabelsT, typename TensorT>
 	class SelectAdjacencyDefaultDevice : public SelectAdjacency<LabelsT, TensorT, Eigen::DefaultDevice> {
 	public:
 		using SelectAdjacency<LabelsT, TensorT, Eigen::DefaultDevice>::SelectAdjacency;
@@ -37,7 +37,7 @@ namespace TensorBaseBenchmarks
 	};
 
 	/// Specialized class for selecting and counting nodes with particular properties for the DefaultDevice case
-	template<typename LabelsT, typename TensorT, typename DeviceT>
+	template<typename LabelsT, typename TensorT>
 	class SelectBFSDefaultDevice : public SelectBFS<LabelsT, TensorT, Eigen::DefaultDevice> {
 	public:
 		using SelectBFS<LabelsT, TensorT, Eigen::DefaultDevice>::SelectBFS;
@@ -111,6 +111,8 @@ namespace TensorBaseBenchmarks
     using GraphManagerNodeProperty<KGLabelsT, KGTensorT, LabelsT, TensorT, Eigen::DefaultDevice>::GraphManagerNodeProperty;
     void makeLabelsPtr(const Eigen::array<Eigen::Index, 2>& dimensions, std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& labels_ptr, Eigen::DefaultDevice& device) override;
     void makeValuesPtr(const Eigen::array<Eigen::Index, 2>& dimensions, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& values_ptr, Eigen::DefaultDevice& device) override;
+    void setNodeIds(const int& offset, const int& span, Eigen::DefaultDevice& device) override;
+    void setLabels(Eigen::DefaultDevice& device) override;
   };
   template<typename KGLabelsT, typename KGTensorT, typename LabelsT, typename TensorT>
   void GraphManagerNodePropertyDefaultDevice<KGLabelsT, KGTensorT, LabelsT, TensorT>::makeLabelsPtr(const Eigen::array<Eigen::Index, 2>& dimensions, std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& labels_ptr, Eigen::DefaultDevice& device) {
@@ -136,6 +138,7 @@ namespace TensorBaseBenchmarks
     using GraphManagerLinkProperty<KGLabelsT, KGTensorT, LabelsT, TensorT, Eigen::DefaultDevice>::GraphManagerLinkProperty;
     void makeLabelsPtr(const Eigen::array<Eigen::Index, 2>& dimensions, std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& labels_ptr, Eigen::DefaultDevice& device) override;
     void makeValuesPtr(const Eigen::array<Eigen::Index, 2>& dimensions, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& values_ptr, Eigen::DefaultDevice& device) override;
+    void setLabels(Eigen::DefaultDevice& device) override;
   };
   template<typename KGLabelsT, typename KGTensorT, typename LabelsT, typename TensorT>
   void GraphManagerLinkPropertyDefaultDevice<KGLabelsT, KGTensorT, LabelsT, TensorT>::makeLabelsPtr(const Eigen::array<Eigen::Index, 2>& dimensions, std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& labels_ptr, Eigen::DefaultDevice& device) {
@@ -167,35 +170,35 @@ namespace TensorBaseBenchmarks
     float _selectSSSP(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& scale, const int& edge_factor, const bool& in_memory, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `selectSSSP`
   };
   void BenchmarkGraph1LinkDefaultDevice::_insert1Link(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& scale, const int& edge_factor, const bool& in_memory, Eigen::DefaultDevice& device) const {
-    GraphManagerSparseIndicesDefaultDevice graph_manager_sparse_indices(false);
-    GraphManagerWeightsDefaultDevice graph_manager_weights(false);
-    GraphManagerNodePropertyDefaultDevice graph_manager_node_property(false);
-    GraphManagerLinkPropertyDefaultDevice graph_manager_link_property(false);
+    GraphManagerSparseIndicesDefaultDevice<int, float, int, int> graph_manager_sparse_indices(false);
+    GraphManagerWeightsDefaultDevice<int, float, int, float> graph_manager_weights(false);
+    GraphManagerNodePropertyDefaultDevice<int, float, int, TensorArray8<char>> graph_manager_node_property(false);
+    GraphManagerLinkPropertyDefaultDevice<int, float, int, TensorArray8<char>> graph_manager_link_property(false);
     int span = std::pow(2, scale);
     for (int i = 0; i < std::pow(2, scale) * edge_factor; i += span) {
       std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_sparse_indices_ptr;
-      std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>> values_sparse_indices_ptr;
-      graph_manager_sparse_indices.getInsertData(i, span, labels_sparse_indices_ptr, values_sparse_indices_ptr);
-      TensorAppendToAxis<int, int, Eigen::DefaultDevice, 3> appendToAxis_sparse_indices("Graph_sparse_indices", "1_indices", labels_sparse_indices_ptr, values_sparse_indices_ptr);
-      std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> appendToAxis_sparse_indices_ptr = std::make_shared<TensorAppendToAxis<int, int, Eigen::DefaultDevice, 3>>(appendToAxis_sparse_indices);
+      std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> values_sparse_indices_ptr;
+      graph_manager_sparse_indices.getInsertData(i, span, labels_sparse_indices_ptr, values_sparse_indices_ptr, device);
+      TensorAppendToAxis<int, int, Eigen::DefaultDevice, 2> appendToAxis_sparse_indices("Graph_sparse_indices", "1_links", labels_sparse_indices_ptr, values_sparse_indices_ptr);
+      std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> appendToAxis_sparse_indices_ptr = std::make_shared<TensorAppendToAxis<int, int, Eigen::DefaultDevice, 2>>(appendToAxis_sparse_indices);
       transaction_manager.executeOperation(appendToAxis_sparse_indices_ptr, device);
       std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_weights_ptr;
-      std::shared_ptr<TensorData<TensorArray8<char>, Eigen::DefaultDevice, 2>> values_weights_ptr;
-      graph_manager_weights.getInsertData(i, span, labels_weights_ptr, values_weights_ptr);
-      TensorAppendToAxis<int, TensorArray8<char>, Eigen::DefaultDevice, 2> appendToAxis_weights("Graph_weights", "1_indices", labels_weights_ptr, values_weights_ptr);
-      std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> appendToAxis_weights_ptr = std::make_shared<TensorAppendToAxis<int, TensorArray8<char>, Eigen::DefaultDevice, 2>>(appendToAxis_weights);
+      std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 2>> values_weights_ptr;
+      graph_manager_weights.getInsertData(i, span, labels_weights_ptr, values_weights_ptr, device);
+      TensorAppendToAxis<int, float, Eigen::DefaultDevice, 2> appendToAxis_weights("Graph_weights", "1_links", labels_weights_ptr, values_weights_ptr);
+      std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> appendToAxis_weights_ptr = std::make_shared<TensorAppendToAxis<int, float, Eigen::DefaultDevice, 2>>(appendToAxis_weights);
       transaction_manager.executeOperation(appendToAxis_weights_ptr, device);
       std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_node_property_ptr;
-      std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 4>> values_node_property_ptr;
-      graph_manager_node_property.getInsertData(i, span, labels_node_property_ptr, values_node_property_ptr);
-      TensorAppendToAxis<int, float, Eigen::DefaultDevice, 4> appendToAxis_node_property("Graph_node_property", "1_indices", labels_node_property_ptr, values_node_property_ptr);
-      std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> appendToAxis_node_property_ptr = std::make_shared<TensorAppendToAxis<int, float, Eigen::DefaultDevice, 4>>(appendToAxis_node_property);
+      std::shared_ptr<TensorData<TensorArray8<char>, Eigen::DefaultDevice, 2>> values_node_property_ptr;
+      graph_manager_node_property.getInsertData(i, span, labels_node_property_ptr, values_node_property_ptr, device);
+      TensorAppendToAxis<int, TensorArray8<char>, Eigen::DefaultDevice, 2> appendToAxis_node_property("Graph_node_property", "1_nodes", labels_node_property_ptr, values_node_property_ptr);
+      std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> appendToAxis_node_property_ptr = std::make_shared<TensorAppendToAxis<int, TensorArray8<char>, Eigen::DefaultDevice, 2>>(appendToAxis_node_property);
       transaction_manager.executeOperation(appendToAxis_node_property_ptr, device);
       std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_link_property_ptr;
-      std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> values_link_property_ptr;
-      graph_manager_link_property.getInsertData(i, span, labels_link_property_ptr, values_link_property_ptr);
-      TensorAppendToAxis<int, int, Eigen::DefaultDevice, 2> appendToAxis_link_property("Graph_link_property", "1_indices", labels_link_property_ptr, values_link_property_ptr);
-      std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> appendToAxis_link_property_ptr = std::make_shared<TensorAppendToAxis<int, int, Eigen::DefaultDevice, 2>>(appendToAxis_link_property);
+      std::shared_ptr<TensorData<TensorArray8<char>, Eigen::DefaultDevice, 2>> values_link_property_ptr;
+      graph_manager_link_property.getInsertData(i, span, labels_link_property_ptr, values_link_property_ptr, device);
+      TensorAppendToAxis<int, TensorArray8<char>, Eigen::DefaultDevice, 2> appendToAxis_link_property("Graph_link_property", "1_links", labels_link_property_ptr, values_link_property_ptr);
+      std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> appendToAxis_link_property_ptr = std::make_shared<TensorAppendToAxis<int, TensorArray8<char>, Eigen::DefaultDevice, 2>>(appendToAxis_link_property);
       transaction_manager.executeOperation(appendToAxis_link_property_ptr, device);
       if (!in_memory) {
         transaction_manager.commit(device);
@@ -204,39 +207,39 @@ namespace TensorBaseBenchmarks
     }
   }
   void BenchmarkGraph1LinkDefaultDevice::_update1Link(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& scale, const int& edge_factor, const bool& in_memory, Eigen::DefaultDevice& device) const {
-    GraphManagerSparseIndicesDefaultDevice graph_manager_sparse_indices(true);
-    GraphManagerWeightsDefaultDevice graph_manager_weights(true);
-    GraphManagerNodePropertyDefaultDevice graph_manager_node_property(true);
-    GraphManagerLinkPropertyDefaultDevice graph_manager_link_property(true);
+    GraphManagerSparseIndicesDefaultDevice<int, float, int, int> graph_manager_sparse_indices(true);
+    GraphManagerWeightsDefaultDevice<int, float, int, float> graph_manager_weights(true);
+    GraphManagerNodePropertyDefaultDevice<int, float, int, TensorArray8<char>> graph_manager_node_property(true);
+    GraphManagerLinkPropertyDefaultDevice<int, float, int, TensorArray8<char>> graph_manager_link_property(true);
     int span = std::pow(2, scale);
     for (int i = 0; i < std::pow(2, scale) * edge_factor; i += span) {
       std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_sparse_indices_ptr;
-      std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>> values_sparse_indices_ptr;
-      graph_manager_sparse_indices.getInsertData(i, span, labels_sparse_indices_ptr, values_sparse_indices_ptr);
+      std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> values_sparse_indices_ptr;
+      graph_manager_sparse_indices.getInsertData(i, span, labels_sparse_indices_ptr, values_sparse_indices_ptr, device);
       SelectGraphNodeLinkIDs<int, Eigen::DefaultDevice> selectClause_sparse_indices(labels_sparse_indices_ptr, "Graph_sparse_indices");
-      TensorUpdateValues<int, Eigen::DefaultDevice, 3> updateValues_sparse_indices("Graph_sparse_indices", selectClause_sparse_indices, values_sparse_indices_ptr);
-      std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> updateValues_sparse_indices_ptr = std::make_shared<TensorUpdateValues<int, Eigen::DefaultDevice, 3>>(updateValues_sparse_indices);
+      TensorUpdateValues<int, Eigen::DefaultDevice, 2> updateValues_sparse_indices("Graph_sparse_indices", selectClause_sparse_indices, values_sparse_indices_ptr);
+      std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> updateValues_sparse_indices_ptr = std::make_shared<TensorUpdateValues<int, Eigen::DefaultDevice, 2>>(updateValues_sparse_indices);
       transaction_manager.executeOperation(updateValues_sparse_indices_ptr, device);
       std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_weights_ptr;
-      std::shared_ptr<TensorData<TensorArray8<char>, Eigen::DefaultDevice, 2>> values_weights_ptr;
-      graph_manager_weights.getInsertData(i, span, labels_weights_ptr, values_weights_ptr);
+      std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 2>> values_weights_ptr;
+      graph_manager_weights.getInsertData(i, span, labels_weights_ptr, values_weights_ptr, device);
       SelectGraphNodeLinkIDs<int, Eigen::DefaultDevice> selectClause_weights(labels_weights_ptr, "Graph_weights");
-      TensorUpdateValues<TensorArray8<char>, Eigen::DefaultDevice, 2> updateValues_weights("Graph_weights", selectClause_weights, values_weights_ptr);
-      std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> updateValues_weights_ptr = std::make_shared<TensorUpdateValues<TensorArray8<char>, Eigen::DefaultDevice, 2>>(updateValues_weights);
+      TensorUpdateValues<float, Eigen::DefaultDevice, 2> updateValues_weights("Graph_weights", selectClause_weights, values_weights_ptr);
+      std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> updateValues_weights_ptr = std::make_shared<TensorUpdateValues<float, Eigen::DefaultDevice, 2>>(updateValues_weights);
       transaction_manager.executeOperation(updateValues_weights_ptr, device);
       std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_node_property_ptr;
-      std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 4>> values_node_property_ptr;
-      graph_manager_node_property.getInsertData(i, span, labels_node_property_ptr, values_node_property_ptr);
+      std::shared_ptr<TensorData<TensorArray8<char>, Eigen::DefaultDevice, 2>> values_node_property_ptr;
+      graph_manager_node_property.getInsertData(i, span, labels_node_property_ptr, values_node_property_ptr, device);
       SelectGraphNodeLinkIDs<int, Eigen::DefaultDevice> selectClause_node_property(labels_node_property_ptr, "Graph_node_property");
-      TensorUpdateValues<float, Eigen::DefaultDevice, 4> updateValues_node_property("Graph_node_property", selectClause_node_property, values_node_property_ptr);
-      std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> updateValues_node_property_ptr = std::make_shared<TensorUpdateValues<float, Eigen::DefaultDevice, 4>>(updateValues_node_property);
+      TensorUpdateValues<TensorArray8<char>, Eigen::DefaultDevice, 2> updateValues_node_property("Graph_node_property", selectClause_node_property, values_node_property_ptr);
+      std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> updateValues_node_property_ptr = std::make_shared<TensorUpdateValues<TensorArray8<char>, Eigen::DefaultDevice, 2>>(updateValues_node_property);
       transaction_manager.executeOperation(updateValues_node_property_ptr, device);
       std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_link_property_ptr;
-      std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> values_link_property_ptr;
-      graph_manager_link_property.getInsertData(i, span, labels_link_property_ptr, values_link_property_ptr);
+      std::shared_ptr<TensorData<TensorArray8<char>, Eigen::DefaultDevice, 2>> values_link_property_ptr;
+      graph_manager_link_property.getInsertData(i, span, labels_link_property_ptr, values_link_property_ptr, device);
       SelectGraphNodeLinkIDs<int, Eigen::DefaultDevice> selectClause_link_property(labels_link_property_ptr, "Graph_link_property");
-      TensorUpdateValues<int, Eigen::DefaultDevice, 2> updateValues_link_property("Graph_link_property", selectClause_link_property, values_link_property_ptr);
-      std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> updateValues_link_property_ptr = std::make_shared<TensorUpdateValues<int, Eigen::DefaultDevice, 2>>(updateValues_link_property);
+      TensorUpdateValues<TensorArray8<char>, Eigen::DefaultDevice, 2> updateValues_link_property("Graph_link_property", selectClause_link_property, values_link_property_ptr);
+      std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> updateValues_link_property_ptr = std::make_shared<TensorUpdateValues<TensorArray8<char>, Eigen::DefaultDevice, 2>>(updateValues_link_property);
       transaction_manager.executeOperation(updateValues_link_property_ptr, device);
       if (!in_memory) {
         transaction_manager.commit(device);
@@ -245,39 +248,39 @@ namespace TensorBaseBenchmarks
     }
   }
   void BenchmarkGraph1LinkDefaultDevice::_delete1Link(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& scale, const int& edge_factor, const bool& in_memory, Eigen::DefaultDevice& device) const {
-    GraphManagerSparseIndicesDefaultDevice graph_manager_sparse_indices(true);
-    GraphManagerWeightsDefaultDevice graph_manager_weights(true);
-    GraphManagerNodePropertyDefaultDevice graph_manager_node_property(true);
-    GraphManagerLinkPropertyDefaultDevice graph_manager_link_property(true);
+    GraphManagerSparseIndicesDefaultDevice<int, float, int, int> graph_manager_sparse_indices(true);
+    GraphManagerWeightsDefaultDevice<int, float, int, float> graph_manager_weights(true);
+    GraphManagerNodePropertyDefaultDevice<int, float, int, TensorArray8<char>> graph_manager_node_property(true);
+    GraphManagerLinkPropertyDefaultDevice<int, float, int, TensorArray8<char>> graph_manager_link_property(true);
     int span = std::pow(2, scale);
     for (int i = 0; i < std::pow(2, scale) * edge_factor - 1; i += span) {
       std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_sparse_indices_ptr;
-      std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>> values_sparse_indices_ptr;
-      graph_manager_sparse_indices.getInsertData(i, span, labels_sparse_indices_ptr, values_sparse_indices_ptr);
+      std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> values_sparse_indices_ptr;
+      graph_manager_sparse_indices.getInsertData(i, span, labels_sparse_indices_ptr, values_sparse_indices_ptr, device);
       SelectGraphNodeLinkIDs<int, Eigen::DefaultDevice> selectClause_sparse_indices(labels_sparse_indices_ptr, "Graph_sparse_indices");
-      TensorDeleteFromAxisDefaultDevice<int, int, 3> tensorDelete_sparse_indices("Graph_sparse_indices", "1_indices", selectClause_sparse_indices);
-      std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> tensorDelete_sparse_indices_ptr = std::make_shared<TensorDeleteFromAxisDefaultDevice<int, int, 3>>(tensorDelete_sparse_indices);
+      TensorDeleteFromAxisDefaultDevice<int, int, 2> tensorDelete_sparse_indices("Graph_sparse_indices", "1_links", selectClause_sparse_indices);
+      std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> tensorDelete_sparse_indices_ptr = std::make_shared<TensorDeleteFromAxisDefaultDevice<int, int, 2>>(tensorDelete_sparse_indices);
       transaction_manager.executeOperation(tensorDelete_sparse_indices_ptr, device);
       std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_weights_ptr;
-      std::shared_ptr<TensorData<TensorArray8<char>, Eigen::DefaultDevice, 2>> values_weights_ptr;
-      graph_manager_weights.getInsertData(i, span, labels_weights_ptr, values_weights_ptr);
+      std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 2>> values_weights_ptr;
+      graph_manager_weights.getInsertData(i, span, labels_weights_ptr, values_weights_ptr, device);
       SelectGraphNodeLinkIDs<int, Eigen::DefaultDevice> selectClause_weights(labels_weights_ptr, "Graph_weights");
-      TensorDeleteFromAxisDefaultDevice<int, TensorArray8<char>, 2> tensorDelete_weights("Graph_weights", "1_indices", selectClause_weights);
-      std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> tensorDelete_weights_ptr = std::make_shared<TensorDeleteFromAxisDefaultDevice<int, TensorArray8<char>, 2>>(tensorDelete_weights);
+      TensorDeleteFromAxisDefaultDevice<int, float, 2> tensorDelete_weights("Graph_weights", "1_links", selectClause_weights);
+      std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> tensorDelete_weights_ptr = std::make_shared<TensorDeleteFromAxisDefaultDevice<int, float, 2>>(tensorDelete_weights);
       transaction_manager.executeOperation(tensorDelete_weights_ptr, device);
       std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_node_property_ptr;
-      std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 4>> values_node_property_ptr;
-      graph_manager_node_property.getInsertData(i, span, labels_node_property_ptr, values_node_property_ptr);
+      std::shared_ptr<TensorData<TensorArray8<char>, Eigen::DefaultDevice, 2>> values_node_property_ptr;
+      graph_manager_node_property.getInsertData(i, span, labels_node_property_ptr, values_node_property_ptr, device);
       SelectGraphNodeLinkIDs<int, Eigen::DefaultDevice> selectClause_node_property(labels_node_property_ptr, "Graph_node_property");
-      TensorDeleteFromAxisDefaultDevice<int, float, 4> tensorDelete_node_property("Graph_node_property", "1_indices", selectClause_node_property);
-      std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> tensorDelete_node_property_ptr = std::make_shared<TensorDeleteFromAxisDefaultDevice<int, float, 4>>(tensorDelete_node_property);
+      TensorDeleteFromAxisDefaultDevice<int, TensorArray8<char>, 2> tensorDelete_node_property("Graph_node_property", "1_nodes", selectClause_node_property);
+      std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> tensorDelete_node_property_ptr = std::make_shared<TensorDeleteFromAxisDefaultDevice<int, TensorArray8<char>, 2>>(tensorDelete_node_property);
       transaction_manager.executeOperation(tensorDelete_node_property_ptr, device);
       std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_link_property_ptr;
-      std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> values_link_property_ptr;
-      graph_manager_link_property.getInsertData(i, span, labels_link_property_ptr, values_link_property_ptr);
+      std::shared_ptr<TensorData<TensorArray8<char>, Eigen::DefaultDevice, 2>> values_link_property_ptr;
+      graph_manager_link_property.getInsertData(i, span, labels_link_property_ptr, values_link_property_ptr, device);
       SelectGraphNodeLinkIDs<int, Eigen::DefaultDevice> selectClause_link_property(labels_link_property_ptr, "Graph_link_property");
-      TensorDeleteFromAxisDefaultDevice<int, int, 2> tensorDelete_link_property("Graph_link_property", "1_indices", selectClause_link_property);
-      std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> tensorDelete_link_property_ptr = std::make_shared<TensorDeleteFromAxisDefaultDevice<int, int, 2>>(tensorDelete_link_property);
+      TensorDeleteFromAxisDefaultDevice<int, TensorArray8<char>, 2> tensorDelete_link_property("Graph_link_property", "1_links", selectClause_link_property);
+      std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> tensorDelete_link_property_ptr = std::make_shared<TensorDeleteFromAxisDefaultDevice<int, TensorArray8<char>, 2>>(tensorDelete_link_property);
       transaction_manager.executeOperation(tensorDelete_link_property_ptr, device);
       if (!in_memory) {
         transaction_manager.commit(device);
@@ -285,66 +288,66 @@ namespace TensorBaseBenchmarks
       }
     }
   }
-  inline int BenchmarkGraph1LinkDefaultDevice::_selectAndCountNodeProperty(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& scale, const int& edge_factor, const bool& in_memory, Eigen::DefaultDevice& device) const
-  {
-    SelectAndCountNodePropertyDefaultDevice select_and_sum;
-    select_and_sum(transaction_manager.getTensorCollection(), device);
-    if (!in_memory) {
-      transaction_manager.commit(device);
-      transaction_manager.initTensorCollectionTensorData(device);
-    }
-    select_and_sum.result_->syncHAndDData(device);
-    return select_and_sum.result_->getData()(0);
-  }
-  inline int BenchmarkGraph1LinkDefaultDevice::_selectAndCountLinkProperty(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& scale, const int& edge_factor, const bool& in_memory, Eigen::DefaultDevice& device) const
-  {
-    SelectAndCountNodePropertyDefaultDevice select_and_sum;
-    select_and_sum(transaction_manager.getTensorCollection(), device);
-    if (!in_memory) {
-      transaction_manager.commit(device);
-      transaction_manager.initTensorCollectionTensorData(device);
-    }
-    return select_and_sum.result_;
-  }
-  inline float BenchmarkGraph1LinkDefaultDevice::_selectAdjacency(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& scale, const int& edge_factor, const bool& in_memory, Eigen::DefaultDevice& device) const
-  {
-    SelectAdjacencyDefaultDevice select_and_sum;
-    select_and_sum(transaction_manager.getTensorCollection(), device);
-    if (!in_memory) {
-      transaction_manager.commit(device);
-      transaction_manager.initTensorCollectionTensorData(device);
-    }
-    select_and_sum.result_->syncHAndDData(device);
-    return select_and_sum.result_->getData()(0);
-  }
-  inline float BenchmarkGraph1LinkDefaultDevice::_selectBFS(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& scale, const int& edge_factor, const bool& in_memory, Eigen::DefaultDevice& device) const
-  {
-    SelectBFSDefaultDevice select_and_sum;
-    select_and_sum(transaction_manager.getTensorCollection(), device);
-    if (!in_memory) {
-      transaction_manager.commit(device);
-      transaction_manager.initTensorCollectionTensorData(device);
-    }
-    select_and_sum.result_->syncHAndDData(device);
-    return select_and_sum.result_->getData()(0);
-  }
-  inline float BenchmarkGraph1LinkDefaultDevice::_selectSSSP(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& scale, const int& edge_factor, const bool& in_memory, Eigen::DefaultDevice& device) const
-  {
-    SelectSSSPDefaultDevice select_and_sum;
-    select_and_sum(transaction_manager.getTensorCollection(), device);
-    if (!in_memory) {
-      transaction_manager.commit(device);
-      transaction_manager.initTensorCollectionTensorData(device);
-    }
-    select_and_sum.result_->syncHAndDData(device);
-    return select_and_sum.result_->getData()(0);
-  }
+  //inline int BenchmarkGraph1LinkDefaultDevice::_selectAndCountNodeProperty(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& scale, const int& edge_factor, const bool& in_memory, Eigen::DefaultDevice& device) const
+  //{
+  //  SelectAndCountNodePropertyDefaultDevice<> select_and_sum;
+  //  select_and_sum(transaction_manager.getTensorCollection(), device);
+  //  if (!in_memory) {
+  //    transaction_manager.commit(device);
+  //    transaction_manager.initTensorCollectionTensorData(device);
+  //  }
+  //  select_and_sum.result_->syncHAndDData(device);
+  //  return select_and_sum.result_->getData()(0);
+  //}
+  //inline int BenchmarkGraph1LinkDefaultDevice::_selectAndCountLinkProperty(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& scale, const int& edge_factor, const bool& in_memory, Eigen::DefaultDevice& device) const
+  //{
+  //  SelectAndCountNodePropertyDefaultDevice<> select_and_sum;
+  //  select_and_sum(transaction_manager.getTensorCollection(), device);
+  //  if (!in_memory) {
+  //    transaction_manager.commit(device);
+  //    transaction_manager.initTensorCollectionTensorData(device);
+  //  }
+  //  return select_and_sum.result_;
+  //}
+  //inline float BenchmarkGraph1LinkDefaultDevice::_selectAdjacency(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& scale, const int& edge_factor, const bool& in_memory, Eigen::DefaultDevice& device) const
+  //{
+  //  SelectAdjacencyDefaultDevice<> select_and_sum;
+  //  select_and_sum(transaction_manager.getTensorCollection(), device);
+  //  if (!in_memory) {
+  //    transaction_manager.commit(device);
+  //    transaction_manager.initTensorCollectionTensorData(device);
+  //  }
+  //  select_and_sum.result_->syncHAndDData(device);
+  //  return select_and_sum.result_->getData()(0);
+  //}
+  //inline float BenchmarkGraph1LinkDefaultDevice::_selectBFS(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& scale, const int& edge_factor, const bool& in_memory, Eigen::DefaultDevice& device) const
+  //{
+  //  SelectBFSDefaultDevice<> select_and_sum;
+  //  select_and_sum(transaction_manager.getTensorCollection(), device);
+  //  if (!in_memory) {
+  //    transaction_manager.commit(device);
+  //    transaction_manager.initTensorCollectionTensorData(device);
+  //  }
+  //  select_and_sum.result_->syncHAndDData(device);
+  //  return select_and_sum.result_->getData()(0);
+  //}
+  //inline float BenchmarkGraph1LinkDefaultDevice::_selectSSSP(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& scale, const int& edge_factor, const bool& in_memory, Eigen::DefaultDevice& device) const
+  //{
+  //  SelectSSSPDefaultDevice<> select_and_sum;
+  //  select_and_sum(transaction_manager.getTensorCollection(), device);
+  //  if (!in_memory) {
+  //    transaction_manager.commit(device);
+  //    transaction_manager.initTensorCollectionTensorData(device);
+  //  }
+  //  select_and_sum.result_->syncHAndDData(device);
+  //  return select_and_sum.result_->getData()(0);
+  //}
 
   class GraphTensorCollectionGeneratorDefaultDevice : public GraphTensorCollectionGenerator<Eigen::DefaultDevice> {
   public:
-    std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> makeTensorCollection(const int& scale, const int& edge_factor, const double& shard_span_perc, const bool& is_columnar, Eigen::DefaultDevice& device) const override;
+    std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> makeTensorCollection(const int& scale, const int& edge_factor, const double& shard_span_perc, Eigen::DefaultDevice& device) const override;
   };
-  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> GraphTensorCollectionGeneratorDefaultDevice::makeTensorCollection(const int& scale, const int& edge_factor, const double& shard_span_perc, const bool& is_columnar, Eigen::DefaultDevice& device) const
+  std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> GraphTensorCollectionGeneratorDefaultDevice::makeTensorCollection(const int& scale, const int& edge_factor, const double& shard_span_perc, Eigen::DefaultDevice& device) const
   {
     const int data_size = std::pow(2, scale) * edge_factor;
 

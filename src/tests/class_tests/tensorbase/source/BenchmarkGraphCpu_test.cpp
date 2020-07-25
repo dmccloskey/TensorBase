@@ -15,7 +15,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteCpu)
   // Parameters for the test
   std::string data_dir = "";
   const int n_dims = 0;
-  const int scale = 8; const edge_factor = 16;
+  const int scale = 8; const int edge_factor = 16;
   const bool in_memory = true;
   const int data_size = std::pow(2, scale) * edge_factor;
   const double shard_span_perc = 1;
@@ -284,7 +284,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteShardingCpu)
   // Parameters for the test
   std::string data_dir = "";
   const int n_dims = 0;
-  const int scale = 8; const edge_factor = 16;
+  const int scale = 8; const int edge_factor = 16;
   const bool in_memory = false;
   const int data_size = std::pow(2, scale) * edge_factor;  
   const double shard_span_perc = 0.05;

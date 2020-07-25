@@ -15,7 +15,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteDefaultDevice)
   // Parameters for the test
   std::string data_dir = "";
   const int n_dims = 0;
-  const int scale = 8; const edge_factor = 16;
+  const int scale = 8; const int edge_factor = 16;
   const bool in_memory = true;
   const int data_size = std::pow(2, scale) * edge_factor;
   const double shard_span_perc = 1;
@@ -90,10 +90,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteDefaultDevice)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_link_property")->getMaxDimSizeFromAxisName("1_indices"), data_size);
 
   // Make the expected tensor axes labels and tensor data after insert
-  GraphManagerSparseIndicesDefaultDevice graph_manager_sparse_indices(data_size, false);
-  GraphManagerWeightsDefaultDevice graph_manager_weights(data_size, false);
-  GraphManagerNodePropertyDefaultDevice graph_manager_node_property(data_size, false);
-  GraphManagerLinkPropertyDefaultDevice graph_manager_link_property(data_size, false);
+  GraphManagerSparseIndicesDefaultDevice graph_manager_sparse_indices(false);
+  GraphManagerWeightsDefaultDevice graph_manager_weights(false);
+  GraphManagerNodePropertyDefaultDevice graph_manager_node_property(false);
+  GraphManagerLinkPropertyDefaultDevice graph_manager_link_property(false);
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_sparse_indices_ptr;
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>> values_sparse_indices_ptr;
   graph_manager_sparse_indices.getInsertData(0, data_size, labels_sparse_indices_ptr, values_sparse_indices_ptr);
@@ -292,7 +292,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteShardingDefaultDevice)
   // Parameters for the test
   std::string data_dir = "";
   const int n_dims = 0;
-  const int scale = 8; const edge_factor = 16;
+  const int scale = 8; const int edge_factor = 16;
   const bool in_memory = false;
   const int data_size = std::pow(2, scale) * edge_factor;
   const double shard_span_perc = 0.05;
@@ -367,10 +367,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteShardingDefaultDevice)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_link_property")->getMaxDimSizeFromAxisName("1_indices"), data_size);
 
   // Make the expected tensor axes labels and tensor data after insert
-  GraphManagerSparseIndicesDefaultDevice graph_manager_sparse_indices(data_size, false);
-  GraphManagerWeightsDefaultDevice graph_manager_weights(data_size, false);
-  GraphManagerNodePropertyDefaultDevice graph_manager_node_property(data_size, false);
-  GraphManagerLinkPropertyDefaultDevice graph_manager_link_property(data_size, false);
+  GraphManagerSparseIndicesDefaultDevice graph_manager_sparse_indices(false);
+  GraphManagerWeightsDefaultDevice graph_manager_weights(false);
+  GraphManagerNodePropertyDefaultDevice graph_manager_node_property(false);
+  GraphManagerLinkPropertyDefaultDevice graph_manager_link_property(false);
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_sparse_indices_ptr;
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>> values_sparse_indices_ptr;
   graph_manager_sparse_indices.getInsertData(0, data_size, labels_sparse_indices_ptr, values_sparse_indices_ptr);

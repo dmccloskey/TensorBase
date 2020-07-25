@@ -24,7 +24,7 @@ namespace TensorBaseBenchmarks
 	class SelectGraphNodeLinkIDs {
 	public:
 		SelectGraphNodeLinkIDs(std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels, const std::string& table_name) : select_labels_(select_labels), table_name_(table_name) {};
-		~SelectTableDataIndices() = default;
+		~SelectGraphNodeLinkIDs() = default;
 		virtual void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
 	protected:
 		std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels_;
@@ -276,7 +276,6 @@ namespace TensorBaseBenchmarks
 		using GraphManager<KGLabelsT, KGTensorT, LabelsT, TensorT, DeviceT, 2>::GraphManager;
 		void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& values_ptr, DeviceT& device);
 		virtual void setLabels(DeviceT& device) = 0;
-		virtual void setNodeIds(const int& offset, const int& span, DeviceT& device) = 0;
 	private:
 		std::vector<std::string> link_types_ = { "solid", "dashed" };
 		std::shared_ptr<TensorData<TensorT, DeviceT, 1>> labels_;
