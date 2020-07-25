@@ -25,7 +25,7 @@ namespace TensorBaseBenchmarks
 	public:
 		SelectGraphNodeLinkIDs(std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels, const std::string& table_name) : select_labels_(select_labels), table_name_(table_name) {};
 		~SelectTableDataIndices() = default;
-		virtual void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) = 0;
+		virtual void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
 	protected:
 		std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels_;
 		std::string table_name_;
