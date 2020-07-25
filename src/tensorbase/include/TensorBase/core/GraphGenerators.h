@@ -41,13 +41,15 @@ namespace TensorBase
     /*
     @brief Extract the list of unique Node IDs from the graph
 
+    @param[in] offset The starting point to extract out the unique nodes and link ids
+    @param[in] span The length to extract out the unique nodes and link ids
     @param[in] indices Node indices of the Kronecker graph
     @param[out] node_ids Ordered and Unique list of node ids
     @param[out] link_ids Ordered and Unique list of link ids
 
     @returns A 1D list of nodes
     */
-    void getNodeAndLinkIds(const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& node_ids, std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& link_ids,DeviceT& device);
+    void getNodeAndLinkIds(const int& offset, const int& span, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& node_ids, std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& link_ids, DeviceT& device) const;
   protected:
     // allocate memory for the kronecker graph
     virtual void initKroneckerGraph(std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& weights, const int& M, DeviceT& device) const = 0;
@@ -56,7 +58,7 @@ namespace TensorBase
     /// allocate memory for the IDs
     virtual void initIDs(std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& node_or_link_ids, const int& N, DeviceT& device) const = 0;
     /// determine the unique ids
-    virtual void getUniqueIds(const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& node_ids, DeviceT& device) const = 0;
+    virtual void getUniqueIds(const int& offset, const int& span, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& node_ids, DeviceT& device) const = 0;
   };
   template<typename LabelsT, typename TensorT, typename DeviceT>
   inline void KroneckerGraphGenerator<LabelsT, TensorT, DeviceT>::makeKroneckerGraph(const int& scale, const int& edge_factor, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& weights, DeviceT& device) const
@@ -177,17 +179,18 @@ namespace TensorBase
 #endif
   }
   template<typename LabelsT, typename TensorT, typename DeviceT>
-  inline void KroneckerGraphGenerator<LabelsT, TensorT, DeviceT>::getNodeAndLinkIds(const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& node_ids, std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& link_ids, DeviceT& device)
+  inline void KroneckerGraphGenerator<LabelsT, TensorT, DeviceT>::getNodeAndLinkIds(const int& offset, const int& span, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& node_ids, std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& link_ids, DeviceT& device) const
   {
     // Allocate memory for the link ids
-    initIDs(link_ids, indices->getDimensions().at(0), device);
+    initIDs(link_ids, span, device);
+    //initIDs(link_ids, indices->getDimensions().at(0), device);
 
     // Make the link ids
     Eigen::TensorMap<Eigen::Tensor<LabelsT, 1>> link_ids_values(link_ids->getDataPointer().get(), link_ids->getDimensions());
-    link_ids_values.device(device) = link_ids_values.constant(1).cumsum(0) - link_ids_values.constant(1);
+    link_ids_values.device(device) = link_ids_values.constant(1).cumsum(0) + link_ids_values.constant(offset - 1);
 
     // Make the node ids
-    getUniqueIds(indices, node_ids, device);
+    getUniqueIds(offset, span, indices, node_ids, device);
   }
 }
 #endif //TENSORBASE_GRAPHGENERATORS_H

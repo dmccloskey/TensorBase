@@ -15,7 +15,7 @@ namespace TensorBase
     void initKroneckerGraph(std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& weights, const int& M, Eigen::DefaultDevice& device) const override;
     void initKroneckerGraphTmpData(std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 2>>& indices_float, const int& M, Eigen::DefaultDevice& device) const override;
     void initIDs(std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 1>>& node_or_link_ids, const int& N, Eigen::DefaultDevice& device) const override;
-    void getUniqueIds(const std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& indices, std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 1>>& node_ids, Eigen::DefaultDevice& device) const override;
+    void getUniqueIds(const int& offset, const int& span, const std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& indices, std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 1>>& node_ids, Eigen::DefaultDevice& device) const override;
   };
   template<typename LabelsT, typename TensorT>
   inline void KroneckerGraphGeneratorDefaultDevice<LabelsT, TensorT>::initKroneckerGraph(std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& weights, const int& M, Eigen::DefaultDevice& device) const
@@ -46,16 +46,16 @@ namespace TensorBase
     node_or_link_ids = std::make_shared<TensorDataDefaultDevice<LabelsT, 1>>(indices_tmp);
   }
   template<typename LabelsT, typename TensorT>
-  inline void KroneckerGraphGeneratorDefaultDevice<LabelsT, TensorT>::getUniqueIds(const std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& indices, std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 1>>& node_ids, Eigen::DefaultDevice& device) const
+  inline void KroneckerGraphGeneratorDefaultDevice<LabelsT, TensorT>::getUniqueIds(const int& offset, const int& span, const std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& indices, std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 1>>& node_ids, Eigen::DefaultDevice& device) const
   {
     // Sort a copy of the data
-    TensorDataDefaultDevice<LabelsT, 1> indices_tmp(Eigen::array<Eigen::Index, 1>({ (int)indices->getTensorSize() }));
+    TensorDataDefaultDevice<LabelsT, 1> indices_tmp(Eigen::array<Eigen::Index, 1>({ span }));
     indices_tmp.setData();
     indices_tmp.syncHAndDData(device);
     auto indices_tmp_ptr = std::make_shared<TensorDataDefaultDevice<LabelsT, 1>>(indices_tmp);
     Eigen::TensorMap<Eigen::Tensor<LabelsT, 1>> indices_tmp_values(indices_tmp_ptr->getDataPointer().get(), indices_tmp_ptr->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<LabelsT, 1>> indices_values(indices->getDataPointer().get(), indices->getTensorSize());
-    indices_tmp_values.device(device) = indices_values;
+    indices_tmp_values.device(device) = indices_values.slice(Eigen::array<Eigen::Index, 1>({offset}), Eigen::array<Eigen::Index, 1>({ span }));
     indices_tmp_ptr->sort("ASC", device);
 
     // Allocate memory
@@ -79,9 +79,6 @@ namespace TensorBase
 
     // Resize the unique results
     n_runs->syncHAndDData(device); // d to h
-    //if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
-    //  assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
-    //}
     unique->setDimensions(Eigen::array<Eigen::Index, 1>({ n_runs->getData()(0) }));
 
     // Copy over the results
