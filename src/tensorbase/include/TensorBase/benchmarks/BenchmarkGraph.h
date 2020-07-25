@@ -35,31 +35,71 @@ namespace TensorBaseBenchmarks
 	@brief Class for selecting and counting nodes with particular properties
 	*/
 	template<typename LabelsT, typename TensorT, typename DeviceT>
-	class SelectAndCountNodeProperty;
+	class SelectAndCountNodeProperty {
+	public:
+		int result_; ///< The results of the query
+		void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
+		virtual void setLabelsValuesResult(DeviceT& device) = 0;
+	protected:
+		std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> select_labels_; ///< The labels to select
+		std::shared_ptr<TensorData<TensorT, DeviceT, 1>> select_values_; ///< The values to select
+	};
 
 	/*
 	@brief Class for selecting and counting links with particular properties
 	*/
 	template<typename LabelsT, typename TensorT, typename DeviceT>
-	class SelectAndCountLinkProperty;
+	class SelectAndCountLinkProperty {
+	public:
+		int result_; ///< The results of the query
+		void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
+		virtual void setLabelsValuesResult(DeviceT& device) = 0;
+	protected:
+		std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> select_labels_; ///< The labels to select
+		std::shared_ptr<TensorData<TensorT, DeviceT, 1>> select_values_; ///< The values to select
+	};
 
 	/*
 	@brief Class for making the adjacency matrix from a sparse representation
 	*/
 	template<typename LabelsT, typename TensorT, typename DeviceT>
-	class SelectToAdjacency;
+	class SelectAdjacency {
+	public:
+		std::shared_ptr<TensorData<TensorT, DeviceT, 1>> result_; ///< The results of the query
+		void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
+		virtual void setLabelsValuesResult(DeviceT& device) = 0;
+	protected:
+		std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> select_labels_; ///< The labels to select
+		std::shared_ptr<TensorData<TensorT, DeviceT, 1>> select_values_; ///< The values to select
+	};
 
 	/*
 	@brief Class for running the breadth-first search algorithm
 	*/
 	template<typename LabelsT, typename TensorT, typename DeviceT>
-	class SelectBFS;
+	class SelectBFS {
+	public:
+		std::shared_ptr<TensorData<TensorT, DeviceT, 1>> result_; ///< The results of the query
+		void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
+		virtual void setLabelsValuesResult(DeviceT& device) = 0;
+	protected:
+		std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> select_labels_; ///< The labels to select
+		std::shared_ptr<TensorData<TensorT, DeviceT, 1>> select_values_; ///< The values to select
+	};
 
 	/*
 	@brief Class for running the single source shortest path search algorithm
 	*/
 	template<typename LabelsT, typename TensorT, typename DeviceT>
-	class SelectSSSP;
+	class SelectSSSP {
+	public:
+		std::shared_ptr<TensorData<TensorT, DeviceT, 1>> result_; ///< The results of the query
+		void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
+		virtual void setLabelsValuesResult(DeviceT& device) = 0;
+	protected:
+		std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> select_labels_; ///< The labels to select
+		std::shared_ptr<TensorData<TensorT, DeviceT, 1>> select_values_; ///< The values to select
+	};
 
 	/*
 	@brief Class for managing the generation of data for the Graph
@@ -83,7 +123,7 @@ namespace TensorBaseBenchmarks
 	};
   template<typename KGLabelsT, typename KGTensorT, typename LabelsT, typename TensorT, typename DeviceT, int NDim>
   inline void GraphManager<KGLabelsT, KGTensorT, LabelsT, TensorT, DeviceT, NDim>::makeKroneckerGraph(const int& scale, const int& edge_factor, DeviceT& device) {
-    KroneckerGraphGeneratorDefaultDevice<KGLabelsT, KGTensorT> graph_generator;
+    KroneckerGraphGenerator<KGLabelsT, KGTensorT, DeviceT> graph_generator;
 		graph_generator.makeKroneckerGraph(scale, edge_factor, kronecker_graph_indices_, kronecker_graph_weights_, device);
     graph_generator.getNodeAndLinkIds(0, kronecker_graph_indices_->getDimensions().at(0), kronecker_graph_indices_, kronecker_graph_node_ids_, kronecker_graph_link_ids_, device);
   }
@@ -307,7 +347,7 @@ namespace TensorBaseBenchmarks
 		// Start the timer
 		auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
-		_insert1Link(transaction_manager, data_size, in_memory, device);
+		_insert1Link(transaction_manager, scale, edge_factor, in_memory, device);
 
 		// Stop the timer
 		auto stop = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
@@ -320,7 +360,7 @@ namespace TensorBaseBenchmarks
 		// Start the timer
 		auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
-		_update1Link(transaction_manager, data_size, in_memory, device);
+		_update1Link(transaction_manager, scale, edge_factor, in_memory, device);
 
 		// Stop the timer
 		auto stop = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
@@ -333,7 +373,7 @@ namespace TensorBaseBenchmarks
 		// Start the timer
 		auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
-		_delete1Link(transaction_manager, data_size, in_memory, device);
+		_delete1Link(transaction_manager, scale, edge_factor, in_memory, device);
 
 		// Stop the timer
 		auto stop = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
@@ -346,7 +386,7 @@ namespace TensorBaseBenchmarks
     // Start the timer
     auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
-    const int result = _selectAndCountNodeProperty(transaction_manager, data_size, in_memory, device);
+    const int result = _selectAndCountNodeProperty(transaction_manager, scale, edge_factor, in_memory, device);
 
     // Stop the timer
     auto stop = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
@@ -359,7 +399,7 @@ namespace TensorBaseBenchmarks
     // Start the timer
     auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
-    const int result = _selectAndCountLinkProperty(transaction_manager, data_size, in_memory, device);
+    const int result = _selectAndCountLinkProperty(transaction_manager, scale, edge_factor, in_memory, device);
 
     // Stop the timer
     auto stop = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
@@ -372,7 +412,7 @@ namespace TensorBaseBenchmarks
     // Start the timer
     auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
-    const float result = _selectAdjacency(transaction_manager, data_size, in_memory, device);
+    const float result = _selectAdjacency(transaction_manager, scale, edge_factor, in_memory, device);
 
     // Stop the timer
     auto stop = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
@@ -385,7 +425,7 @@ namespace TensorBaseBenchmarks
 		// Start the timer
 		auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
-		const float result = _selectBFS(transaction_manager, data_size, in_memory, device);
+		const float result = _selectBFS(transaction_manager, scale, edge_factor, in_memory, device);
 
 		// Stop the timer
 		auto stop = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
@@ -398,7 +438,7 @@ namespace TensorBaseBenchmarks
 		// Start the timer
 		auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
-		const float result = _selectSSSP(transaction_manager, data_size, in_memory, device);
+		const float result = _selectSSSP(transaction_manager, scale, edge_factor, in_memory, device);
 
 		// Stop the timer
 		auto stop = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
@@ -407,7 +447,7 @@ namespace TensorBaseBenchmarks
 	}
 
 	/*
-	@brief Simulate a typical dataframe with mixed column types and mixed entry dimensions
+	@brief Simulate a typical graph with mixed column types and mixed entry dimensions
 	*/
 	template<typename DeviceT>
 	class GraphTensorCollectionGenerator {
@@ -424,7 +464,7 @@ namespace TensorBaseBenchmarks
 		std::cout << "Starting insert/delete/update Graph benchmarks for scale=" << scale << ", edge_factor=" << edge_factor << ", in_memory=" << in_memory << ", and shard_span_perc=" << shard_span_perc << std::endl;
 
 		// Make the nD TensorTables
-		std::shared_ptr<TensorCollection<DeviceT>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(data_size, shard_span_perc, is_columnar, device);
+		std::shared_ptr<TensorCollection<DeviceT>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(data_size, shard_span_perc, device);
 
 		// Setup the transaction manager
 		TransactionManager<DeviceT> transaction_manager;
@@ -432,14 +472,14 @@ namespace TensorBaseBenchmarks
 
 		// Run the table through the benchmarks
 		transaction_manager.setTensorCollection(n_dim_tensor_collection);
-		std::cout << "Tensor Table time-point insertion took " << benchmark_1_link.insert1Link(transaction_manager, data_size, in_memory, device) << " milliseconds." << std::endl;
-		std::cout << "Tensor Table time-point select and count black nodes took " << (benchmark_1_link.selectAndCountNodeProperty(transaction_manager, data_size, in_memory, device)).first << " milliseconds." << std::endl;
-    std::cout << "Tensor Table time-point select and count dashed links took " << (benchmark_1_link.selectAndCountLinkProperty(transaction_manager, data_size, in_memory, device)).first << " milliseconds." << std::endl;
-    std::cout << "Tensor Table time-point select and make the adjacency matrix " << (benchmark_1_link.selectAdjacency(transaction_manager, data_size, in_memory, device)).first << " milliseconds." << std::endl;
-    std::cout << "Tensor Table time-point select and perform a breadth-first search " << (benchmark_1_link.selectBFS(transaction_manager, data_size, in_memory, device)).first << " milliseconds." << std::endl;
-    std::cout << "Tensor Table time-point select and perform a single-source shortest path search " << (benchmark_1_link.selectSSSP(transaction_manager, data_size, in_memory, device)).first << " milliseconds." << std::endl;
-    std::cout << "Tensor Table time-point update took " << benchmark_1_link.update1Link(transaction_manager, data_size, in_memory, device) << " milliseconds." << std::endl;
-		std::cout << "Tensor Table time-point deletion took " << benchmark_1_link.delete1Link(transaction_manager, data_size, in_memory, device) << " milliseconds." << std::endl;
+		std::cout << "Tensor Table time-point insertion took " << benchmark_1_link.insert1Link(transaction_manager, scale, edge_factor, in_memory, device) << " milliseconds." << std::endl;
+		std::cout << "Tensor Table time-point select and count black nodes took " << (benchmark_1_link.selectAndCountNodeProperty(transaction_manager, scale, edge_factor, in_memory, device)).first << " milliseconds." << std::endl;
+    std::cout << "Tensor Table time-point select and count dashed links took " << (benchmark_1_link.selectAndCountLinkProperty(transaction_manager, scale, edge_factor, in_memory, device)).first << " milliseconds." << std::endl;
+    std::cout << "Tensor Table time-point select and make the adjacency matrix " << (benchmark_1_link.selectAdjacency(transaction_manager, scale, edge_factor, in_memory, device)).first << " milliseconds." << std::endl;
+    std::cout << "Tensor Table time-point select and perform a breadth-first search " << (benchmark_1_link.selectBFS(transaction_manager, scale, edge_factor, in_memory, device)).first << " milliseconds." << std::endl;
+    std::cout << "Tensor Table time-point select and perform a single-source shortest path search " << (benchmark_1_link.selectSSSP(transaction_manager, scale, edge_factor, in_memory, device)).first << " milliseconds." << std::endl;
+    std::cout << "Tensor Table time-point update took " << benchmark_1_link.update1Link(transaction_manager, scale, edge_factor, in_memory, device) << " milliseconds." << std::endl;
+		std::cout << "Tensor Table time-point deletion took " << benchmark_1_link.delete1Link(transaction_manager, scale, edge_factor, in_memory, device) << " milliseconds." << std::endl;
 	}
 
 	///Parse the command line arguments
