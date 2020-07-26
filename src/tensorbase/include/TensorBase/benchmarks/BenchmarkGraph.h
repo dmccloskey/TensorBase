@@ -134,18 +134,12 @@ namespace TensorBaseBenchmarks
 	/// Helper structure to manage the KroneckerGraph data
 	template<typename KGLabelsT, typename KGTensorT, typename DeviceT>
 	struct GraphManagerHelper {
-		void makeKroneckerGraph(const int& scale, const int& edge_factor, DeviceT& device);
+		virtual void makeKroneckerGraph(const int& scale, const int& edge_factor, DeviceT& device) = 0;
 		std::shared_ptr<TensorData<KGLabelsT, DeviceT, 2>> kronecker_graph_indices_;
 		std::shared_ptr<TensorData<KGTensorT, DeviceT, 2>> kronecker_graph_weights_;
 		std::shared_ptr<TensorData<KGLabelsT, DeviceT, 1>> kronecker_graph_node_ids_;
 		std::shared_ptr<TensorData<KGLabelsT, DeviceT, 1>> kronecker_graph_link_ids_;
 	};
-	template<typename KGLabelsT, typename KGTensorT, typename DeviceT>
-	inline void GraphManagerHelper<KGLabelsT, KGTensorT, DeviceT>::makeKroneckerGraph(const int& scale, const int& edge_factor, DeviceT& device) {
-		std::shared_ptr<KroneckerGraphGenerator<KGLabelsT, KGTensorT, DeviceT>> graph_generator;
-		graph_generator->makeKroneckerGraph(scale, edge_factor, kronecker_graph_indices_, kronecker_graph_weights_, device);
-		graph_generator->getNodeAndLinkIds(0, kronecker_graph_indices_->getDimensions().at(0), kronecker_graph_indices_, kronecker_graph_node_ids_, kronecker_graph_link_ids_, device);
-	}
 
 	/*
 	@brief Class for managing the generation of data for the Graph
@@ -305,8 +299,8 @@ namespace TensorBaseBenchmarks
 		virtual void setLabels(DeviceT& device) = 0;
 		virtual void setNodeIds(const int& offset, const int& span, const std::shared_ptr<TensorData<KGLabelsT, DeviceT, 2>>& kronecker_graph_indices, DeviceT& device) = 0;
   protected:
-		std::shared_ptr<TensorData<TensorT, DeviceT, 1>> labels_;
-		std::shared_ptr<TensorData<KGLabelsT, DeviceT, 1>> node_ids_;
+		std::shared_ptr<TensorData<TensorT, DeviceT, 1>> labels_ = nullptr;
+		std::shared_ptr<TensorData<KGLabelsT, DeviceT, 1>> node_ids_ = nullptr;
   };
 	template<typename KGLabelsT, typename KGTensorT, typename LabelsT, typename TensorT, typename DeviceT>
 	inline void GraphManagerNodeProperty<KGLabelsT, KGTensorT, LabelsT, TensorT, DeviceT>::getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& values_ptr,
@@ -314,28 +308,25 @@ namespace TensorBaseBenchmarks
 		const std::shared_ptr<TensorData<KGTensorT, DeviceT, 2>>& kronecker_graph_weights,
 		const std::shared_ptr<TensorData<KGLabelsT, DeviceT, 1>>& kronecker_graph_node_ids,
 		const std::shared_ptr<TensorData<KGLabelsT, DeviceT, 1>>& kronecker_graph_link_ids, DeviceT& device)
-	{
+	{		// Set the values on the device for transfer
+		setNodeIds(offset, span, kronecker_graph_indices, device);
+		setLabels(device);
+
 		// Make the labels and values
-		Eigen::array<Eigen::Index, 2> labels_dims = { 1, span }; // node_id
-		Eigen::array<Eigen::Index, 2> values_dims = { span, 1 }; // indices by "label"
+		Eigen::array<Eigen::Index, 2> labels_dims = { 1, (int)this->node_ids_->getTensorSize() }; // node_id
+		Eigen::array<Eigen::Index, 2> values_dims = { (int)this->node_ids_->getTensorSize(), 1 }; // indices by "label"
 		this->makeLabelsPtr(labels_dims, labels_ptr, device);
 		this->makeValuesPtr(values_dims, values_ptr, device);
-
-		// Set the values on the device for transfer
-		setLabels(device);
-		setNodeIds(offset, span, kronecker_graph_indices, device);
 
 		// Assign the labels data
 		Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> labels_values(labels_ptr->getDataPointer().get(), labels_ptr->getDimensions());
 		Eigen::TensorMap<Eigen::Tensor<KGLabelsT, 2>> node_ids_values(this->node_ids_->getDataPointer().get(), 1, (int)this->node_ids_->getTensorSize());
-		labels_values.slice(Eigen::array<Eigen::Index, 2>({ 0, 0 }), Eigen::array<Eigen::Index, 2>({ 1, span })).device(device) = node_ids_values.slice(
-			Eigen::array<Eigen::Index, 2>({ 0, offset }), Eigen::array<Eigen::Index, 2>({ 1, span })).cast<LabelsT>();
+		labels_values.device(device) = node_ids_values.cast<LabelsT>();
 
 		// Assign the values data
 		Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> values_values(values_ptr->getDataPointer().get(), values_ptr->getDimensions());
-		Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> property_values(this->labels_->getDataPointer().get(), this->labels_->getTensorSize(), 1);
-		values_values.slice(Eigen::array<Eigen::Index, 2>({ 0, 0 }), Eigen::array<Eigen::Index, 2>({ span, 1 })).device(device) = property_values.slice(
-			Eigen::array<Eigen::Index, 2>({ offset, 0 }), Eigen::array<Eigen::Index, 2>({ span, 1 }));
+		Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> property_values(this->labels_->getDataPointer().get(), (int)this->labels_->getTensorSize(), 1);
+		values_values.device(device) = property_values;
 	}
 
   /*
@@ -352,7 +343,7 @@ namespace TensorBaseBenchmarks
 			const std::shared_ptr<TensorData<KGLabelsT, DeviceT, 1>>& kronecker_graph_link_ids, DeviceT& device);
 		virtual void setLabels(const int& offset, const int& span, const std::shared_ptr<TensorData<KGLabelsT, DeviceT, 1>>& kronecker_graph_link_ids, DeviceT& device) = 0;
 	protected:
-		std::shared_ptr<TensorData<TensorT, DeviceT, 1>> labels_;
+		std::shared_ptr<TensorData<TensorT, DeviceT, 1>> labels_ = nullptr;
 	};
 	template<typename KGLabelsT, typename KGTensorT, typename LabelsT, typename TensorT, typename DeviceT>
 	inline void GraphManagerLinkProperty<KGLabelsT, KGTensorT, LabelsT, TensorT, DeviceT>::getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& values_ptr,
@@ -379,8 +370,7 @@ namespace TensorBaseBenchmarks
 		// Assign the values data
 		Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> values_values(values_ptr->getDataPointer().get(), values_ptr->getDimensions());
 		Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> property_values(this->labels_->getDataPointer().get(), this->labels_->getTensorSize(), 1);
-		values_values.slice(Eigen::array<Eigen::Index, 2>({ 0, 0 }), Eigen::array<Eigen::Index, 2>({ span, 1 })).device(device) = property_values.slice(
-			Eigen::array<Eigen::Index, 2>({ offset, 0 }), Eigen::array<Eigen::Index, 2>({ span, 1 }));
+		values_values.device(device) = property_values;
 	}
 	/*
 	@brief A class for running 1 line insertion, deletion, and update benchmarks
@@ -408,8 +398,9 @@ namespace TensorBaseBenchmarks
 		std::pair<std::string, float> selectBFS(TransactionManager<DeviceT>& transaction_manager, const int& scale, const int& edge_factor, const bool& in_memory, DeviceT& device) const;
 		std::pair<std::string, float> selectSSSP(TransactionManager<DeviceT>& transaction_manager, const int& scale, const int& edge_factor, const bool& in_memory, DeviceT& device) const;
 		std::string makeKroneckerGraph(const int& scale, const int& edge_factor, DeviceT& device);
-		GraphManagerHelper<KGLabelsT, KGTensorT, DeviceT> graph_manager_helper_; ///< Kronecker graph generator
+		std::shared_ptr<GraphManagerHelper<KGLabelsT, KGTensorT, DeviceT>> graph_manager_helper_; ///< Kronecker graph generator
 	protected:
+		virtual void _makeKroneckerGraph(const int& scale, const int& edge_factor, DeviceT& device) = 0;
 		virtual void _insert1Link(TransactionManager<DeviceT>& transaction_manager, const int& scale, const int& edge_factor, const bool& in_memory, DeviceT& device) const = 0; ///< Device specific interface to call `insert1Link`
 		virtual void _update1Link(TransactionManager<DeviceT>& transaction_manager, const int& scale, const int& edge_factor, const bool& in_memory, DeviceT& device) const = 0; ///< Device specific interface to call `update1Link`
 		virtual void _delete1Link(TransactionManager<DeviceT>& transaction_manager, const int& scale, const int& edge_factor, const bool& in_memory, DeviceT& device) const = 0; ///< Device specific interface to call `delete1Link`
@@ -425,7 +416,7 @@ namespace TensorBaseBenchmarks
 		// Start the timer
 		auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
-		graph_manager_helper_.makeKroneckerGraph(scale, edge_factor, device);
+		_makeKroneckerGraph(scale, edge_factor, device);
 
 		// Stop the timer
 		auto stop = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();

@@ -68,6 +68,8 @@ namespace TensorBase
     double A = 0.57, B = 0.19, C = 0.19; // Set initiator probabilities.
 
     // Create index arrays and weights.
+    indices.reset();
+    weights.reset();
     initKroneckerGraph(indices, weights, M, device);
 
     // Create the temporary data structures
@@ -181,9 +183,11 @@ namespace TensorBase
   template<typename LabelsT, typename TensorT, typename DeviceT>
   inline void KroneckerGraphGenerator<LabelsT, TensorT, DeviceT>::getNodeAndLinkIds(const int& offset, const int& span, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& node_ids, std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& link_ids, DeviceT& device) const
   {
+    link_ids.reset();
+    node_ids.reset();
+
     // Allocate memory for the link ids
     initIDs(link_ids, span, device);
-    //initIDs(link_ids, indices->getDimensions().at(0), device);
 
     // Make the link ids
     Eigen::TensorMap<Eigen::Tensor<LabelsT, 1>> link_ids_values(link_ids->getDataPointer().get(), link_ids->getDimensions());
