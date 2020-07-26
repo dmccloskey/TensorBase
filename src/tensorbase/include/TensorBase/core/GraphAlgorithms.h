@@ -63,16 +63,14 @@ namespace TensorBase
   template<typename LabelsT, typename TensorT, typename DeviceT>
   struct BFS {
     /*
-    @brief Generate the Adjecency matrix representation from a sparse list of node in and out indices pairs and
-      weights.
+    @brief Perform a BFS search starting from root and return a Tree of the search
 
     @param[in] root Node ID to use as the root
     @param[in] node_ids 1D Tensor of unique node ids
     @param[in] adjacency 2D adjacency Tensor with dimension 0 = N nodes and dimension 1 = N nodes
       where the out nodes are represented along dimensions 0 and the in nodes are represented along dimensions 1
-    @param[out] tree 2D adjacency Tensor of the search tree starting from the root where the order of nodes encountered are
-      incremented from 1 to N if links are represented by ones or incremented by the cumulative weight if the links are represented
-      by weights
+    @param[out] tree 2D adjacency Tensor of the search tree starting from the root with dimension 0 = N nodes and dimension 1 = N nodes + 1
+      where the nodes encountered during the search are recored as vectors along dimension 1
     */
     void operator()(const LabelsT root, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& node_ids, const std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& adjacency, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& tree, DeviceT& device) const;
     virtual void initTreePtr(const int& n_nodes, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& tree, DeviceT& device) = 0;
