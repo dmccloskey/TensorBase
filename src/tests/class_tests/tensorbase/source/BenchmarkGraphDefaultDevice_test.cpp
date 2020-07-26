@@ -45,14 +45,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteDefaultDevice)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_indices")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_indices")->getNLabels(), 0);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("3_sparse_indices")->getNDimensions(), 1);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("3_sparse_indices")->getNLabels(), 6);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getDataTensorSize(), 0);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getShardSpans().at("2_columns"), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getShardSpans().at("1_indices"), TensorCollectionShardHelper::round_1(data_size, shard_span_perc));
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getShardSpans().at("3_sparse_indices"), 6);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getMaxDimSizeFromAxisName("2_columns"), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getMaxDimSizeFromAxisName("1_indices"), data_size);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getMaxDimSizeFromAxisName("3_sparse_indices"), 6);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_weights")->getAxes().at("2_columns")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_weights")->getAxes().at("2_columns")->getNLabels(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_weights")->getAxes().at("1_indices")->getNDimensions(), 1);
@@ -66,19 +62,11 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteDefaultDevice)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getAxes().at("2_columns")->getNLabels(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getAxes().at("1_indices")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getAxes().at("1_indices")->getNLabels(), 0);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getAxes().at("3_x")->getNDimensions(), 1);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getAxes().at("3_x")->getNLabels(), 28);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getAxes().at("3_y")->getNDimensions(), 1);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getAxes().at("3_y")->getNLabels(), 28);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getDataTensorSize(), 0);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getShardSpans().at("2_columns"), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getShardSpans().at("1_indices"), TensorCollectionShardHelper::round_1(data_size, shard_span_perc));
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getShardSpans().at("3_x"), 28);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getShardSpans().at("3_y"), 28);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getMaxDimSizeFromAxisName("2_columns"), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getMaxDimSizeFromAxisName("1_indices"), data_size);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getMaxDimSizeFromAxisName("3_x"), 28);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getMaxDimSizeFromAxisName("3_y"), 28);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_link_property")->getAxes().at("2_columns")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_link_property")->getAxes().at("2_columns")->getNLabels(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_link_property")->getAxes().at("1_indices")->getNDimensions(), 1);
@@ -90,22 +78,22 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteDefaultDevice)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_link_property")->getMaxDimSizeFromAxisName("1_indices"), data_size);
 
   // Make the expected tensor axes labels and tensor data after insert
-  GraphManagerSparseIndicesDefaultDevice graph_manager_sparse_indices(false);
-  GraphManagerWeightsDefaultDevice graph_manager_weights(false);
-  GraphManagerNodePropertyDefaultDevice graph_manager_node_property(false);
-  GraphManagerLinkPropertyDefaultDevice graph_manager_link_property(false);
+  GraphManagerSparseIndicesDefaultDevice<int, float, int, int> graph_manager_sparse_indices(false);
+  GraphManagerWeightsDefaultDevice<int, float, int, float> graph_manager_weights(false);
+  GraphManagerNodePropertyDefaultDevice<int, float, int, TensorArray8<char>> graph_manager_node_property(false);
+  GraphManagerLinkPropertyDefaultDevice<int, float, int, TensorArray8<char>> graph_manager_link_property(false);
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_sparse_indices_ptr;
-  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>> values_sparse_indices_ptr;
-  graph_manager_sparse_indices.getInsertData(0, data_size, labels_sparse_indices_ptr, values_sparse_indices_ptr);
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> values_sparse_indices_ptr;
+  graph_manager_sparse_indices.getInsertData(0, data_size, labels_sparse_indices_ptr, values_sparse_indices_ptr, device);
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_labels_ptr;
-  std::shared_ptr<TensorData<TensorArray32<char>, Eigen::DefaultDevice, 2>> values_labels_ptr;
-  graph_manager_weights.getInsertData(0, data_size, labels_labels_ptr, values_labels_ptr);
+  std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 2>> values_labels_ptr;
+  graph_manager_weights.getInsertData(0, data_size, labels_labels_ptr, values_labels_ptr, device);
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_node_property_ptr;
-  std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 4>> values_node_property_ptr;
-  graph_manager_node_property.getInsertData(0, data_size, labels_node_property_ptr, values_node_property_ptr);
+  std::shared_ptr<TensorData<TensorArray8<char>, Eigen::DefaultDevice, 2>> values_node_property_ptr;
+  graph_manager_node_property.getInsertData(0, data_size, labels_node_property_ptr, values_node_property_ptr, device);
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_link_property_ptr;
-  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> values_link_property_ptr;
-  graph_manager_link_property.getInsertData(0, data_size, labels_link_property_ptr, values_link_property_ptr);
+  std::shared_ptr<TensorData<TensorArray8<char>, Eigen::DefaultDevice, 2>> values_link_property_ptr;
+  graph_manager_link_property.getInsertData(0, data_size, labels_link_property_ptr, values_link_property_ptr, device);
 
   // Test the expected tensor collection after insert
   benchmark_1_link.insert1Link(transaction_manager, scale, edge_factor, in_memory, device);
@@ -185,23 +173,22 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteDefaultDevice)
   // Query for the SSSP
 
   // Make the expected tensor axes labels and tensor data after update
-  graph_manager_sparse_indices.initTime();
   graph_manager_sparse_indices.setUseRandomValues(true);
   graph_manager_weights.setUseRandomValues(true);
   graph_manager_node_property.setUseRandomValues(true);
   graph_manager_link_property.setUseRandomValues(true);
   labels_sparse_indices_ptr.reset();
   values_sparse_indices_ptr.reset();
-  graph_manager_sparse_indices.getInsertData(0, data_size, labels_sparse_indices_ptr, values_sparse_indices_ptr);
+  graph_manager_sparse_indices.getInsertData(0, data_size, labels_sparse_indices_ptr, values_sparse_indices_ptr, device);
   labels_labels_ptr.reset();
   values_labels_ptr.reset();
-  graph_manager_weights.getInsertData(0, data_size, labels_labels_ptr, values_labels_ptr);
+  graph_manager_weights.getInsertData(0, data_size, labels_labels_ptr, values_labels_ptr, device);
   labels_node_property_ptr.reset();
   values_node_property_ptr.reset();
-  graph_manager_node_property.getInsertData(0, data_size, labels_node_property_ptr, values_node_property_ptr);
+  graph_manager_node_property.getInsertData(0, data_size, labels_node_property_ptr, values_node_property_ptr, device);
   labels_link_property_ptr.reset();
   values_link_property_ptr.reset();
-  graph_manager_link_property.getInsertData(0, data_size, labels_link_property_ptr, values_link_property_ptr);
+  graph_manager_link_property.getInsertData(0, data_size, labels_link_property_ptr, values_link_property_ptr, device);
 
   // Test the expected tensor collection after update
   benchmark_1_link.update1Link(transaction_manager, scale, edge_factor, in_memory, device);
@@ -292,7 +279,8 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteShardingDefaultDevice)
   // Parameters for the test
   std::string data_dir = "";
   const int n_dims = 0;
-  const int scale = 8; const int edge_factor = 16;
+  const int scale = 8; 
+  const int edge_factor = 16;
   const bool in_memory = false;
   const int data_size = std::pow(2, scale) * edge_factor;
   const double shard_span_perc = 0.05;
@@ -321,15 +309,11 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteShardingDefaultDevice)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("2_columns")->getNLabels(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_indices")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_indices")->getNLabels(), 0);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("3_sparse_indices")->getNDimensions(), 1);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("3_sparse_indices")->getNLabels(), 6);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getDataTensorSize(), 0);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getShardSpans().at("2_columns"), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getShardSpans().at("1_indices"), TensorCollectionShardHelper::round_1(data_size, shard_span_perc));
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getShardSpans().at("3_sparse_indices"), 6);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getMaxDimSizeFromAxisName("2_columns"), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getMaxDimSizeFromAxisName("1_indices"), data_size);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getMaxDimSizeFromAxisName("3_sparse_indices"), 6);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_weights")->getAxes().at("2_columns")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_weights")->getAxes().at("2_columns")->getNLabels(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_weights")->getAxes().at("1_indices")->getNDimensions(), 1);
@@ -343,19 +327,11 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteShardingDefaultDevice)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getAxes().at("2_columns")->getNLabels(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getAxes().at("1_indices")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getAxes().at("1_indices")->getNLabels(), 0);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getAxes().at("3_x")->getNDimensions(), 1);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getAxes().at("3_x")->getNLabels(), 28);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getAxes().at("3_y")->getNDimensions(), 1);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getAxes().at("3_y")->getNLabels(), 28);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getDataTensorSize(), 0);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getShardSpans().at("2_columns"), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getShardSpans().at("1_indices"), TensorCollectionShardHelper::round_1(data_size, shard_span_perc));
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getShardSpans().at("3_x"), 28);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getShardSpans().at("3_y"), 28);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getMaxDimSizeFromAxisName("2_columns"), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getMaxDimSizeFromAxisName("1_indices"), data_size);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getMaxDimSizeFromAxisName("3_x"), 28);
-  BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getMaxDimSizeFromAxisName("3_y"), 28);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_link_property")->getAxes().at("2_columns")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_link_property")->getAxes().at("2_columns")->getNLabels(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_link_property")->getAxes().at("1_indices")->getNDimensions(), 1);
@@ -367,22 +343,22 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteShardingDefaultDevice)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_link_property")->getMaxDimSizeFromAxisName("1_indices"), data_size);
 
   // Make the expected tensor axes labels and tensor data after insert
-  GraphManagerSparseIndicesDefaultDevice graph_manager_sparse_indices(false);
-  GraphManagerWeightsDefaultDevice graph_manager_weights(false);
-  GraphManagerNodePropertyDefaultDevice graph_manager_node_property(false);
-  GraphManagerLinkPropertyDefaultDevice graph_manager_link_property(false);
+  GraphManagerSparseIndicesDefaultDevice<int, float, int, int> graph_manager_sparse_indices(false);
+  GraphManagerWeightsDefaultDevice<int, float, int, float> graph_manager_weights(false);
+  GraphManagerNodePropertyDefaultDevice<int, float, int, TensorArray8<char>> graph_manager_node_property(false);
+  GraphManagerLinkPropertyDefaultDevice<int, float, int, TensorArray8<char>> graph_manager_link_property(false);
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_sparse_indices_ptr;
-  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>> values_sparse_indices_ptr;
-  graph_manager_sparse_indices.getInsertData(0, data_size, labels_sparse_indices_ptr, values_sparse_indices_ptr);
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> values_sparse_indices_ptr;
+  graph_manager_sparse_indices.getInsertData(0, data_size, labels_sparse_indices_ptr, values_sparse_indices_ptr, device);
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_labels_ptr;
-  std::shared_ptr<TensorData<TensorArray32<char>, Eigen::DefaultDevice, 2>> values_labels_ptr;
-  graph_manager_weights.getInsertData(0, data_size, labels_labels_ptr, values_labels_ptr);
+  std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 2>> values_labels_ptr;
+  graph_manager_weights.getInsertData(0, data_size, labels_labels_ptr, values_labels_ptr, device);
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_node_property_ptr;
-  std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 4>> values_node_property_ptr;
-  graph_manager_node_property.getInsertData(0, data_size, labels_node_property_ptr, values_node_property_ptr);
+  std::shared_ptr<TensorData<TensorArray8<char>, Eigen::DefaultDevice, 2>> values_node_property_ptr;
+  graph_manager_node_property.getInsertData(0, data_size, labels_node_property_ptr, values_node_property_ptr, device);
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> labels_link_property_ptr;
-  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> values_link_property_ptr;
-  graph_manager_link_property.getInsertData(0, data_size, labels_link_property_ptr, values_link_property_ptr);
+  std::shared_ptr<TensorData<TensorArray8<char>, Eigen::DefaultDevice, 2>> values_link_property_ptr;
+  graph_manager_link_property.getInsertData(0, data_size, labels_link_property_ptr, values_link_property_ptr, device);
 
   // Test the expected tensor collection after insert
   benchmark_1_link.insert1Link(transaction_manager, scale, edge_factor, in_memory, device);
@@ -462,23 +438,22 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteShardingDefaultDevice)
   // Query for the SSSP
 
   // Make the expected tensor axes labels and tensor data after update
-  graph_manager_sparse_indices.initTime();
   graph_manager_sparse_indices.setUseRandomValues(true);
   graph_manager_weights.setUseRandomValues(true);
   graph_manager_node_property.setUseRandomValues(true);
   graph_manager_link_property.setUseRandomValues(true);
   labels_sparse_indices_ptr.reset();
   values_sparse_indices_ptr.reset();
-  graph_manager_sparse_indices.getInsertData(0, data_size, labels_sparse_indices_ptr, values_sparse_indices_ptr);
+  graph_manager_sparse_indices.getInsertData(0, data_size, labels_sparse_indices_ptr, values_sparse_indices_ptr, device);
   labels_labels_ptr.reset();
   values_labels_ptr.reset();
-  graph_manager_weights.getInsertData(0, data_size, labels_labels_ptr, values_labels_ptr);
+  graph_manager_weights.getInsertData(0, data_size, labels_labels_ptr, values_labels_ptr, device);
   labels_node_property_ptr.reset();
   values_node_property_ptr.reset();
-  graph_manager_node_property.getInsertData(0, data_size, labels_node_property_ptr, values_node_property_ptr);
+  graph_manager_node_property.getInsertData(0, data_size, labels_node_property_ptr, values_node_property_ptr, device);
   labels_link_property_ptr.reset();
   values_link_property_ptr.reset();
-  graph_manager_link_property.getInsertData(0, data_size, labels_link_property_ptr, values_link_property_ptr);
+  graph_manager_link_property.getInsertData(0, data_size, labels_link_property_ptr, values_link_property_ptr, device);
 
   // Test the expected tensor collection after update
   benchmark_1_link.update1Link(transaction_manager, scale, edge_factor, in_memory, device);

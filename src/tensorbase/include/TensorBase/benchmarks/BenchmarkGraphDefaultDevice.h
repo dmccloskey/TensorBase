@@ -66,14 +66,14 @@ namespace TensorBaseBenchmarks
 	void GraphManagerSparseIndicesDefaultDevice<KGLabelsT, KGTensorT, LabelsT, TensorT>::makeLabelsPtr(const Eigen::array<Eigen::Index, 2>& dimensions, std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& labels_ptr, Eigen::DefaultDevice& device) {
 		TensorDataDefaultDevice<LabelsT, 2> tmp(dimensions);
 		tmp.setData();
-		tmp.syncHandDData(device);
+		tmp.syncHAndDData(device);
 		labels_ptr = std::make_shared<TensorDataDefaultDevice<LabelsT, 2>>(tmp);
 	}
 	template<typename KGLabelsT, typename KGTensorT, typename LabelsT, typename TensorT>
 	void GraphManagerSparseIndicesDefaultDevice<KGLabelsT, KGTensorT, LabelsT, TensorT>::makeValuesPtr(const Eigen::array<Eigen::Index, 2>& dimensions, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& values_ptr, Eigen::DefaultDevice& device) {
 		TensorDataDefaultDevice<TensorT, 2> tmp(dimensions);
 		tmp.setData();
-		tmp.syncHandDData(device);
+		tmp.syncHAndDData(device);
 		values_ptr = std::make_shared<TensorDataDefaultDevice<TensorT, 2>>(tmp);
 	}
 
@@ -91,14 +91,14 @@ namespace TensorBaseBenchmarks
   void GraphManagerWeightsDefaultDevice<KGLabelsT, KGTensorT, LabelsT, TensorT>::makeLabelsPtr(const Eigen::array<Eigen::Index, 2>& dimensions, std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& labels_ptr, Eigen::DefaultDevice& device) {
     TensorDataDefaultDevice<LabelsT, 2> tmp(dimensions);
     tmp.setData();
-    tmp.syncHandDData(device);
+    tmp.syncHAndDData(device);
     labels_ptr = std::make_shared<TensorDataDefaultDevice<LabelsT, 2>>(tmp);
   }
   template<typename KGLabelsT, typename KGTensorT, typename LabelsT, typename TensorT>
   void GraphManagerWeightsDefaultDevice<KGLabelsT, KGTensorT, LabelsT, TensorT>::makeValuesPtr(const Eigen::array<Eigen::Index, 2>& dimensions, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& values_ptr, Eigen::DefaultDevice& device) {
     TensorDataDefaultDevice<TensorT, 2> tmp(dimensions);
     tmp.setData();
-    tmp.syncHandDData(device);
+    tmp.syncHAndDData(device);
     values_ptr = std::make_shared<TensorDataDefaultDevice<TensorT, 2>>(tmp);
   }
 
@@ -118,14 +118,14 @@ namespace TensorBaseBenchmarks
   void GraphManagerNodePropertyDefaultDevice<KGLabelsT, KGTensorT, LabelsT, TensorT>::makeLabelsPtr(const Eigen::array<Eigen::Index, 2>& dimensions, std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& labels_ptr, Eigen::DefaultDevice& device) {
     TensorDataDefaultDevice<LabelsT, 2> tmp(dimensions);
     tmp.setData();
-    tmp.syncHandDData(device);
+    tmp.syncHAndDData(device);
     labels_ptr = std::make_shared<TensorDataDefaultDevice<LabelsT, 2>>(tmp);
   }
   template<typename KGLabelsT, typename KGTensorT, typename LabelsT, typename TensorT>
   void GraphManagerNodePropertyDefaultDevice<KGLabelsT, KGTensorT, LabelsT, TensorT>::makeValuesPtr(const Eigen::array<Eigen::Index, 2>& dimensions, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& values_ptr, Eigen::DefaultDevice& device) {
     TensorDataDefaultDevice<TensorT, 2> tmp(dimensions);
     tmp.setData();
-    tmp.syncHandDData(device);
+    tmp.syncHAndDData(device);
     values_ptr = std::make_shared<TensorDataDefaultDevice<TensorT, 2>>(tmp);
   }
 
@@ -138,20 +138,20 @@ namespace TensorBaseBenchmarks
     using GraphManagerLinkProperty<KGLabelsT, KGTensorT, LabelsT, TensorT, Eigen::DefaultDevice>::GraphManagerLinkProperty;
     void makeLabelsPtr(const Eigen::array<Eigen::Index, 2>& dimensions, std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& labels_ptr, Eigen::DefaultDevice& device) override;
     void makeValuesPtr(const Eigen::array<Eigen::Index, 2>& dimensions, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& values_ptr, Eigen::DefaultDevice& device) override;
-    void setLabels(Eigen::DefaultDevice& device) override;
+    void setLabels(const int& offset, const int& span, Eigen::DefaultDevice& device) override;
   };
   template<typename KGLabelsT, typename KGTensorT, typename LabelsT, typename TensorT>
   void GraphManagerLinkPropertyDefaultDevice<KGLabelsT, KGTensorT, LabelsT, TensorT>::makeLabelsPtr(const Eigen::array<Eigen::Index, 2>& dimensions, std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& labels_ptr, Eigen::DefaultDevice& device) {
     TensorDataDefaultDevice<LabelsT, 2> tmp(dimensions);
     tmp.setData();
-    tmp.syncHandDData(device);
+    tmp.syncHAndDData(device);
     labels_ptr = std::make_shared<TensorDataDefaultDevice<LabelsT, 2>>(tmp);
   }
   template<typename KGLabelsT, typename KGTensorT, typename LabelsT, typename TensorT>
   void GraphManagerLinkPropertyDefaultDevice<KGLabelsT, KGTensorT, LabelsT, TensorT>::makeValuesPtr(const Eigen::array<Eigen::Index, 2>& dimensions, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& values_ptr, Eigen::DefaultDevice& device) {
     TensorDataDefaultDevice<TensorT, 2> tmp(dimensions);
     tmp.setData();
-    tmp.syncHandDData(device);
+    tmp.syncHAndDData(device);
     values_ptr = std::make_shared<TensorDataDefaultDevice<TensorT, 2>>(tmp);
   }
 

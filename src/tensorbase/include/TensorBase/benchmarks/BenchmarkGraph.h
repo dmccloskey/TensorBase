@@ -179,8 +179,8 @@ namespace TensorBaseBenchmarks
 		// Make the labels and values
     Eigen::array<Eigen::Index, 2> labels_dims = { 1, span }; // link_id
     Eigen::array<Eigen::Index, 2> values_dims = { span, 2 }; // indices by [node_in, node_out]
-    this->makeLabelsPtr(labels_dims, labels_ptr);
-    this->makeValuesPtr(values_dims, values_ptr);
+    this->makeLabelsPtr(labels_dims, labels_ptr, device);
+    this->makeValuesPtr(values_dims, values_ptr, device);
 
     // Assign the labels data
     Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> labels_values(labels_ptr->getDataPointer().get(), labels_ptr->getDimensions());
@@ -210,8 +210,8 @@ namespace TensorBaseBenchmarks
 		// Make the labels and values
 		Eigen::array<Eigen::Index, 2> labels_dims = { 1, span }; // link_id
 		Eigen::array<Eigen::Index, 2> values_dims = { span, 1 }; // indices by weights
-		this->makeLabelsPtr(labels_dims, labels_ptr);
-		this->makeValuesPtr(values_dims, values_ptr);
+		this->makeLabelsPtr(labels_dims, labels_ptr, device);
+		this->makeValuesPtr(values_dims, values_ptr, device);
 
 		// Assign the labels data
 		Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> labels_values(labels_ptr->getDataPointer().get(), labels_ptr->getDimensions());
@@ -236,7 +236,7 @@ namespace TensorBaseBenchmarks
     void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& values_ptr, DeviceT& device);
 		virtual void setLabels(DeviceT& device) = 0;
 		virtual void setNodeIds(const int& offset, const int& span, DeviceT& device) = 0;
-  private:
+  protected:
 		std::vector<std::string> node_colors_ = {"white", "black", "red", "blue", "green"};
 		std::shared_ptr<TensorData<TensorT, DeviceT, 1>> labels_;
 		std::shared_ptr<TensorData<KGLabelsT, DeviceT, 1>> node_ids_;
@@ -247,12 +247,12 @@ namespace TensorBaseBenchmarks
 		// Make the labels and values
 		Eigen::array<Eigen::Index, 2> labels_dims = { 1, span }; // node_id
 		Eigen::array<Eigen::Index, 2> values_dims = { span, 1 }; // indices by "label"
-		this->makeLabelsPtr(labels_dims, labels_ptr);
-		this->makeValuesPtr(values_dims, values_ptr);
+		this->makeLabelsPtr(labels_dims, labels_ptr, device);
+		this->makeValuesPtr(values_dims, values_ptr, device);
 
 		// Set the values on the device for transfer
 		setLabels(device);
-		setNodeIds(device);
+		setNodeIds(offset, span, device);
 
 		// Assign the labels data
 		Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> labels_values(labels_ptr->getDataPointer().get(), labels_ptr->getDimensions());
@@ -262,9 +262,9 @@ namespace TensorBaseBenchmarks
 
 		// Assign the values data
 		Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> values_values(values_ptr->getDataPointer().get(), values_ptr->getDimensions());
-		Eigen::TensorMap<Eigen::Tensor<KGTensorT, 2>> labels_values(this->labels_->getDataPointer().get(), this->labels_->getTensorSize(), 1);
-		values_values.slice(Eigen::array<Eigen::Index, 2>({ 0, 0 }), Eigen::array<Eigen::Index, 2>({ span, 1 })).device(device) = labels_values.slice(
-			Eigen::array<Eigen::Index, 2>({ offset, 0 }), Eigen::array<Eigen::Index, 2>({ span, 1 })).cast<TensorT>();
+		Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> property_values(this->labels_->getDataPointer().get(), this->labels_->getTensorSize(), 1);
+		values_values.slice(Eigen::array<Eigen::Index, 2>({ 0, 0 }), Eigen::array<Eigen::Index, 2>({ span, 1 })).device(device) = property_values.slice(
+			Eigen::array<Eigen::Index, 2>({ offset, 0 }), Eigen::array<Eigen::Index, 2>({ span, 1 }));
 	}
 
   /*
@@ -275,8 +275,8 @@ namespace TensorBaseBenchmarks
 	public:
 		using GraphManager<KGLabelsT, KGTensorT, LabelsT, TensorT, DeviceT, 2>::GraphManager;
 		void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& values_ptr, DeviceT& device);
-		virtual void setLabels(DeviceT& device) = 0;
-	private:
+		virtual void setLabels(const int& offset, const int& span, DeviceT& device) = 0;
+	protected:
 		std::vector<std::string> link_types_ = { "solid", "dashed" };
 		std::shared_ptr<TensorData<TensorT, DeviceT, 1>> labels_;
 	};
@@ -286,11 +286,11 @@ namespace TensorBaseBenchmarks
 		// Make the labels and values
 		Eigen::array<Eigen::Index, 2> labels_dims = { 1, span }; // link_id
 		Eigen::array<Eigen::Index, 2> values_dims = { span, 1 }; // indices by "label"
-		this->makeLabelsPtr(labels_dims, labels_ptr);
-		this->makeValuesPtr(values_dims, values_ptr);
+		this->makeLabelsPtr(labels_dims, labels_ptr, device);
+		this->makeValuesPtr(values_dims, values_ptr, device);
 
 		// Set the values on the device for transfer
-		setLabels(device);
+		setLabels(offset, span, device);
 
 		// Assign the labels data
 		Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> labels_values(labels_ptr->getDataPointer().get(), labels_ptr->getDimensions());
@@ -300,9 +300,9 @@ namespace TensorBaseBenchmarks
 
 		// Assign the values data
 		Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> values_values(values_ptr->getDataPointer().get(), values_ptr->getDimensions());
-		Eigen::TensorMap<Eigen::Tensor<KGTensorT, 2>> labels_values(this->labels_->getDataPointer().get(), this->labels_->getTensorSize(), 1);
-		values_values.slice(Eigen::array<Eigen::Index, 2>({ 0, 0 }), Eigen::array<Eigen::Index, 2>({ span, 1 })).device(device) = labels_values.slice(
-			Eigen::array<Eigen::Index, 2>({ offset, 0 }), Eigen::array<Eigen::Index, 2>({ span, 1 })).cast<TensorT>();
+		Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> property_values(this->labels_->getDataPointer().get(), this->labels_->getTensorSize(), 1);
+		values_values.slice(Eigen::array<Eigen::Index, 2>({ 0, 0 }), Eigen::array<Eigen::Index, 2>({ span, 1 })).device(device) = property_values.slice(
+			Eigen::array<Eigen::Index, 2>({ offset, 0 }), Eigen::array<Eigen::Index, 2>({ span, 1 }));
 	}
 	/*
 	@brief A class for running 1 line insertion, deletion, and update benchmarks
