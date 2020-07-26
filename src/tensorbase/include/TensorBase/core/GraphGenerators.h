@@ -196,5 +196,60 @@ namespace TensorBase
     // Make the node ids
     getUniqueIds(offset, span, indices, node_ids, device);
   }
+
+  /*
+  @class Class for generating a binary tree
+  */
+  template<typename LabelsT, typename TensorT, typename DeviceT>
+  class BinaryTreeGraphGenerator {
+  public:
+    BinaryTreeGraphGenerator() = default;
+    ~BinaryTreeGraphGenerator() = default;
+    /*
+    @brief Generate the binary tree with a certain depth
+
+    @param[in] depth
+    @param[in] edge_factor
+    @param[out] indices 2D Tensor of Edge in/out indices where size of dimension 0 = M and size of dimension 1 = 2
+      with dimension 1 entries are node_in, node_out, and link IDs, respectively.
+    @param[out] weights
+    */
+    void makeBinaryTree(const int& depth, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& weights, DeviceT& device) const;
+    /*
+    @brief Extract the list of unique Node IDs from the graph
+
+    @param[in] offset The starting point to extract out the unique nodes and link ids
+    @param[in] span The length to extract out the unique nodes and link ids
+    @param[in] indices Node indices of the Kronecker graph
+    @param[out] node_ids Ordered and Unique list of node ids
+    @param[out] link_ids Ordered and Unique list of link ids
+
+    @returns A 1D list of nodes
+    */
+    void getNodeAndLinkIds(const int& offset, const int& span, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& node_ids, std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& link_ids, DeviceT& device) const;
+  protected:
+    /// allocate memory for the kronecker graph
+    virtual void initBinaryTree(std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& weights, const int& M, DeviceT& device) const = 0;
+    /// allocate memory for the IDs
+    virtual void initIDs(std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& node_or_link_ids, const int& N, DeviceT& device) const = 0;
+  };
+  template<typename LabelsT, typename TensorT, typename DeviceT>
+  inline void BinaryTreeGraphGenerator<LabelsT, TensorT, DeviceT>::makeBinaryTree(const int & depth, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& weights, DeviceT & device) const
+  {
+    const int n_nodes = std::pow(2, depth) + 1;
+    const int n_links = std::pow(2, depth);
+
+    // initialize the ptrs
+    initBinaryTree(indices, weights, n_links, device);
+
+    Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> indices_values_tmp(indices->getDataPointer().get(), indices->getDimensions().at(1), indices->getDimensions().at(0));
+    Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> indices_values(indices->getDataPointer().get(), indices->getDimensions());
+    auto indices_init = indices_values_tmp.constant(LabelsT(1)).cumsum(1) - indices_values_tmp.constant(LabelsT(1));
+
+    // NOTES:
+    // left child = 2i + 1
+    // right child = 2i + 2
+  }
+
 }
 #endif //TENSORBASE_GRAPHGENERATORS_H
