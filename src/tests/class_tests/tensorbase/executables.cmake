@@ -10,6 +10,7 @@ set(benchmarks_executables_list
 
 set(core_executables_list
   Helloworld_test
+  GraphAlgorithms_test
   GraphGenerators_test
   GraphGeneratorsCpu_test
   GraphGeneratorsGpu_test

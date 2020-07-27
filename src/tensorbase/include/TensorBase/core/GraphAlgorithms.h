@@ -31,7 +31,7 @@ namespace TensorBase
       where the out nodes are represented along dimensions 0 and the in nodes are represented along dimensions 1
     */
     void operator()(const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& node_ids, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, const std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& weights, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& adjacency, DeviceT& device) const;
-    virtual void initAdjacencyPtr(const int& n_nodes, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& adjacency, DeviceT& device) = 0;
+    virtual void initAdjacencyPtr(const int& n_nodes, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& adjacency, DeviceT& device) const = 0;
   };
   template<typename LabelsT, typename TensorT, typename DeviceT>
   inline void IndicesAndWeightsToAdjacencyMatrix<LabelsT, TensorT, DeviceT>::operator()(const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& node_ids, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, const std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& weights, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& adjacency, DeviceT& device) const {
@@ -39,12 +39,12 @@ namespace TensorBase
     
     // 1. Build the incidence matrices Ein and Eout of type TensorT without self loops
     Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> weights_values(weights->getDataPointer().get(), weights->getDimensions());
-    auto weights_bcast = weights_values.broadcast(Eigen::array<Eigen::Index, 2>({ 1, node_ids->getTensorSize() })).eval();
+    auto weights_bcast = weights_values.broadcast(Eigen::array<Eigen::Index, 2>({ 1, (int)node_ids->getTensorSize() })).eval();
     Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> indices_values(indices->getDataPointer().get(), indices->getDimensions());
-    Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> e_in_out_values(node_ids->getDataPointer().get(), 1, node_ids->getTensorSize());
+    Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> e_in_out_values(node_ids->getDataPointer().get(), 1, (int)node_ids->getTensorSize());
     auto e_in_out_bcast = e_in_out_values.broadcast(Eigen::array<Eigen::Index, 2>({ indices->getDimensions().at(0), 1})).eval();
-    auto indices_bcast_in = indices_values.slice(Eigen::array<Eigen::Index, 2>({ 0, 0 }), Eigen::array<Eigen::Index, 2>({ indices->getDimensions().at(0), 1 })).broadcast(Eigen::array<Eigen::Index, 2>({ 1, node_ids->getTensorSize() })).eval();
-    auto indices_bcast_out = indices_values.slice(Eigen::array<Eigen::Index, 2>({ 0, 1 }), Eigen::array<Eigen::Index, 2>({ indices->getDimensions().at(0), 1 })).broadcast(Eigen::array<Eigen::Index, 2>({ 1, node_ids->getTensorSize() })).eval();
+    auto indices_bcast_in = indices_values.slice(Eigen::array<Eigen::Index, 2>({ 0, 0 }), Eigen::array<Eigen::Index, 2>({ indices->getDimensions().at(0), 1 })).broadcast(Eigen::array<Eigen::Index, 2>({ 1, (int)node_ids->getTensorSize() })).eval();
+    auto indices_bcast_out = indices_values.slice(Eigen::array<Eigen::Index, 2>({ 0, 1 }), Eigen::array<Eigen::Index, 2>({ indices->getDimensions().at(0), 1 })).broadcast(Eigen::array<Eigen::Index, 2>({ 1, (int)node_ids->getTensorSize() })).eval();
     // Ein will be of TensorT with 1s for incidences
     auto e_in = (e_in_out_bcast == indices_bcast_in && indices_bcast_in != indices_bcast_out).select(weights_bcast.constant(TensorT(1)), weights_bcast.constant(TensorT(0))).eval();
     // Eout will be of TensorT with weights for incidences
@@ -61,7 +61,7 @@ namespace TensorBase
   @class Struct for performing a breadth first search (BFS) from a starting node
   */
   template<typename LabelsT, typename TensorT, typename DeviceT>
-  struct BFS {
+  struct BreadthFirstSearch {
     /*
     @brief Perform a BFS search starting from root and return a Tree of the search
 
@@ -73,10 +73,10 @@ namespace TensorBase
       where the nodes encountered during the search are recored as vectors along dimension 1
     */
     void operator()(const LabelsT root, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& node_ids, const std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& adjacency, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& tree, DeviceT& device) const;
-    virtual void initTreePtr(const int& n_nodes, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& tree, DeviceT& device) = 0;
+    virtual void initTreePtr(const int& n_nodes, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& tree, DeviceT& device) const = 0;
   };
   template<typename LabelsT, typename TensorT, typename DeviceT>
-  void BFS<LabelsT, TensorT, DeviceT>::operator()(const LabelsT root, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& node_ids, const std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& adjacency, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& tree, DeviceT& device) const {
+  void BreadthFirstSearch<LabelsT, TensorT, DeviceT>::operator()(const LabelsT root, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& node_ids, const std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& adjacency, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& tree, DeviceT& device) const {
     // 1. construct the root vector
     initTreePtr(node_ids->getTensorSize(), tree, device);
     Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> tree_values(tree->getDataPointer().get(), tree->getDimensions());
