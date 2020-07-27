@@ -16,13 +16,28 @@
 namespace TensorBase
 {
   /*
+  @class Base class for all graph generators
+  */
+  template<typename LabelsT, typename TensorT, typename DeviceT>
+  class GraphGenerator {
+  public:
+    GraphGenerator() = default;
+    ~GraphGenerator() = default;
+  protected:
+    /// allocate memory for the kronecker graph
+    virtual void initIndicesAndWeights(std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& weights, const int& M, DeviceT& device) const = 0;
+    /// allocate memory for the IDs
+    virtual void initIDs(std::shared_ptr<TensorData<LabelsT, DeviceT, 1>> & node_or_link_ids, const int& N, DeviceT & device) const = 0;
+  };
+
+  /*
   @class Class for generating a kronecker graph according to the specifications of the Graph500 Benchmark
 
   References:
     https://graph500.org/
   */
   template<typename LabelsT, typename TensorT, typename DeviceT>
-  class KroneckerGraphGenerator {
+  class KroneckerGraphGenerator: protected GraphGenerator<LabelsT, TensorT, DeviceT> {
   public:
     KroneckerGraphGenerator() = default;
     ~KroneckerGraphGenerator() = default;
@@ -51,12 +66,8 @@ namespace TensorBase
     */
     void getNodeAndLinkIds(const int& offset, const int& span, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& node_ids, std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& link_ids, DeviceT& device) const;
   protected:
-    // allocate memory for the kronecker graph
-    virtual void initKroneckerGraph(std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& weights, const int& M, DeviceT& device) const = 0;
     // allocate temporary memory for the kronecker graph
     virtual void initKroneckerGraphTmpData(std::shared_ptr<TensorData<float, DeviceT, 2>>& indices_float, const int& M, DeviceT& device) const = 0;
-    /// allocate memory for the IDs
-    virtual void initIDs(std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& node_or_link_ids, const int& N, DeviceT& device) const = 0;
     /// determine the unique ids
     virtual void getUniqueIds(const int& offset, const int& span, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& node_ids, DeviceT& device) const = 0;
   };
@@ -70,7 +81,7 @@ namespace TensorBase
     // Create index arrays and weights.
     indices.reset();
     weights.reset();
-    initKroneckerGraph(indices, weights, M, device);
+    this->initIndicesAndWeights(indices, weights, M, device);
 
     // Create the temporary data structures
     std::shared_ptr<TensorData<float, DeviceT, 2>> indices_float;
@@ -187,7 +198,7 @@ namespace TensorBase
     node_ids.reset();
 
     // Allocate memory for the link ids
-    initIDs(link_ids, span, device);
+    this->initIDs(link_ids, span, device);
 
     // Make the link ids
     Eigen::TensorMap<Eigen::Tensor<LabelsT, 1>> link_ids_values(link_ids->getDataPointer().get(), link_ids->getDimensions());
@@ -201,7 +212,7 @@ namespace TensorBase
   @class Class for generating a binary tree
   */
   template<typename LabelsT, typename TensorT, typename DeviceT>
-  class BinaryTreeGraphGenerator {
+  class BinaryTreeGraphGenerator : protected GraphGenerator<LabelsT, TensorT, DeviceT> {
   public:
     BinaryTreeGraphGenerator() = default;
     ~BinaryTreeGraphGenerator() = default;
@@ -228,10 +239,6 @@ namespace TensorBase
     */
     void getNodeAndLinkIds(const int& offset, const int& span, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& node_ids, std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& link_ids, DeviceT& device) const;
   protected:
-    /// allocate memory for the kronecker graph
-    virtual void initBinaryTree(std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& weights, const int& M, DeviceT& device) const = 0;
-    /// allocate memory for the IDs
-    virtual void initIDs(std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& node_or_link_ids, const int& N, DeviceT& device) const = 0;
   };
   template<typename LabelsT, typename TensorT, typename DeviceT>
   inline void BinaryTreeGraphGenerator<LabelsT, TensorT, DeviceT>::makeBinaryTree(const int & depth, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& weights, DeviceT & device) const
@@ -240,16 +247,29 @@ namespace TensorBase
     const int n_links = std::pow(2, depth);
 
     // initialize the ptrs
-    initBinaryTree(indices, weights, n_links, device);
+    this->initIndicesAndWeights(indices, weights, n_links, device);
 
-    Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> indices_values_tmp(indices->getDataPointer().get(), indices->getDimensions().at(1), indices->getDimensions().at(0));
+    // make the input node indices
+    Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> indices_values_tmp(indices->getDataPointer().get(), indices->getDimensions().at(1), indices->getDimensions().at(0)/2);
     Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> indices_values(indices->getDataPointer().get(), indices->getDimensions());
+    indices_values.device(device) = indices_values.constant(LabelsT(0));
     auto indices_init = indices_values_tmp.constant(LabelsT(1)).cumsum(1) - indices_values_tmp.constant(LabelsT(1));
+    auto indices_reshape = indices_init.reshape(Eigen::array<Eigen::Index, 1>({ indices->getDimensions().at(1) * indices->getDimensions().at(0) / 2 })).eval();
+    indices_values.chip(0, 1).device(device) = indices_reshape;
+    std::cout << indices_values << std::endl;
 
-    // NOTES:
-    // left child = 2i + 1
-    // right child = 2i + 2
+    // make the output node indices
+    Eigen::TensorMap<Eigen::Tensor<LabelsT, 1>> indices_count(indices->getDataPointer().get(), indices->getDimensions().at(0));
+    auto indices_count_cumsum = indices_count.constant(LabelsT(1)).cumsum(0) - indices_count.constant(LabelsT(1));
+    auto indices_mod = indices_count_cumsum - (indices_count_cumsum.constant(2) * (indices_count_cumsum / indices_count_cumsum.constant(2))).eval(); // a mod n = a - (n * int(a/n))
+    indices_values.chip(1, 1).device(device) = (indices_mod == indices_mod.constant(LabelsT(0))).select(
+      indices_mod.constant(LabelsT(2)) * indices_values.chip(0, 1) + indices_mod.constant(LabelsT(1)), // left child = 2i + 1
+      indices_mod.constant(LabelsT(2)) * indices_values.chip(0, 1) + indices_mod.constant(LabelsT(2))); // right child = 2i + 2
+    std::cout << indices_values << std::endl;
+
+    // make the random weights
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> weights_values(weights->getDataPointer().get(), weights->getDimensions());
+    weights_values.device(device) = weights_values.random().abs().clip(TensorT(0), TensorT(1));    
   }
-
 }
 #endif //TENSORBASE_GRAPHGENERATORS_H

@@ -237,12 +237,6 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteDefaultDevice)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_node_property")->getDataTensorSize(), values_node_property_ptr->getTensorSize());
   std::shared_ptr<TensorArray8<char>[]> data_update_data_node_property;
   n_dim_tensor_collection->tables_.at("Graph_node_property")->getDataPointer(data_update_data_node_property);
-
-  Eigen::TensorMap<Eigen::Tensor<TensorArray8<char>, 2>> tmp(data_update_data_node_property.get(), n_dim_tensor_collection->tables_.at("Graph_node_property")->getDataTensorSize(), 1);
-  for (int i = 0; i < tmp.size(); ++i) {
-    std::cout << "tmp("<<i<<") " << tmp(i,0) << std::endl;
-  }
-
   Eigen::TensorMap<Eigen::Tensor<TensorArray8<char>, 2>> data_update_values_node_property(data_update_data_node_property.get(), values_node_property_ptr->getTensorSize(), 1);
   for (int i = 0; i < values_node_property_ptr->getTensorSize(); ++i) {
     std::cout << "data_update_values_node_property(" << i << ") " << data_update_values_node_property(i, 0) << std::endl;

@@ -54,4 +54,29 @@ BOOST_AUTO_TEST_CASE(kroneckerGraphGeneratorMakeKroneckerGraph)
   //std::cout << "node_ids\n" << node_ids->getData() << std::endl;
 }
 
+BOOST_AUTO_TEST_CASE(BinaryTreeGraphGeneratorMakeBinaryTree)
+{
+  // init the device
+  Eigen::DefaultDevice device;
+  const int depth = 3;
+
+  // test making the Binary Tree graph
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> indices;
+  std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 2>> weights;
+  BinaryTreeGraphGeneratorDefaultDevice<int, float> graph_generator;
+  graph_generator.makeBinaryTree(depth, indices, weights, device);
+  Eigen::array<Eigen::Index, 2> indices_dims = { std::pow(2, depth), 2 };
+  BOOST_CHECK(indices->getDimensions() == indices_dims);
+  std::vector<int> expected_in_nodes = { 0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7 };
+  for (int i = 0; i < std::pow(2, depth); ++i) {
+    BOOST_CHECK_EQUAL(indices->getData()(i, 0), expected_in_nodes.at(i));
+    if (i % 2 == 0) BOOST_CHECK_EQUAL(indices->getData()(i, 1), expected_in_nodes.at(i)*2+1);
+    else BOOST_CHECK_EQUAL(indices->getData()(i, 1), expected_in_nodes.at(i)*2+2);
+  }
+  Eigen::array<Eigen::Index, 2> weights_dims = { std::pow(2, depth), 1 };
+  BOOST_CHECK(weights->getDimensions() == weights_dims);
+  std::cout << "indices\n"<< indices->getData() <<std::endl;
+  std::cout << "weights\n" << weights->getData() << std::endl;
+}
+
 BOOST_AUTO_TEST_SUITE_END()

@@ -171,19 +171,18 @@ namespace TensorBaseBenchmarks
     graph_generator.getNodeAndLinkIds(0, offset + span, kronecker_graph_indices, node_ids, link_ids, device);
 
     // allocate and extract out the new unique node ids
-    int previous_size = 0;
-    if (this->node_ids_ != nullptr) previous_size = this->node_ids_->getTensorSize();
-    const int node_id_size = node_ids->getTensorSize() - previous_size;
+    const int node_id_size = node_ids->getTensorSize() - this->nodes_added_cumulative_;
     if (node_id_size > 0) {
       TensorDataDefaultDevice<KGLabelsT, 1> tmp(Eigen::array<Eigen::Index, 1>({ node_id_size }));
       tmp.setData();
       tmp.syncHAndDData(device);
       Eigen::TensorMap<Eigen::Tensor<KGLabelsT, 1>> tmp_values(tmp.getDataPointer().get(), tmp.getDimensions());
       Eigen::TensorMap<Eigen::Tensor<KGLabelsT, 1>> node_ids_values(node_ids->getDataPointer().get(), node_ids->getDimensions());
-      tmp_values.device(device) = node_ids_values.slice(Eigen::array<Eigen::Index, 1>({ previous_size }), Eigen::array<Eigen::Index, 1>({ node_id_size }));
+      tmp_values.device(device) = node_ids_values.slice(Eigen::array<Eigen::Index, 1>({ this->nodes_added_cumulative_ }), Eigen::array<Eigen::Index, 1>({ node_id_size }));
 
       // assign the values
       this->node_ids_ = std::make_shared<TensorDataDefaultDevice<KGLabelsT, 1>>(tmp);
+      this->nodes_added_cumulative_ += node_id_size;
       return true;
     }
     else return false;
@@ -297,7 +296,7 @@ namespace TensorBaseBenchmarks
       std::shared_ptr<TensorData<TensorArray8<char>, Eigen::DefaultDevice, 2>> values_node_property_ptr;
       graph_manager_node_property.getInsertData(i, span, labels_node_property_ptr, values_node_property_ptr,
         this->graph_manager_helper_->kronecker_graph_indices_, this->graph_manager_helper_->kronecker_graph_weights_, this->graph_manager_helper_->kronecker_graph_node_ids_, this->graph_manager_helper_->kronecker_graph_link_ids_, device);
-      if (labels_node_property_ptr->getTensorSize() > 0) {
+      if (labels_node_property_ptr != nullptr && labels_node_property_ptr->getTensorSize() > 0) {
         TensorAppendToAxis<int, TensorArray8<char>, Eigen::DefaultDevice, 2> appendToAxis_node_property("Graph_node_property", "1_nodes", labels_node_property_ptr, values_node_property_ptr);
         std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> appendToAxis_node_property_ptr = std::make_shared<TensorAppendToAxis<int, TensorArray8<char>, Eigen::DefaultDevice, 2>>(appendToAxis_node_property);
         transaction_manager.executeOperation(appendToAxis_node_property_ptr, device);
@@ -342,7 +341,7 @@ namespace TensorBaseBenchmarks
       std::shared_ptr<TensorData<TensorArray8<char>, Eigen::DefaultDevice, 2>> values_node_property_ptr;
       graph_manager_node_property.getInsertData(i, span, labels_node_property_ptr, values_node_property_ptr,
         this->graph_manager_helper_->kronecker_graph_indices_, this->graph_manager_helper_->kronecker_graph_weights_, this->graph_manager_helper_->kronecker_graph_node_ids_, this->graph_manager_helper_->kronecker_graph_link_ids_, device);
-      if (labels_node_property_ptr->getTensorSize() > 0) {
+      if (labels_node_property_ptr != nullptr && labels_node_property_ptr->getTensorSize() > 0) {
         SelectGraphNodeLinkIDs<int, Eigen::DefaultDevice> selectClause_node_property(labels_node_property_ptr, "Graph_node_property", "1_nodes");
         TensorUpdateValues<TensorArray8<char>, Eigen::DefaultDevice, 2> updateValues_node_property("Graph_node_property", selectClause_node_property, values_node_property_ptr);
         std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> updateValues_node_property_ptr = std::make_shared<TensorUpdateValues<TensorArray8<char>, Eigen::DefaultDevice, 2>>(updateValues_node_property);
@@ -389,7 +388,7 @@ namespace TensorBaseBenchmarks
       std::shared_ptr<TensorData<TensorArray8<char>, Eigen::DefaultDevice, 2>> values_node_property_ptr;
       graph_manager_node_property.getInsertData(i, span, labels_node_property_ptr, values_node_property_ptr,
         this->graph_manager_helper_->kronecker_graph_indices_, this->graph_manager_helper_->kronecker_graph_weights_, this->graph_manager_helper_->kronecker_graph_node_ids_, this->graph_manager_helper_->kronecker_graph_link_ids_, device);
-      if (labels_node_property_ptr->getTensorSize() > 0) {
+      if (labels_node_property_ptr != nullptr && labels_node_property_ptr->getTensorSize() > 0) {
         SelectGraphNodeLinkIDs<int, Eigen::DefaultDevice> selectClause_node_property(labels_node_property_ptr, "Graph_node_property", "1_nodes");
         TensorDeleteFromAxisDefaultDevice<int, TensorArray8<char>, 2> tensorDelete_node_property("Graph_node_property", "1_nodes", selectClause_node_property);
         std::shared_ptr<TensorOperation<Eigen::DefaultDevice>> tensorDelete_node_property_ptr = std::make_shared<TensorDeleteFromAxisDefaultDevice<int, TensorArray8<char>, 2>>(tensorDelete_node_property);

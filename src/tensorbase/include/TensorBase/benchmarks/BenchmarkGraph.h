@@ -301,6 +301,7 @@ namespace TensorBaseBenchmarks
   protected:
 		std::shared_ptr<TensorData<TensorT, DeviceT, 1>> labels_ = nullptr;
 		std::shared_ptr<TensorData<KGLabelsT, DeviceT, 1>> node_ids_ = nullptr;
+		int nodes_added_cumulative_ = 0;
   };
 	template<typename KGLabelsT, typename KGTensorT, typename LabelsT, typename TensorT, typename DeviceT>
 	inline void GraphManagerNodeProperty<KGLabelsT, KGTensorT, LabelsT, TensorT, DeviceT>::getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& values_ptr,
@@ -311,24 +312,29 @@ namespace TensorBaseBenchmarks
 	{		
 		// Set the values on the device for transfer
 		const bool add_node_ids = setNodeIds(offset, span, kronecker_graph_indices, device);
-		if (add_node_ids){}
-		setLabels(device);
+		if (add_node_ids) {
+			setLabels(device);
 
-		// Make the labels and values
-		Eigen::array<Eigen::Index, 2> labels_dims = { 1, (int)this->node_ids_->getTensorSize() }; // node_id
-		Eigen::array<Eigen::Index, 2> values_dims = { (int)this->node_ids_->getTensorSize(), 1 }; // indices by "label"
-		this->makeLabelsPtr(labels_dims, labels_ptr, device);
-		this->makeValuesPtr(values_dims, values_ptr, device);
+			// Make the labels and values
+			Eigen::array<Eigen::Index, 2> labels_dims = { 1, (int)this->node_ids_->getTensorSize() }; // node_id
+			Eigen::array<Eigen::Index, 2> values_dims = { (int)this->node_ids_->getTensorSize(), 1 }; // indices by "label"
+			this->makeLabelsPtr(labels_dims, labels_ptr, device);
+			this->makeValuesPtr(values_dims, values_ptr, device);
 
-		// Assign the labels data
-		Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> labels_values(labels_ptr->getDataPointer().get(), labels_ptr->getDimensions());
-		Eigen::TensorMap<Eigen::Tensor<KGLabelsT, 2>> node_ids_values(this->node_ids_->getDataPointer().get(), 1, (int)this->node_ids_->getTensorSize());
-		labels_values.device(device) = node_ids_values.cast<LabelsT>();
+			// Assign the labels data
+			Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> labels_values(labels_ptr->getDataPointer().get(), labels_ptr->getDimensions());
+			Eigen::TensorMap<Eigen::Tensor<KGLabelsT, 2>> node_ids_values(this->node_ids_->getDataPointer().get(), 1, (int)this->node_ids_->getTensorSize());
+			labels_values.device(device) = node_ids_values.cast<LabelsT>();
 
-		// Assign the values data
-		Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> values_values(values_ptr->getDataPointer().get(), values_ptr->getDimensions());
-		Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> property_values(this->labels_->getDataPointer().get(), (int)this->labels_->getTensorSize(), 1);
-		values_values.device(device) = property_values;
+			// Assign the values data
+			Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> values_values(values_ptr->getDataPointer().get(), values_ptr->getDimensions());
+			Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> property_values(this->labels_->getDataPointer().get(), (int)this->labels_->getTensorSize(), 1);
+			values_values.device(device) = property_values;
+		}
+		else {
+			labels_ptr = nullptr;
+			values_ptr = nullptr;
+		}
 	}
 
   /*
