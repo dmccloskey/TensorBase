@@ -144,7 +144,7 @@ namespace TensorBaseBenchmarks
     using GraphManagerNodeProperty<KGLabelsT, KGTensorT, LabelsT, TensorT, Eigen::DefaultDevice>::GraphManagerNodeProperty;
     void makeLabelsPtr(const Eigen::array<Eigen::Index, 2>& dimensions, std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& labels_ptr, Eigen::DefaultDevice& device) override;
     void makeValuesPtr(const Eigen::array<Eigen::Index, 2>& dimensions, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& values_ptr, Eigen::DefaultDevice& device) override;
-    void setNodeIds(const int& offset, const int& span, const std::shared_ptr<TensorData<KGLabelsT, Eigen::DefaultDevice, 2>>& kronecker_graph_indices, Eigen::DefaultDevice& device) override;
+    bool setNodeIds(const int& offset, const int& span, const std::shared_ptr<TensorData<KGLabelsT, Eigen::DefaultDevice, 2>>& kronecker_graph_indices, Eigen::DefaultDevice& device) override;
     void setLabels(Eigen::DefaultDevice& device) override;
   };
   template<typename KGLabelsT, typename KGTensorT, typename LabelsT, typename TensorT>
@@ -162,7 +162,7 @@ namespace TensorBaseBenchmarks
     values_ptr = std::make_shared<TensorDataDefaultDevice<TensorT, 2>>(tmp);
   }
   template<typename KGLabelsT, typename KGTensorT, typename LabelsT, typename TensorT>
-  inline void GraphManagerNodePropertyDefaultDevice<KGLabelsT, KGTensorT, LabelsT, TensorT>::setNodeIds(const int& offset, const int& span, const std::shared_ptr<TensorData<KGLabelsT, Eigen::DefaultDevice, 2>>& kronecker_graph_indices, Eigen::DefaultDevice& device)
+  inline bool GraphManagerNodePropertyDefaultDevice<KGLabelsT, KGTensorT, LabelsT, TensorT>::setNodeIds(const int& offset, const int& span, const std::shared_ptr<TensorData<KGLabelsT, Eigen::DefaultDevice, 2>>& kronecker_graph_indices, Eigen::DefaultDevice& device)
   {
     // get all of the unique nodes up to this point
     KroneckerGraphGeneratorDefaultDevice<KGLabelsT, KGTensorT> graph_generator;
@@ -174,15 +174,19 @@ namespace TensorBaseBenchmarks
     int previous_size = 0;
     if (this->node_ids_ != nullptr) previous_size = this->node_ids_->getTensorSize();
     const int node_id_size = node_ids->getTensorSize() - previous_size;
-    TensorDataDefaultDevice<KGLabelsT, 1> tmp(Eigen::array<Eigen::Index, 1>({ node_id_size }));
-    tmp.setData();
-    tmp.syncHAndDData(device);
-    Eigen::TensorMap<Eigen::Tensor<KGLabelsT, 1>> tmp_values(tmp.getDataPointer().get(), tmp.getDimensions());
-    Eigen::TensorMap<Eigen::Tensor<KGLabelsT, 1>> node_ids_values(node_ids->getDataPointer().get(), node_ids->getDimensions());
-    tmp_values.device(device) = node_ids_values.slice(Eigen::array<Eigen::Index, 1>({ previous_size }), Eigen::array<Eigen::Index, 1>({ node_id_size }));
+    if (node_id_size > 0) {
+      TensorDataDefaultDevice<KGLabelsT, 1> tmp(Eigen::array<Eigen::Index, 1>({ node_id_size }));
+      tmp.setData();
+      tmp.syncHAndDData(device);
+      Eigen::TensorMap<Eigen::Tensor<KGLabelsT, 1>> tmp_values(tmp.getDataPointer().get(), tmp.getDimensions());
+      Eigen::TensorMap<Eigen::Tensor<KGLabelsT, 1>> node_ids_values(node_ids->getDataPointer().get(), node_ids->getDimensions());
+      tmp_values.device(device) = node_ids_values.slice(Eigen::array<Eigen::Index, 1>({ previous_size }), Eigen::array<Eigen::Index, 1>({ node_id_size }));
 
-    // assign the values
-    this->node_ids_ = std::make_shared<TensorDataDefaultDevice<KGLabelsT, 1>>(tmp);
+      // assign the values
+      this->node_ids_ = std::make_shared<TensorDataDefaultDevice<KGLabelsT, 1>>(tmp);
+      return true;
+    }
+    else return false;
   }
   template<typename KGLabelsT, typename KGTensorT, typename LabelsT, typename TensorT>
   inline void GraphManagerNodePropertyDefaultDevice<KGLabelsT, KGTensorT, LabelsT, TensorT>::setLabels(Eigen::DefaultDevice& device)

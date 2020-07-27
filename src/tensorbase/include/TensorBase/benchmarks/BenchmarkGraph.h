@@ -297,7 +297,7 @@ namespace TensorBaseBenchmarks
 			const std::shared_ptr<TensorData<KGLabelsT, DeviceT, 1>>& kronecker_graph_node_ids,
 			const std::shared_ptr<TensorData<KGLabelsT, DeviceT, 1>>& kronecker_graph_link_ids, DeviceT& device);
 		virtual void setLabels(DeviceT& device) = 0;
-		virtual void setNodeIds(const int& offset, const int& span, const std::shared_ptr<TensorData<KGLabelsT, DeviceT, 2>>& kronecker_graph_indices, DeviceT& device) = 0;
+		virtual bool setNodeIds(const int& offset, const int& span, const std::shared_ptr<TensorData<KGLabelsT, DeviceT, 2>>& kronecker_graph_indices, DeviceT& device) = 0;
   protected:
 		std::shared_ptr<TensorData<TensorT, DeviceT, 1>> labels_ = nullptr;
 		std::shared_ptr<TensorData<KGLabelsT, DeviceT, 1>> node_ids_ = nullptr;
@@ -308,8 +308,10 @@ namespace TensorBaseBenchmarks
 		const std::shared_ptr<TensorData<KGTensorT, DeviceT, 2>>& kronecker_graph_weights,
 		const std::shared_ptr<TensorData<KGLabelsT, DeviceT, 1>>& kronecker_graph_node_ids,
 		const std::shared_ptr<TensorData<KGLabelsT, DeviceT, 1>>& kronecker_graph_link_ids, DeviceT& device)
-	{		// Set the values on the device for transfer
-		setNodeIds(offset, span, kronecker_graph_indices, device);
+	{		
+		// Set the values on the device for transfer
+		const bool add_node_ids = setNodeIds(offset, span, kronecker_graph_indices, device);
+		if (add_node_ids){}
 		setLabels(device);
 
 		// Make the labels and values
