@@ -35,7 +35,6 @@ BOOST_AUTO_TEST_CASE(kroneckerGraphGeneratorMakeKroneckerGraph)
   for (int i = 0; i < link_ids_dims.at(0); ++i) {
     BOOST_CHECK_EQUAL(link_ids->getData()(i), i);
   }
-  Eigen::array<Eigen::Index, 1> node_ids_dims = { std::pow(2, 4) * 8 };
   BOOST_CHECK(node_ids->getDimensions().at(0) <= std::pow(2, 4));
   //std::cout << "link_ids\n"<< link_ids->getData() <<std::endl;
   //std::cout << "node_ids\n" << node_ids->getData() << std::endl;
@@ -49,7 +48,7 @@ BOOST_AUTO_TEST_CASE(kroneckerGraphGeneratorMakeKroneckerGraph)
   for (int i = 0; i < link_ids_dims.at(0); ++i) {
     BOOST_CHECK_EQUAL(link_ids->getData()(i), 8 + i);
   }
-  BOOST_CHECK(node_ids->getDimensions().at(0) <= 8);
+  BOOST_CHECK(node_ids->getDimensions().at(0) <= std::pow(2, 4));
   //std::cout << "link_ids\n"<< link_ids->getData() <<std::endl;
   //std::cout << "node_ids\n" << node_ids->getData() << std::endl;
 }
@@ -75,8 +74,34 @@ BOOST_AUTO_TEST_CASE(BinaryTreeGraphGeneratorMakeBinaryTree)
   }
   Eigen::array<Eigen::Index, 2> weights_dims = { std::pow(2, depth), 1 };
   BOOST_CHECK(weights->getDimensions() == weights_dims);
-  std::cout << "indices\n"<< indices->getData() <<std::endl;
-  std::cout << "weights\n" << weights->getData() << std::endl;
+  //std::cout << "indices\n"<< indices->getData() <<std::endl;
+  //std::cout << "weights\n" << weights->getData() << std::endl;
+
+  // test getting the node/link ids for the entire graph
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> node_ids;
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> link_ids;
+  graph_generator.getNodeAndLinkIds(0, std::pow(2, depth), indices, node_ids, link_ids, device);
+  BOOST_CHECK_EQUAL(link_ids->getDimensions().at(0), std::pow(2, depth));
+  for (int i = 0; i < std::pow(2, depth); ++i) {
+    BOOST_CHECK_EQUAL(link_ids->getData()(i), i);
+  }
+  BOOST_CHECK_EQUAL(node_ids->getDimensions().at(0), std::pow(2, depth) + 1);
+  for (int i = 0; i < std::pow(2, depth) + 1; ++i) {
+    BOOST_CHECK_EQUAL(node_ids->getData()(i), i);
+  }
+
+  // test getting the node/link ids for a subset
+  node_ids.reset();
+  link_ids.reset();
+  graph_generator.getNodeAndLinkIds(2, 6, indices, node_ids, link_ids, device);
+  BOOST_CHECK_EQUAL(link_ids->getDimensions().at(0), 6);
+  for (int i = 0; i < 6; ++i) {
+    BOOST_CHECK_EQUAL(link_ids->getData()(i), 2 + i);
+  }
+  BOOST_CHECK_EQUAL(node_ids->getDimensions().at(0), 8);
+  for (int i = 0; i < 8; ++i) {
+    BOOST_CHECK_EQUAL(node_ids->getData()(i), i + 1);
+  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
