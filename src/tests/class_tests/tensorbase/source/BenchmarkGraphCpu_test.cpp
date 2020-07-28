@@ -150,7 +150,8 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteCpu)
   n_dim_tensor_collection->tables_.at("Graph_node_property")->getDataPointer(data_insert_data_node_property);
   Eigen::TensorMap<Eigen::Tensor<TensorArray8<char>, 2>> data_insert_values_node_property(data_insert_data_node_property.get(), values_node_property_ptr->getTensorSize(), 1);
   for (int i = 0; i < values_node_property_ptr->getTensorSize(); ++i) {
-    BOOST_CHECK_EQUAL(data_insert_values_node_property(i, 0), values_node_property_ptr->getData()(i, 0));
+    int count = std::count(values_node_property_ptr->getHDataPointer().get(), values_node_property_ptr->getHDataPointer().get() + values_node_property_ptr->getTensorSize(), data_insert_values_node_property(i, 0));
+    BOOST_CHECK(count > 0);
   }
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_link_property")->getDataTensorSize(), 1 * data_size);
   std::shared_ptr<TensorArray8<char>[]> data_insert_data_link_property;
@@ -173,8 +174,8 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteCpu)
   // Make the expected tensor axes labels and tensor data after update
   graph_manager_sparse_indices.setUseRandomValues(true);
   graph_manager_weights.setUseRandomValues(true);
-  graph_manager_node_property.setUseRandomValues(true);
-  graph_manager_link_property.setUseRandomValues(true);
+  GraphManagerNodePropertyCpu<int, float, int, TensorArray8<char>> graph_manager_node_property2(true);
+  GraphManagerLinkPropertyCpu<int, float, int, TensorArray8<char>> graph_manager_link_property2(true);
   labels_sparse_indices_ptr.reset();
   values_sparse_indices_ptr.reset();
   graph_manager_sparse_indices.getInsertData(0, data_size, labels_sparse_indices_ptr, values_sparse_indices_ptr, benchmark_1_link.graph_manager_helper_->kronecker_graph_indices_, benchmark_1_link.graph_manager_helper_->kronecker_graph_weights_, benchmark_1_link.graph_manager_helper_->kronecker_graph_node_ids_, benchmark_1_link.graph_manager_helper_->kronecker_graph_link_ids_, device);
@@ -183,10 +184,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteCpu)
   graph_manager_weights.getInsertData(0, data_size, labels_labels_ptr, values_labels_ptr, benchmark_1_link.graph_manager_helper_->kronecker_graph_indices_, benchmark_1_link.graph_manager_helper_->kronecker_graph_weights_, benchmark_1_link.graph_manager_helper_->kronecker_graph_node_ids_, benchmark_1_link.graph_manager_helper_->kronecker_graph_link_ids_, device);
   labels_node_property_ptr.reset();
   values_node_property_ptr.reset();
-  graph_manager_node_property.getInsertData(0, data_size, labels_node_property_ptr, values_node_property_ptr, benchmark_1_link.graph_manager_helper_->kronecker_graph_indices_, benchmark_1_link.graph_manager_helper_->kronecker_graph_weights_, benchmark_1_link.graph_manager_helper_->kronecker_graph_node_ids_, benchmark_1_link.graph_manager_helper_->kronecker_graph_link_ids_, device);
+  graph_manager_node_property2.getInsertData(0, data_size, labels_node_property_ptr, values_node_property_ptr, benchmark_1_link.graph_manager_helper_->kronecker_graph_indices_, benchmark_1_link.graph_manager_helper_->kronecker_graph_weights_, benchmark_1_link.graph_manager_helper_->kronecker_graph_node_ids_, benchmark_1_link.graph_manager_helper_->kronecker_graph_link_ids_, device);
   labels_link_property_ptr.reset();
   values_link_property_ptr.reset();
-  graph_manager_link_property.getInsertData(0, data_size, labels_link_property_ptr, values_link_property_ptr, benchmark_1_link.graph_manager_helper_->kronecker_graph_indices_, benchmark_1_link.graph_manager_helper_->kronecker_graph_weights_, benchmark_1_link.graph_manager_helper_->kronecker_graph_node_ids_, benchmark_1_link.graph_manager_helper_->kronecker_graph_link_ids_, device);
+  graph_manager_link_property2.getInsertData(0, data_size, labels_link_property_ptr, values_link_property_ptr, benchmark_1_link.graph_manager_helper_->kronecker_graph_indices_, benchmark_1_link.graph_manager_helper_->kronecker_graph_weights_, benchmark_1_link.graph_manager_helper_->kronecker_graph_node_ids_, benchmark_1_link.graph_manager_helper_->kronecker_graph_link_ids_, device);
 
   // Test the expected tensor collection after update
   benchmark_1_link.update1Link(transaction_manager, scale, edge_factor, in_memory, device);
@@ -241,7 +242,8 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteCpu)
   n_dim_tensor_collection->tables_.at("Graph_node_property")->getDataPointer(data_update_data_node_property);
   Eigen::TensorMap<Eigen::Tensor<TensorArray8<char>, 2>> data_update_values_node_property(data_update_data_node_property.get(), values_node_property_ptr->getTensorSize(), 1);
   for (int i = 0; i < values_node_property_ptr->getTensorSize(); ++i) {
-    BOOST_CHECK_EQUAL(data_update_values_node_property(i, 0), values_node_property_ptr->getData()(i, 0));
+    int count = std::count(values_node_property_ptr->getHDataPointer().get(), values_node_property_ptr->getHDataPointer().get() + values_node_property_ptr->getTensorSize(), data_update_values_node_property(i, 0));
+    BOOST_CHECK(count > 0);
   }
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_link_property")->getDataTensorSize(), 1 * data_size);
   std::shared_ptr<TensorArray8<char>[]> data_update_data_link_property;
@@ -410,8 +412,9 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteShardingCpu)
   std::shared_ptr<TensorArray8<char>[]> data_insert_data_node_property;
   n_dim_tensor_collection->tables_.at("Graph_node_property")->getDataPointer(data_insert_data_node_property);
   Eigen::TensorMap<Eigen::Tensor<TensorArray8<char>, 2>> data_insert_values_node_property(data_insert_data_node_property.get(), values_node_property_ptr->getTensorSize(), 1);
-  for (int i = 0; i < data_size; ++i) {
-    BOOST_CHECK_EQUAL(data_insert_values_node_property(i, 0), values_node_property_ptr->getData()(i, 0));
+  for (int i = 0; i < values_node_property_ptr->getTensorSize(); ++i) {
+    int count = std::count(values_node_property_ptr->getHDataPointer().get(), values_node_property_ptr->getHDataPointer().get() + values_node_property_ptr->getTensorSize(), data_insert_values_node_property(i, 0));
+    BOOST_CHECK(count > 0);
   }
   n_dim_tensor_collection->tables_.at("Graph_link_property")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("Graph_link_property")->getDir(), device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_link_property")->getDataTensorSize(), 1 * data_size);
@@ -435,8 +438,8 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteShardingCpu)
   // Make the expected tensor axes labels and tensor data after update
   graph_manager_sparse_indices.setUseRandomValues(true);
   graph_manager_weights.setUseRandomValues(true);
-  graph_manager_node_property.setUseRandomValues(true);
-  graph_manager_link_property.setUseRandomValues(true);
+  GraphManagerNodePropertyCpu<int, float, int, TensorArray8<char>> graph_manager_node_property2(true);
+  GraphManagerLinkPropertyCpu<int, float, int, TensorArray8<char>> graph_manager_link_property2(true);
   labels_sparse_indices_ptr.reset();
   values_sparse_indices_ptr.reset();
   graph_manager_sparse_indices.getInsertData(0, data_size, labels_sparse_indices_ptr, values_sparse_indices_ptr, benchmark_1_link.graph_manager_helper_->kronecker_graph_indices_, benchmark_1_link.graph_manager_helper_->kronecker_graph_weights_, benchmark_1_link.graph_manager_helper_->kronecker_graph_node_ids_, benchmark_1_link.graph_manager_helper_->kronecker_graph_link_ids_, device);
@@ -445,10 +448,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteShardingCpu)
   graph_manager_weights.getInsertData(0, data_size, labels_labels_ptr, values_labels_ptr, benchmark_1_link.graph_manager_helper_->kronecker_graph_indices_, benchmark_1_link.graph_manager_helper_->kronecker_graph_weights_, benchmark_1_link.graph_manager_helper_->kronecker_graph_node_ids_, benchmark_1_link.graph_manager_helper_->kronecker_graph_link_ids_, device);
   labels_node_property_ptr.reset();
   values_node_property_ptr.reset();
-  graph_manager_node_property.getInsertData(0, data_size, labels_node_property_ptr, values_node_property_ptr, benchmark_1_link.graph_manager_helper_->kronecker_graph_indices_, benchmark_1_link.graph_manager_helper_->kronecker_graph_weights_, benchmark_1_link.graph_manager_helper_->kronecker_graph_node_ids_, benchmark_1_link.graph_manager_helper_->kronecker_graph_link_ids_, device);
+  graph_manager_node_property2.getInsertData(0, data_size, labels_node_property_ptr, values_node_property_ptr, benchmark_1_link.graph_manager_helper_->kronecker_graph_indices_, benchmark_1_link.graph_manager_helper_->kronecker_graph_weights_, benchmark_1_link.graph_manager_helper_->kronecker_graph_node_ids_, benchmark_1_link.graph_manager_helper_->kronecker_graph_link_ids_, device);
   labels_link_property_ptr.reset();
   values_link_property_ptr.reset();
-  graph_manager_link_property.getInsertData(0, data_size, labels_link_property_ptr, values_link_property_ptr, benchmark_1_link.graph_manager_helper_->kronecker_graph_indices_, benchmark_1_link.graph_manager_helper_->kronecker_graph_weights_, benchmark_1_link.graph_manager_helper_->kronecker_graph_node_ids_, benchmark_1_link.graph_manager_helper_->kronecker_graph_link_ids_, device);
+  graph_manager_link_property2.getInsertData(0, data_size, labels_link_property_ptr, values_link_property_ptr, benchmark_1_link.graph_manager_helper_->kronecker_graph_indices_, benchmark_1_link.graph_manager_helper_->kronecker_graph_weights_, benchmark_1_link.graph_manager_helper_->kronecker_graph_node_ids_, benchmark_1_link.graph_manager_helper_->kronecker_graph_link_ids_, device);
 
   // Test the expected tensor collection after update
   benchmark_1_link.update1Link(transaction_manager, scale, edge_factor, in_memory, device);
@@ -505,8 +508,9 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteShardingCpu)
   std::shared_ptr<TensorArray8<char>[]> data_update_data_node_property;
   n_dim_tensor_collection->tables_.at("Graph_node_property")->getDataPointer(data_update_data_node_property);
   Eigen::TensorMap<Eigen::Tensor<TensorArray8<char>, 2>> data_update_values_node_property(data_update_data_node_property.get(), values_node_property_ptr->getTensorSize(), 1);
-  for (int i = 0; i < data_size; ++i) {
-    BOOST_CHECK_EQUAL(data_update_values_node_property(i, 0), values_node_property_ptr->getData()(i, 0));
+  for (int i = 0; i < values_node_property_ptr->getTensorSize(); ++i) {
+    int count = std::count(values_node_property_ptr->getHDataPointer().get(), values_node_property_ptr->getHDataPointer().get() + values_node_property_ptr->getTensorSize(), data_update_values_node_property(i, 0));
+    BOOST_CHECK(count > 0);
   }
   n_dim_tensor_collection->tables_.at("Graph_link_property")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("Graph_link_property")->getDir(), device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("Graph_link_property")->getDataTensorSize(), 1 * data_size);

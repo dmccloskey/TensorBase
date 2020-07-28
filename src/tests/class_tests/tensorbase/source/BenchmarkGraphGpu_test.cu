@@ -150,8 +150,9 @@ void test_InsertUpdateDeleteGpu()
   std::shared_ptr<TensorArrayGpu8<char>[]> data_insert_data_node_property;
   n_dim_tensor_collection->tables_.at("Graph_node_property")->getDataPointer(data_insert_data_node_property);
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 2>> data_insert_values_node_property(data_insert_data_node_property.get(), values_node_property_ptr->getTensorSize(), 1);
-  for (int i = 0; i < data_size; ++i) {
-    assert(data_insert_values_node_property(i, 0) == values_node_property_ptr->getData()(i, 0));
+  for (int i = 0; i < values_node_property_ptr->getTensorSize(); ++i) {
+    int count = std::count(values_node_property_ptr->getHDataPointer().get(), values_node_property_ptr->getHDataPointer().get() + values_node_property_ptr->getTensorSize(), data_insert_values_node_property(i, 0));
+    assert(count > 0);
   }
   assert(n_dim_tensor_collection->tables_.at("Graph_link_property")->getDataTensorSize() == 1 * data_size);
   std::shared_ptr<TensorArrayGpu8<char>[]> data_insert_data_link_property;
@@ -174,8 +175,8 @@ void test_InsertUpdateDeleteGpu()
   // Make the expected tensor axes labels and tensor data after update
   graph_manager_sparse_indices.setUseRandomValues(true);
   graph_manager_weights.setUseRandomValues(true);
-  graph_manager_node_property.setUseRandomValues(true);
-  graph_manager_link_property.setUseRandomValues(true);
+  GraphManagerNodePropertyGpu<int, float, int, TensorArrayGpu8<char>> graph_manager_node_property2(true);
+  GraphManagerLinkPropertyGpu<int, float, int, TensorArrayGpu8<char>> graph_manager_link_property2(true);
   labels_sparse_indices_ptr.reset();
   values_sparse_indices_ptr.reset();
   graph_manager_sparse_indices.getInsertData(0, data_size, labels_sparse_indices_ptr, values_sparse_indices_ptr, benchmark_1_link.graph_manager_helper_->kronecker_graph_indices_, benchmark_1_link.graph_manager_helper_->kronecker_graph_weights_, benchmark_1_link.graph_manager_helper_->kronecker_graph_node_ids_, benchmark_1_link.graph_manager_helper_->kronecker_graph_link_ids_, device);
@@ -184,10 +185,10 @@ void test_InsertUpdateDeleteGpu()
   graph_manager_weights.getInsertData(0, data_size, labels_labels_ptr, values_labels_ptr, benchmark_1_link.graph_manager_helper_->kronecker_graph_indices_, benchmark_1_link.graph_manager_helper_->kronecker_graph_weights_, benchmark_1_link.graph_manager_helper_->kronecker_graph_node_ids_, benchmark_1_link.graph_manager_helper_->kronecker_graph_link_ids_, device);
   labels_node_property_ptr.reset();
   values_node_property_ptr.reset();
-  graph_manager_node_property.getInsertData(0, data_size, labels_node_property_ptr, values_node_property_ptr, benchmark_1_link.graph_manager_helper_->kronecker_graph_indices_, benchmark_1_link.graph_manager_helper_->kronecker_graph_weights_, benchmark_1_link.graph_manager_helper_->kronecker_graph_node_ids_, benchmark_1_link.graph_manager_helper_->kronecker_graph_link_ids_, device);
+  graph_manager_node_property2.getInsertData(0, data_size, labels_node_property_ptr, values_node_property_ptr, benchmark_1_link.graph_manager_helper_->kronecker_graph_indices_, benchmark_1_link.graph_manager_helper_->kronecker_graph_weights_, benchmark_1_link.graph_manager_helper_->kronecker_graph_node_ids_, benchmark_1_link.graph_manager_helper_->kronecker_graph_link_ids_, device);
   labels_link_property_ptr.reset();
   values_link_property_ptr.reset();
-  graph_manager_link_property.getInsertData(0, data_size, labels_link_property_ptr, values_link_property_ptr, benchmark_1_link.graph_manager_helper_->kronecker_graph_indices_, benchmark_1_link.graph_manager_helper_->kronecker_graph_weights_, benchmark_1_link.graph_manager_helper_->kronecker_graph_node_ids_, benchmark_1_link.graph_manager_helper_->kronecker_graph_link_ids_, device);
+  graph_manager_link_property2.getInsertData(0, data_size, labels_link_property_ptr, values_link_property_ptr, benchmark_1_link.graph_manager_helper_->kronecker_graph_indices_, benchmark_1_link.graph_manager_helper_->kronecker_graph_weights_, benchmark_1_link.graph_manager_helper_->kronecker_graph_node_ids_, benchmark_1_link.graph_manager_helper_->kronecker_graph_link_ids_, device);
 
   // Test the expected tensor collection after update
   benchmark_1_link.update1Link(transaction_manager, scale, edge_factor, in_memory, device);
@@ -245,8 +246,9 @@ void test_InsertUpdateDeleteGpu()
   std::shared_ptr<TensorArrayGpu8<char>[]> data_update_data_node_property;
   n_dim_tensor_collection->tables_.at("Graph_node_property")->getDataPointer(data_update_data_node_property);
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 2>> data_update_values_node_property(data_update_data_node_property.get(), values_node_property_ptr->getTensorSize(), 1);
-  for (int i = 0; i < data_size; ++i) {
-    assert(data_update_values_node_property(i, 0) == values_node_property_ptr->getData()(i, 0));
+  for (int i = 0; i < values_node_property_ptr->getTensorSize(); ++i) {
+    int count = std::count(values_node_property_ptr->getHDataPointer().get(), values_node_property_ptr->getHDataPointer().get() + values_node_property_ptr->getTensorSize(), data_update_values_node_property(i, 0));
+    assert(count > 0);
   }
   assert(n_dim_tensor_collection->tables_.at("Graph_link_property")->getDataTensorSize() == 1 * data_size);
   std::shared_ptr<TensorArrayGpu8<char>[]> data_update_data_link_property;
@@ -422,7 +424,8 @@ void test_InsertUpdateDeleteShardingGpu()
   n_dim_tensor_collection->tables_.at("Graph_node_property")->getDataPointer(data_insert_data_node_property);
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 2>> data_insert_values_node_property(data_insert_data_node_property.get(), values_node_property_ptr->getTensorSize(), 1);
   for (int i = 0; i < values_node_property_ptr->getTensorSize(); ++i) {
-    assert(data_insert_values_node_property(i, 0) == values_node_property_ptr->getData()(i, 0));
+    int count = std::count(values_node_property_ptr->getHDataPointer().get(), values_node_property_ptr->getHDataPointer().get() + values_node_property_ptr->getTensorSize(), data_insert_values_node_property(i, 0));
+    assert(count > 0);
   }
   assert(n_dim_tensor_collection->tables_.at("Graph_link_property")->getDataTensorSize() == 1 * data_size);
   std::shared_ptr<TensorArrayGpu8<char>[]> data_insert_data_link_property;
@@ -445,8 +448,8 @@ void test_InsertUpdateDeleteShardingGpu()
   // Make the expected tensor axes labels and tensor data after update
   graph_manager_sparse_indices.setUseRandomValues(true);
   graph_manager_weights.setUseRandomValues(true);
-  graph_manager_node_property.setUseRandomValues(true);
-  graph_manager_link_property.setUseRandomValues(true);
+  GraphManagerNodePropertyGpu<int, float, int, TensorArrayGpu8<char>> graph_manager_node_property2(true);
+  GraphManagerLinkPropertyGpu<int, float, int, TensorArrayGpu8<char>> graph_manager_link_property2(true);
   labels_sparse_indices_ptr.reset();
   values_sparse_indices_ptr.reset();
   graph_manager_sparse_indices.getInsertData(0, data_size, labels_sparse_indices_ptr, values_sparse_indices_ptr, benchmark_1_link.graph_manager_helper_->kronecker_graph_indices_, benchmark_1_link.graph_manager_helper_->kronecker_graph_weights_, benchmark_1_link.graph_manager_helper_->kronecker_graph_node_ids_, benchmark_1_link.graph_manager_helper_->kronecker_graph_link_ids_, device);
@@ -455,10 +458,10 @@ void test_InsertUpdateDeleteShardingGpu()
   graph_manager_weights.getInsertData(0, data_size, labels_labels_ptr, values_labels_ptr, benchmark_1_link.graph_manager_helper_->kronecker_graph_indices_, benchmark_1_link.graph_manager_helper_->kronecker_graph_weights_, benchmark_1_link.graph_manager_helper_->kronecker_graph_node_ids_, benchmark_1_link.graph_manager_helper_->kronecker_graph_link_ids_, device);
   labels_node_property_ptr.reset();
   values_node_property_ptr.reset();
-  graph_manager_node_property.getInsertData(0, data_size, labels_node_property_ptr, values_node_property_ptr, benchmark_1_link.graph_manager_helper_->kronecker_graph_indices_, benchmark_1_link.graph_manager_helper_->kronecker_graph_weights_, benchmark_1_link.graph_manager_helper_->kronecker_graph_node_ids_, benchmark_1_link.graph_manager_helper_->kronecker_graph_link_ids_, device);
+  graph_manager_node_property2.getInsertData(0, data_size, labels_node_property_ptr, values_node_property_ptr, benchmark_1_link.graph_manager_helper_->kronecker_graph_indices_, benchmark_1_link.graph_manager_helper_->kronecker_graph_weights_, benchmark_1_link.graph_manager_helper_->kronecker_graph_node_ids_, benchmark_1_link.graph_manager_helper_->kronecker_graph_link_ids_, device);
   labels_link_property_ptr.reset();
   values_link_property_ptr.reset();
-  graph_manager_link_property.getInsertData(0, data_size, labels_link_property_ptr, values_link_property_ptr, benchmark_1_link.graph_manager_helper_->kronecker_graph_indices_, benchmark_1_link.graph_manager_helper_->kronecker_graph_weights_, benchmark_1_link.graph_manager_helper_->kronecker_graph_node_ids_, benchmark_1_link.graph_manager_helper_->kronecker_graph_link_ids_, device);
+  graph_manager_link_property2.getInsertData(0, data_size, labels_link_property_ptr, values_link_property_ptr, benchmark_1_link.graph_manager_helper_->kronecker_graph_indices_, benchmark_1_link.graph_manager_helper_->kronecker_graph_weights_, benchmark_1_link.graph_manager_helper_->kronecker_graph_node_ids_, benchmark_1_link.graph_manager_helper_->kronecker_graph_link_ids_, device);
 
   // Test the expected tensor collection after update
   benchmark_1_link.update1Link(transaction_manager, scale, edge_factor, in_memory, device);
@@ -517,7 +520,8 @@ void test_InsertUpdateDeleteShardingGpu()
   n_dim_tensor_collection->tables_.at("Graph_node_property")->getDataPointer(data_update_data_node_property);
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 2>> data_update_values_node_property(data_update_data_node_property.get(), values_node_property_ptr->getTensorSize(), 1);
   for (int i = 0; i < values_node_property_ptr->getTensorSize(); ++i) {
-    assert(data_update_values_node_property(i, 0) == values_node_property_ptr->getData()(i, 0));
+    int count = std::count(values_node_property_ptr->getHDataPointer().get(), values_node_property_ptr->getHDataPointer().get() + values_node_property_ptr->getTensorSize(), data_update_values_node_property(i, 0));
+    assert(count > 0);
   }
   assert(n_dim_tensor_collection->tables_.at("Graph_link_property")->getDataTensorSize() == 1 * data_size);
   std::shared_ptr<TensorArrayGpu8<char>[]> data_update_data_link_property;
