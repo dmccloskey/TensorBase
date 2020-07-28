@@ -31,5 +31,17 @@ namespace TensorBase
     tree_tmp.syncHAndDData(device);
     tree = std::make_shared<TensorDataDefaultDevice<TensorT, 2>>(tree_tmp);
   }
+  template<typename LabelsT, typename TensorT>
+  struct SingleSourceShortestPathDefaultDevice : public SingleSourceShortestPath<LabelsT, TensorT, Eigen::DefaultDevice> {
+    void initPathLengthsPtr(const int& n_nodes, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 1>>& path_lengths, Eigen::DefaultDevice& device) const override;
+  };
+  template<typename LabelsT, typename TensorT>
+  inline void SingleSourceShortestPathDefaultDevice<LabelsT, TensorT>::initPathLengthsPtr(const int& n_nodes, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 1>>& path_lengths, Eigen::DefaultDevice& device) const
+  {
+    TensorDataDefaultDevice<TensorT, 1> path_lengths_tmp(Eigen::array<Eigen::Index, 1>({ n_nodes }));
+    path_lengths_tmp.setData();
+    path_lengths_tmp.syncHAndDData(device);
+    path_lengths = std::make_shared<TensorDataDefaultDevice<TensorT, 1>>(path_lengths_tmp);
+  }
 }
 #endif //TENSORBASE_GRAPHALGORITHMSDEFAULTDEVICE_H

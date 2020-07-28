@@ -86,5 +86,32 @@ namespace TensorBase
       tree_values.slice(Eigen::array<Eigen::Index, 2>({ 0,i+1 }), Eigen::array<Eigen::Index, 2>({ (int)node_ids->getTensorSize(), 1 })).device(device) = adjacency_values.contract(tree_values_slice, product_dims);
     }
   }
+
+  /*
+  @class Struct for performing a single source shortest path (SSSP) from a starting node all other nodes
+  */
+  template<typename LabelsT, typename TensorT, typename DeviceT>
+  struct SingleSourceShortestPath {
+    /*
+    @brief The SSSP starts with the tree found using the BFS and returns a vector of the shortest path lengths found
+ids
+    @param[in] tree 2D adjacency Tensor of the search tree starting from the root with dimension 0 = N nodes and dimension 1 = N nodes + 1
+      where the nodes encountered during the search are recored as vectors of shape [n, 1] as entries in dimension 1
+    @param[out] path_lengths 1D Tensor of shortest path lengths with dimensions 0 = N
+    */
+    void operator()(const std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& tree, std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& path_lengths, DeviceT& device) const;
+    virtual void initPathLengthsPtr(const int& n_nodes, std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& path_lengths, DeviceT& device) const = 0;
+  };
+  template<typename LabelsT, typename TensorT, typename DeviceT>
+  void SingleSourceShortestPath<LabelsT, TensorT, DeviceT>::operator()(const std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& tree, std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& path_lengths, DeviceT& device) const {
+    // 1. find the minimum path length for each node
+    initPathLengthsPtr(tree->getDimensions().at(0), path_lengths, device);
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 3>> tree_values_tmp(tree->getDataPointer().get(), tree->getDimensions().at(0), tree->getDimensions().at(1), 1);
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> tree_values(tree->getDataPointer().get(), tree->getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> path_lengths_values(path_lengths->getDataPointer().get(), path_lengths->getDimensions());
+    auto tree_values_max = tree_values_tmp.maximum(Eigen::array<Eigen::Index, 1>({ 1 })).broadcast(Eigen::array<Eigen::Index, 2>({ 1, tree->getDimensions().at(1) })).eval();
+    auto tree_values_no_zeros = (tree_values == tree_values.constant(TensorT(0))).select(tree_values_max, tree_values).eval();
+    path_lengths_values.device(device) = tree_values_no_zeros.minimum(Eigen::array<Eigen::Index, 1>({1}));
+  }
 }
 #endif //TENSORBASE_GRAPHALGORITHMS_H
