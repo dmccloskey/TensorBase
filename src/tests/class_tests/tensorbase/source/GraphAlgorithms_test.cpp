@@ -17,15 +17,15 @@ BOOST_AUTO_TEST_CASE(indicesAndWeightsToAdjacencyMatrixDefaultDevice)
 
   // make the toy graph
   const int depth = 3;
-
-  // test making the Binary Tree graph
+  const int n_nodes = std::pow(2, depth) - 1;
+  const int n_links = std::pow(2, depth) - 2;
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> node_ids;
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> link_ids;
   std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> indices;
   std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 2>> weights;
   BinaryTreeGraphGeneratorDefaultDevice<int, float> graph_generator;
   graph_generator.makeBinaryTree(depth, indices, weights, device);
-  graph_generator.getNodeAndLinkIds(0, std::pow(2, depth), indices, node_ids, link_ids, device);
+  graph_generator.getNodeAndLinkIds(0, n_links, indices, node_ids, link_ids, device);
 
   // test making the adjacency matrix
   std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 2>> adjacency;
@@ -44,6 +44,52 @@ BOOST_AUTO_TEST_CASE(indicesAndWeightsToAdjacencyMatrixDefaultDevice)
       }
     }
   }
+}
+
+BOOST_AUTO_TEST_CASE(breadthFirstSearchDefaultDevice)
+{
+  // init the device
+  Eigen::DefaultDevice device;
+
+  // make the toy graph
+  const int depth = 3;
+  const int n_nodes = std::pow(2, depth) - 1;
+  const int n_links = std::pow(2, depth) - 2;
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> node_ids;
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> link_ids;
+  std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>> indices;
+  std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 2>> weights;
+  BinaryTreeGraphGeneratorDefaultDevice<int, float> graph_generator;
+  graph_generator.makeBinaryTree(depth, indices, weights, device);
+  graph_generator.getNodeAndLinkIds(0, n_links, indices, node_ids, link_ids, device);
+
+  // make the adjacency matrix
+  std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 2>> adjacency;
+  IndicesAndWeightsToAdjacencyMatrixDefaultDevice<int, float> to_adjacency;
+  to_adjacency(node_ids, indices, weights, adjacency, device);
+
+  // test BFS
+  std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 2>> tree;
+  BreadthFirstSearchDefaultDevice<int, float> breadth_first_search;
+  breadth_first_search(0, node_ids, adjacency, tree, device);
+  Eigen::array<Eigen::Index, 2> indices_dims = { int(node_ids->getTensorSize()), int(node_ids->getTensorSize()) + 1 };
+  BOOST_CHECK(tree->getDimensions() == indices_dims);
+  for (int i = 0; i < node_ids->getTensorSize(); ++i) {
+    for (int j = 0; j < node_ids->getTensorSize() + 1; ++j) {
+      if ((j == 0 && i == 0)) {
+        BOOST_CHECK_EQUAL(tree->getData()(i, j), 1);
+      }
+      else if ((j == 1 && i == 1) || (j == 1 && i == 2) || (j == 2 && i == 3) || (j == 2 && i == 4) ||
+        (j == 2 && i == 5) || (j == 2 && i == 6) || (j == 4 && i == 7) || (j == 4 && i == 8)) {
+        BOOST_CHECK_GT(tree->getData()(i, j), 0);
+      }
+      else {
+        BOOST_CHECK_EQUAL(tree->getData()(i, j), 0);
+      }
+    }
+  }
+  std::cout << "adjacency\n" << adjacency->getData() << std::endl;
+  std::cout << "tree\n" << tree->getData() << std::endl;
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -223,8 +223,8 @@ namespace TensorBase
   template<typename LabelsT, typename TensorT, typename DeviceT>
   inline void BinaryTreeGraphGenerator<LabelsT, TensorT, DeviceT>::makeBinaryTree(const int & depth, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& weights, DeviceT & device) const
   {
-    const int n_nodes = std::pow(2, depth) + 1;
-    const int n_links = std::pow(2, depth);
+    const int n_nodes = std::pow(2, depth) - 1;
+    const int n_links = std::pow(2, depth) - 2;
 
     // initialize the ptrs
     this->initIndicesAndWeights(indices, weights, n_links, device);
