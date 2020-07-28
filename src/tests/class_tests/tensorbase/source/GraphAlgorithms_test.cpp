@@ -36,8 +36,8 @@ BOOST_AUTO_TEST_CASE(indicesAndWeightsToAdjacencyMatrixDefaultDevice)
   for (int i = 0; i < node_ids->getTensorSize(); ++i) {
     for (int j = 0; j < node_ids->getTensorSize(); ++j) {
       if ((j == 0 && i == 1) || (j == 0 && i == 2) || (j == 1 && i == 3) || (j == 1 && i == 4) ||
-        (j == 2 && i == 5) || (j == 2 && i == 6) || (j == 3 && i == 7) || (j == 3 && i == 8)) {
-        BOOST_CHECK_GT(adjacency->getData()(i, j), 0);
+        (j == 2 && i == 5) || (j == 2 && i == 6)) {
+        BOOST_CHECK(adjacency->getData()(i, j) > 0);
       }
       else {
         BOOST_CHECK_EQUAL(adjacency->getData()(i, j), 0);
@@ -80,16 +80,16 @@ BOOST_AUTO_TEST_CASE(breadthFirstSearchDefaultDevice)
         BOOST_CHECK_EQUAL(tree->getData()(i, j), 1);
       }
       else if ((j == 1 && i == 1) || (j == 1 && i == 2) || (j == 2 && i == 3) || (j == 2 && i == 4) ||
-        (j == 2 && i == 5) || (j == 2 && i == 6) || (j == 4 && i == 7) || (j == 4 && i == 8)) {
-        BOOST_CHECK_GT(tree->getData()(i, j), 0);
+        (j == 2 && i == 5) || (j == 2 && i == 6)) {
+        BOOST_CHECK(tree->getData()(i, j) > 0);
       }
       else {
         BOOST_CHECK_EQUAL(tree->getData()(i, j), 0);
       }
     }
   }
-  std::cout << "adjacency\n" << adjacency->getData() << std::endl;
-  std::cout << "tree\n" << tree->getData() << std::endl;
+  //std::cout << "adjacency\n" << adjacency->getData() << std::endl;
+  //std::cout << "tree\n" << tree->getData() << std::endl;
 }
 
 BOOST_AUTO_TEST_SUITE_END()

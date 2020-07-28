@@ -91,6 +91,8 @@ BOOST_AUTO_TEST_CASE(BinaryTreeGraphGeneratorMakeBinaryTree)
   for (int i = 0; i < n_nodes; ++i) {
     BOOST_CHECK_EQUAL(node_ids->getData()(i), i);
   }
+  //std::cout << "link_ids\n"<< link_ids->getData() <<std::endl;
+  //std::cout << "node_ids\n" << node_ids->getData() << std::endl;
 
   // test getting the node/link ids for a subset
   node_ids.reset();
