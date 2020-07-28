@@ -1,13 +1,6 @@
 #ifndef TENSORBASE_GRAPHALGORITHMS_H
 #define TENSORBASE_GRAPHALGORITHMS_H
 
-#if COMPILE_WITH_CUDA
-#define EIGEN_DEFAULT_DENSE_INDEX_TYPE int
-#define EIGEN_USE_GPU
-#include <cuda.h>
-#include <cuda_runtime.h>
-#endif
-
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <math.h>
 #include <random>

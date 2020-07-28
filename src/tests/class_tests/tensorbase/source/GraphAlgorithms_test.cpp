@@ -33,7 +33,17 @@ BOOST_AUTO_TEST_CASE(indicesAndWeightsToAdjacencyMatrixDefaultDevice)
   to_adjacency(node_ids, indices, weights, adjacency, device);
   Eigen::array<Eigen::Index, 2> indices_dims = { int(node_ids->getTensorSize()), int(node_ids->getTensorSize()) };
   BOOST_CHECK(adjacency->getDimensions() == indices_dims);
-  std::cout << "adjacency\n"<< adjacency->getData() <<std::endl;
+  for (int i = 0; i < node_ids->getTensorSize(); ++i) {
+    for (int j = 0; j < node_ids->getTensorSize(); ++j) {
+      if ((j == 0 && i == 1) || (j == 0 && i == 2) || (j == 1 && i == 3) || (j == 1 && i == 4) ||
+        (j == 2 && i == 5) || (j == 2 && i == 6) || (j == 3 && i == 7) || (j == 3 && i == 8)) {
+        BOOST_CHECK_GT(adjacency->getData()(i, j), 0);
+      }
+      else {
+        BOOST_CHECK_EQUAL(adjacency->getData()(i, j), 0);
+      }
+    }
+  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
