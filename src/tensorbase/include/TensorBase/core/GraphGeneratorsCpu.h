@@ -9,17 +9,14 @@
 namespace TensorBase
 {
   template<typename LabelsT, typename TensorT>
-  class KroneckerGraphGeneratorCpu: public KroneckerGraphGenerator<LabelsT, TensorT, Eigen::ThreadPoolDevice> {
-  public:
-    using KroneckerGraphGenerator<LabelsT, TensorT, Eigen::ThreadPoolDevice>::KroneckerGraphGenerator;
+  class GraphGeneratorCpu : public virtual GraphGenerator<LabelsT, TensorT, Eigen::ThreadPoolDevice> {
   protected:
-    void initKroneckerGraph(std::shared_ptr<TensorData<LabelsT, Eigen::ThreadPoolDevice, 2>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>>& weights, const int& M, Eigen::ThreadPoolDevice& device) const override;
-    void initKroneckerGraphTmpData(std::shared_ptr<TensorData<float, Eigen::ThreadPoolDevice, 2>>& indices_float, const int& M, Eigen::ThreadPoolDevice& device) const override;
+    void initIndicesAndWeights(std::shared_ptr<TensorData<LabelsT, Eigen::ThreadPoolDevice, 2>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>>& weights, const int& M, Eigen::ThreadPoolDevice& device) const override;
     void initIDs(std::shared_ptr<TensorData<LabelsT, Eigen::ThreadPoolDevice, 1>>& node_or_link_ids, const int& N, Eigen::ThreadPoolDevice& device) const override;
     void getUniqueIds(const int& offset, const int& span, const std::shared_ptr<TensorData<LabelsT, Eigen::ThreadPoolDevice, 2>>& indices, std::shared_ptr<TensorData<LabelsT, Eigen::ThreadPoolDevice, 1>>& node_ids, Eigen::ThreadPoolDevice& device) const override;
   };
   template<typename LabelsT, typename TensorT>
-  inline void KroneckerGraphGeneratorCpu<LabelsT, TensorT>::initKroneckerGraph(std::shared_ptr<TensorData<LabelsT, Eigen::ThreadPoolDevice, 2>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>>& weights, const int& M, Eigen::ThreadPoolDevice& device) const
+  inline void GraphGeneratorCpu<LabelsT, TensorT>::initIndicesAndWeights(std::shared_ptr<TensorData<LabelsT, Eigen::ThreadPoolDevice, 2>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>>& weights, const int& M, Eigen::ThreadPoolDevice& device) const
   {
     TensorDataCpu<LabelsT, 2> indices_tmp(Eigen::array<Eigen::Index, 2>({ M, 2 }));
     indices_tmp.setData();
@@ -31,15 +28,7 @@ namespace TensorBase
     weights = std::make_shared<TensorDataCpu<TensorT, 2>>(weights_tmp);
   }
   template<typename LabelsT, typename TensorT>
-  inline void KroneckerGraphGeneratorCpu<LabelsT, TensorT>::initKroneckerGraphTmpData(std::shared_ptr<TensorData<float, Eigen::ThreadPoolDevice, 2>>& indices_float, const int& M, Eigen::ThreadPoolDevice& device) const
-  {
-    TensorDataCpu<float, 2> indices_tmp(Eigen::array<Eigen::Index, 2>({ M, 2 }));
-    indices_tmp.setData();
-    indices_tmp.syncHAndDData(device);
-    indices_float = std::make_shared<TensorDataCpu<float, 2>>(indices_tmp);
-  }  
-  template<typename LabelsT, typename TensorT>
-  inline void KroneckerGraphGeneratorCpu<LabelsT, TensorT>::initIDs(std::shared_ptr<TensorData<LabelsT, Eigen::ThreadPoolDevice, 1>>& node_or_link_ids, const int& N, Eigen::ThreadPoolDevice& device) const
+  inline void GraphGeneratorCpu<LabelsT, TensorT>::initIDs(std::shared_ptr<TensorData<LabelsT, Eigen::ThreadPoolDevice, 1>>& node_or_link_ids, const int& N, Eigen::ThreadPoolDevice& device) const
   {
     TensorDataCpu<LabelsT, 1> indices_tmp(Eigen::array<Eigen::Index, 1>({ N }));
     indices_tmp.setData();
@@ -47,16 +36,16 @@ namespace TensorBase
     node_or_link_ids = std::make_shared<TensorDataCpu<LabelsT, 1>>(indices_tmp);
   }
   template<typename LabelsT, typename TensorT>
-  inline void KroneckerGraphGeneratorCpu<LabelsT, TensorT>::getUniqueIds(const int& offset, const int& span, const std::shared_ptr<TensorData<LabelsT, Eigen::ThreadPoolDevice, 2>>& indices, std::shared_ptr<TensorData<LabelsT, Eigen::ThreadPoolDevice, 1>>& node_ids, Eigen::ThreadPoolDevice& device) const
+  inline void GraphGeneratorCpu<LabelsT, TensorT>::getUniqueIds(const int& offset, const int& span, const std::shared_ptr<TensorData<LabelsT, Eigen::ThreadPoolDevice, 2>>& indices, std::shared_ptr<TensorData<LabelsT, Eigen::ThreadPoolDevice, 1>>& node_ids, Eigen::ThreadPoolDevice& device) const
   {
     // Sort a copy of the data
-    TensorDataCpu<LabelsT, 1> indices_tmp(Eigen::array<Eigen::Index, 1>({ span }));
+    TensorDataCpu<LabelsT, 1> indices_tmp(Eigen::array<Eigen::Index, 1>({ 2 * span }));
     indices_tmp.setData();
     indices_tmp.syncHAndDData(device);
     auto indices_tmp_ptr = std::make_shared<TensorDataCpu<LabelsT, 1>>(indices_tmp);
     Eigen::TensorMap<Eigen::Tensor<LabelsT, 1>> indices_tmp_values(indices_tmp_ptr->getDataPointer().get(), indices_tmp_ptr->getDimensions());
-    Eigen::TensorMap<Eigen::Tensor<LabelsT, 1>> indices_values(indices->getDataPointer().get(), indices->getTensorSize());
-    indices_tmp_values.device(device) = indices_values.slice(Eigen::array<Eigen::Index, 1>({ offset }), Eigen::array<Eigen::Index, 1>({ span }));
+    Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> indices_values(indices->getDataPointer().get(), indices->getDimensions());
+    indices_tmp_values.device(device) = indices_values.slice(Eigen::array<Eigen::Index, 2>({ offset, 0 }), Eigen::array<Eigen::Index, 2>({ span, 2 })).reshape(Eigen::array<Eigen::Index, 1>({ 2 * span }));
     indices_tmp_ptr->sort("ASC", device);
 
     // Allocate memory
@@ -80,9 +69,6 @@ namespace TensorBase
 
     // Resize the unique results
     n_runs->syncHAndDData(device); // d to h
-    //if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
-    //  assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
-    //}
     unique->setDimensions(Eigen::array<Eigen::Index, 1>({ n_runs->getData()(0) }));
 
     // Copy over the results
@@ -95,5 +81,26 @@ namespace TensorBase
     node_ids_values.device(device) = unique_values;
   }
 
+  template<typename LabelsT, typename TensorT>
+  class KroneckerGraphGeneratorCpu: public KroneckerGraphGenerator<LabelsT, TensorT, Eigen::ThreadPoolDevice>, public GraphGeneratorCpu<LabelsT, TensorT> {
+  public:
+    using KroneckerGraphGenerator<LabelsT, TensorT, Eigen::ThreadPoolDevice>::KroneckerGraphGenerator;
+  protected:
+    void initKroneckerGraphTmpData(std::shared_ptr<TensorData<float, Eigen::ThreadPoolDevice, 2>>& indices_float, const int& M, Eigen::ThreadPoolDevice& device) const override;
+  };
+  template<typename LabelsT, typename TensorT>
+  inline void KroneckerGraphGeneratorCpu<LabelsT, TensorT>::initKroneckerGraphTmpData(std::shared_ptr<TensorData<float, Eigen::ThreadPoolDevice, 2>>& indices_float, const int& M, Eigen::ThreadPoolDevice& device) const
+  {
+    TensorDataCpu<float, 2> indices_tmp(Eigen::array<Eigen::Index, 2>({ M, 2 }));
+    indices_tmp.setData();
+    indices_tmp.syncHAndDData(device);
+    indices_float = std::make_shared<TensorDataCpu<float, 2>>(indices_tmp);
+  }
+
+  template<typename LabelsT, typename TensorT>
+  class BinaryTreeGraphGeneratorCpu : public BinaryTreeGraphGenerator<LabelsT, TensorT, Eigen::ThreadPoolDevice>, public GraphGeneratorCpu<LabelsT, TensorT> {
+  public:
+    using BinaryTreeGraphGenerator<LabelsT, TensorT, Eigen::ThreadPoolDevice>::BinaryTreeGraphGenerator;
+  };
 }
 #endif //TENSORBASE_GRAPHGENERATORSCPU_H

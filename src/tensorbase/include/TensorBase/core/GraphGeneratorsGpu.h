@@ -13,17 +13,14 @@
 namespace TensorBase
 {
   template<typename LabelsT, typename TensorT>
-  class KroneckerGraphGeneratorGpu: public KroneckerGraphGenerator<LabelsT, TensorT, Eigen::GpuDevice> {
-  public:
-    using KroneckerGraphGenerator<LabelsT, TensorT, Eigen::GpuDevice>::KroneckerGraphGenerator;
+  class GraphGeneratorGpu : public virtual GraphGenerator<LabelsT, TensorT, Eigen::GpuDevice> {
   protected:
-    void initKroneckerGraph(std::shared_ptr<TensorData<LabelsT, Eigen::GpuDevice, 2>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 2>>& weights, const int& M, Eigen::GpuDevice& device) const override;
-    void initKroneckerGraphTmpData(std::shared_ptr<TensorData<float, Eigen::GpuDevice, 2>>& indices_float, const int& M, Eigen::GpuDevice& device) const override;
+    void initIndicesAndWeights(std::shared_ptr<TensorData<LabelsT, Eigen::GpuDevice, 2>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 2>>& weights, const int& M, Eigen::GpuDevice& device) const override;
     void initIDs(std::shared_ptr<TensorData<LabelsT, Eigen::GpuDevice, 1>>& node_or_link_ids, const int& N, Eigen::GpuDevice& device) const override;
     void getUniqueIds(const int& offset, const int& span, const std::shared_ptr<TensorData<LabelsT, Eigen::GpuDevice, 2>>& indices, std::shared_ptr<TensorData<LabelsT, Eigen::GpuDevice, 1>>& node_ids, Eigen::GpuDevice& device) const override;
   };
   template<typename LabelsT, typename TensorT>
-  inline void KroneckerGraphGeneratorGpu<LabelsT, TensorT>::initKroneckerGraph(std::shared_ptr<TensorData<LabelsT, Eigen::GpuDevice, 2>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 2>>& weights, const int& M, Eigen::GpuDevice& device) const
+  inline void GraphGeneratorGpu<LabelsT, TensorT>::initIndicesAndWeights(std::shared_ptr<TensorData<LabelsT, Eigen::GpuDevice, 2>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 2>>& weights, const int& M, Eigen::GpuDevice& device) const
   {
     TensorDataGpuPrimitiveT<LabelsT, 2> indices_tmp(Eigen::array<Eigen::Index, 2>({ M, 2 }));
     indices_tmp.setData();
@@ -35,15 +32,7 @@ namespace TensorBase
     weights = std::make_shared<TensorDataGpuPrimitiveT<TensorT, 2>>(weights_tmp);
   }
   template<typename LabelsT, typename TensorT>
-  inline void KroneckerGraphGeneratorGpu<LabelsT, TensorT>::initKroneckerGraphTmpData(std::shared_ptr<TensorData<float, Eigen::GpuDevice, 2>>& indices_float, const int& M, Eigen::GpuDevice& device) const
-  {
-    TensorDataGpuPrimitiveT<float, 2> indices_tmp(Eigen::array<Eigen::Index, 2>({ M, 2 }));
-    indices_tmp.setData();
-    indices_tmp.syncHAndDData(device);
-    indices_float = std::make_shared<TensorDataGpuPrimitiveT<float, 2>>(indices_tmp);
-  }
-  template<typename LabelsT, typename TensorT>
-  inline void KroneckerGraphGeneratorGpu<LabelsT, TensorT>::initIDs(std::shared_ptr<TensorData<LabelsT, Eigen::GpuDevice, 1>>& node_or_link_ids, const int& N, Eigen::GpuDevice& device) const
+  inline void GraphGeneratorGpu<LabelsT, TensorT>::initIDs(std::shared_ptr<TensorData<LabelsT, Eigen::GpuDevice, 1>>& node_or_link_ids, const int& N, Eigen::GpuDevice& device) const
   {
     TensorDataGpuPrimitiveT<LabelsT, 1> indices_tmp(Eigen::array<Eigen::Index, 1>({ N }));
     indices_tmp.setData();
@@ -51,16 +40,16 @@ namespace TensorBase
     node_or_link_ids = std::make_shared<TensorDataGpuPrimitiveT<LabelsT, 1>>(indices_tmp);
   }
   template<typename LabelsT, typename TensorT>
-  inline void KroneckerGraphGeneratorGpu<LabelsT, TensorT>::getUniqueIds(const int& offset, const int& span, const std::shared_ptr<TensorData<LabelsT, Eigen::GpuDevice, 2>>& indices, std::shared_ptr<TensorData<LabelsT, Eigen::GpuDevice, 1>>& node_ids, Eigen::GpuDevice& device) const
+  inline void GraphGeneratorGpu<LabelsT, TensorT>::getUniqueIds(const int& offset, const int& span, const std::shared_ptr<TensorData<LabelsT, Eigen::GpuDevice, 2>>& indices, std::shared_ptr<TensorData<LabelsT, Eigen::GpuDevice, 1>>& node_ids, Eigen::GpuDevice& device) const
   {
     // Sort a copy of the data
-    TensorDataGpuPrimitiveT<LabelsT, 1> indices_tmp(Eigen::array<Eigen::Index, 1>({ span }));
+    TensorDataGpuPrimitiveT<LabelsT, 1> indices_tmp(Eigen::array<Eigen::Index, 1>({ 2 * span }));
     indices_tmp.setData();
     indices_tmp.syncHAndDData(device);
     auto indices_tmp_ptr = std::make_shared<TensorDataGpuPrimitiveT<LabelsT, 1>>(indices_tmp);
     Eigen::TensorMap<Eigen::Tensor<LabelsT, 1>> indices_tmp_values(indices_tmp_ptr->getDataPointer().get(), indices_tmp_ptr->getDimensions());
-    Eigen::TensorMap<Eigen::Tensor<LabelsT, 1>> indices_values(indices->getDataPointer().get(), indices->getTensorSize());
-    indices_tmp_values.device(device) = indices_values.slice(Eigen::array<Eigen::Index, 1>({ offset }), Eigen::array<Eigen::Index, 1>({ span }));
+    Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> indices_values(indices->getDataPointer().get(), indices->getDimensions());
+    indices_tmp_values.device(device) = indices_values.slice(Eigen::array<Eigen::Index, 2>({ offset, 0 }), Eigen::array<Eigen::Index, 2>({ span, 2 })).reshape(Eigen::array<Eigen::Index, 1>({ 2 * span }));
     indices_tmp_ptr->sort("ASC", device);
 
     // Allocate memory
@@ -98,6 +87,28 @@ namespace TensorBase
     Eigen::TensorMap<Eigen::Tensor<LabelsT, 1>> unique_values(unique->getDataPointer().get(), unique->getDimensions());
     node_ids_values.device(device) = unique_values;
   }
+
+  template<typename LabelsT, typename TensorT>
+  class KroneckerGraphGeneratorGpu: public KroneckerGraphGenerator<LabelsT, TensorT, Eigen::GpuDevice>, public GraphGeneratorGpu<LabelsT, TensorT> {
+  public:
+    using KroneckerGraphGenerator<LabelsT, TensorT, Eigen::GpuDevice>::KroneckerGraphGenerator;
+  protected:
+    void initKroneckerGraphTmpData(std::shared_ptr<TensorData<float, Eigen::GpuDevice, 2>>& indices_float, const int& M, Eigen::GpuDevice& device) const override;
+  };
+  template<typename LabelsT, typename TensorT>
+  inline void KroneckerGraphGeneratorGpu<LabelsT, TensorT>::initKroneckerGraphTmpData(std::shared_ptr<TensorData<float, Eigen::GpuDevice, 2>>& indices_float, const int& M, Eigen::GpuDevice& device) const
+  {
+    TensorDataGpuPrimitiveT<float, 2> indices_tmp(Eigen::array<Eigen::Index, 2>({ M, 2 }));
+    indices_tmp.setData();
+    indices_tmp.syncHAndDData(device);
+    indices_float = std::make_shared<TensorDataGpuPrimitiveT<float, 2>>(indices_tmp);
+  }
+
+  template<typename LabelsT, typename TensorT>
+  class BinaryTreeGraphGeneratorGpu : public BinaryTreeGraphGenerator<LabelsT, TensorT, Eigen::GpuDevice>, public GraphGeneratorGpu<LabelsT, TensorT> {
+  public:
+    using BinaryTreeGraphGenerator<LabelsT, TensorT, Eigen::GpuDevice>::BinaryTreeGraphGenerator;
+  };
 }
 #endif
 #endif //TENSORBASE_GRAPHGENERATORSGPU_H
