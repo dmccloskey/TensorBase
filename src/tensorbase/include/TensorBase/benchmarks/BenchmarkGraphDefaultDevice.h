@@ -23,7 +23,22 @@ namespace TensorBaseBenchmarks
 	};
   template<typename LabelsT, typename TensorT>
   inline void SelectAndCountNodePropertyDefaultDevice<LabelsT, TensorT>::setLabelsValuesResult(Eigen::DefaultDevice& device)
-  { // TODO
+  {
+    // make the labels and sync to the device
+    Eigen::Tensor<LabelsT, 2> select_labels_values(1, 1);
+    select_labels_values.setConstant(LabelsT("label"));
+    TensorDataDefaultDevice<LabelsT, 2> select_labels(select_labels_values.dimensions());
+    select_labels.setData(select_labels_values);
+    select_labels.syncHAndDData(device);
+    this->select_labels_ = std::make_shared<TensorDataDefaultDevice<LabelsT, 2>>(select_labels);
+
+    // make the corresponding values and sync to the device
+    Eigen::Tensor<TensorT, 1> select_values_values(1);
+    select_values_values.setConstant(TensorT("white"));
+    TensorDataDefaultDevice<TensorT, 1> select_values(select_values_values.dimensions());
+    select_values.setData(select_values_values);
+    select_values.syncHAndDData(device);
+    this->select_values_ = std::make_shared<TensorDataDefaultDevice<TensorT, 1>>(select_values);
   }
 
 	/// Specialized class for selecting and counting nodes with particular properties for the DefaultDevice case
@@ -35,18 +50,32 @@ namespace TensorBaseBenchmarks
 	};
   template<typename LabelsT, typename TensorT>
   inline void SelectAndCountLinkPropertyDefaultDevice<LabelsT, TensorT>::setLabelsValuesResult(Eigen::DefaultDevice& device)
-  { // TODO
+  {
+    // make the labels and sync to the device
+    Eigen::Tensor<LabelsT, 2> select_labels_values(1, 1);
+    select_labels_values.setConstant(LabelsT("label"));
+    TensorDataDefaultDevice<LabelsT, 2> select_labels(select_labels_values.dimensions());
+    select_labels.setData(select_labels_values);
+    select_labels.syncHAndDData(device);
+    this->select_labels_ = std::make_shared<TensorDataDefaultDevice<LabelsT, 2>>(select_labels);
+
+    // make the corresponding values and sync to the device
+    Eigen::Tensor<TensorT, 1> select_values_values(1);
+    select_values_values.setConstant(TensorT("dashed"));
+    TensorDataDefaultDevice<TensorT, 1> select_values(select_values_values.dimensions());
+    select_values.setData(select_values_values);
+    select_values.syncHAndDData(device);
+    this->select_values_ = std::make_shared<TensorDataDefaultDevice<TensorT, 1>>(select_values);
   }
 
-  /// Specialized SelectGraphAlgorithm for the DefaultDevice
+  /// Specialized GraphAlgorithmHelper for the DefaultDevice
   template<typename LabelsT, typename TensorT>
-  class SelectGraphAlgorithmDefaultDevice: public virtual SelectGraphAlgorithm<LabelsT, TensorT, Eigen::DefaultDevice> {
-  public:
+  struct GraphAlgorithmHelperDefaultDevice: public GraphAlgorithmHelper<LabelsT, TensorT, Eigen::DefaultDevice> {
     void setIndicesAndWeights(std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& weights, std::shared_ptr<TensorCollection<Eigen::DefaultDevice>>& tensor_collection, Eigen::DefaultDevice& device) override;
     void setNodeAndLinkIds(const std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& indices, std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 1>>& node_ids, std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 1>>& link_ids, Eigen::DefaultDevice& device) override;
   };
   template<typename LabelsT, typename TensorT>
-  inline void SelectGraphAlgorithmDefaultDevice<LabelsT, TensorT>::setIndicesAndWeights(std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& weights, std::shared_ptr<TensorCollection<Eigen::DefaultDevice>>& tensor_collection, Eigen::DefaultDevice& device)
+  inline void GraphAlgorithmHelperDefaultDevice<LabelsT, TensorT>::setIndicesAndWeights(std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& weights, std::shared_ptr<TensorCollection<Eigen::DefaultDevice>>& tensor_collection, Eigen::DefaultDevice& device)
   {
     // set the indices
     TensorDataDefaultDevice<LabelsT, 2> indices_tmp(Eigen::array<Eigen::Index, 2>({
@@ -62,7 +91,7 @@ namespace TensorBaseBenchmarks
       tensor_collection->tables_.at("Graph_weights")->getDimSizeFromAxisName("2_weights") }));
     weights_tmp.setData();
     weights_tmp.syncHAndDData(device);
-    weights = std::make_shared<TensorDataDefaultDevice<LabelsT, 2>>(weights_tmp);
+    weights = std::make_shared<TensorDataDefaultDevice<TensorT, 2>>(weights_tmp);
 
     // get the indices
     std::shared_ptr<LabelsT[]> data_indices;
@@ -75,29 +104,15 @@ namespace TensorBaseBenchmarks
     weights->getDataPointer() = data_weights;
   }
   template<typename LabelsT, typename TensorT>
-  inline void SelectGraphAlgorithmDefaultDevice<LabelsT, TensorT>::setNodeAndLinkIds(const std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& indices, std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 1>>& node_ids, std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 1>>& link_ids, Eigen::DefaultDevice& device)
+  inline void GraphAlgorithmHelperDefaultDevice<LabelsT, TensorT>::setNodeAndLinkIds(const std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& indices, std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 1>>& node_ids, std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 1>>& link_ids, Eigen::DefaultDevice& device)
   {
     KroneckerGraphGeneratorDefaultDevice<LabelsT, TensorT> graph_generator;
     graph_generator.getNodeAndLinkIds(0, indices->getDimensions().at(0), indices, node_ids, link_ids, device);
   }
 
-	/// Specialized class for make the adjacency matrix for the DefaultDevice case
-	template<typename LabelsT, typename TensorT>
-	class SelectAdjacencyDefaultDeviceV : public virtual SelectAdjacency<LabelsT, TensorT, Eigen::DefaultDevice> {
-	public:
-    void makeAdjacencyMatrix(const std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 1>>& node_ids, const std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& indices, const std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& weights, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& adjacency, Eigen::DefaultDevice& device) override;
-	};
-  template<typename LabelsT, typename TensorT>
-  inline void SelectAdjacencyDefaultDeviceV<LabelsT, TensorT>::makeAdjacencyMatrix(const std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 1>>& node_ids, const std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& indices, const std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& weights, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& adjacency, Eigen::DefaultDevice& device)
-  {
-    IndicesAndWeightsToAdjacencyMatrixDefaultDevice<LabelsT, TensorT> to_adjacency;
-    to_adjacency(node_ids, indices, weights, adjacency, device);
-  }
-
   /// Specialized class for make the adjacency matrix for the DefaultDevice case
   template<typename LabelsT, typename TensorT>
-  class SelectAdjacencyDefaultDevice : public SelectAdjacencyDefaultDeviceV<LabelsT, TensorT>, public SelectGraphAlgorithmDefaultDevice<LabelsT, TensorT> {
-  public:
+  struct SelectAdjacencyDefaultDevice : public SelectAdjacency<LabelsT, TensorT, Eigen::DefaultDevice> {
     void operator() (std::shared_ptr<TensorCollection<Eigen::DefaultDevice>>& tensor_collection, Eigen::DefaultDevice& device) override;
   };
   template<typename LabelsT, typename TensorT>
@@ -108,28 +123,17 @@ namespace TensorBaseBenchmarks
     std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>> indices;
     std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>> weights;
     std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>> adjacency;
-    this->setIndicesAndWeights(indices, weights, tensor_collection, device);
-    this->setNodeAndLinkIds(indices, node_ids, link_ids, device);
-    this->makeAdjacencyMatrix(node_ids, indices, weights, adjacency, device);
-  }
-
-	/// Specialized class for making the BFS tree for the DefaultDevice case
-	template<typename LabelsT, typename TensorT>
-	class SelectBFSDefaultDeviceV : public virtual SelectBFS<LabelsT, TensorT, Eigen::DefaultDevice> {
-	public:
-		void makeBFSTree(const std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 1>>& node_ids, const std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& adjacency, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& tree, Eigen::DefaultDevice& device) override;
-	};
-  template<typename LabelsT, typename TensorT>
-  inline void SelectBFSDefaultDeviceV<LabelsT, TensorT>::makeBFSTree(const std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 1>>& node_ids, const std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& adjacency, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& tree, Eigen::DefaultDevice& device)
-  {
-    BreadthFirstSearchDefaultDevice<int, float> breadth_first_search;
-    breadth_first_search(0, node_ids, adjacency, tree, device);
+    GraphAlgorithmHelperDefaultDevice<LabelsT, TensorT> graph_algo_helper;
+    graph_algo_helper.setIndicesAndWeights(indices, weights, tensor_collection, device);
+    graph_algo_helper.setNodeAndLinkIds(indices, node_ids, link_ids, device);
+    IndicesAndWeightsToAdjacencyMatrixDefaultDevice<LabelsT, TensorT> to_adjacency;
+    to_adjacency(node_ids, indices, weights, adjacency, device);
+    this->adjacency_ = adjacency;
   }
 
   /// Specialized class for making the BFS tree for the DefaultDevice case
   template<typename LabelsT, typename TensorT>
-  class SelectBFSDefaultDevice : public SelectBFSDefaultDeviceV<LabelsT, TensorT>, public SelectAdjacencyDefaultDeviceV<LabelsT, TensorT>, public SelectGraphAlgorithmDefaultDevice<LabelsT, TensorT> {
-  public:
+  struct SelectBFSDefaultDevice : public SelectBFS<LabelsT, TensorT, Eigen::DefaultDevice> {
     void operator() (std::shared_ptr<TensorCollection<Eigen::DefaultDevice>>& tensor_collection, Eigen::DefaultDevice& device) override;
   };
   template<typename LabelsT, typename TensorT>
@@ -141,29 +145,19 @@ namespace TensorBaseBenchmarks
     std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>> weights;
     std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>> adjacency;
     std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>> tree;
-    this->setIndicesAndWeights(indices, weights, tensor_collection, device);
-    this->setNodeAndLinkIds(indices, node_ids, link_ids, device);
-    this->makeAdjacencyMatrix(node_ids, indices, weights, adjacency, device);
-    this->makeBFSTree(node_ids, adjacency, tree, device);
+    GraphAlgorithmHelperDefaultDevice<LabelsT, TensorT> graph_algo_helper;
+    graph_algo_helper.setIndicesAndWeights(indices, weights, tensor_collection, device);
+    graph_algo_helper.setNodeAndLinkIds(indices, node_ids, link_ids, device);
+    IndicesAndWeightsToAdjacencyMatrixDefaultDevice<LabelsT, TensorT> to_adjacency;
+    to_adjacency(node_ids, indices, weights, adjacency, device);
+    BreadthFirstSearchDefaultDevice<LabelsT, TensorT> breadth_first_search;
+    breadth_first_search(0, node_ids, adjacency, tree, device);
+    this->tree_ = tree;
   }
 
   /// Specialized class for making the SSSP path lengths vector for the DefaultDevice case
   template<typename LabelsT, typename TensorT>
-	class SelectSSSPDefaultDeviceV : public virtual SelectSSSP<LabelsT, TensorT, Eigen::DefaultDevice> {
-	public:
-		void makeSSSPPathLengths(const std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& tree, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 1>>& path_lengths, Eigen::DefaultDevice& device) override;
-	};
-  template<typename LabelsT, typename TensorT>
-  inline void SelectSSSPDefaultDeviceV<LabelsT, TensorT>::makeSSSPPathLengths(const std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& tree, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 1>>& path_lengths, Eigen::DefaultDevice& device)
-  {
-    SingleSourceShortestPathDefaultDevice<LabelsT, TensorT> sssp;
-    sssp(tree, path_lengths, device);
-  }
-
-  /// Specialized class for making the SSSP path lengths vector for the DefaultDevice case
-  template<typename LabelsT, typename TensorT>
-  class SelectSSSPDefaultDevice : public SelectSSSPDefaultDeviceV<LabelsT, TensorT>, public SelectAdjacencyDefaultDeviceV<LabelsT, TensorT>, public SelectBFSDefaultDeviceV<LabelsT, TensorT>, public SelectGraphAlgorithmDefaultDevice<LabelsT, TensorT> {
-  public:
+  struct SelectSSSPDefaultDevice : public SelectSSSP<LabelsT, TensorT, Eigen::DefaultDevice> {
     void operator() (std::shared_ptr<TensorCollection<Eigen::DefaultDevice>>& tensor_collection, Eigen::DefaultDevice& device) override;
   };
   template<typename LabelsT, typename TensorT>
@@ -176,11 +170,16 @@ namespace TensorBaseBenchmarks
     std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>> adjacency;
     std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>> tree;
     std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 1>> path_lengths;
-    this->setIndicesAndWeights(indices, weights, tensor_collection, device);
-    this->setNodeAndLinkIds(indices, node_ids, link_ids, device);
-    this->makeAdjacencyMatrix(node_ids, indices, weights, adjacency, device);
-    this->makeBFSTree(node_ids, adjacency, tree, device);
-    this->makeSSSPPathLengths(tree, path_lengths, device);
+    GraphAlgorithmHelperDefaultDevice<LabelsT, TensorT> graph_algo_helper;
+    graph_algo_helper.setIndicesAndWeights(indices, weights, tensor_collection, device);
+    graph_algo_helper.setNodeAndLinkIds(indices, node_ids, link_ids, device);
+    IndicesAndWeightsToAdjacencyMatrixDefaultDevice<LabelsT, TensorT> to_adjacency;
+    to_adjacency(node_ids, indices, weights, adjacency, device);
+    BreadthFirstSearchDefaultDevice<LabelsT, TensorT> breadth_first_search;
+    breadth_first_search(0, node_ids, adjacency, tree, device);
+    SingleSourceShortestPathDefaultDevice<LabelsT, TensorT> sssp;
+    sssp(tree, path_lengths, device);
+    this->path_lengths_ = path_lengths;
   }
 
   /// Helper structure to manage the KroneckerGraph data for the DefaultDevice
@@ -291,7 +290,7 @@ namespace TensorBaseBenchmarks
       tmp_values.device(device) = node_ids_values.slice(Eigen::array<Eigen::Index, 1>({ this->nodes_added_cumulative_ }), Eigen::array<Eigen::Index, 1>({ node_id_size }));
 
       // assign the values
-      node_ids = std::make_shared<TensorDataDefaultDevice<KGLabelsT, 1>>(tmp);
+      this->node_ids_ = std::make_shared<TensorDataDefaultDevice<KGLabelsT, 1>>(tmp);
       this->nodes_added_cumulative_ += node_id_size;
       return true;
     }
@@ -300,14 +299,14 @@ namespace TensorBaseBenchmarks
   template<typename KGLabelsT, typename KGTensorT, typename LabelsT, typename TensorT>
   inline void GraphManagerNodePropertyDefaultDevice<KGLabelsT, KGTensorT, LabelsT, TensorT>::setLabels(Eigen::DefaultDevice& device)
   {
-    TensorDataDefaultDevice<TensorT, 1> tmp(node_ids->getDimensions());
+    TensorDataDefaultDevice<TensorT, 1> tmp(this->node_ids_->getDimensions());
     tmp.setData();
 
     // Cycle through each color node;
     Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> tmp_values(tmp.getDataPointer().get(), tmp.getDimensions());
     Eigen::Tensor<TensorT, 2> labels(1, 5);
     labels.setValues({ {TensorT("white"), TensorT("black"), TensorT("red"), TensorT("blue"), TensorT("green")} });
-    const int bcast_length = node_ids->getTensorSize() / 5 + 1;
+    const int bcast_length = this->node_ids_->getTensorSize() / 5 + 1;
     auto labels_bcast_reshape = labels.shuffle(Eigen::array<Eigen::Index, 2>({ 1, 0 })).broadcast(Eigen::array<Eigen::Index, 2>({ 1, bcast_length })).reshape(Eigen::array<Eigen::Index, 1>({ bcast_length * 5 }));
     tmp_values = labels_bcast_reshape.slice(Eigen::array<Eigen::Index, 1>({ 0 }), Eigen::array<Eigen::Index, 1>({ (int)tmp.getTensorSize() }));
 
@@ -526,7 +525,7 @@ namespace TensorBaseBenchmarks
   }
   inline int BenchmarkGraph1LinkDefaultDevice::_selectAndCountNodeProperty(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& scale, const int& edge_factor, const bool& in_memory, Eigen::DefaultDevice& device) const
   {
-    SelectAndCountNodePropertyDefaultDevice<int, TensorArray8<char>> select_and_sum;
+    SelectAndCountNodePropertyDefaultDevice<TensorArray8<char>, TensorArray8<char>> select_and_sum;
     select_and_sum(transaction_manager.getTensorCollection(), device);
     if (!in_memory) {
       transaction_manager.commit(device);
@@ -536,7 +535,7 @@ namespace TensorBaseBenchmarks
   }
   inline int BenchmarkGraph1LinkDefaultDevice::_selectAndCountLinkProperty(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& scale, const int& edge_factor, const bool& in_memory, Eigen::DefaultDevice& device) const
   {
-    SelectAndCountNodePropertyDefaultDevice<int, TensorArray8<char>> select_and_sum;
+    SelectAndCountNodePropertyDefaultDevice<TensorArray8<char>, TensorArray8<char>> select_and_sum;
     select_and_sum(transaction_manager.getTensorCollection(), device);
     if (!in_memory) {
       transaction_manager.commit(device);

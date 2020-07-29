@@ -113,10 +113,8 @@ namespace TensorBaseBenchmarks
 	@brief Base class for graph algorithms
 	*/
 	template<typename LabelsT, typename TensorT, typename DeviceT>
-	class SelectGraphAlgorithm {
-	public:
-		virtual ~SelectGraphAlgorithm() = default;
-		virtual void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) = 0;
+	struct GraphAlgorithmHelper {
+		virtual ~GraphAlgorithmHelper() = default;
 		virtual void setIndicesAndWeights(std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& weights, std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) = 0;
 		virtual void setNodeAndLinkIds(const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& node_ids, std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& link_ids, DeviceT& device) = 0;
 	};
@@ -125,30 +123,27 @@ namespace TensorBaseBenchmarks
 	@brief Class for making the adjacency matrix from a sparse representation
 	*/
 	template<typename LabelsT, typename TensorT, typename DeviceT>
-	class SelectAdjacency: public virtual SelectGraphAlgorithm<LabelsT, DeviceT, DeviceT> {
-	public:
+	struct SelectAdjacency {
+		virtual void operator() (std::shared_ptr<TensorCollection<DeviceT>> & tensor_collection, DeviceT & device) = 0;
 		std::shared_ptr<TensorData<TensorT, DeviceT, 2>> adjacency_; ///< The results of the query
-		virtual void makeAdjacencyMatrix(const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& node_ids, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, const std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& weights, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& adjacency, DeviceT& device) = 0;
 	};
 
 	/*
 	@brief Class for running the breadth-first search algorithm
 	*/
 	template<typename LabelsT, typename TensorT, typename DeviceT>
-	class SelectBFS: public virtual SelectAdjacency<LabelsT, DeviceT, DeviceT> {
-	public:
+	struct SelectBFS {
+		virtual void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) = 0;
 		std::shared_ptr<TensorData<TensorT, DeviceT, 2>> tree_;
-		virtual void makeBFSTree(const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& node_ids, const std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& adjacency, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& tree, DeviceT& device) = 0;
 	};
 
 	/*
 	@brief Class for running the single source shortest path search algorithm
 	*/
 	template<typename LabelsT, typename TensorT, typename DeviceT>
-	class SelectSSSP : public virtual SelectBFS<LabelsT, DeviceT, DeviceT> {
-	public:
+	struct SelectSSSP {
+		virtual void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) = 0;
 		std::shared_ptr<TensorData<TensorT, DeviceT, 1>> path_lengths_;
-		virtual void makeSSSPPathLengths(const std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& tree, std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& path_lengths, DeviceT& device) = 0;
 	};
 
 	/// Helper structure to manage the KroneckerGraph data
