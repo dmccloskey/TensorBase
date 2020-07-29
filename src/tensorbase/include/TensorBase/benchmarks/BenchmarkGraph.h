@@ -41,7 +41,7 @@ namespace TensorBaseBenchmarks
 
 	/*
 	@brief Class for selecting and counting nodes with particular properties
-		Count the number of "white" nodes that are connected to a "black" node	
+		Count the number of "white" in nodes that are connected to a "black" out node	
 	*/
 	template<typename LabelsT, typename TensorT, typename DeviceT>
 	class SelectAndCountNodeProperty {
@@ -55,7 +55,41 @@ namespace TensorBaseBenchmarks
 	};
 	template<typename LabelsT, typename TensorT, typename DeviceT>
 	inline void SelectAndCountNodeProperty<LabelsT, TensorT, DeviceT>::operator()(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
-	{ // TODO
+	{
+		setLabelsValuesResult(device);
+		// Make and apply the where clause
+
+		// Reset the indices;
+
+		// Make and apply the reduction clause
+		ReductionClause<DeviceT> reduction_clause1("DataFrame_is_valid_true", reductionFunctions::SUM);
+		tensorSelect.applyReduction(tensor_collection, reduction_clause1, device);
+
+		// Copy out the results
+		std::shared_ptr<TensorT[]> data_is_valid;
+		tensor_collection->tables_.at("DataFrame_is_valid_true")->getDataPointer(data_is_valid);
+		Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> data_is_valid_values(data_is_valid.get(), 1);
+		Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> result_values(result_->getDataPointer().get(), 1);
+		result_values.device(device) = data_is_valid_values;
+
+		// Remove the intermediate tables
+		tensor_collection->removeTensorTable("DataFrame_is_valid_true");
+
+		// Select all white nodes
+		WhereClause<LabelsT, TensorT, DeviceT> where_clause1("Graph_node_property", "2_property", select_labels_, select_values_, logicalComparitors::EQUAL_TO, logicalModifiers::NONE, logicalContinuators::AND, logicalContinuators::AND);
+		TensorSelect tensorSelect;
+		tensorSelect.whereClause(tensor_collection, where_clause1, device);
+		tensorSelect.applySelect(tensor_collection, { "Graph_node_property" }, { "Graph_node_property_tmp" }, device);
+		tensor_collection->tables_.at("Graph_node_property")->resetIndicesView(device);
+
+		// Get their IDs
+		tensor_collection->removeTensorTable("Graph_node_property_tmp");
+
+		// Select all black nodes
+
+		// Get their IDs
+
+		// Select all in white node ids and out black ids
 	}
 
 	/*
