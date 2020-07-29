@@ -84,10 +84,10 @@ namespace TensorBase
     };
   };
   /*
-  @brief Class defining the `join` clause statement that joins two tables along a particular axis, dimensions, and/or label indices.
+  @brief Class defining the `join` clause statement that joins two tables along common dimensions.
 
   NOTES:
-    - The table dimensions must be equal 
+    - The table dimensions need not be the same
     - The method will match ON the user supplied table axis, dimensions, and/or label indices
     - It is assumed that the user has already selected other axes, dimensions, and/or labels to consider during execution prior to running the Join clause
   */
@@ -119,6 +119,36 @@ namespace TensorBase
     std::shared_ptr<TensorData<LabelsT, DeviceT, 1>> labels_r = nullptr; ///< the labels to select (option 1)
     std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> axis_labels_r = nullptr; ///< the labels to select (option 2)
     joinTypes::joinType join_type;
+  };
+
+  /*
+  @brief Class defining the `map` clause statement that maps the values of one table onto another
+  using a particular axis dimension's labels as the lookup key.
+
+  NOTES:
+    - The method will replace the values in the "values" table with the values found in the "key" table
+    - The method will match the values in the "values" table with the labels found in the "key" table axis dimensions
+    - The resulting table map axis will have labels that are a cross between the "values" table axis and the "key" table axis
+    - It is assumed that the user has already selected other axes, dimensions, and/or labels to consider during execution prior to running the Map clause
+  */
+  template<typename LabelsT, typename DeviceT>
+  class MapClause {
+  public:
+    MapClause() = default;
+    MapClause(const std::string& table_name_k, const std::string& axis_name_k, const std::string& dimension_name_k,
+      const std::string& table_name_v, const std::string& axis_name_v, const std::string& dimension_name_v,
+      const mapTypes::mapType& map_type) :
+      table_name_k(table_name_k), axis_name_k(axis_name_k), dimension_name_k(dimension_name_k),
+      table_name_v(table_name_v), axis_name_v(axis_name_v), dimension_name_v(dimension_name_v),
+      map_type(map_type) { };
+    ~MapClause() = default;
+    std::string table_name_k; ///< the table to select
+    std::string axis_name_k = ""; ///< the axis to select
+    std::string dimension_name_k = ""; ///< the dimension to select
+    std::string table_name_v; ///< the table to select
+    std::string axis_name_v = ""; ///< the axis to select
+    std::string dimension_name_v = ""; ///< the dimension to select
+    mapTypes::mapType map_type;
   };
 
   struct reductionFunctions {

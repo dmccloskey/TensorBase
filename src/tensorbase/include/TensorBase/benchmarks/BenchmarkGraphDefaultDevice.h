@@ -477,10 +477,11 @@ namespace TensorBaseBenchmarks
     const int data_size = std::pow(2, scale) * edge_factor;
 
     // Setup the axes
-    Eigen::Tensor<std::string, 1> dimensions_1a(1), dimensions_1b(1), dimensions_1c(1), dimensions_2(1), dimensions_3a(1), dimensions_3b(1);
+    Eigen::Tensor<std::string, 1> dimensions_1a(1), dimensions_1b(1), dimensions_2a(1), dimensions_2b(1), dimensions_2(1), dimensions_3a(1), dimensions_3b(1);
     dimensions_1a.setValues({ "links" });
     dimensions_1b.setValues({ "nodes" });
-    dimensions_1c.setValues({ "weights" });
+    dimensions_2a.setValues({ "weights" });
+    dimensions_2b.setValues({ "indices" });
     dimensions_3a.setValues({ "link_property" });
     dimensions_3b.setValues({ "node_property" });
     Eigen::Tensor<TensorArray8<char>, 2> labels_1b(1, 2), labels_1c(1, 1), labels_3(1, 1);;
@@ -490,7 +491,7 @@ namespace TensorBaseBenchmarks
 
     // Setup the tables
     std::shared_ptr<TensorTable<int, Eigen::DefaultDevice, 2>> table_1_ptr = std::make_shared<TensorTableDefaultDevice<int, 2>>(TensorTableDefaultDevice<int, 2>("Graph_sparse_indices"));
-    std::shared_ptr<TensorAxis<TensorArray8<char>, Eigen::DefaultDevice>> table_1_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray8<char>>>(TensorAxisDefaultDevice<TensorArray8<char>>("2_nodes", dimensions_1b, labels_1b));
+    std::shared_ptr<TensorAxis<TensorArray8<char>, Eigen::DefaultDevice>> table_1_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray8<char>>>(TensorAxisDefaultDevice<TensorArray8<char>>("2_nodes", dimensions_2b, labels_1b));
     std::shared_ptr<TensorAxis<int, Eigen::DefaultDevice>> table_1_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1_links", 1, 0));
     table_1_axis_2_ptr->setDimensions(dimensions_2);
     table_1_ptr->addTensorAxis(table_1_axis_1_ptr);
@@ -507,7 +508,7 @@ namespace TensorBaseBenchmarks
 
     // Setup the tables
     std::shared_ptr<TensorTable<float, Eigen::DefaultDevice, 2>> table_2_ptr = std::make_shared<TensorTableDefaultDevice<float, 2>>(TensorTableDefaultDevice<float, 2>("Graph_weights"));
-    std::shared_ptr<TensorAxis<TensorArray8<char>, Eigen::DefaultDevice>> table_2_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray8<char>>>(TensorAxisDefaultDevice<TensorArray8<char>>("2_weights", dimensions_1c, labels_1c));
+    std::shared_ptr<TensorAxis<TensorArray8<char>, Eigen::DefaultDevice>> table_2_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray8<char>>>(TensorAxisDefaultDevice<TensorArray8<char>>("2_weights", dimensions_2a, labels_1c));
     std::shared_ptr<TensorAxis<int, Eigen::DefaultDevice>> table_2_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<int>>(TensorAxisDefaultDevice<int>("1_links", 1, 0));
     table_2_axis_2_ptr->setDimensions(dimensions_2);
     table_2_ptr->addTensorAxis(table_2_axis_1_ptr);

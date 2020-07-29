@@ -57,20 +57,6 @@ namespace TensorBaseBenchmarks
 	inline void SelectAndCountNodeProperty<LabelsT, TensorT, DeviceT>::operator()(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
 	{
 		setLabelsValuesResult(device);
-		// Make and apply the where clause
-
-		// Reset the indices;
-
-		// Make and apply the reduction clause
-		ReductionClause<DeviceT> reduction_clause1("DataFrame_is_valid_true", reductionFunctions::SUM);
-		tensorSelect.applyReduction(tensor_collection, reduction_clause1, device);
-
-		// Copy out the results
-		std::shared_ptr<TensorT[]> data_is_valid;
-		tensor_collection->tables_.at("DataFrame_is_valid_true")->getDataPointer(data_is_valid);
-		Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> data_is_valid_values(data_is_valid.get(), 1);
-		Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> result_values(result_->getDataPointer().get(), 1);
-		result_values.device(device) = data_is_valid_values;
 
 		// Remove the intermediate tables
 		tensor_collection->removeTensorTable("DataFrame_is_valid_true");
@@ -83,6 +69,11 @@ namespace TensorBaseBenchmarks
 		tensor_collection->tables_.at("Graph_node_property")->resetIndicesView(device);
 
 		// Get their IDs
+		std::shared_ptr<LabelsT[]> node_property_1;
+		tensor_collection->tables_.at("Graph_node_property_tmp")->getDataPointer(node_property_1); // TODO: get the axes labels!
+		Eigen::TensorMap<Eigen::Tensor<LabelsT, 1>> data_is_valid_values(data_is_valid.get(), 1);
+		Eigen::TensorMap<Eigen::Tensor<LabelsT, 1>> result_values(result_->getDataPointer().get(), 1);
+		result_values.device(device) = data_is_valid_values;
 		tensor_collection->removeTensorTable("Graph_node_property_tmp");
 
 		// Select all black nodes
