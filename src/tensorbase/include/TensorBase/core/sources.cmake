@@ -5,7 +5,9 @@ set(directory include/TensorBase/core)
 set(sources_list_h
 	Helloworld.h
 	GraphAlgorithms.h
+	GraphAlgorithmsCpu.h
 	GraphAlgorithmsDefaultDevice.h
+	GraphAlgorithmsGpu.h
 	GraphGenerators.h
 	GraphGeneratorsCpu.h
 	GraphGeneratorsDefaultDevice.h
