@@ -42,6 +42,10 @@ namespace TensorBaseBenchmarks
 	/*
 	@brief Class for selecting and counting nodes with particular properties
 		Count the number of "white" in nodes that are connected to a "black" out node	
+
+	NOTES:
+		- Need to implement the MapClause in order to run the full query without a lot of hacks
+		- Current implementation only counts the number of "white" nodes
 	*/
 	template<typename LabelsT, typename TensorT, typename DeviceT>
 	class SelectAndCountNodeProperty {
@@ -51,15 +55,12 @@ namespace TensorBaseBenchmarks
 		virtual void setLabelsValuesResult(DeviceT& device) = 0;
 	protected:
 		std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> select_labels_; ///< The labels to select
-		std::shared_ptr<TensorData<TensorT, DeviceT, 2>> select_values_; ///< The values to select
+		std::shared_ptr<TensorData<TensorT, DeviceT, 1>> select_values_; ///< The values to select
 	};
 	template<typename LabelsT, typename TensorT, typename DeviceT>
 	inline void SelectAndCountNodeProperty<LabelsT, TensorT, DeviceT>::operator()(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
 	{
 		setLabelsValuesResult(device);
-
-		// Remove the intermediate tables
-		tensor_collection->removeTensorTable("DataFrame_is_valid_true");
 
 		// Select all white nodes
 		WhereClause<LabelsT, TensorT, DeviceT> where_clause1("Graph_node_property", "2_property", select_labels_, select_values_, logicalComparitors::EQUAL_TO, logicalModifiers::NONE, logicalContinuators::AND, logicalContinuators::AND);
@@ -69,23 +70,17 @@ namespace TensorBaseBenchmarks
 		tensor_collection->tables_.at("Graph_node_property")->resetIndicesView(device);
 
 		// Get their IDs
-		std::shared_ptr<LabelsT[]> node_property_1;
-		tensor_collection->tables_.at("Graph_node_property_tmp")->getDataPointer(node_property_1); // TODO: get the axes labels!
-		Eigen::TensorMap<Eigen::Tensor<LabelsT, 1>> data_is_valid_values(data_is_valid.get(), 1);
-		Eigen::TensorMap<Eigen::Tensor<LabelsT, 1>> result_values(result_->getDataPointer().get(), 1);
-		result_values.device(device) = data_is_valid_values;
+		result_ = tensor_collection->tables_.at("Graph_node_property_tmp")->getDimSizeFromAxisName("1_nodes");
 		tensor_collection->removeTensorTable("Graph_node_property_tmp");
-
-		// Select all black nodes
-
-		// Get their IDs
-
-		// Select all in white node ids and out black ids
 	}
 
 	/*
 	@brief Class for selecting and counting links with particular properties
 		Count the number of "dashed" links that connect two "blue" nodes
+
+	NOTES:
+		- Need to implement the JoinClause in order to run the full query without a lot of hacks
+		- Current implementation only counts the number of "dashed" links
 	*/
 	template<typename LabelsT, typename TensorT, typename DeviceT>
 	class SelectAndCountLinkProperty {
@@ -95,66 +90,66 @@ namespace TensorBaseBenchmarks
 		virtual void setLabelsValuesResult(DeviceT& device) = 0;
 	protected:
 		std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> select_labels_; ///< The labels to select
-		std::shared_ptr<TensorData<TensorT, DeviceT, 2>> select_values_; ///< The values to select
+		std::shared_ptr<TensorData<TensorT, DeviceT, 1>> select_values_; ///< The values to select
 	};
 	template<typename LabelsT, typename TensorT, typename DeviceT>
 	inline void SelectAndCountLinkProperty<LabelsT, TensorT, DeviceT>::operator()(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
-	{ // TODO
+	{
+		setLabelsValuesResult(device);
+
+		// Select all white nodes
+		WhereClause<LabelsT, TensorT, DeviceT> where_clause1("Graph_link_property", "2_property", select_labels_, select_values_, logicalComparitors::EQUAL_TO, logicalModifiers::NONE, logicalContinuators::AND, logicalContinuators::AND);
+		TensorSelect tensorSelect;
+		tensorSelect.whereClause(tensor_collection, where_clause1, device);
+		tensorSelect.applySelect(tensor_collection, { "Graph_link_property" }, { "Graph_link_property_tmp" }, device);
+		tensor_collection->tables_.at("Graph_link_property")->resetIndicesView(device);
+
+		// Get their IDs
+		result_ = tensor_collection->tables_.at("Graph_link_property_tmp")->getDimSizeFromAxisName("1_links");
+		tensor_collection->removeTensorTable("Graph_link_property_tmp");
 	}
+
+	/*
+	@brief Base class for graph algorithms
+	*/
+	template<typename LabelsT, typename TensorT, typename DeviceT>
+	class SelectGraphAlgorithm {
+	public:
+		virtual ~SelectGraphAlgorithm() = default;
+		virtual void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) = 0;
+		virtual void setIndicesAndWeights(std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& weights, std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device) = 0;
+		virtual void setNodeAndLinkIds(const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& node_ids, std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& link_ids, DeviceT& device) = 0;
+	};
 
 	/*
 	@brief Class for making the adjacency matrix from a sparse representation
 	*/
 	template<typename LabelsT, typename TensorT, typename DeviceT>
-	class SelectAdjacency {
+	class SelectAdjacency: public virtual SelectGraphAlgorithm<LabelsT, DeviceT, DeviceT> {
 	public:
-		std::shared_ptr<TensorData<TensorT, DeviceT, 1>> result_; ///< The results of the query
-		void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
-		virtual void setLabelsValuesResult(DeviceT& device) = 0;
-	protected:
-		std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> select_labels_; ///< The labels to select
-		std::shared_ptr<TensorData<TensorT, DeviceT, 2>> select_values_; ///< The values to select
+		std::shared_ptr<TensorData<TensorT, DeviceT, 2>> adjacency_; ///< The results of the query
+		virtual void makeAdjacencyMatrix(const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& node_ids, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& indices, const std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& weights, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& adjacency, DeviceT& device) = 0;
 	};
-	template<typename LabelsT, typename TensorT, typename DeviceT>
-	inline void SelectAdjacency<LabelsT, TensorT, DeviceT>::operator()(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
-	{ // TODO
-	}
 
 	/*
 	@brief Class for running the breadth-first search algorithm
 	*/
 	template<typename LabelsT, typename TensorT, typename DeviceT>
-	class SelectBFS {
+	class SelectBFS: public virtual SelectAdjacency<LabelsT, DeviceT, DeviceT> {
 	public:
-		std::shared_ptr<TensorData<TensorT, DeviceT, 1>> result_; ///< The results of the query
-		void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
-		virtual void setLabelsValuesResult(DeviceT& device) = 0;
-	protected:
-		std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> select_labels_; ///< The labels to select
-		std::shared_ptr<TensorData<TensorT, DeviceT, 2>> select_values_; ///< The values to select
+		std::shared_ptr<TensorData<TensorT, DeviceT, 2>> tree_;
+		virtual void makeBFSTree(const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& node_ids, const std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& adjacency, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& tree, DeviceT& device) = 0;
 	};
-	template<typename LabelsT, typename TensorT, typename DeviceT>
-	inline void SelectBFS<LabelsT, TensorT, DeviceT>::operator()(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
-	{ // TODO
-	}
 
 	/*
 	@brief Class for running the single source shortest path search algorithm
 	*/
 	template<typename LabelsT, typename TensorT, typename DeviceT>
-	class SelectSSSP {
+	class SelectSSSP : public virtual SelectBFS<LabelsT, DeviceT, DeviceT> {
 	public:
-		std::shared_ptr<TensorData<TensorT, DeviceT, 1>> result_; ///< The results of the query
-		void operator() (std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device);
-		virtual void setLabelsValuesResult(DeviceT& device) = 0;
-	protected:
-		std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> select_labels_; ///< The labels to select
-		std::shared_ptr<TensorData<TensorT, DeviceT, 2>> select_values_; ///< The values to select
+		std::shared_ptr<TensorData<TensorT, DeviceT, 1>> path_lengths_;
+		virtual void makeSSSPPathLengths(const std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& tree, std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& path_lengths, DeviceT& device) = 0;
 	};
-	template<typename LabelsT, typename TensorT, typename DeviceT>
-	inline void SelectSSSP<LabelsT, TensorT, DeviceT>::operator()(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
-	{ // TODO
-	}
 
 	/// Helper structure to manage the KroneckerGraph data
 	template<typename KGLabelsT, typename KGTensorT, typename DeviceT>

@@ -121,6 +121,14 @@ namespace TensorBase
     joinTypes::joinType join_type;
   };
 
+  struct mapTypes {
+    enum mapType {
+      INNER, // Default
+      LEFT,
+      RIGHT,
+      FULL
+    };
+  };
   /*
   @brief Class defining the `map` clause statement that maps the values of one table onto another
   using a particular axis dimension's labels as the lookup key.
