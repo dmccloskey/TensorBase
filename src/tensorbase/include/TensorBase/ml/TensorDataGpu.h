@@ -6,6 +6,7 @@
 #if COMPILE_WITH_CUDA
 #define EIGEN_DEFAULT_DENSE_INDEX_TYPE int
 #define EIGEN_USE_GPU
+//#define THRUST_IGNORE_CUB_VERSION_CHECK
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cub/cub.cuh> // CUB sort, select, partition, and runLengthEncode
