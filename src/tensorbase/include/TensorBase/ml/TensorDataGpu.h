@@ -12,9 +12,8 @@
 #include <cub/cub.cuh> // CUB sort, select, partition, and runLengthEncode
 #include <thrust/remove.h> // THRUST select
 #include <thrust/sort.h> // THRUST sort
-#include <thrust/device_ptr.h> // THRUST sort, select, partition, and runLengthEncode
+#include <thrust/device_ptr.h> // THRUST sort, select, partition, histogram, and runLengthEncode
 #include <thrust/binary_search.h> // THRUST histogram
-#include <thrust/device_vector.h> // THRUST histogram
 #include <thrust/execution_policy.h> // THRUST sort, select, partition, and runLengthEncode
 
 #include <TensorBase/ml/TensorData.h>
