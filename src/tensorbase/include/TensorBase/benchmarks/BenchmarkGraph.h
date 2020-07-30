@@ -206,14 +206,14 @@ namespace TensorBaseBenchmarks
     // Assign the labels data
     Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> labels_values(labels_ptr->getDataPointer().get(), labels_ptr->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<KGLabelsT, 2>> link_ids_values(kronecker_graph_link_ids->getDataPointer().get(), 1, (int)kronecker_graph_link_ids->getTensorSize());
-    labels_values.slice(Eigen::array<Eigen::Index, 2>({ 0, 0 }), Eigen::array<Eigen::Index, 2>({ 1, span })).device(device) = link_ids_values.slice(
-      Eigen::array<Eigen::Index, 2>({ 0, offset }), Eigen::array<Eigen::Index, 2>({ 1, span })).cast<LabelsT>();
+		auto labels_slice = link_ids_values.slice(Eigen::array<Eigen::Index, 2>({ 0, offset }), Eigen::array<Eigen::Index, 2>({ 1, span })).eval();
+    labels_values.slice(Eigen::array<Eigen::Index, 2>({ 0, 0 }), Eigen::array<Eigen::Index, 2>({ 1, span })).device(device) = labels_slice.cast<LabelsT>();
 
     // Assign the values data
     Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> values_values(values_ptr->getDataPointer().get(), values_ptr->getDimensions());
 		Eigen::TensorMap<Eigen::Tensor<KGLabelsT, 2>> indices_values(kronecker_graph_indices->getDataPointer().get(), kronecker_graph_indices->getDimensions());
-		values_values.slice(Eigen::array<Eigen::Index, 2>({ 0, 0 }), Eigen::array<Eigen::Index, 2>({ span, 2 })).device(device) = indices_values.slice(
-			Eigen::array<Eigen::Index, 2>({ offset, 0 }), Eigen::array<Eigen::Index, 2>({ span, 2 })).cast<TensorT>();
+		auto values_slice = indices_values.slice(Eigen::array<Eigen::Index, 2>({ offset, 0 }), Eigen::array<Eigen::Index, 2>({ span, 2 }));
+		values_values.slice(Eigen::array<Eigen::Index, 2>({ 0, 0 }), Eigen::array<Eigen::Index, 2>({ span, 2 })).device(device) = values_slice.cast<TensorT>();
 	}
 
 	/*
@@ -550,7 +550,6 @@ namespace TensorBaseBenchmarks
 			data_dir = argv[1];
 		}
 		if (argc >= 3) {
-			edge_factor = 16;
 			if (argv[2] == std::string("XS")) {
 				scale = 8;
 			}
@@ -571,21 +570,24 @@ namespace TensorBaseBenchmarks
       }
 		}
 		if (argc >= 4) {
-			in_memory = (argv[3] == std::string("true")) ? true : false;
+			edge_factor = 16;
 		}
 		if (argc >= 5) {
+			in_memory = (argv[4] == std::string("true")) ? true : false;
+		}
+		if (argc >= 6) {
 			try {
-				if (std::stoi(argv[4]) == 5) shard_span_perc = 0.05;
-				else if (std::stoi(argv[4]) == 20) shard_span_perc = 0.2;
-				else if (std::stoi(argv[4]) == 100) shard_span_perc = 1;
+				if (std::stoi(argv[5]) == 5) shard_span_perc = 0.05;
+				else if (std::stoi(argv[5]) == 20) shard_span_perc = 0.2;
+				else if (std::stoi(argv[5]) == 100) shard_span_perc = 1;
 			}
 			catch (std::exception & e) {
 				std::cout << e.what() << std::endl;
 			}
 		}
-    if (argc >= 6) {
+    if (argc >= 7) {
       try {
-        n_engines = std::stoi(argv[5]);
+        n_engines = std::stoi(argv[6]);
       }
       catch (std::exception & e) {
         std::cout << e.what() << std::endl;

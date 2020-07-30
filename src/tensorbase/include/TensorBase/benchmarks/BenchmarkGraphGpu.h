@@ -688,10 +688,10 @@ namespace TensorBaseBenchmarks
 
     // Setup the collection
     auto collection_1_ptr = std::make_shared<TensorCollectionGpu>(TensorCollectionGpu());
-    collection_1_ptr->addTensorTable(table_1_ptr, "Graph");
-    collection_1_ptr->addTensorTable(table_2_ptr, "Graph");
-    collection_1_ptr->addTensorTable(table_3_ptr, "Graph");
-    collection_1_ptr->addTensorTable(table_4_ptr, "Graph");
+    collection_1_ptr->addTensorTable(table_1_ptr, "Graph_sparse");
+    collection_1_ptr->addTensorTable(table_2_ptr, "Graph_sparse");
+    collection_1_ptr->addTensorTable(table_3_ptr, "Graph_node_property");
+    collection_1_ptr->addTensorTable(table_4_ptr, "Graph_link_property");
     // TODO: linking of axes
     return collection_1_ptr;
   }

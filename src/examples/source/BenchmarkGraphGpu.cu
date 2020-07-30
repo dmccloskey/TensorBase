@@ -16,13 +16,14 @@ using namespace TensorBaseBenchmarks;
 	weights are randomly assigned in the range of [0, 1], and node and link properties are randomly assigned and represented by a string value.
 
 Example usage:
-	BenchmarkGraph [data_dir] [scale] [edge_factor] [in_memory] [shard_size_perc]
-	BenchmarkGraph C:/Users/dmccloskey/Documents/GitHub/mnist/ S S true 100
+	BenchmarkGraph [data_dir] [scale] [edge_factor] [in_memory] [shard_size_perc] [n_engines]
+	BenchmarkGraph C:/Users/dmccloskey/Documents/GitHub/mnist/ S S true 100 2
 
 @param[in] scale Options include XS, small, medium, large, and XL (i.e., 8, 14, 16, 20, 24, and 26, respectively) with default of small
 @param[in] edge_factor Options include only 16 for now
 @param[in] in_memory Simulate all data loaded into memory (true) or JIT load into memory from disk (false) with default of true
 @param[in] shard_size_perc Different shard span configurations.  Options include 5, 20, and 100 with a default of 100
+@param[in] n_engines The number of CPUs or GPUs to use
 */
 int main(int argc, char** argv)
 {
