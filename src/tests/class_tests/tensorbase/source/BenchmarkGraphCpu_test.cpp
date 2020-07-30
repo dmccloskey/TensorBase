@@ -161,15 +161,33 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteCpu)
     BOOST_CHECK_EQUAL(data_insert_values_link_property(i, 0), values_link_property_ptr->getData()(i, 0));
   }
 
-  // Query for the number of black nodes
+  // Query for the number of white nodes
+  SelectAndCountNodePropertyCpu<TensorArray8<char>, TensorArray8<char>> selectAndCountNodeProperty;
+  selectAndCountNodeProperty(transaction_manager.getTensorCollection(), device);
+  BOOST_CHECK(selectAndCountNodeProperty.result_ >= 1);
 
   // Query for the number of dashed links
+  SelectAndCountLinkPropertyCpu<TensorArray8<char>, TensorArray8<char>> selectAndCountLinkProperty;
+  selectAndCountLinkProperty(transaction_manager.getTensorCollection(), device);
+  BOOST_CHECK_EQUAL(selectAndCountLinkProperty.result_, 22);
 
   // Query for the adjacency matrix
+  SelectAdjacencyCpu<int, float> selectAdjacency;
+  selectAdjacency(transaction_manager.getTensorCollection(), device);
+  selectAdjacency.adjacency_->syncHAndDData(device);
+  BOOST_CHECK_EQUAL(selectAdjacency.adjacency_->getData()(0, 0), 0);
 
   // Query for the BFS
+  SelectBFSCpu<int, float> selectBFS;
+  selectBFS(transaction_manager.getTensorCollection(), device);
+  selectBFS.tree_->syncHAndDData(device);
+  BOOST_CHECK_EQUAL(selectBFS.tree_->getData()(0, 0), 0);
 
   // Query for the SSSP
+  SelectSSSPCpu<int, float> selectSSSP;
+  selectSSSP(transaction_manager.getTensorCollection(), device);
+  selectSSSP.path_lengths_->syncHAndDData(device);
+  BOOST_CHECK_EQUAL(selectSSSP.path_lengths_->getData()(0), 0);
 
   // Make the expected tensor axes labels and tensor data after update
   graph_manager_sparse_indices.setUseRandomValues(true);
@@ -425,15 +443,33 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteShardingCpu)
     BOOST_CHECK_EQUAL(data_insert_values_link_property(i, 0), values_link_property_ptr->getData()(i, 0));
   }
 
-  // Query for the number of black nodes
+  // Query for the number of white nodes
+  SelectAndCountNodePropertyCpu<TensorArray8<char>, TensorArray8<char>> selectAndCountNodeProperty;
+  selectAndCountNodeProperty(transaction_manager.getTensorCollection(), device);
+  BOOST_CHECK(selectAndCountNodeProperty.result_ >= 1);
 
   // Query for the number of dashed links
+  SelectAndCountLinkPropertyCpu<TensorArray8<char>, TensorArray8<char>> selectAndCountLinkProperty;
+  selectAndCountLinkProperty(transaction_manager.getTensorCollection(), device);
+  BOOST_CHECK_EQUAL(selectAndCountLinkProperty.result_, 22);
 
   // Query for the adjacency matrix
+  SelectAdjacencyCpu<int, float> selectAdjacency;
+  selectAdjacency(transaction_manager.getTensorCollection(), device);
+  selectAdjacency.adjacency_->syncHAndDData(device);
+  BOOST_CHECK_EQUAL(selectAdjacency.adjacency_->getData()(0, 0), 0);
 
   // Query for the BFS
+  SelectBFSCpu<int, float> selectBFS;
+  selectBFS(transaction_manager.getTensorCollection(), device);
+  selectBFS.tree_->syncHAndDData(device);
+  BOOST_CHECK_EQUAL(selectBFS.tree_->getData()(0, 0), 0);
 
   // Query for the SSSP
+  SelectSSSPCpu<int, float> selectSSSP;
+  selectSSSP(transaction_manager.getTensorCollection(), device);
+  selectSSSP.path_lengths_->syncHAndDData(device);
+  BOOST_CHECK_EQUAL(selectSSSP.path_lengths_->getData()(0), 0);
 
   // Make the expected tensor axes labels and tensor data after update
   graph_manager_sparse_indices.setUseRandomValues(true);

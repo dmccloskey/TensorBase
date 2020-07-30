@@ -95,11 +95,11 @@ void test_InsertUpdateDeleteGpu()
 
   // Test the expected tensor collection after insert
   benchmark_1_link.insert1Link(transaction_manager, scale, edge_factor, in_memory, device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (auto& table_map : n_dim_tensor_collection->tables_) {
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
 
   // Test the expected tensor axes after insert
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getNDimensions() == 1);
@@ -162,15 +162,36 @@ void test_InsertUpdateDeleteGpu()
     assert(data_insert_values_link_property(i, 0) == values_link_property_ptr->getData()(i, 0));
   }
 
-  // Query for the number of black nodes
+  // Query for the number of white nodes
+  SelectAndCountNodePropertyGpu<TensorArrayGpu8<char>, TensorArrayGpu8<char>> selectAndCountNodeProperty;
+  selectAndCountNodeProperty(transaction_manager.getTensorCollection(), device);
+  assert(selectAndCountNodeProperty.result_ >= 1);
 
   // Query for the number of dashed links
+  SelectAndCountLinkPropertyGpu<TensorArrayGpu8<char>, TensorArrayGpu8<char>> selectAndCountLinkProperty;
+  selectAndCountLinkProperty(transaction_manager.getTensorCollection(), device);
+  assert(selectAndCountLinkProperty.result_ == 22);
 
   // Query for the adjacency matrix
+  SelectAdjacencyGpu<int, float> selectAdjacency;
+  selectAdjacency(transaction_manager.getTensorCollection(), device);
+  selectAdjacency.adjacency_->syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  assert(selectAdjacency.adjacency_->getData()(0, 0) == 0);
 
   // Query for the BFS
+  SelectBFSGpu<int, float> selectBFS;
+  selectBFS(transaction_manager.getTensorCollection(), device);
+  selectBFS.tree_->syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  assert(selectBFS.tree_->getData()(0, 0) == 0);
 
   // Query for the SSSP
+  SelectSSSPGpu<int, float> selectSSSP;
+  selectSSSP(transaction_manager.getTensorCollection(), device);
+  selectSSSP.path_lengths_->syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  assert(selectSSSP.path_lengths_->getData()(0) == 0);
 
   // Make the expected tensor axes labels and tensor data after update
   graph_manager_sparse_indices.setUseRandomValues(true);
@@ -368,11 +389,11 @@ void test_InsertUpdateDeleteShardingGpu()
 
   // Test the expected tensor collection after insert
   benchmark_1_link.insert1Link(transaction_manager, scale, edge_factor, in_memory, device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (auto& table_map : n_dim_tensor_collection->tables_) {
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
 
   // Test the expected tensor axes after insert
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getNDimensions() == 1);
@@ -435,15 +456,36 @@ void test_InsertUpdateDeleteShardingGpu()
     assert(data_insert_values_link_property(i, 0) == values_link_property_ptr->getData()(i, 0));
   }
 
-  // Query for the number of black nodes
+  // Query for the number of white nodes
+  SelectAndCountNodePropertyGpu<TensorArrayGpu8<char>, TensorArrayGpu8<char>> selectAndCountNodeProperty;
+  selectAndCountNodeProperty(transaction_manager.getTensorCollection(), device);
+  assert(selectAndCountNodeProperty.result_ >= 1);
 
   // Query for the number of dashed links
+  SelectAndCountLinkPropertyGpu<TensorArrayGpu8<char>, TensorArrayGpu8<char>> selectAndCountLinkProperty;
+  selectAndCountLinkProperty(transaction_manager.getTensorCollection(), device);
+  assert(selectAndCountLinkProperty.result_ == 22);
 
   // Query for the adjacency matrix
+  SelectAdjacencyGpu<int, float> selectAdjacency;
+  selectAdjacency(transaction_manager.getTensorCollection(), device);
+  selectAdjacency.adjacency_->syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  assert(selectAdjacency.adjacency_->getData()(0, 0) == 0);
 
   // Query for the BFS
+  SelectBFSGpu<int, float> selectBFS;
+  selectBFS(transaction_manager.getTensorCollection(), device);
+  selectBFS.tree_->syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  assert(selectBFS.tree_->getData()(0, 0) == 0);
 
   // Query for the SSSP
+  SelectSSSPGpu<int, float> selectSSSP;
+  selectSSSP(transaction_manager.getTensorCollection(), device);
+  selectSSSP.path_lengths_->syncHAndDData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  assert(selectSSSP.path_lengths_->getData()(0) == 0);
 
   // Make the expected tensor axes labels and tensor data after update
   graph_manager_sparse_indices.setUseRandomValues(true);
