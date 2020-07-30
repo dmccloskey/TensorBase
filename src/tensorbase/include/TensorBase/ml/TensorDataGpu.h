@@ -6,14 +6,14 @@
 #if COMPILE_WITH_CUDA
 #define EIGEN_DEFAULT_DENSE_INDEX_TYPE int
 #define EIGEN_USE_GPU
+//#define THRUST_IGNORE_CUB_VERSION_CHECK
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cub/cub.cuh> // CUB sort, select, partition, and runLengthEncode
 #include <thrust/remove.h> // THRUST select
 #include <thrust/sort.h> // THRUST sort
-#include <thrust/device_ptr.h> // THRUST sort, select, partition, and runLengthEncode
+#include <thrust/device_ptr.h> // THRUST sort, select, partition, histogram, and runLengthEncode
 #include <thrust/binary_search.h> // THRUST histogram
-#include <thrust/device_vector.h> // THRUST histogram
 #include <thrust/execution_policy.h> // THRUST sort, select, partition, and runLengthEncode
 
 #include <TensorBase/ml/TensorData.h>
@@ -460,16 +460,23 @@ namespace TensorBase
 		// histogram bins and widths
 		const int n_bins = n_levels - 1;
 		const T bin_width = (upper_level - lower_level) / (n_levels - T(1));
-		thrust::device_vector<T> bin_search(n_bins);
-		thrust::sequence(thrust::cuda::par.on(device.stream()), bin_search.begin(), bin_search.end());
+
+    // Allocate temporary storage
+		T* d_temp_storage;
+    cudaMalloc(&d_temp_storage, n_bins*sizeof(T));
+
+    thrust::device_ptr<T> bin_search(d_temp_storage);
+    thrust::sequence(thrust::cuda::par.on(device.stream()), bin_search, bin_search + n_bins);
 		HistogramBinHelper<T> histogramBinHelper(lower_level, bin_width);
-		thrust::transform(thrust::cuda::par.on(device.stream()), bin_search.begin(), bin_search.end(), bin_search.begin(), histogramBinHelper);
+    thrust::transform(thrust::cuda::par.on(device.stream()), bin_search, bin_search + n_bins, bin_search, histogramBinHelper);
 
 		// find the end of each bin of values
-		thrust::upper_bound(thrust::cuda::par.on(device.stream()), d_data, d_data + data_copy->getTensorSize(),	bin_search.begin(), bin_search.end(),	d_histogram);
+    thrust::upper_bound(thrust::cuda::par.on(device.stream()), d_data, d_data + data_copy->getTensorSize(), bin_search, bin_search + n_bins, d_histogram);
 
 		// compute the histogram by taking differences of the cumulative histogram
 		thrust::adjacent_difference(thrust::cuda::par.on(device.stream()), d_histogram, d_histogram + histogram->getTensorSize(),	d_histogram);
+
+    assert(cudaFree(d_temp_storage) == cudaSuccess);
 	}
   template<typename TensorT, int TDim>
   template<typename T, std::enable_if_t<std::is_same<T, int>::value, int>>
