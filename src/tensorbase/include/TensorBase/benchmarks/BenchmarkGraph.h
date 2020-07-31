@@ -204,16 +204,18 @@ namespace TensorBaseBenchmarks
     this->makeValuesPtr(values_dims, values_ptr, device);
 
     // Assign the labels data
-    Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> labels_values(labels_ptr->getDataPointer().get(), labels_ptr->getDimensions());
-    Eigen::TensorMap<Eigen::Tensor<KGLabelsT, 2>> link_ids_values(kronecker_graph_link_ids->getDataPointer().get(), 1, (int)kronecker_graph_link_ids->getTensorSize());
-		auto labels_slice = link_ids_values.slice(Eigen::array<Eigen::Index, 2>({ 0, offset }), Eigen::array<Eigen::Index, 2>({ 1, span })).eval();
-    labels_values.slice(Eigen::array<Eigen::Index, 2>({ 0, 0 }), Eigen::array<Eigen::Index, 2>({ 1, span })).device(device) = labels_slice.cast<LabelsT>();
+		Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> labels_values(labels_ptr->getDataPointer().get(), labels_ptr->getDimensions());
+		const auto link_ids_cast = std::reinterpret_pointer_cast<TensorData<LabelsT, DeviceT, 1>>(kronecker_graph_link_ids);
+		Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> link_ids_values(link_ids_cast->getDataPointer().get(), 1, (int)kronecker_graph_link_ids->getTensorSize());
+		auto labels_slice = link_ids_values.slice(Eigen::array<Eigen::Index, 2>({ 0, offset }), Eigen::array<Eigen::Index, 2>({ 1, span }));
+		labels_values.slice(Eigen::array<Eigen::Index, 2>({ 0, 0 }), Eigen::array<Eigen::Index, 2>({ 1, span })).device(device) = labels_slice;
 
     // Assign the values data
     Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> values_values(values_ptr->getDataPointer().get(), values_ptr->getDimensions());
-		Eigen::TensorMap<Eigen::Tensor<KGLabelsT, 2>> indices_values(kronecker_graph_indices->getDataPointer().get(), kronecker_graph_indices->getDimensions());
+		const auto indices_cast = std::reinterpret_pointer_cast<TensorData<TensorT, DeviceT, 2>>(kronecker_graph_indices);
+		Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> indices_values(indices_cast->getDataPointer().get(), kronecker_graph_indices->getDimensions());
 		auto values_slice = indices_values.slice(Eigen::array<Eigen::Index, 2>({ offset, 0 }), Eigen::array<Eigen::Index, 2>({ span, 2 }));
-		values_values.slice(Eigen::array<Eigen::Index, 2>({ 0, 0 }), Eigen::array<Eigen::Index, 2>({ span, 2 })).device(device) = values_slice.cast<TensorT>();
+		values_values.slice(Eigen::array<Eigen::Index, 2>({ 0, 0 }), Eigen::array<Eigen::Index, 2>({ span, 2 })).device(device) = values_slice;
 	}
 
 	/*
@@ -244,15 +246,17 @@ namespace TensorBaseBenchmarks
 
 		// Assign the labels data
 		Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> labels_values(labels_ptr->getDataPointer().get(), labels_ptr->getDimensions());
-		Eigen::TensorMap<Eigen::Tensor<KGLabelsT, 2>> link_ids_values(kronecker_graph_link_ids->getDataPointer().get(), 1, (int)kronecker_graph_link_ids->getTensorSize());
+		const auto link_ids_cast = std::reinterpret_pointer_cast<TensorData<LabelsT, DeviceT, 1>>(kronecker_graph_link_ids);
+		Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> link_ids_values(link_ids_cast->getDataPointer().get(), 1, (int)kronecker_graph_link_ids->getTensorSize());
 		labels_values.slice(Eigen::array<Eigen::Index, 2>({ 0, 0 }), Eigen::array<Eigen::Index, 2>({ 1, span })).device(device) = link_ids_values.slice(
-			Eigen::array<Eigen::Index, 2>({ 0, offset }), Eigen::array<Eigen::Index, 2>({ 1, span })).cast<LabelsT>();
+			Eigen::array<Eigen::Index, 2>({ 0, offset }), Eigen::array<Eigen::Index, 2>({ 1, span }));
 
 		// Assign the values data
 		Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> values_values(values_ptr->getDataPointer().get(), values_ptr->getDimensions());
-		Eigen::TensorMap<Eigen::Tensor<KGTensorT, 2>> weights_values(kronecker_graph_weights->getDataPointer().get(), kronecker_graph_weights->getDimensions());
+		const auto indices_cast = std::reinterpret_pointer_cast<TensorData<TensorT, DeviceT, 2>>(kronecker_graph_weights);
+		Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> weights_values(indices_cast->getDataPointer().get(), kronecker_graph_weights->getDimensions());
 		values_values.slice(Eigen::array<Eigen::Index, 2>({ 0, 0 }), Eigen::array<Eigen::Index, 2>({ span, 1 })).device(device) = weights_values.slice(
-			Eigen::array<Eigen::Index, 2>({ offset, 0 }), Eigen::array<Eigen::Index, 2>({ span, 1 })).cast<TensorT>();
+			Eigen::array<Eigen::Index, 2>({ offset, 0 }), Eigen::array<Eigen::Index, 2>({ span, 1 }));
 	}
 
   /*
@@ -294,8 +298,9 @@ namespace TensorBaseBenchmarks
 
 			// Assign the labels data
 			Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> labels_values(labels_ptr->getDataPointer().get(), labels_ptr->getDimensions());
-			Eigen::TensorMap<Eigen::Tensor<KGLabelsT, 2>> node_ids_values(this->node_ids_->getDataPointer().get(), 1, (int)this->node_ids_->getTensorSize());
-			labels_values.device(device) = node_ids_values.cast<LabelsT>();
+			const auto node_ids_cast = std::reinterpret_pointer_cast<TensorData<LabelsT, DeviceT, 1>>(this->node_ids_);
+			Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> node_ids_values(node_ids_cast->getDataPointer().get(), 1, (int)this->node_ids_->getTensorSize());
+			labels_values.device(device) = node_ids_values;
 
 			// Assign the values data
 			Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> values_values(values_ptr->getDataPointer().get(), values_ptr->getDimensions());
@@ -342,9 +347,10 @@ namespace TensorBaseBenchmarks
 
 		// Assign the labels data
 		Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> labels_values(labels_ptr->getDataPointer().get(), labels_ptr->getDimensions());
-		Eigen::TensorMap<Eigen::Tensor<KGLabelsT, 2>> link_ids_values(kronecker_graph_link_ids->getDataPointer().get(), 1, (int)kronecker_graph_link_ids->getTensorSize());
+		const auto link_ids_cast = std::reinterpret_pointer_cast<TensorData<LabelsT, DeviceT, 1>>(kronecker_graph_link_ids);
+		Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> link_ids_values(link_ids_cast->getDataPointer().get(), 1, (int)kronecker_graph_link_ids->getTensorSize());
 		labels_values.slice(Eigen::array<Eigen::Index, 2>({ 0, 0 }), Eigen::array<Eigen::Index, 2>({ 1, span })).device(device) = link_ids_values.slice(
-			Eigen::array<Eigen::Index, 2>({ 0, offset }), Eigen::array<Eigen::Index, 2>({ 1, span })).cast<LabelsT>();
+			Eigen::array<Eigen::Index, 2>({ 0, offset }), Eigen::array<Eigen::Index, 2>({ 1, span }));
 
 		// Assign the values data
 		Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> values_values(values_ptr->getDataPointer().get(), values_ptr->getDimensions());
