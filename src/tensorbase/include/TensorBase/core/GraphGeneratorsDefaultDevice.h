@@ -112,9 +112,7 @@ namespace TensorBase
 
     // allocate temporary memory
     float* tmp_data;
-    if (typeid(device).name() != typeid(Eigen::GpuDevice).name()) {
-      tmp_data = new float[M * M];
-    }
+    tmp_data = new float[M * M];
 
     // Permute vertex labels (in)
     {
@@ -162,9 +160,7 @@ namespace TensorBase
     indices_float_values.device(device) = (indices_float_values == indices_float_values.constant(0)).select(indices_values_copy, indices_float_values);
 
     // deallocate temporary memory
-    if (typeid(device).name() != typeid(Eigen::GpuDevice).name()) {
-      delete[] tmp_data;
-    }
+    delete[] tmp_data;
   }
 
   template<typename LabelsT, typename TensorT>

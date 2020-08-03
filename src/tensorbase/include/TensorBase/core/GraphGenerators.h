@@ -2,8 +2,6 @@
 #define TENSORBASE_GRAPHGENERATORS_H
 
 #include <unsupported/Eigen/CXX11/Tensor>
-#include <math.h>
-#include <random>
 #include <TensorBase/ml/TensorData.h>
 
 namespace TensorBase
@@ -157,18 +155,19 @@ namespace TensorBase
     // make the input node indices
     Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> indices_values_tmp(indices->getDataPointer().get(), indices->getDimensions().at(1), indices->getDimensions().at(0)/2);
     Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> indices_values(indices->getDataPointer().get(), indices->getDimensions());
-    indices_values.device(device) = indices_values.constant(LabelsT(0));
     auto indices_init = indices_values_tmp.constant(LabelsT(1)).cumsum(1) - indices_values_tmp.constant(LabelsT(1));
     auto indices_reshape = indices_init.reshape(Eigen::array<Eigen::Index, 1>({ indices->getDimensions().at(1) * indices->getDimensions().at(0) / 2 })).eval();
     indices_values.chip(0, 1).device(device) = indices_reshape;
 
     // make the output node indices
-    Eigen::TensorMap<Eigen::Tensor<LabelsT, 1>> indices_count(indices->getDataPointer().get(), indices->getDimensions().at(0));
-    auto indices_count_cumsum = indices_count.constant(LabelsT(1)).cumsum(0) - indices_count.constant(LabelsT(1));
-    auto indices_mod = indices_count_cumsum - (indices_count_cumsum.constant(2) * (indices_count_cumsum / indices_count_cumsum.constant(2))).eval(); // a mod n = a - (n * int(a/n))
-    indices_values.chip(1, 1).device(device) = (indices_mod == indices_mod.constant(LabelsT(0))).select(
-      indices_mod.constant(LabelsT(2)) * indices_values.chip(0, 1) + indices_mod.constant(LabelsT(1)), // left child = 2i + 1
-      indices_mod.constant(LabelsT(2)) * indices_values.chip(0, 1) + indices_mod.constant(LabelsT(2))); // right child = 2i + 2
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> indices_copy = indices->copy(device);
+    indices_copy->syncHAndDData(device);
+    Eigen::TensorMap<Eigen::Tensor<LabelsT, 1>> indices_count(indices_copy->getDataPointer().get(), indices_copy->getDimensions().at(0));
+    auto indices_count_cumsum = (indices_count.constant(LabelsT(1)).cumsum(0) - indices_count.constant(LabelsT(1))).eval();
+    indices_count.device(device) = indices_count_cumsum - (indices_count_cumsum.constant(2) * (indices_count_cumsum / indices_count_cumsum.constant(2))); // a mod n = a - (n * int(a/n))
+    auto lchild = indices_count.constant(LabelsT(2)) * indices_values.chip(0, 1) + indices_count.constant(LabelsT(1)); // left child = 2i + 1
+    auto rchild = indices_count.constant(LabelsT(2)) * indices_values.chip(0, 1) + indices_count.constant(LabelsT(2)); // right child = 2i + 2
+    indices_values.chip(1, 1).device(device) = (indices_count == indices_count.constant(LabelsT(0))).select(lchild, rchild);
 
     // make the random weights
     Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> weights_values(weights->getDataPointer().get(), weights->getDimensions());
