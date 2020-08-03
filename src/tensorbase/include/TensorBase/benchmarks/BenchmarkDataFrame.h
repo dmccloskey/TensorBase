@@ -420,7 +420,7 @@ namespace TensorBaseBenchmarks
     // Stop the timer
     auto stop = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
     std::string milli_time = std::to_string(stop - start);
-    return std::pair(milli_time, result);
+    return std::make_pair(milli_time, result);
   }
   template<typename DeviceT>
   inline std::pair<std::string, int> BenchmarkDataFrame1TimePoint<DeviceT>::selectAndCountLabels(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
@@ -433,7 +433,7 @@ namespace TensorBaseBenchmarks
     // Stop the timer
     auto stop = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
     std::string milli_time = std::to_string(stop - start);
-    return std::pair(milli_time, result);
+    return std::make_pair(milli_time, result);
   }
   template<typename DeviceT>
   inline std::pair<std::string, float> BenchmarkDataFrame1TimePoint<DeviceT>::selectAndMeanImage2D(TransactionManager<DeviceT>& transaction_manager, const int& data_size, const bool& in_memory, DeviceT& device) const
@@ -446,7 +446,7 @@ namespace TensorBaseBenchmarks
     // Stop the timer
     auto stop = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
     std::string milli_time = std::to_string(stop - start);
-    return std::pair(milli_time, result);
+    return std::make_pair(milli_time, result);
   }
 
 	/*

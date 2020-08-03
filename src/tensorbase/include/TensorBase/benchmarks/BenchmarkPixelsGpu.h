@@ -30,37 +30,37 @@ namespace TensorBaseBenchmarks
     // make the labels and sync to the device
     Eigen::Tensor<TensorArrayGpu8<char>, 2> select_labels_xyztv_values(1, 4);
     select_labels_xyztv_values.setValues({ { TensorArrayGpu8<char>("x"), TensorArrayGpu8<char>("y"), TensorArrayGpu8<char>("z"), TensorArrayGpu8<char>("t")} });
-    TensorDataGpu<TensorArrayGpu8<char>, 2> select_labels_xyztv(select_labels_xyztv_values.dimensions());
+    TensorDataGpuClassT<TensorArrayGpu8, char, 2> select_labels_xyztv(select_labels_xyztv_values.dimensions());
     select_labels_xyztv.setData(select_labels_xyztv_values);
     select_labels_xyztv.syncHAndDData(device);
-    this->select_labels_xyztv_ = std::make_shared<TensorDataGpu<TensorArrayGpu8<char>, 2>>(select_labels_xyztv);
+    this->select_labels_xyztv_ = std::make_shared<TensorDataGpuClassT<TensorArrayGpu8, char, 2>>(select_labels_xyztv);
 
     // make the corresponding values and sync to the device
     Eigen::Tensor<TensorT, 1> select_values_xyztv_values(4);
     select_values_xyztv_values.setValues({ this->dim_span_, this->dim_span_, this->dim_span_, this->dim_span_ });
-    TensorDataGpu<TensorT, 1> select_values_xyztv_lt(select_values_xyztv_values.dimensions());
+    TensorDataGpuPrimitiveT<TensorT, 1> select_values_xyztv_lt(select_values_xyztv_values.dimensions());
     select_values_xyztv_lt.setData(select_values_xyztv_values);
     select_values_xyztv_lt.syncHAndDData(device);
-    this->select_values_xyztv_lt_ = std::make_shared<TensorDataGpu<TensorT, 1>>(select_values_xyztv_lt);
+    this->select_values_xyztv_lt_ = std::make_shared<TensorDataGpuPrimitiveT<TensorT, 1>>(select_values_xyztv_lt);
     select_values_xyztv_values.setValues({ 1, 1, 1, 1 });
-    TensorDataGpu<TensorT, 1> select_values_xyztv_gt(select_values_xyztv_values.dimensions());
+    TensorDataGpuPrimitiveT<TensorT, 1> select_values_xyztv_gt(select_values_xyztv_values.dimensions());
     select_values_xyztv_gt.setData(select_values_xyztv_values);
     select_values_xyztv_gt.syncHAndDData(device);
-    this->select_values_xyztv_gt_ = std::make_shared<TensorDataGpu<TensorT, 1>>(select_values_xyztv_gt);
+    this->select_values_xyztv_gt_ = std::make_shared<TensorDataGpuPrimitiveT<TensorT, 1>>(select_values_xyztv_gt);
 
     // make the labels and sync to the device
     Eigen::Tensor<TensorArrayGpu8<char>, 2> select_labels_v_values(1, 1);
     select_labels_v_values.setValues({ { TensorArrayGpu8<char>("v")} });
-    TensorDataGpu<TensorArrayGpu8<char>, 2> select_labels_v(select_labels_v_values.dimensions());
+    TensorDataGpuClassT<TensorArrayGpu8, char, 2> select_labels_v(select_labels_v_values.dimensions());
     select_labels_v.setData(select_labels_v_values);
     select_labels_v.syncHAndDData(device);
-    this->select_labels_v_ = std::make_shared<TensorDataGpu<TensorArrayGpu8<char>, 2>>(select_labels_v);
+    this->select_labels_v_ = std::make_shared<TensorDataGpuClassT<TensorArrayGpu8, char, 2>>(select_labels_v);
 
     // allocate memory for the results
-    TensorDataGpu<TensorT, 1> results(Eigen::array<Eigen::Index, 1>({ 1 }));
+    TensorDataGpuPrimitiveT<TensorT, 1> results(Eigen::array<Eigen::Index, 1>({ 1 }));
     results.setData();
     results.syncHAndDData(device);
-    this->result_ = std::make_shared<TensorDataGpu<TensorT, 1>>(results);
+    this->result_ = std::make_shared<TensorDataGpuPrimitiveT<TensorT, 1>>(results);
   }
 
   /// Specialized class to select a region of pixels and compute the sum for the 1D and Gpu case
@@ -82,16 +82,16 @@ namespace TensorBaseBenchmarks
       select_labels_xyzt_values(2, i) = int(floor(float(i) / float(std::pow(this->dim_span_, 2)))) % this->dim_span_ + 1;
       select_labels_xyzt_values(3, i) = int(floor(float(i) / float(std::pow(this->dim_span_, 3)))) % this->dim_span_ + 1;
     }
-    TensorDataGpu<LabelsT, 2> select_labels_xyzt(select_labels_xyzt_values.dimensions());
+    TensorDataGpuPrimitiveT<LabelsT, 2> select_labels_xyzt(select_labels_xyzt_values.dimensions());
     select_labels_xyzt.setData(select_labels_xyzt_values);
     select_labels_xyzt.syncHAndDData(device);
-    this->select_labels_xyzt_ = std::make_shared<TensorDataGpu<LabelsT, 2>>(select_labels_xyzt);
+    this->select_labels_xyzt_ = std::make_shared<TensorDataGpuPrimitiveT<LabelsT, 2>>(select_labels_xyzt);
 
     // allocate memory for the results
-    TensorDataGpu<TensorT, 1> results(Eigen::array<Eigen::Index, 1>({ 1 }));
+    TensorDataGpuPrimitiveT<TensorT, 1> results(Eigen::array<Eigen::Index, 1>({ 1 }));
     results.setData();
     results.syncHAndDData(device);
-    this->result_ = std::make_shared<TensorDataGpu<TensorT, 1>>(results);
+    this->result_ = std::make_shared<TensorDataGpuPrimitiveT<TensorT, 1>>(results);
   }
 
   /// Specialized class to select a region of pixels and compute the sum for the 2D and Gpu case
@@ -112,25 +112,25 @@ namespace TensorBaseBenchmarks
       select_labels_xyz_values(1, i) = int(floor(float(i) / float(std::pow(this->dim_span_, 1)))) % this->dim_span_ + 1;
       select_labels_xyz_values(2, i) = int(floor(float(i) / float(std::pow(this->dim_span_, 2)))) % this->dim_span_ + 1;
     }
-    TensorDataGpu<LabelsT, 2> select_labels_xyz(select_labels_xyz_values.dimensions());
+    TensorDataGpuPrimitiveT<LabelsT, 2> select_labels_xyz(select_labels_xyz_values.dimensions());
     select_labels_xyz.setData(select_labels_xyz_values);
     select_labels_xyz.syncHAndDData(device);
-    this->select_labels_xyz_ = std::make_shared<TensorDataGpu<LabelsT, 2>>(select_labels_xyz);
+    this->select_labels_xyz_ = std::make_shared<TensorDataGpuPrimitiveT<LabelsT, 2>>(select_labels_xyz);
 
     Eigen::Tensor<LabelsT, 2> select_labels_t_values(1, this->dim_span_);
     for (int i = 0; i < this->dim_span_; ++i) {
       select_labels_t_values(0, i) = i + 1;
     }
-    TensorDataGpu<LabelsT, 2> select_labels_t(select_labels_t_values.dimensions());
+    TensorDataGpuPrimitiveT<LabelsT, 2> select_labels_t(select_labels_t_values.dimensions());
     select_labels_t.setData(select_labels_t_values);
     select_labels_t.syncHAndDData(device);
-    this->select_labels_t_ = std::make_shared<TensorDataGpu<LabelsT, 2>>(select_labels_t);
+    this->select_labels_t_ = std::make_shared<TensorDataGpuPrimitiveT<LabelsT, 2>>(select_labels_t);
 
     // allocate memory for the results
-    TensorDataGpu<TensorT, 1> results(Eigen::array<Eigen::Index, 1>({ 1 }));
+    TensorDataGpuPrimitiveT<TensorT, 1> results(Eigen::array<Eigen::Index, 1>({ 1 }));
     results.setData();
     results.syncHAndDData(device);
-    this->result_ = std::make_shared<TensorDataGpu<TensorT, 1>>(results);
+    this->result_ = std::make_shared<TensorDataGpuPrimitiveT<TensorT, 1>>(results);
   }
 
   /// Specialized class to select a region of pixels and compute the sum for the 3D and Gpu case
@@ -150,10 +150,10 @@ namespace TensorBaseBenchmarks
       select_labels_xy_values(0, i) = int(floor(float(i) / float(std::pow(this->dim_span_, 0)))) % this->dim_span_ + 1;
       select_labels_xy_values(1, i) = int(floor(float(i) / float(std::pow(this->dim_span_, 1)))) % this->dim_span_ + 1;
     }
-    TensorDataGpu<LabelsT, 2> select_labels_xy(select_labels_xy_values.dimensions());
+    TensorDataGpuPrimitiveT<LabelsT, 2> select_labels_xy(select_labels_xy_values.dimensions());
     select_labels_xy.setData(select_labels_xy_values);
     select_labels_xy.syncHAndDData(device);
-    this->select_labels_xy_ = std::make_shared<TensorDataGpu<LabelsT, 2>>(select_labels_xy);
+    this->select_labels_xy_ = std::make_shared<TensorDataGpuPrimitiveT<LabelsT, 2>>(select_labels_xy);
 
     Eigen::Tensor<LabelsT, 2> select_labels_z_values(1, this->dim_span_);
     Eigen::Tensor<LabelsT, 2> select_labels_t_values(1, this->dim_span_);
@@ -161,20 +161,20 @@ namespace TensorBaseBenchmarks
       select_labels_z_values(0, i) = i + 1;
       select_labels_t_values(0, i) = i + 1;
     }
-    TensorDataGpu<LabelsT, 2> select_labels_z(select_labels_z_values.dimensions());
+    TensorDataGpuPrimitiveT<LabelsT, 2> select_labels_z(select_labels_z_values.dimensions());
     select_labels_z.setData(select_labels_z_values);
     select_labels_z.syncHAndDData(device);
-    this->select_labels_z_ = std::make_shared<TensorDataGpu<LabelsT, 2>>(select_labels_z);
-    TensorDataGpu<LabelsT, 2> select_labels_t(select_labels_t_values.dimensions());
+    this->select_labels_z_ = std::make_shared<TensorDataGpuPrimitiveT<LabelsT, 2>>(select_labels_z);
+    TensorDataGpuPrimitiveT<LabelsT, 2> select_labels_t(select_labels_t_values.dimensions());
     select_labels_t.setData(select_labels_t_values);
     select_labels_t.syncHAndDData(device);
-    this->select_labels_t_ = std::make_shared<TensorDataGpu<LabelsT, 2>>(select_labels_t);
+    this->select_labels_t_ = std::make_shared<TensorDataGpuPrimitiveT<LabelsT, 2>>(select_labels_t);
 
     // allocate memory for the results
-    TensorDataGpu<TensorT, 1> results(Eigen::array<Eigen::Index, 1>({ 1 }));
+    TensorDataGpuPrimitiveT<TensorT, 1> results(Eigen::array<Eigen::Index, 1>({ 1 }));
     results.setData();
     results.syncHAndDData(device);
-    this->result_ = std::make_shared<TensorDataGpu<TensorT, 1>>(results);
+    this->result_ = std::make_shared<TensorDataGpuPrimitiveT<TensorT, 1>>(results);
   }
 
   /// Specialized class to select a region of pixels and compute the sum for the 4D and Gpu case
@@ -198,28 +198,28 @@ namespace TensorBaseBenchmarks
       select_labels_z_values(0, i) = i + 1;
       select_labels_t_values(0, i) = i + 1;
     }
-    TensorDataGpu<LabelsT, 2> select_labels_x(select_labels_x_values.dimensions());
+    TensorDataGpuPrimitiveT<LabelsT, 2> select_labels_x(select_labels_x_values.dimensions());
     select_labels_x.setData(select_labels_x_values);
     select_labels_x.syncHAndDData(device);
-    this->select_labels_x_ = std::make_shared<TensorDataGpu<LabelsT, 2>>(select_labels_x);
-    TensorDataGpu<LabelsT, 2> select_labels_y(select_labels_y_values.dimensions());
+    this->select_labels_x_ = std::make_shared<TensorDataGpuPrimitiveT<LabelsT, 2>>(select_labels_x);
+    TensorDataGpuPrimitiveT<LabelsT, 2> select_labels_y(select_labels_y_values.dimensions());
     select_labels_y.setData(select_labels_y_values);
     select_labels_y.syncHAndDData(device);
-    this->select_labels_y_ = std::make_shared<TensorDataGpu<LabelsT, 2>>(select_labels_y);
-    TensorDataGpu<LabelsT, 2> select_labels_z(select_labels_z_values.dimensions());
+    this->select_labels_y_ = std::make_shared<TensorDataGpuPrimitiveT<LabelsT, 2>>(select_labels_y);
+    TensorDataGpuPrimitiveT<LabelsT, 2> select_labels_z(select_labels_z_values.dimensions());
     select_labels_z.setData(select_labels_z_values);
     select_labels_z.syncHAndDData(device);
-    this->select_labels_z_ = std::make_shared<TensorDataGpu<LabelsT, 2>>(select_labels_z);
-    TensorDataGpu<LabelsT, 2> select_labels_t(select_labels_t_values.dimensions());
+    this->select_labels_z_ = std::make_shared<TensorDataGpuPrimitiveT<LabelsT, 2>>(select_labels_z);
+    TensorDataGpuPrimitiveT<LabelsT, 2> select_labels_t(select_labels_t_values.dimensions());
     select_labels_t.setData(select_labels_t_values);
     select_labels_t.syncHAndDData(device);
-    this->select_labels_t_ = std::make_shared<TensorDataGpu<LabelsT, 2>>(select_labels_t);
+    this->select_labels_t_ = std::make_shared<TensorDataGpuPrimitiveT<LabelsT, 2>>(select_labels_t);
 
     // allocate memory for the results
-    TensorDataGpu<TensorT, 1> results(Eigen::array<Eigen::Index, 1>({ 1 }));
+    TensorDataGpuPrimitiveT<TensorT, 1> results(Eigen::array<Eigen::Index, 1>({ 1 }));
     results.setData();
     results.syncHAndDData(device);
-    this->result_ = std::make_shared<TensorDataGpu<TensorT, 1>>(results);
+    this->result_ = std::make_shared<TensorDataGpuPrimitiveT<TensorT, 1>>(results);
   }
 
 	/*
@@ -525,7 +525,7 @@ namespace TensorBaseBenchmarks
     if (!in_memory) {
       transaction_manager.initTensorCollectionTensorData(device);
     }
-    assert(cudaStreamSynchronize(stream) == cudaSuccess);
+    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
     select_sum_pixels.result_->syncHAndDData(device);
     return select_sum_pixels.result_->getData()(0);
   }
@@ -537,7 +537,7 @@ namespace TensorBaseBenchmarks
     if (!in_memory) {
       transaction_manager.initTensorCollectionTensorData(device);
     }
-    assert(cudaStreamSynchronize(stream) == cudaSuccess);
+    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
     select_sum_pixels.result_->syncHAndDData(device);
     return select_sum_pixels.result_->getData()(0);
   }
@@ -549,7 +549,7 @@ namespace TensorBaseBenchmarks
     if (!in_memory) {
       transaction_manager.initTensorCollectionTensorData(device);
     }
-    assert(cudaStreamSynchronize(stream) == cudaSuccess);
+    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
     select_sum_pixels.result_->syncHAndDData(device);
     return select_sum_pixels.result_->getData()(0);
   }
@@ -561,7 +561,7 @@ namespace TensorBaseBenchmarks
     if (!in_memory) {
       transaction_manager.initTensorCollectionTensorData(device);
     }
-    assert(cudaStreamSynchronize(stream) == cudaSuccess);
+    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
     select_sum_pixels.result_->syncHAndDData(device);
     return select_sum_pixels.result_->getData()(0);
   }
@@ -573,7 +573,7 @@ namespace TensorBaseBenchmarks
     if (!in_memory) {
       transaction_manager.initTensorCollectionTensorData(device);
     }
-    assert(cudaStreamSynchronize(stream) == cudaSuccess);
+    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
     select_sum_pixels.result_->syncHAndDData(device);
     return select_sum_pixels.result_->getData()(0);
   }

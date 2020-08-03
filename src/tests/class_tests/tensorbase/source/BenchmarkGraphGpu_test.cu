@@ -38,13 +38,13 @@ void test_InsertUpdateDeleteGpu()
 
   // Test the initial tensor collection
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("2_nodes")->getNDimensions() == 1);
-  assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("2_nodes")->getNLabels() == 1);
+  assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("2_nodes")->getNLabels() == 2);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getNLabels() == 0);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getDataTensorSize() == 0);
-  assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getShardSpans().at("2_nodes") == 1);
+  assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getShardSpans().at("2_nodes") == 2);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getShardSpans().at("1_links") == TensorCollectionShardHelper::round_1(data_size, shard_span_perc));
-  assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getMaxDimSizeFromAxisName("2_property") == 1);
+  assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getMaxDimSizeFromAxisName("2_nodes") == 2);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getMaxDimSizeFromAxisName("1_links") == data_size);
   assert(n_dim_tensor_collection->tables_.at("Graph_weights")->getAxes().at("2_weights")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("Graph_weights")->getAxes().at("2_weights")->getNLabels() == 1);
@@ -332,11 +332,11 @@ void test_InsertUpdateDeleteShardingGpu()
 
   // Test the initial tensor collection
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("2_nodes")->getNDimensions() == 1);
-  assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("2_nodes")->getNLabels() == 1);
+  assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("2_nodes")->getNLabels() == 2);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getNLabels() == 0);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getDataTensorSize() == 0);
-  assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getShardSpans().at("2_nodes") == 1);
+  assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getShardSpans().at("2_nodes") == 2);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getShardSpans().at("1_links") == TensorCollectionShardHelper::round_1(data_size, shard_span_perc));
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getMaxDimSizeFromAxisName("2_nodes") == 2);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getMaxDimSizeFromAxisName("1_links") == data_size);

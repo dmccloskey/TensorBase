@@ -83,12 +83,12 @@ namespace TensorBaseBenchmarks
   @class Specialized `SelectTableDataImage2D` for the Gpu case
   */
   template<template<class> class ArrayT, class TensorT>
-  class SelectAndMeanImage2DT : public SelectTableDataImage2D<ArrayT<TensorT>, int, float, Eigen::GpuDevice> {};
-  class SelectAndMeanImage2D : public SelectAndMeanImage2DT<TensorArrayGpu8, char> {
+  class SelectAndMeanImage2DGpuT : public SelectTableDataImage2D<ArrayT<TensorT>, int, float, Eigen::GpuDevice> {};
+  class SelectAndMeanImage2DGpu : public SelectAndMeanImage2DGpuT<TensorArrayGpu8, char> {
   public:
     void setLabelsValuesResult(Eigen::GpuDevice& device) override;
   };
-  inline void SelectAndMeanImage2D::setLabelsValuesResult(Eigen::GpuDevice& device)
+  inline void SelectAndMeanImage2DGpu::setLabelsValuesResult(Eigen::GpuDevice& device)
   {
     // make the labels and sync to the device
     Eigen::Tensor<TensorArrayGpu8<char>, 2> select_labels_values(1, 2);
@@ -353,7 +353,7 @@ namespace TensorBaseBenchmarks
   }
   inline float BenchmarkDataFrame1TimePointGpu::_selectAndMeanImage2D(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::GpuDevice& device) const
   {
-    SelectTableDataImage2DGpu select_and_sum;
+    SelectAndMeanImage2DGpu select_and_sum;
     select_and_sum(transaction_manager.getTensorCollection(), device);
     if (!in_memory) {
       transaction_manager.commit(device);
