@@ -115,7 +115,7 @@ void test_InsertUpdateDeleteGpu()
   assert(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getNLabels() == data_size);
   std::shared_ptr<int[]> labels_indices_insert_data;
-  n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getLabelsDataPointer(labels_indices_insert_data);
+  n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getLabelsHDataPointer(labels_indices_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_indices_insert_values(labels_indices_insert_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
@@ -142,7 +142,7 @@ void test_InsertUpdateDeleteGpu()
   // Test the expected data after insert
   assert(n_dim_tensor_collection->tables_.at("DataFrame_time")->getDataTensorSize() == 1 * data_size * 6);
   std::shared_ptr<int[]> data_insert_data_time;
-  n_dim_tensor_collection->tables_.at("DataFrame_time")->getDataPointer(data_insert_data_time);
+  n_dim_tensor_collection->tables_.at("DataFrame_time")->getHDataPointer(data_insert_data_time);
   Eigen::TensorMap<Eigen::Tensor<int, 3>> data_insert_values_time(data_insert_data_time.get(), data_size, 1, 6);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 6; ++j) {
@@ -151,14 +151,14 @@ void test_InsertUpdateDeleteGpu()
   }
   assert(n_dim_tensor_collection->tables_.at("DataFrame_label")->getDataTensorSize() == 1 * data_size);
   std::shared_ptr<TensorArrayGpu32<char>[]> data_insert_data_labels;
-  n_dim_tensor_collection->tables_.at("DataFrame_label")->getDataPointer(data_insert_data_labels);
+  n_dim_tensor_collection->tables_.at("DataFrame_label")->getHDataPointer(data_insert_data_labels);
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu32<char>, 2>> data_insert_values_labels(data_insert_data_labels.get(), data_size, 1);
   for (int i = 0; i < data_size; ++i) {
     assert(data_insert_values_labels(i, 0) == values_labels_ptr->getData()(i, 0));
   }
   assert(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getDataTensorSize() == 1 * data_size * 28 * 28);
   std::shared_ptr<float[]> data_insert_data_image_2d;
-  n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getDataPointer(data_insert_data_image_2d);
+  n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getHDataPointer(data_insert_data_image_2d);
   Eigen::TensorMap<Eigen::Tensor<float, 4>> data_insert_values_image_2d(data_insert_data_image_2d.get(), data_size, 1, 28, 28);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 28; ++j) {
@@ -169,7 +169,7 @@ void test_InsertUpdateDeleteGpu()
   }
   assert(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getDataTensorSize() == 1 * data_size);
   std::shared_ptr<int[]> data_insert_data_is_valid;
-  n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getDataPointer(data_insert_data_is_valid);
+  n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getHDataPointer(data_insert_data_is_valid);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_insert_values_is_valid(data_insert_data_is_valid.get(), data_size, 1);
   for (int i = 0; i < data_size; ++i) {
     assert(data_insert_values_is_valid(i, 0) == values_is_valid_ptr->getData()(i, 0));
@@ -217,7 +217,7 @@ void test_InsertUpdateDeleteGpu()
   assert(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getNLabels() == data_size);
   std::shared_ptr<int[]> labels_indices_update_data;
-  n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getLabelsDataPointer(labels_indices_update_data);
+  n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getLabelsHDataPointer(labels_indices_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_indices_update_values(labels_indices_update_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
@@ -244,7 +244,7 @@ void test_InsertUpdateDeleteGpu()
   // Test the expected data after update
   assert(n_dim_tensor_collection->tables_.at("DataFrame_time")->getDataTensorSize() == 1 * data_size * 6);
   std::shared_ptr<int[]> data_update_data_time;
-  n_dim_tensor_collection->tables_.at("DataFrame_time")->getDataPointer(data_update_data_time);
+  n_dim_tensor_collection->tables_.at("DataFrame_time")->getHDataPointer(data_update_data_time);
   Eigen::TensorMap<Eigen::Tensor<int, 3>> data_update_values(data_update_data_time.get(), data_size, 1, 6);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 6; ++j) {
@@ -253,14 +253,14 @@ void test_InsertUpdateDeleteGpu()
   }
   assert(n_dim_tensor_collection->tables_.at("DataFrame_label")->getDataTensorSize() == 1 * data_size);
   std::shared_ptr<TensorArrayGpu32<char>[]> data_update_data_labels;
-  n_dim_tensor_collection->tables_.at("DataFrame_label")->getDataPointer(data_update_data_labels);
+  n_dim_tensor_collection->tables_.at("DataFrame_label")->getHDataPointer(data_update_data_labels);
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu32<char>, 2>> data_update_values_labels(data_update_data_labels.get(), data_size, 1);
   for (int i = 0; i < data_size; ++i) {
     assert(data_update_values_labels(i, 0) == values_labels_ptr->getData()(i, 0));
   }
   assert(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getDataTensorSize() == 1 * data_size * 28 * 28);
   std::shared_ptr<float[]> data_update_data_image_2d;
-  n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getDataPointer(data_update_data_image_2d);
+  n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getHDataPointer(data_update_data_image_2d);
   Eigen::TensorMap<Eigen::Tensor<float, 4>> data_update_values_image_2d(data_update_data_image_2d.get(), data_size, 1, 28, 28);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 28; ++j) {
@@ -271,7 +271,7 @@ void test_InsertUpdateDeleteGpu()
   }
   assert(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getDataTensorSize() == 1 * data_size);
   std::shared_ptr<int[]> data_update_data_is_valid;
-  n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getDataPointer(data_update_data_is_valid);
+  n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getHDataPointer(data_update_data_is_valid);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_update_values_is_valid(data_update_data_is_valid.get(), data_size, 1);
   for (int i = 0; i < data_size; ++i) {
     assert(data_update_values_is_valid(i, 0) == values_is_valid_ptr->getData()(i, 0));
@@ -407,7 +407,7 @@ void test_InsertUpdateDeleteShardingGpu()
   assert(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getNLabels() == data_size);
   std::shared_ptr<int[]> labels_indices_insert_data;
-  n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getLabelsDataPointer(labels_indices_insert_data);
+  n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getLabelsHDataPointer(labels_indices_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_indices_insert_values(labels_indices_insert_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
@@ -434,7 +434,7 @@ void test_InsertUpdateDeleteShardingGpu()
   // Test the expected data after insert
   assert(n_dim_tensor_collection->tables_.at("DataFrame_time")->getDataTensorSize() == 1 * data_size * 6);
   std::shared_ptr<int[]> data_insert_data_time;
-  n_dim_tensor_collection->tables_.at("DataFrame_time")->getDataPointer(data_insert_data_time);
+  n_dim_tensor_collection->tables_.at("DataFrame_time")->getHDataPointer(data_insert_data_time);
   Eigen::TensorMap<Eigen::Tensor<int, 3>> data_insert_values_time(data_insert_data_time.get(), data_size, 1, 6);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 6; ++j) {
@@ -443,14 +443,14 @@ void test_InsertUpdateDeleteShardingGpu()
   }
   assert(n_dim_tensor_collection->tables_.at("DataFrame_label")->getDataTensorSize() == 1 * data_size);
   std::shared_ptr<TensorArrayGpu32<char>[]> data_insert_data_labels;
-  n_dim_tensor_collection->tables_.at("DataFrame_label")->getDataPointer(data_insert_data_labels);
+  n_dim_tensor_collection->tables_.at("DataFrame_label")->getHDataPointer(data_insert_data_labels);
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu32<char>, 2>> data_insert_values_labels(data_insert_data_labels.get(), data_size, 1);
   for (int i = 0; i < data_size; ++i) {
     assert(data_insert_values_labels(i, 0) == values_labels_ptr->getData()(i, 0));
   }
   assert(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getDataTensorSize() == 1 * data_size * 28 * 28);
   std::shared_ptr<float[]> data_insert_data_image_2d;
-  n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getDataPointer(data_insert_data_image_2d);
+  n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getHDataPointer(data_insert_data_image_2d);
   Eigen::TensorMap<Eigen::Tensor<float, 4>> data_insert_values_image_2d(data_insert_data_image_2d.get(), data_size, 1, 28, 28);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 28; ++j) {
@@ -461,7 +461,7 @@ void test_InsertUpdateDeleteShardingGpu()
   }
   assert(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getDataTensorSize() == 1 * data_size);
   std::shared_ptr<int[]> data_insert_data_is_valid;
-  n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getDataPointer(data_insert_data_is_valid);
+  n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getHDataPointer(data_insert_data_is_valid);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_insert_values_is_valid(data_insert_data_is_valid.get(), data_size, 1);
   for (int i = 0; i < data_size; ++i) {
     assert(data_insert_values_is_valid(i, 0) == values_is_valid_ptr->getData()(i, 0));
@@ -509,7 +509,7 @@ void test_InsertUpdateDeleteShardingGpu()
   assert(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getNLabels() == data_size);
   std::shared_ptr<int[]> labels_indices_update_data;
-  n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getLabelsDataPointer(labels_indices_update_data);
+  n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getLabelsHDataPointer(labels_indices_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_indices_update_values(labels_indices_update_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
@@ -536,7 +536,7 @@ void test_InsertUpdateDeleteShardingGpu()
   // Test the expected data after update
   assert(n_dim_tensor_collection->tables_.at("DataFrame_time")->getDataTensorSize() == 1 * data_size * 6);
   std::shared_ptr<int[]> data_update_data_time;
-  n_dim_tensor_collection->tables_.at("DataFrame_time")->getDataPointer(data_update_data_time);
+  n_dim_tensor_collection->tables_.at("DataFrame_time")->getHDataPointer(data_update_data_time);
   Eigen::TensorMap<Eigen::Tensor<int, 3>> data_update_values(data_update_data_time.get(), data_size, 1, 6);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 6; ++j) {
@@ -545,14 +545,14 @@ void test_InsertUpdateDeleteShardingGpu()
   }
   assert(n_dim_tensor_collection->tables_.at("DataFrame_label")->getDataTensorSize() == 1 * data_size);
   std::shared_ptr<TensorArrayGpu32<char>[]> data_update_data_labels;
-  n_dim_tensor_collection->tables_.at("DataFrame_label")->getDataPointer(data_update_data_labels);
+  n_dim_tensor_collection->tables_.at("DataFrame_label")->getHDataPointer(data_update_data_labels);
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu32<char>, 2>> data_update_values_labels(data_update_data_labels.get(), data_size, 1);
   for (int i = 0; i < data_size; ++i) {
     assert(data_update_values_labels(i, 0) == values_labels_ptr->getData()(i, 0));
   }
   assert(n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getDataTensorSize() == 1 * data_size * 28 * 28);
   std::shared_ptr<float[]> data_update_data_image_2d;
-  n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getDataPointer(data_update_data_image_2d);
+  n_dim_tensor_collection->tables_.at("DataFrame_image_2D")->getHDataPointer(data_update_data_image_2d);
   Eigen::TensorMap<Eigen::Tensor<float, 4>> data_update_values_image_2d(data_update_data_image_2d.get(), data_size, 1, 28, 28);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 28; ++j) {
@@ -563,7 +563,7 @@ void test_InsertUpdateDeleteShardingGpu()
   }
   assert(n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getDataTensorSize() == 1 * data_size);
   std::shared_ptr<int[]> data_update_data_is_valid;
-  n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getDataPointer(data_update_data_is_valid);
+  n_dim_tensor_collection->tables_.at("DataFrame_is_valid")->getHDataPointer(data_update_data_is_valid);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_update_values_is_valid(data_update_data_is_valid.get(), data_size, 1);
   for (int i = 0; i < data_size; ++i) {
     assert(data_update_values_is_valid(i, 0) == values_is_valid_ptr->getData()(i, 0));

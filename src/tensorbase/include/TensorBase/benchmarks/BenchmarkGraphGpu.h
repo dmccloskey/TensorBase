@@ -317,7 +317,7 @@ namespace TensorBaseBenchmarks
     tmp.setData();
 
     // Cycle through each color node;
-    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> tmp_values(tmp.getDataPointer().get(), tmp.getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> tmp_values(tmp.getHDataPointer().get(), tmp.getDimensions());
     Eigen::Tensor<TensorT, 2> labels(1, 5);
     labels.setValues({ {TensorT("white"), TensorT("black"), TensorT("red"), TensorT("blue"), TensorT("green")} });
     const int bcast_length = this->node_ids_->getTensorSize() / 5 + 1;
@@ -364,7 +364,7 @@ namespace TensorBaseBenchmarks
     tmp.setData();
 
     // Dashed link every third index
-    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> tmp_values(tmp.getDataPointer().get(), tmp.getDimensions());
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> tmp_values(tmp.getHDataPointer().get(), tmp.getDimensions());
     Eigen::Tensor<int, 1> indices(span);
     indices = indices.constant(1).cumsum(0) + indices.constant(offset - 1);
     auto indices_mod = indices - (indices.constant(3) * (indices / indices.constant(3))).eval(); // a mod n = a - (n * int(a/n))

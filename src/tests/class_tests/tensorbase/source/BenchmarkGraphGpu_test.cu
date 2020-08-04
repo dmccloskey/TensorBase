@@ -105,7 +105,7 @@ void test_InsertUpdateDeleteGpu()
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getNLabels() == data_size);
   std::shared_ptr<int[]> labels_indices_insert_data;
-  n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getLabelsDataPointer(labels_indices_insert_data);
+  n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getLabelsHDataPointer(labels_indices_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_indices_insert_values(labels_indices_insert_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
@@ -132,7 +132,7 @@ void test_InsertUpdateDeleteGpu()
   // Test the expected data after insert
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getDataTensorSize() == 2 * data_size);
   std::shared_ptr<int[]> data_insert_data_sparse_indices;
-  n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getDataPointer(data_insert_data_sparse_indices);
+  n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getHDataPointer(data_insert_data_sparse_indices);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_insert_values_sparse_indices(data_insert_data_sparse_indices.get(), data_size, 2);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 2; ++j) {
@@ -141,14 +141,14 @@ void test_InsertUpdateDeleteGpu()
   }
   assert(n_dim_tensor_collection->tables_.at("Graph_weights")->getDataTensorSize() == 1 * data_size);
   std::shared_ptr<float[]> data_insert_data_weights;
-  n_dim_tensor_collection->tables_.at("Graph_weights")->getDataPointer(data_insert_data_weights);
+  n_dim_tensor_collection->tables_.at("Graph_weights")->getHDataPointer(data_insert_data_weights);
   Eigen::TensorMap<Eigen::Tensor<float, 2>> data_insert_values_weights(data_insert_data_weights.get(), data_size, 1);
   for (int i = 0; i < data_size; ++i) {
     assert(data_insert_values_weights(i, 0) == values_labels_ptr->getData()(i, 0));
   }
   assert(n_dim_tensor_collection->tables_.at("Graph_node_property")->getDataTensorSize() <= 1 * data_size);
   std::shared_ptr<TensorArrayGpu8<char>[]> data_insert_data_node_property;
-  n_dim_tensor_collection->tables_.at("Graph_node_property")->getDataPointer(data_insert_data_node_property);
+  n_dim_tensor_collection->tables_.at("Graph_node_property")->getHDataPointer(data_insert_data_node_property);
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 2>> data_insert_values_node_property(data_insert_data_node_property.get(), values_node_property_ptr->getTensorSize(), 1);
   for (int i = 0; i < values_node_property_ptr->getTensorSize(); ++i) {
     int count = std::count(values_node_property_ptr->getHDataPointer().get(), values_node_property_ptr->getHDataPointer().get() + values_node_property_ptr->getTensorSize(), data_insert_values_node_property(i, 0));
@@ -156,7 +156,7 @@ void test_InsertUpdateDeleteGpu()
   }
   assert(n_dim_tensor_collection->tables_.at("Graph_link_property")->getDataTensorSize() == 1 * data_size);
   std::shared_ptr<TensorArrayGpu8<char>[]> data_insert_data_link_property;
-  n_dim_tensor_collection->tables_.at("Graph_link_property")->getDataPointer(data_insert_data_link_property);
+  n_dim_tensor_collection->tables_.at("Graph_link_property")->getHDataPointer(data_insert_data_link_property);
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 2>> data_insert_values_link_property(data_insert_data_link_property.get(), data_size, 1);
   for (int i = 0; i < data_size; ++i) {
     assert(data_insert_values_link_property(i, 0) == values_link_property_ptr->getData()(i, 0));
@@ -222,7 +222,7 @@ void test_InsertUpdateDeleteGpu()
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getNLabels() == data_size);
   std::shared_ptr<int[]> labels_indices_update_data;
-  n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getLabelsDataPointer(labels_indices_update_data);
+  n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getLabelsHDataPointer(labels_indices_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_indices_update_values(labels_indices_update_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
@@ -249,7 +249,7 @@ void test_InsertUpdateDeleteGpu()
   // Test the expected data after update
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getDataTensorSize() == 2 * data_size);
   std::shared_ptr<int[]> data_update_data_sparse_indices;
-  n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getDataPointer(data_update_data_sparse_indices);
+  n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getHDataPointer(data_update_data_sparse_indices);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_update_values(data_update_data_sparse_indices.get(), data_size, 2);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 2; ++j) {
@@ -258,14 +258,14 @@ void test_InsertUpdateDeleteGpu()
   }
   assert(n_dim_tensor_collection->tables_.at("Graph_weights")->getDataTensorSize() == 1 * data_size);
   std::shared_ptr<float[]> data_update_data_weights;
-  n_dim_tensor_collection->tables_.at("Graph_weights")->getDataPointer(data_update_data_weights);
+  n_dim_tensor_collection->tables_.at("Graph_weights")->getHDataPointer(data_update_data_weights);
   Eigen::TensorMap<Eigen::Tensor<float, 2>> data_update_values_weights(data_update_data_weights.get(), data_size, 1);
   for (int i = 0; i < data_size; ++i) {
     assert(data_update_values_weights(i, 0) == values_labels_ptr->getData()(i, 0));
   }
   assert(n_dim_tensor_collection->tables_.at("Graph_node_property")->getDataTensorSize() <= 1 * data_size);
   std::shared_ptr<TensorArrayGpu8<char>[]> data_update_data_node_property;
-  n_dim_tensor_collection->tables_.at("Graph_node_property")->getDataPointer(data_update_data_node_property);
+  n_dim_tensor_collection->tables_.at("Graph_node_property")->getHDataPointer(data_update_data_node_property);
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 2>> data_update_values_node_property(data_update_data_node_property.get(), values_node_property_ptr->getTensorSize(), 1);
   for (int i = 0; i < values_node_property_ptr->getTensorSize(); ++i) {
     int count = std::count(values_node_property_ptr->getHDataPointer().get(), values_node_property_ptr->getHDataPointer().get() + values_node_property_ptr->getTensorSize(), data_update_values_node_property(i, 0));
@@ -273,7 +273,7 @@ void test_InsertUpdateDeleteGpu()
   }
   assert(n_dim_tensor_collection->tables_.at("Graph_link_property")->getDataTensorSize() == 1 * data_size);
   std::shared_ptr<TensorArrayGpu8<char>[]> data_update_data_link_property;
-  n_dim_tensor_collection->tables_.at("Graph_link_property")->getDataPointer(data_update_data_link_property);
+  n_dim_tensor_collection->tables_.at("Graph_link_property")->getHDataPointer(data_update_data_link_property);
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 2>> data_update_values_link_property(data_update_data_link_property.get(), data_size, 1);
   for (int i = 0; i < data_size; ++i) {
     assert(data_update_values_link_property(i, 0) == values_link_property_ptr->getData()(i, 0));
@@ -399,7 +399,7 @@ void test_InsertUpdateDeleteShardingGpu()
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getNLabels() == data_size);
   std::shared_ptr<int[]> labels_indices_insert_data;
-  n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getLabelsDataPointer(labels_indices_insert_data);
+  n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getLabelsHDataPointer(labels_indices_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_indices_insert_values(labels_indices_insert_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
@@ -426,7 +426,7 @@ void test_InsertUpdateDeleteShardingGpu()
   // Test the expected data after insert
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getDataTensorSize() == 2 * data_size);
   std::shared_ptr<int[]> data_insert_data_sparse_indices;
-  n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getDataPointer(data_insert_data_sparse_indices);
+  n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getHDataPointer(data_insert_data_sparse_indices);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_insert_values_sparse_indices(data_insert_data_sparse_indices.get(), data_size, 2);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 2; ++j) {
@@ -435,14 +435,14 @@ void test_InsertUpdateDeleteShardingGpu()
   }
   assert(n_dim_tensor_collection->tables_.at("Graph_weights")->getDataTensorSize() == 1 * data_size);
   std::shared_ptr<float[]> data_insert_data_weights;
-  n_dim_tensor_collection->tables_.at("Graph_weights")->getDataPointer(data_insert_data_weights);
+  n_dim_tensor_collection->tables_.at("Graph_weights")->getHDataPointer(data_insert_data_weights);
   Eigen::TensorMap<Eigen::Tensor<float, 2>> data_insert_values_weights(data_insert_data_weights.get(), data_size, 1);
   for (int i = 0; i < data_size; ++i) {
     assert(data_insert_values_weights(i, 0) == values_labels_ptr->getData()(i, 0));
   }
   assert(n_dim_tensor_collection->tables_.at("Graph_node_property")->getDataTensorSize() <= 1 * data_size);
   std::shared_ptr<TensorArrayGpu8<char>[]> data_insert_data_node_property;
-  n_dim_tensor_collection->tables_.at("Graph_node_property")->getDataPointer(data_insert_data_node_property);
+  n_dim_tensor_collection->tables_.at("Graph_node_property")->getHDataPointer(data_insert_data_node_property);
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 2>> data_insert_values_node_property(data_insert_data_node_property.get(), values_node_property_ptr->getTensorSize(), 1);
   for (int i = 0; i < values_node_property_ptr->getTensorSize(); ++i) {
     int count = std::count(values_node_property_ptr->getHDataPointer().get(), values_node_property_ptr->getHDataPointer().get() + values_node_property_ptr->getTensorSize(), data_insert_values_node_property(i, 0));
@@ -450,7 +450,7 @@ void test_InsertUpdateDeleteShardingGpu()
   }
   assert(n_dim_tensor_collection->tables_.at("Graph_link_property")->getDataTensorSize() == 1 * data_size);
   std::shared_ptr<TensorArrayGpu8<char>[]> data_insert_data_link_property;
-  n_dim_tensor_collection->tables_.at("Graph_link_property")->getDataPointer(data_insert_data_link_property);
+  n_dim_tensor_collection->tables_.at("Graph_link_property")->getHDataPointer(data_insert_data_link_property);
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 2>> data_insert_values_link_property(data_insert_data_link_property.get(), data_size, 1);
   for (int i = 0; i < data_size; ++i) {
     assert(data_insert_values_link_property(i, 0) == values_link_property_ptr->getData()(i, 0));
@@ -516,7 +516,7 @@ void test_InsertUpdateDeleteShardingGpu()
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getNLabels() == data_size);
   std::shared_ptr<int[]> labels_indices_update_data;
-  n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getLabelsDataPointer(labels_indices_update_data);
+  n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getLabelsHDataPointer(labels_indices_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_indices_update_values(labels_indices_update_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
@@ -543,7 +543,7 @@ void test_InsertUpdateDeleteShardingGpu()
   // Test the expected data after update
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getDataTensorSize() == 2 * data_size);
   std::shared_ptr<int[]> data_update_data_sparse_indices;
-  n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getDataPointer(data_update_data_sparse_indices);
+  n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getHDataPointer(data_update_data_sparse_indices);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_update_values(data_update_data_sparse_indices.get(), data_size, 2);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 2; ++j) {
@@ -552,14 +552,14 @@ void test_InsertUpdateDeleteShardingGpu()
   }
   assert(n_dim_tensor_collection->tables_.at("Graph_weights")->getDataTensorSize() == 1 * data_size);
   std::shared_ptr<float[]> data_update_data_weights;
-  n_dim_tensor_collection->tables_.at("Graph_weights")->getDataPointer(data_update_data_weights);
+  n_dim_tensor_collection->tables_.at("Graph_weights")->getHDataPointer(data_update_data_weights);
   Eigen::TensorMap<Eigen::Tensor<float, 2>> data_update_values_weights(data_update_data_weights.get(), data_size, 1);
   for (int i = 0; i < data_size; ++i) {
     assert(data_update_values_weights(i, 0) == values_labels_ptr->getData()(i, 0));
   }
   assert(n_dim_tensor_collection->tables_.at("Graph_node_property")->getDataTensorSize() <= 1 * data_size);
   std::shared_ptr<TensorArrayGpu8<char>[]> data_update_data_node_property;
-  n_dim_tensor_collection->tables_.at("Graph_node_property")->getDataPointer(data_update_data_node_property);
+  n_dim_tensor_collection->tables_.at("Graph_node_property")->getHDataPointer(data_update_data_node_property);
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 2>> data_update_values_node_property(data_update_data_node_property.get(), values_node_property_ptr->getTensorSize(), 1);
   for (int i = 0; i < values_node_property_ptr->getTensorSize(); ++i) {
     int count = std::count(values_node_property_ptr->getHDataPointer().get(), values_node_property_ptr->getHDataPointer().get() + values_node_property_ptr->getTensorSize(), data_update_values_node_property(i, 0));
@@ -567,7 +567,7 @@ void test_InsertUpdateDeleteShardingGpu()
   }
   assert(n_dim_tensor_collection->tables_.at("Graph_link_property")->getDataTensorSize() == 1 * data_size);
   std::shared_ptr<TensorArrayGpu8<char>[]> data_update_data_link_property;
-  n_dim_tensor_collection->tables_.at("Graph_link_property")->getDataPointer(data_update_data_link_property);
+  n_dim_tensor_collection->tables_.at("Graph_link_property")->getHDataPointer(data_update_data_link_property);
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 2>> data_update_values_link_property(data_update_data_link_property.get(), data_size, 1);
   for (int i = 0; i < data_size; ++i) {
     assert(data_update_values_link_property(i, 0) == values_link_property_ptr->getData()(i, 0));

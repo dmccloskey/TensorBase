@@ -132,6 +132,7 @@ namespace TensorBase
     size_t getDataTensorBytes() const { return data_->getTensorBytes(); } ///< data_->getTensorBytes() wrapper
     size_t getDataTensorSize() const { return data_->getTensorSize(); } ///< data_->getTensorSize() wrapper
     std::shared_ptr<TensorT[]> getDataPointer() { return data_->getDataPointer(); } ///< data_->getDataPointer() wrapper
+    std::shared_ptr<TensorT[]> getHDataPointer() { return data_->getHDataPointer(); } ///< data_->getHDataPointer() wrapper
     void setDataDimensions(const Eigen::array<Eigen::Index, TDim>& dimensions) { data_->setDimensions(dimensions); };
     void setData(const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& data) { data_ = data; }; ///< data setter via shared_ptr
     void setData(const Eigen::Tensor<TensorT, TDim>& data); ///< data setter (NOTE: must sync the `data` AND `not_in_memory`/`is_modified` attributes!)
@@ -185,6 +186,8 @@ namespace TensorBase
 
     template<typename T>
     void getDataPointer(std::shared_ptr<T[]>& data_copy); ///< TensorTableConcept data getter
+    template<typename T>
+    void getHDataPointer(std::shared_ptr<T[]>& data_copy); ///< TensorTableConcept host data getter
 
     void setShardSpans(const std::map<std::string, int>& shard_spans); ///< shard_span setter
     std::map<std::string, int> getShardSpans() const { return shard_spans_; }; ///< shard_span getter
@@ -1418,6 +1421,14 @@ namespace TensorBase
   {
     if (std::is_same<T, TensorT>::value)
       data_copy = std::reinterpret_pointer_cast<T[]>(data_->getDataPointer()); // required for compilation: no conversion should be done
+  }
+
+  template<typename TensorT, typename DeviceT, int TDim>
+  template<typename T>
+  inline void TensorTable<TensorT, DeviceT, TDim>::getHDataPointer(std::shared_ptr<T[]>& data_copy)
+  {
+    if (std::is_same<T, TensorT>::value)
+      data_copy = std::reinterpret_pointer_cast<T[]>(data_->getHDataPointer()); // required for compilation: no conversion should be done
   }
 
   template<typename TensorT, typename DeviceT, int TDim>

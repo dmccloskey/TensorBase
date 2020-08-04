@@ -68,7 +68,7 @@ void test_InsertUpdateDelete0DGpu()
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNLabels() == 1296);
   std::shared_ptr<TensorArrayGpu8<char>[]> labels_xyztv_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getLabelsDataPointer(labels_xyztv_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getLabelsHDataPointer(labels_xyztv_insert_data);
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 2>> labels_xyztv_insert_values(labels_xyztv_insert_data.get(), 5, 1);
   for (int i = 0; i < 5; ++i) {
     for (int j = 0; j < 1; ++j) {
@@ -76,7 +76,7 @@ void test_InsertUpdateDelete0DGpu()
     }
   }
   std::shared_ptr<int[]> labels_indices_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getLabelsDataPointer(labels_indices_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getLabelsHDataPointer(labels_indices_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_indices_insert_values(labels_indices_insert_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
@@ -117,7 +117,7 @@ void test_InsertUpdateDelete0DGpu()
   // Test the expected data after insert
   assert(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize() == 6480);
   std::shared_ptr<int[]> data_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_insert_values(data_insert_data.get(), data_size, 5);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 5; ++j) {
@@ -141,7 +141,7 @@ void test_InsertUpdateDelete0DGpu()
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNLabels() == 1296);
   std::shared_ptr<TensorArrayGpu8<char>[]> labels_xyztv_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getLabelsDataPointer(labels_xyztv_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getLabelsHDataPointer(labels_xyztv_update_data);
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 2>> labels_xyztv_update_values(labels_xyztv_update_data.get(), 5, 1);
   for (int i = 0; i < 5; ++i) {
     for (int j = 0; j < 1; ++j) {
@@ -149,7 +149,7 @@ void test_InsertUpdateDelete0DGpu()
     }
   }
   std::shared_ptr<int[]> labels_indices_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getLabelsDataPointer(labels_indices_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getLabelsHDataPointer(labels_indices_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_indices_update_values(labels_indices_update_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
@@ -190,7 +190,7 @@ void test_InsertUpdateDelete0DGpu()
   // Test the expected data after update
   assert(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize() == 6480);
   std::shared_ptr<int[]> data_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_update_values(data_update_data.get(), data_size, 5);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 5; ++j) {
@@ -271,7 +271,7 @@ void test_InsertUpdateDelete1DGpu()
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("values")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("values")->getNLabels() == 1);
   std::shared_ptr<int[]> labels_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyzt")->getLabelsDataPointer(labels_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyzt")->getLabelsHDataPointer(labels_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_insert_values(labels_insert_data.get(), 4, data_size);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 4; ++j) {
@@ -312,7 +312,7 @@ void test_InsertUpdateDelete1DGpu()
   // Test the expected data after insert
   assert(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize() == 1296);
   std::shared_ptr<int[]> data_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_insert_values(data_insert_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
@@ -336,7 +336,7 @@ void test_InsertUpdateDelete1DGpu()
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("values")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("values")->getNLabels() == 1);
   std::shared_ptr<int[]> labels_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyzt")->getLabelsDataPointer(labels_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyzt")->getLabelsHDataPointer(labels_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_update_values(labels_update_data.get(), 4, data_size);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 4; ++j) {
@@ -377,7 +377,7 @@ void test_InsertUpdateDelete1DGpu()
   // Test the expected data after update
   assert(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize() == 1296);
   std::shared_ptr<int[]> data_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_update_values(data_update_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
@@ -465,7 +465,7 @@ void test_InsertUpdateDelete2DGpu()
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNLabels() == t_dim_size);
   std::shared_ptr<int[]> labels_xyz_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyz")->getLabelsDataPointer(labels_xyz_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyz")->getLabelsHDataPointer(labels_xyz_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_xyz_insert_values(labels_xyz_insert_data.get(), 3, xyz_dim_size);
   for (int i = 0; i < 3; ++i) {
     for (int j = 0; j < xyz_dim_size; ++j) {
@@ -473,7 +473,7 @@ void test_InsertUpdateDelete2DGpu()
     }
   }
   std::shared_ptr<int[]> labels_t_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsDataPointer(labels_t_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsHDataPointer(labels_t_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_t_insert_values(labels_t_insert_data.get(), 1, t_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < t_dim_size; ++j) {
@@ -514,7 +514,7 @@ void test_InsertUpdateDelete2DGpu()
   // Test the expected data after insert
   assert(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize() == 1296);
   std::shared_ptr<int[]> data_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_insert_values(data_insert_data.get(), t_dim_size, xyz_dim_size);
   //std::cout << "values\n" << values << std::endl;
   //std::cout << "data_insert_values\n" << data_insert_values << std::endl;
@@ -540,7 +540,7 @@ void test_InsertUpdateDelete2DGpu()
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNLabels() == t_dim_size);
   std::shared_ptr<int[]> labels_xyz_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyz")->getLabelsDataPointer(labels_xyz_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyz")->getLabelsHDataPointer(labels_xyz_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_xyz_update_values(labels_xyz_update_data.get(), 3, xyz_dim_size);
   for (int i = 0; i < 3; ++i) {
     for (int j = 0; j < xyz_dim_size; ++j) {
@@ -548,7 +548,7 @@ void test_InsertUpdateDelete2DGpu()
     }
   }
   std::shared_ptr<int[]> labels_t_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsDataPointer(labels_t_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsHDataPointer(labels_t_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_t_update_values(labels_t_update_data.get(), 1, t_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < t_dim_size; ++j) {
@@ -589,7 +589,7 @@ void test_InsertUpdateDelete2DGpu()
   // Test the expected data after update
   assert(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize() == 1296);
   std::shared_ptr<int[]> data_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_update_values(data_update_data.get(), t_dim_size, xyz_dim_size);
   for (int i = 0; i < xyz_dim_size; ++i) {
     for (int j = 0; j < t_dim_size; ++j) {
@@ -685,7 +685,7 @@ void test_InsertUpdateDelete3DGpu()
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNLabels() == t_dim_size);
   std::shared_ptr<int[]> labels_xy_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xy")->getLabelsDataPointer(labels_xy_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xy")->getLabelsHDataPointer(labels_xy_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_xy_insert_values(labels_xy_insert_data.get(), 2, xy_dim_size);
   for (int i = 0; i < 2; ++i) {
     for (int j = 0; j < xy_dim_size; ++j) {
@@ -693,7 +693,7 @@ void test_InsertUpdateDelete3DGpu()
     }
   }
   std::shared_ptr<int[]> labels_z_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("z")->getLabelsDataPointer(labels_z_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("z")->getLabelsHDataPointer(labels_z_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_z_insert_values(labels_z_insert_data.get(), 1, z_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < z_dim_size; ++j) {
@@ -701,7 +701,7 @@ void test_InsertUpdateDelete3DGpu()
     }
   }
   std::shared_ptr<int[]> labels_t_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsDataPointer(labels_t_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsHDataPointer(labels_t_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_t_insert_values(labels_t_insert_data.get(), 1, t_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < t_dim_size; ++j) {
@@ -756,7 +756,7 @@ void test_InsertUpdateDelete3DGpu()
   // Test the expected data after insert
   assert(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize() == 1296);
   std::shared_ptr<int[]> data_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 3>> data_insert_values(data_insert_data.get(), t_dim_size, xy_dim_size, z_dim_size);
   for (int i = 0; i < t_dim_size; ++i) {
     for (int j = 0; j < xy_dim_size; ++j) {
@@ -784,7 +784,7 @@ void test_InsertUpdateDelete3DGpu()
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNLabels() == t_dim_size);
   std::shared_ptr<int[]> labels_xy_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xy")->getLabelsDataPointer(labels_xy_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xy")->getLabelsHDataPointer(labels_xy_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_xy_update_values(labels_xy_update_data.get(), 2, xy_dim_size);
   for (int i = 0; i < 2; ++i) {
     for (int j = 0; j < xy_dim_size; ++j) {
@@ -792,7 +792,7 @@ void test_InsertUpdateDelete3DGpu()
     }
   }
   std::shared_ptr<int[]> labels_z_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("z")->getLabelsDataPointer(labels_z_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("z")->getLabelsHDataPointer(labels_z_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_z_update_values(labels_z_update_data.get(), 1, z_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < z_dim_size; ++j) {
@@ -800,7 +800,7 @@ void test_InsertUpdateDelete3DGpu()
     }
   }
   std::shared_ptr<int[]> labels_t_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsDataPointer(labels_t_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsHDataPointer(labels_t_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_t_update_values(labels_t_update_data.get(), 1, t_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < t_dim_size; ++j) {
@@ -855,7 +855,7 @@ void test_InsertUpdateDelete3DGpu()
   // Test the expected data after update
   assert(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize() == 1296);
   std::shared_ptr<int[]> data_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 3>> data_update_values(data_update_data.get(), t_dim_size, xy_dim_size, z_dim_size);
   for (int i = 0; i < t_dim_size; ++i) {
     for (int j = 0; j < xy_dim_size; ++j) {
@@ -959,7 +959,7 @@ void test_InsertUpdateDelete4DGpu()
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNLabels() == t_dim_size);
   std::shared_ptr<int[]> labels_x_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getLabelsDataPointer(labels_x_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getLabelsHDataPointer(labels_x_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_x_insert_values(labels_x_insert_data.get(), 1, x_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < x_dim_size; ++j) {
@@ -967,7 +967,7 @@ void test_InsertUpdateDelete4DGpu()
     }
   }
   std::shared_ptr<int[]> labels_y_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getLabelsDataPointer(labels_y_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getLabelsHDataPointer(labels_y_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_y_insert_values(labels_y_insert_data.get(), 1, y_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < y_dim_size; ++j) {
@@ -975,7 +975,7 @@ void test_InsertUpdateDelete4DGpu()
     }
   }
   std::shared_ptr<int[]> labels_z_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("y")->getLabelsDataPointer(labels_z_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("y")->getLabelsHDataPointer(labels_z_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_z_insert_values(labels_z_insert_data.get(), 1, z_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < z_dim_size; ++j) {
@@ -983,7 +983,7 @@ void test_InsertUpdateDelete4DGpu()
     }
   }
   std::shared_ptr<int[]> labels_t_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsDataPointer(labels_t_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsHDataPointer(labels_t_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_t_insert_values(labels_t_insert_data.get(), 1, t_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < t_dim_size; ++j) {
@@ -1052,7 +1052,7 @@ void test_InsertUpdateDelete4DGpu()
   // Test the expected data after insert
   assert(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize() == 1296);
   std::shared_ptr<int[]> data_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 4>> data_insert_values(data_insert_data.get(), t_dim_size, x_dim_size, y_dim_size, z_dim_size);
   for (int i = 0; i < t_dim_size; ++i) {
     for (int j = 0; j < x_dim_size; ++j) {
@@ -1084,7 +1084,7 @@ void test_InsertUpdateDelete4DGpu()
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNLabels() == t_dim_size);
   std::shared_ptr<int[]> labels_x_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getLabelsDataPointer(labels_x_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getLabelsHDataPointer(labels_x_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_x_update_values(labels_x_update_data.get(), 1, x_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < x_dim_size; ++j) {
@@ -1092,7 +1092,7 @@ void test_InsertUpdateDelete4DGpu()
     }
   }
   std::shared_ptr<int[]> labels_y_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("y")->getLabelsDataPointer(labels_y_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("y")->getLabelsHDataPointer(labels_y_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_y_update_values(labels_y_update_data.get(), 1, y_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < y_dim_size; ++j) {
@@ -1100,7 +1100,7 @@ void test_InsertUpdateDelete4DGpu()
     }
   }
   std::shared_ptr<int[]> labels_z_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("z")->getLabelsDataPointer(labels_z_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("z")->getLabelsHDataPointer(labels_z_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_z_update_values(labels_z_update_data.get(), 1, z_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < z_dim_size; ++j) {
@@ -1108,7 +1108,7 @@ void test_InsertUpdateDelete4DGpu()
     }
   }
   std::shared_ptr<int[]> labels_t_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsDataPointer(labels_t_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsHDataPointer(labels_t_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_t_update_values(labels_t_update_data.get(), 1, t_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < t_dim_size; ++j) {
@@ -1177,7 +1177,7 @@ void test_InsertUpdateDelete4DGpu()
   // Test the expected data after update
   assert(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize() == 1296);
   std::shared_ptr<int[]> data_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 4>> data_update_values(data_update_data.get(), t_dim_size, x_dim_size, y_dim_size, z_dim_size);
   for (int i = 0; i < t_dim_size; ++i) {
     for (int j = 0; j < x_dim_size; ++j) {
@@ -1272,7 +1272,7 @@ void test_InsertUpdateDelete0DShardingGpu()
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNLabels() == 1296);
   std::shared_ptr<TensorArrayGpu8<char>[]> labels_xyztv_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getLabelsDataPointer(labels_xyztv_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getLabelsHDataPointer(labels_xyztv_insert_data);
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 2>> labels_xyztv_insert_values(labels_xyztv_insert_data.get(), 5, 1);
   for (int i = 0; i < 5; ++i) {
     for (int j = 0; j < 1; ++j) {
@@ -1280,7 +1280,7 @@ void test_InsertUpdateDelete0DShardingGpu()
     }
   }
   std::shared_ptr<int[]> labels_indices_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getLabelsDataPointer(labels_indices_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getLabelsHDataPointer(labels_indices_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_indices_insert_values(labels_indices_insert_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
@@ -1321,7 +1321,7 @@ void test_InsertUpdateDelete0DShardingGpu()
   // Test the expected data after insert
   assert(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize() == 6480);
   std::shared_ptr<int[]> data_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_insert_values(data_insert_data.get(), data_size, 5);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 5; ++j) {
@@ -1347,7 +1347,7 @@ void test_InsertUpdateDelete0DShardingGpu()
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNLabels() == 1296);
   std::shared_ptr<TensorArrayGpu8<char>[]> labels_xyztv_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getLabelsDataPointer(labels_xyztv_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getLabelsHDataPointer(labels_xyztv_update_data);
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 2>> labels_xyztv_update_values(labels_xyztv_update_data.get(), 5, 1);
   for (int i = 0; i < 5; ++i) {
     for (int j = 0; j < 1; ++j) {
@@ -1355,7 +1355,7 @@ void test_InsertUpdateDelete0DShardingGpu()
     }
   }
   std::shared_ptr<int[]> labels_indices_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getLabelsDataPointer(labels_indices_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getLabelsHDataPointer(labels_indices_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_indices_update_values(labels_indices_update_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
@@ -1396,7 +1396,7 @@ void test_InsertUpdateDelete0DShardingGpu()
   // Test the expected data after update
   assert(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize() == 6480);
   std::shared_ptr<int[]> data_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_update_values(data_update_data.get(), data_size, 5);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 5; ++j) {
@@ -1481,7 +1481,7 @@ void test_InsertUpdateDelete1DShardingGpu()
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("values")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("values")->getNLabels() == 1);
   std::shared_ptr<int[]> labels_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyzt")->getLabelsDataPointer(labels_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyzt")->getLabelsHDataPointer(labels_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_insert_values(labels_insert_data.get(), 4, data_size);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 4; ++j) {
@@ -1522,7 +1522,7 @@ void test_InsertUpdateDelete1DShardingGpu()
   // Test the expected data after insert
   assert(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize() == 1296);
   std::shared_ptr<int[]> data_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_insert_values(data_insert_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
@@ -1548,7 +1548,7 @@ void test_InsertUpdateDelete1DShardingGpu()
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("values")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("values")->getNLabels() == 1);
   std::shared_ptr<int[]> labels_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyzt")->getLabelsDataPointer(labels_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyzt")->getLabelsHDataPointer(labels_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_update_values(labels_update_data.get(), 4, data_size);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 4; ++j) {
@@ -1589,7 +1589,7 @@ void test_InsertUpdateDelete1DShardingGpu()
   // Test the expected data after update
   assert(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize() == 1296);
   std::shared_ptr<int[]> data_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_update_values(data_update_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
@@ -1681,7 +1681,7 @@ void test_InsertUpdateDelete2DShardingGpu()
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNLabels() == t_dim_size);
   std::shared_ptr<int[]> labels_xyz_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyz")->getLabelsDataPointer(labels_xyz_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyz")->getLabelsHDataPointer(labels_xyz_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_xyz_insert_values(labels_xyz_insert_data.get(), 3, xyz_dim_size);
   for (int i = 0; i < 3; ++i) {
     for (int j = 0; j < xyz_dim_size; ++j) {
@@ -1689,7 +1689,7 @@ void test_InsertUpdateDelete2DShardingGpu()
     }
   }
   std::shared_ptr<int[]> labels_t_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsDataPointer(labels_t_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsHDataPointer(labels_t_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_t_insert_values(labels_t_insert_data.get(), 1, t_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < t_dim_size; ++j) {
@@ -1730,7 +1730,7 @@ void test_InsertUpdateDelete2DShardingGpu()
   // Test the expected data after insert
   assert(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize() == 1296);
   std::shared_ptr<int[]> data_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_insert_values(data_insert_data.get(), t_dim_size, xyz_dim_size);
   //std::cout << "values\n" << values << std::endl;
   //std::cout << "data_insert_values\n" << data_insert_values << std::endl;
@@ -1758,7 +1758,7 @@ void test_InsertUpdateDelete2DShardingGpu()
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNLabels() == t_dim_size);
   std::shared_ptr<int[]> labels_xyz_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyz")->getLabelsDataPointer(labels_xyz_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyz")->getLabelsHDataPointer(labels_xyz_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_xyz_update_values(labels_xyz_update_data.get(), 3, xyz_dim_size);
   for (int i = 0; i < 3; ++i) {
     for (int j = 0; j < xyz_dim_size; ++j) {
@@ -1766,7 +1766,7 @@ void test_InsertUpdateDelete2DShardingGpu()
     }
   }
   std::shared_ptr<int[]> labels_t_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsDataPointer(labels_t_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsHDataPointer(labels_t_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_t_update_values(labels_t_update_data.get(), 1, t_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < t_dim_size; ++j) {
@@ -1807,7 +1807,7 @@ void test_InsertUpdateDelete2DShardingGpu()
   // Test the expected data after update
   assert(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize() == 1296);
   std::shared_ptr<int[]> data_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_update_values(data_update_data.get(), t_dim_size, xyz_dim_size);
   for (int i = 0; i < xyz_dim_size; ++i) {
     for (int j = 0; j < t_dim_size; ++j) {
@@ -1909,7 +1909,7 @@ void test_InsertUpdateDelete3DShardingGpu()
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNLabels() == t_dim_size);
   std::shared_ptr<int[]> labels_xy_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xy")->getLabelsDataPointer(labels_xy_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xy")->getLabelsHDataPointer(labels_xy_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_xy_insert_values(labels_xy_insert_data.get(), 2, xy_dim_size);
   for (int i = 0; i < 2; ++i) {
     for (int j = 0; j < xy_dim_size; ++j) {
@@ -1917,7 +1917,7 @@ void test_InsertUpdateDelete3DShardingGpu()
     }
   }
   std::shared_ptr<int[]> labels_z_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("z")->getLabelsDataPointer(labels_z_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("z")->getLabelsHDataPointer(labels_z_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_z_insert_values(labels_z_insert_data.get(), 1, z_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < z_dim_size; ++j) {
@@ -1925,7 +1925,7 @@ void test_InsertUpdateDelete3DShardingGpu()
     }
   }
   std::shared_ptr<int[]> labels_t_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsDataPointer(labels_t_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsHDataPointer(labels_t_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_t_insert_values(labels_t_insert_data.get(), 1, t_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < t_dim_size; ++j) {
@@ -1980,7 +1980,7 @@ void test_InsertUpdateDelete3DShardingGpu()
   // Test the expected data after insert
   assert(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize() == 1296);
   std::shared_ptr<int[]> data_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 3>> data_insert_values(data_insert_data.get(), t_dim_size, xy_dim_size, z_dim_size);
   for (int i = 0; i < t_dim_size; ++i) {
     for (int j = 0; j < xy_dim_size; ++j) {
@@ -2010,7 +2010,7 @@ void test_InsertUpdateDelete3DShardingGpu()
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNLabels() == t_dim_size);
   std::shared_ptr<int[]> labels_xy_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xy")->getLabelsDataPointer(labels_xy_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xy")->getLabelsHDataPointer(labels_xy_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_xy_update_values(labels_xy_update_data.get(), 2, xy_dim_size);
   for (int i = 0; i < 2; ++i) {
     for (int j = 0; j < xy_dim_size; ++j) {
@@ -2018,7 +2018,7 @@ void test_InsertUpdateDelete3DShardingGpu()
     }
   }
   std::shared_ptr<int[]> labels_z_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("z")->getLabelsDataPointer(labels_z_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("z")->getLabelsHDataPointer(labels_z_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_z_update_values(labels_z_update_data.get(), 1, z_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < z_dim_size; ++j) {
@@ -2026,7 +2026,7 @@ void test_InsertUpdateDelete3DShardingGpu()
     }
   }
   std::shared_ptr<int[]> labels_t_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsDataPointer(labels_t_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsHDataPointer(labels_t_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_t_update_values(labels_t_update_data.get(), 1, t_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < t_dim_size; ++j) {
@@ -2081,7 +2081,7 @@ void test_InsertUpdateDelete3DShardingGpu()
   // Test the expected data after update
   assert(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize() == 1296);
   std::shared_ptr<int[]> data_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 3>> data_update_values(data_update_data.get(), t_dim_size, xy_dim_size, z_dim_size);
   for (int i = 0; i < t_dim_size; ++i) {
     for (int j = 0; j < xy_dim_size; ++j) {
@@ -2193,7 +2193,7 @@ void test_InsertUpdateDelete4DShardingGpu()
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNLabels() == t_dim_size);
   std::shared_ptr<int[]> labels_x_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getLabelsDataPointer(labels_x_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getLabelsHDataPointer(labels_x_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_x_insert_values(labels_x_insert_data.get(), 1, x_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < x_dim_size; ++j) {
@@ -2201,7 +2201,7 @@ void test_InsertUpdateDelete4DShardingGpu()
     }
   }
   std::shared_ptr<int[]> labels_y_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getLabelsDataPointer(labels_y_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getLabelsHDataPointer(labels_y_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_y_insert_values(labels_y_insert_data.get(), 1, y_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < y_dim_size; ++j) {
@@ -2209,7 +2209,7 @@ void test_InsertUpdateDelete4DShardingGpu()
     }
   }
   std::shared_ptr<int[]> labels_z_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("y")->getLabelsDataPointer(labels_z_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("y")->getLabelsHDataPointer(labels_z_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_z_insert_values(labels_z_insert_data.get(), 1, z_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < z_dim_size; ++j) {
@@ -2217,7 +2217,7 @@ void test_InsertUpdateDelete4DShardingGpu()
     }
   }
   std::shared_ptr<int[]> labels_t_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsDataPointer(labels_t_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsHDataPointer(labels_t_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_t_insert_values(labels_t_insert_data.get(), 1, t_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < t_dim_size; ++j) {
@@ -2286,7 +2286,7 @@ void test_InsertUpdateDelete4DShardingGpu()
   // Test the expected data after insert
   assert(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize() == 1296);
   std::shared_ptr<int[]> data_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 4>> data_insert_values(data_insert_data.get(), t_dim_size, x_dim_size, y_dim_size, z_dim_size);
   for (int i = 0; i < t_dim_size; ++i) {
     for (int j = 0; j < x_dim_size; ++j) {
@@ -2320,7 +2320,7 @@ void test_InsertUpdateDelete4DShardingGpu()
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNLabels() == t_dim_size);
   std::shared_ptr<int[]> labels_x_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getLabelsDataPointer(labels_x_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getLabelsHDataPointer(labels_x_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_x_update_values(labels_x_update_data.get(), 1, x_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < x_dim_size; ++j) {
@@ -2328,7 +2328,7 @@ void test_InsertUpdateDelete4DShardingGpu()
     }
   }
   std::shared_ptr<int[]> labels_y_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("y")->getLabelsDataPointer(labels_y_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("y")->getLabelsHDataPointer(labels_y_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_y_update_values(labels_y_update_data.get(), 1, y_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < y_dim_size; ++j) {
@@ -2336,7 +2336,7 @@ void test_InsertUpdateDelete4DShardingGpu()
     }
   }
   std::shared_ptr<int[]> labels_z_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("z")->getLabelsDataPointer(labels_z_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("z")->getLabelsHDataPointer(labels_z_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_z_update_values(labels_z_update_data.get(), 1, z_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < z_dim_size; ++j) {
@@ -2344,7 +2344,7 @@ void test_InsertUpdateDelete4DShardingGpu()
     }
   }
   std::shared_ptr<int[]> labels_t_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsDataPointer(labels_t_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsHDataPointer(labels_t_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_t_update_values(labels_t_update_data.get(), 1, t_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < t_dim_size; ++j) {
@@ -2413,7 +2413,7 @@ void test_InsertUpdateDelete4DShardingGpu()
   // Test the expected data after update
   assert(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize() == 1296);
   std::shared_ptr<int[]> data_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 4>> data_update_values(data_update_data.get(), t_dim_size, x_dim_size, y_dim_size, z_dim_size);
   for (int i = 0; i < t_dim_size; ++i) {
     for (int j = 0; j < x_dim_size; ++j) {
