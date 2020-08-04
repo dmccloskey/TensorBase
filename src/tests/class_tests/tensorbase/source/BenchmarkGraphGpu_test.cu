@@ -42,7 +42,7 @@ void test_InsertUpdateDeleteGpu()
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getNLabels() == 0);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getDataTensorSize() == 0);
-  assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getShardSpans().at("2_nodes") == 2);
+  assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getShardSpans().at("2_nodes") == 1);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getShardSpans().at("1_links") == TensorCollectionShardHelper::round_1(data_size, shard_span_perc));
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getMaxDimSizeFromAxisName("2_nodes") == 2);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getMaxDimSizeFromAxisName("1_links") == data_size);
@@ -336,7 +336,7 @@ void test_InsertUpdateDeleteShardingGpu()
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getNLabels() == 0);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getDataTensorSize() == 0);
-  assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getShardSpans().at("2_nodes") == 2);
+  assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getShardSpans().at("2_nodes") == 1);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getShardSpans().at("1_links") == TensorCollectionShardHelper::round_1(data_size, shard_span_perc));
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getMaxDimSizeFromAxisName("2_nodes") == 2);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getMaxDimSizeFromAxisName("1_links") == data_size);
