@@ -6,7 +6,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <TensorBase/ml/TensorSelect.h>
-#include <TensorBase/ml/TensorOperationDefaultDevice.h>
+#include <TensorBase/ml/TensorOperationGpu.h>
 #include <TensorBase/ml/TensorCollectionGpu.h>
 
 using namespace TensorBase;
@@ -334,16 +334,16 @@ void test_redoAndUndoTensorAppendToAxis()
 /*TensorDeleteFromAxis Tests*/
 void test_constructorTensorDeleteFromAxis()
 {
-  TensorDeleteFromAxisGpu<int, float, 3>* ptr = nullptr;
-  TensorDeleteFromAxisGpu<int, float, 3>* nullPointer = nullptr;
-  ptr = new TensorDeleteFromAxisGpu<int, float, 3>();
+  TensorDeleteFromAxisGpuPrimitiveT<int, float, 3>* ptr = nullptr;
+  TensorDeleteFromAxisGpuPrimitiveT<int, float, 3>* nullPointer = nullptr;
+  ptr = new TensorDeleteFromAxisGpuPrimitiveT<int, float, 3>();
   assert(ptr != nullPointer);
 }
 
 void test_destructorTensorDeleteFromAxis()
 {
-  TensorDeleteFromAxisGpu<int, float, 3>* ptr = nullptr;
-  ptr = new TensorDeleteFromAxisGpu<int, float, 3>();
+  TensorDeleteFromAxisGpuPrimitiveT<int, float, 3>* ptr = nullptr;
+  ptr = new TensorDeleteFromAxisGpuPrimitiveT<int, float, 3>();
   delete ptr;
 }
 
@@ -429,7 +429,7 @@ void test_redoAndTensorDeleteFromAxis()
     table_map.second->syncAxesAndIndicesDData(device);
     table_map.second->syncDData(device);
   }
-  TensorDeleteFromAxisGpu<int, float, 3> deleteFromAxis("1", "2", DeleteTable1());
+  TensorDeleteFromAxisGpuPrimitiveT<int, float, 3> deleteFromAxis("1", "2", DeleteTable1());
   deleteFromAxis.redo(collection_1_ptr, device);
   for (auto& table_map : collection_1_ptr->tables_) {
     table_map.second->syncAxesAndIndicesHData(device);
@@ -656,6 +656,7 @@ void test_redoAndUndoTensorUpdateSelectValues()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
+  tensorUpdate.getValuesOld()->syncHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < 1; ++j) {
@@ -847,6 +848,7 @@ void test_redoAndUndoTensorUpdateValues()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
+  tensorUpdate.getValuesOld()->syncHData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
 	for (int i = 0; i < nlabels1; ++i) {
 		assert(tensorUpdate.getValuesOld()->getData()(i) == tensor_values1(i, 0, 0));
@@ -1081,6 +1083,7 @@ void test_redoAndUndoTensorUpdateConstant()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
+  tensorUpdate.getValuesOld()->syncHData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < nlabels1; ++i) {
     assert(tensorUpdate.getValuesOld()->getData()(i) == tensor_values1(i, 0, 0));
