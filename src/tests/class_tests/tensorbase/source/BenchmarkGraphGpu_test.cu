@@ -95,6 +95,14 @@ void test_InsertUpdateDeleteGpu()
 
   // Test the expected tensor collection after insert
   benchmark_1_link.insert1Link(transaction_manager, scale, edge_factor, in_memory, device);
+  labels_sparse_indices_ptr->syncHAndDData(device);
+  values_sparse_indices_ptr->syncHAndDData(device);
+  labels_labels_ptr->syncHAndDData(device);
+  values_labels_ptr->syncHAndDData(device);
+  labels_node_property_ptr->syncHAndDData(device);
+  values_node_property_ptr->syncHAndDData(device);
+  labels_link_property_ptr->syncHAndDData(device);
+  values_link_property_ptr->syncHAndDData(device);
   for (auto& table_map : n_dim_tensor_collection->tables_) {
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
@@ -389,6 +397,14 @@ void test_InsertUpdateDeleteShardingGpu()
 
   // Test the expected tensor collection after insert
   benchmark_1_link.insert1Link(transaction_manager, scale, edge_factor, in_memory, device);
+  labels_sparse_indices_ptr->syncHAndDData(device);
+  values_sparse_indices_ptr->syncHAndDData(device);
+  labels_labels_ptr->syncHAndDData(device);
+  values_labels_ptr->syncHAndDData(device);
+  labels_node_property_ptr->syncHAndDData(device);
+  values_node_property_ptr->syncHAndDData(device);
+  labels_link_property_ptr->syncHAndDData(device);
+  values_link_property_ptr->syncHAndDData(device);
   for (auto& table_map : n_dim_tensor_collection->tables_) {
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);

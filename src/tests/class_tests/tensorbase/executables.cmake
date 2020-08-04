@@ -44,8 +44,10 @@ set(ml_executables_list
   TensorDimensionCpu_test
   TensorDimensionGpu_test
   TensorOperation_test
+  TensorOperationGpu_test
   TensorShard_test
   TensorSelect_test
+  TensorSelectGpu_test
   TensorTable_test
   TensorTableCpu_test
   TensorTableGpuClassT_test
