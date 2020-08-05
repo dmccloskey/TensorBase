@@ -296,11 +296,6 @@ void test_InsertUpdateDeleteGpu()
 
   // Test the expected tensor collection after deletion
   benchmark_1_tp.delete1TimePoint(transaction_manager, data_size, in_memory, device);
-  for (auto& table_map : n_dim_tensor_collection->tables_) {
-    table_map.second->syncAxesAndIndicesHData(device);
-    table_map.second->syncHData(device);
-  }
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getNLabels() == 0);
   assert(n_dim_tensor_collection->tables_.at("DataFrame_time")->getDataTensorSize() == 0);
@@ -606,11 +601,6 @@ void test_InsertUpdateDeleteShardingGpu()
 
   // Test the expected tensor collection after deletion
   benchmark_1_tp.delete1TimePoint(transaction_manager, data_size, in_memory, device);
-  for (auto& table_map : n_dim_tensor_collection->tables_) {
-    table_map.second->syncAxesAndIndicesHData(device);
-    table_map.second->syncHData(device);
-  }
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("DataFrame_time")->getAxes().at("1_indices")->getNLabels() == 0);
   assert(n_dim_tensor_collection->tables_.at("DataFrame_time")->getDataTensorSize() == 0);

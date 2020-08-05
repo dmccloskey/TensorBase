@@ -221,6 +221,14 @@ void test_InsertUpdateDeleteGpu()
 
   // Test the expected tensor collection after update
   benchmark_1_link.update1Link(transaction_manager, scale, edge_factor, in_memory, device);
+  labels_sparse_indices_ptr->syncHAndDData(device);
+  values_sparse_indices_ptr->syncHAndDData(device);
+  labels_labels_ptr->syncHAndDData(device);
+  values_labels_ptr->syncHAndDData(device);
+  labels_node_property_ptr->syncHAndDData(device);
+  values_node_property_ptr->syncHAndDData(device);
+  labels_link_property_ptr->syncHAndDData(device);
+  values_link_property_ptr->syncHAndDData(device);
   for (auto& table_map : n_dim_tensor_collection->tables_) {
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
@@ -290,11 +298,6 @@ void test_InsertUpdateDeleteGpu()
 
   // Test the expected tensor collection after deletion
   benchmark_1_link.delete1Link(transaction_manager, scale, edge_factor, in_memory, device);
-  for (auto& table_map : n_dim_tensor_collection->tables_) {
-    table_map.second->syncAxesAndIndicesHData(device);
-    table_map.second->syncHData(device);
-  }
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getNLabels() == 0);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getDataTensorSize() == 0);
@@ -525,6 +528,14 @@ void test_InsertUpdateDeleteShardingGpu()
 
   // Test the expected tensor collection after update
   benchmark_1_link.update1Link(transaction_manager, scale, edge_factor, in_memory, device);
+  labels_sparse_indices_ptr->syncHAndDData(device);
+  values_sparse_indices_ptr->syncHAndDData(device);
+  labels_labels_ptr->syncHAndDData(device);
+  values_labels_ptr->syncHAndDData(device);
+  labels_node_property_ptr->syncHAndDData(device);
+  values_node_property_ptr->syncHAndDData(device);
+  labels_link_property_ptr->syncHAndDData(device);
+  values_link_property_ptr->syncHAndDData(device);
   for (auto& table_map : n_dim_tensor_collection->tables_) {
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
@@ -594,11 +605,6 @@ void test_InsertUpdateDeleteShardingGpu()
 
   // Test the expected tensor collection after deletion
   benchmark_1_link.delete1Link(transaction_manager, scale, edge_factor, in_memory, device);
-  for (auto& table_map : n_dim_tensor_collection->tables_) {
-    table_map.second->syncAxesAndIndicesHData(device);
-    table_map.second->syncHData(device);
-  }
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getNLabels() == 0);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getDataTensorSize() == 0);
