@@ -58,9 +58,9 @@ void test_InsertUpdateDelete0DGpu()
 
   // Test the expected tensor collection after insert
   benchmark_1_tp.insert1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   n_dim_tensor_collection->tables_.at("TTable")->syncAxesAndIndicesHData(device);
   n_dim_tensor_collection->tables_.at("TTable")->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
 
   // Test the expected tensor axes after insert
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNDimensions() == 1);
@@ -131,9 +131,9 @@ void test_InsertUpdateDelete0DGpu()
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   n_dim_tensor_collection->tables_.at("TTable")->syncAxesAndIndicesHData(device);
   n_dim_tensor_collection->tables_.at("TTable")->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
 
   // Test the expected tensor axes after update
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNDimensions() == 1);
@@ -261,9 +261,9 @@ void test_InsertUpdateDelete1DGpu()
 
   // Test the expected tensor collection after insert
   benchmark_1_tp.insert1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   n_dim_tensor_collection->tables_.at("TTable")->syncAxesAndIndicesHData(device);
   n_dim_tensor_collection->tables_.at("TTable")->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
 
   // Test the expected tensor axes after insert
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyzt")->getNDimensions() == 4);
@@ -326,9 +326,9 @@ void test_InsertUpdateDelete1DGpu()
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   n_dim_tensor_collection->tables_.at("TTable")->syncAxesAndIndicesHData(device);
   n_dim_tensor_collection->tables_.at("TTable")->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
 
   // Test the expected tensor axes after update
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyzt")->getNDimensions() == 4);
@@ -387,9 +387,9 @@ void test_InsertUpdateDelete1DGpu()
 
   // Test the expected tensor collection after deletion
   benchmark_1_tp.delete1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   n_dim_tensor_collection->tables_.at("TTable")->syncAxesAndIndicesHData(device);
   n_dim_tensor_collection->tables_.at("TTable")->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyzt")->getNDimensions() == 4);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyzt")->getNLabels() == 0);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("values")->getNDimensions() == 1);
@@ -455,9 +455,9 @@ void test_InsertUpdateDelete2DGpu()
 
   // Test the expected tensor collection after insert
   benchmark_1_tp.insert1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   n_dim_tensor_collection->tables_.at("TTable")->syncAxesAndIndicesHData(device);
   n_dim_tensor_collection->tables_.at("TTable")->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
 
   // Test the expected tensor axes after insert
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyz")->getNDimensions() == 3);
@@ -530,9 +530,9 @@ void test_InsertUpdateDelete2DGpu()
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   n_dim_tensor_collection->tables_.at("TTable")->syncAxesAndIndicesHData(device);
   n_dim_tensor_collection->tables_.at("TTable")->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
 
   // Test the expected tensor axes after update
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyz")->getNDimensions() == 3);
@@ -599,9 +599,9 @@ void test_InsertUpdateDelete2DGpu()
 
   // Test the expected tensor collection after deletion
   benchmark_1_tp.delete1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   n_dim_tensor_collection->tables_.at("TTable")->syncAxesAndIndicesHData(device);
   n_dim_tensor_collection->tables_.at("TTable")->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyz")->getNDimensions() == 3);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyz")->getNLabels() == xyz_dim_size);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNDimensions() == 1);
@@ -673,9 +673,9 @@ void test_InsertUpdateDelete3DGpu()
 
   // Test the expected tensor collection after insert
   benchmark_1_tp.insert1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   n_dim_tensor_collection->tables_.at("TTable")->syncAxesAndIndicesHData(device);
   n_dim_tensor_collection->tables_.at("TTable")->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
 
   // Test the expected tensor axes after insert
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xy")->getNDimensions() == 2);
@@ -772,9 +772,9 @@ void test_InsertUpdateDelete3DGpu()
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   n_dim_tensor_collection->tables_.at("TTable")->syncAxesAndIndicesHData(device);
   n_dim_tensor_collection->tables_.at("TTable")->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
 
   // Test the expected tensor axes after update
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xy")->getNDimensions() == 2);
@@ -867,9 +867,9 @@ void test_InsertUpdateDelete3DGpu()
 
   // Test the expected tensor collection after deletion
   benchmark_1_tp.delete1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   n_dim_tensor_collection->tables_.at("TTable")->syncAxesAndIndicesHData(device);
   n_dim_tensor_collection->tables_.at("TTable")->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xy")->getNDimensions() == 2);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xy")->getNLabels() == xy_dim_size);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("z")->getNDimensions() == 1);
@@ -945,9 +945,9 @@ void test_InsertUpdateDelete4DGpu()
 
   // Test the expected tensor collection after insert
   benchmark_1_tp.insert1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   n_dim_tensor_collection->tables_.at("TTable")->syncAxesAndIndicesHData(device);
   n_dim_tensor_collection->tables_.at("TTable")->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
 
   // Test the expected tensor axes after insert
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getNDimensions() == 1);
@@ -1070,9 +1070,9 @@ void test_InsertUpdateDelete4DGpu()
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   n_dim_tensor_collection->tables_.at("TTable")->syncAxesAndIndicesHData(device);
   n_dim_tensor_collection->tables_.at("TTable")->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
 
   // Test the expected tensor axes after update
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getNDimensions() == 1);
@@ -1191,9 +1191,9 @@ void test_InsertUpdateDelete4DGpu()
 
   // Test the expected tensor collection after deletion
   benchmark_1_tp.delete1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   n_dim_tensor_collection->tables_.at("TTable")->syncAxesAndIndicesHData(device);
   n_dim_tensor_collection->tables_.at("TTable")->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getNLabels() == x_dim_size);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("y")->getNDimensions() == 1);
@@ -1262,9 +1262,9 @@ void test_InsertUpdateDelete0DShardingGpu()
 
   // Test the expected tensor collection after insert
   benchmark_1_tp.insert1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   n_dim_tensor_collection->tables_.at("TTable")->syncAxesAndIndicesHData(device);
   n_dim_tensor_collection->tables_.at("TTable")->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
 
   // Test the expected tensor axes after insert
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNDimensions() == 1);
@@ -1337,9 +1337,9 @@ void test_InsertUpdateDelete0DShardingGpu()
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   n_dim_tensor_collection->tables_.at("TTable")->syncAxesAndIndicesHData(device);
   n_dim_tensor_collection->tables_.at("TTable")->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
 
   // Test the expected tensor axes after update
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNDimensions() == 1);
@@ -1407,9 +1407,9 @@ void test_InsertUpdateDelete0DShardingGpu()
 
   // Test the expected tensor collection after deletion
   benchmark_1_tp.delete1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   n_dim_tensor_collection->tables_.at("TTable")->syncAxesAndIndicesHData(device);
   n_dim_tensor_collection->tables_.at("TTable")->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getNLabels() == 5);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNDimensions() == 1);
@@ -1471,9 +1471,9 @@ void test_InsertUpdateDelete1DShardingGpu()
 
   // Test the expected tensor collection after insert
   benchmark_1_tp.insert1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   n_dim_tensor_collection->tables_.at("TTable")->syncAxesAndIndicesHData(device);
   n_dim_tensor_collection->tables_.at("TTable")->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
 
   // Test the expected tensor axes after insert
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyzt")->getNDimensions() == 4);
@@ -1538,9 +1538,9 @@ void test_InsertUpdateDelete1DShardingGpu()
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   n_dim_tensor_collection->tables_.at("TTable")->syncAxesAndIndicesHData(device);
   n_dim_tensor_collection->tables_.at("TTable")->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
 
   // Test the expected tensor axes after update
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyzt")->getNDimensions() == 4);
@@ -1599,9 +1599,9 @@ void test_InsertUpdateDelete1DShardingGpu()
 
   // Test the expected tensor collection after deletion
   benchmark_1_tp.delete1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   n_dim_tensor_collection->tables_.at("TTable")->syncAxesAndIndicesHData(device);
   n_dim_tensor_collection->tables_.at("TTable")->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyzt")->getNDimensions() == 4);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyzt")->getNLabels() == 0);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("values")->getNDimensions() == 1);
@@ -1671,9 +1671,9 @@ void test_InsertUpdateDelete2DShardingGpu()
 
   // Test the expected tensor collection after insert
   benchmark_1_tp.insert1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   n_dim_tensor_collection->tables_.at("TTable")->syncAxesAndIndicesHData(device);
   n_dim_tensor_collection->tables_.at("TTable")->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
 
   // Test the expected tensor axes after insert
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyz")->getNDimensions() == 3);
@@ -1748,9 +1748,9 @@ void test_InsertUpdateDelete2DShardingGpu()
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   n_dim_tensor_collection->tables_.at("TTable")->syncAxesAndIndicesHData(device);
   n_dim_tensor_collection->tables_.at("TTable")->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
 
   // Test the expected tensor axes after update
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyz")->getNDimensions() == 3);
@@ -1817,9 +1817,9 @@ void test_InsertUpdateDelete2DShardingGpu()
 
   // Test the expected tensor collection after deletion
   benchmark_1_tp.delete1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   n_dim_tensor_collection->tables_.at("TTable")->syncAxesAndIndicesHData(device);
   n_dim_tensor_collection->tables_.at("TTable")->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyz")->getNDimensions() == 3);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyz")->getNLabels() == xyz_dim_size);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNDimensions() == 1);
@@ -1998,9 +1998,9 @@ void test_InsertUpdateDelete3DShardingGpu()
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   n_dim_tensor_collection->tables_.at("TTable")->syncAxesAndIndicesHData(device);
   n_dim_tensor_collection->tables_.at("TTable")->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
 
   // Test the expected tensor axes after update
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xy")->getNDimensions() == 2);
@@ -2093,9 +2093,9 @@ void test_InsertUpdateDelete3DShardingGpu()
 
   // Test the expected tensor collection after deletion
   benchmark_1_tp.delete1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   n_dim_tensor_collection->tables_.at("TTable")->syncAxesAndIndicesHData(device);
   n_dim_tensor_collection->tables_.at("TTable")->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xy")->getNDimensions() == 2);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xy")->getNLabels() == xy_dim_size);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("z")->getNDimensions() == 1);
@@ -2179,9 +2179,9 @@ void test_InsertUpdateDelete4DShardingGpu()
 
   // Test the expected tensor collection after insert
   benchmark_1_tp.insert1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   n_dim_tensor_collection->tables_.at("TTable")->syncAxesAndIndicesHData(device);
   n_dim_tensor_collection->tables_.at("TTable")->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
 
   // Test the expected tensor axes after insert
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getNDimensions() == 1);
@@ -2306,9 +2306,9 @@ void test_InsertUpdateDelete4DShardingGpu()
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   n_dim_tensor_collection->tables_.at("TTable")->syncAxesAndIndicesHData(device);
   n_dim_tensor_collection->tables_.at("TTable")->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
 
   // Test the expected tensor axes after update
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getNDimensions() == 1);
@@ -2427,9 +2427,9 @@ void test_InsertUpdateDelete4DShardingGpu()
 
   // Test the expected tensor collection after deletion
   benchmark_1_tp.delete1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   n_dim_tensor_collection->tables_.at("TTable")->syncAxesAndIndicesHData(device);
   n_dim_tensor_collection->tables_.at("TTable")->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getNLabels() == x_dim_size);
   assert(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("y")->getNDimensions() == 1);

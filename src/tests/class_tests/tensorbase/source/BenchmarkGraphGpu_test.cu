@@ -225,6 +225,7 @@ void test_InsertUpdateDeleteGpu()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
 
   // Test the expected tensor axes after update
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getNDimensions() == 1);
@@ -293,6 +294,7 @@ void test_InsertUpdateDeleteGpu()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getNLabels() == 0);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getDataTensorSize() == 0);
@@ -527,6 +529,7 @@ void test_InsertUpdateDeleteShardingGpu()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
 
   // Test the expected tensor axes after update
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getNDimensions() == 1);
@@ -595,6 +598,7 @@ void test_InsertUpdateDeleteShardingGpu()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getNDimensions() == 1);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getAxes().at("1_links")->getNLabels() == 0);
   assert(n_dim_tensor_collection->tables_.at("Graph_sparse_indices")->getDataTensorSize() == 0);

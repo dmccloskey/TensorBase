@@ -181,6 +181,7 @@ namespace TensorBase
           if (!where_clause.values->getDataStatus().second) where_clause.values->syncHAndDData(device);
           if (!where_clause.axis_labels->getDataStatus().second) where_clause.axis_labels->syncHAndDData(device);
           tensor_collection->tables_.at(where_clause.table_name)->syncAxesAndIndicesDData(device);
+          tensor_collection->tables_.at(where_clause.table_name)->syncDData(device);
           tensor_collection->tables_.at(where_clause.table_name)->whereIndicesView(
             where_clause.axis_name, where_clause.axis_labels,
             where_clause.values, where_clause.comparitor, where_clause.modifier,
@@ -194,6 +195,7 @@ namespace TensorBase
               if (!where_clause.values->getDataStatus().second) where_clause.values->syncHAndDData(device);
               if (!where_clause.labels->getDataStatus().second) where_clause.labels->syncHAndDData(device);
               tensor_collection->tables_.at(where_clause.table_name)->syncAxesAndIndicesDData(device);
+              tensor_collection->tables_.at(where_clause.table_name)->syncDData(device);
               tensor_collection->tables_.at(where_clause.table_name)->whereIndicesView(
                 where_clause.axis_name, d, where_clause.labels,
                 where_clause.values, where_clause.comparitor, where_clause.modifier,

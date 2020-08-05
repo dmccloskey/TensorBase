@@ -408,7 +408,16 @@ void test_whereClause1Gpu()
   assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(3) == 0);
   assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(4) == 0);
 
+  for (auto& table_map : collection_1_ptr->tables_) {
+    table_map.second->syncAxesAndIndicesDData(device);
+    table_map.second->syncDData(device);
+  }
   tensorSelect.whereClause(collection_1_ptr, where_clause2, device);
+  for (auto& table_map : collection_1_ptr->tables_) {
+    table_map.second->syncAxesAndIndicesHData(device);
+    table_map.second->syncHData(device);
+  }
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(tensorTable2_ptr->getIndicesView().at("1")->getData()(0) == 1);
   assert(tensorTable2_ptr->getIndicesView().at("1")->getData()(1) == 0);
   assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(0) == 1); // unchanged
@@ -559,7 +568,16 @@ void test_whereClause2Gpu()
   assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(3) == 0);
   assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(4) == 0);
 
+  for (auto& table_map : collection_1_ptr->tables_) {
+    table_map.second->syncAxesAndIndicesDData(device);
+    table_map.second->syncDData(device);
+  }
   tensorSelect.whereClause(collection_1_ptr, where_clause2, device);
+  for (auto& table_map : collection_1_ptr->tables_) {
+    table_map.second->syncAxesAndIndicesHData(device);
+    table_map.second->syncHData(device);
+  }
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(tensorTable2_ptr->getIndicesView().at("1")->getData()(0) == 1);
   assert(tensorTable2_ptr->getIndicesView().at("1")->getData()(1) == 0);
   assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(0) == 1); // unchanged
@@ -699,7 +717,16 @@ void test_sortClause1Gpu()
   assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(3) == 2);
   assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(4) == 1);
 
+  for (auto& table_map : collection_1_ptr->tables_) {
+    table_map.second->syncAxesAndIndicesDData(device);
+    table_map.second->syncDData(device);
+  }
   tensorSelect.sortClause(collection_1_ptr, sort_clause_2, device);
+  for (auto& table_map : collection_1_ptr->tables_) {
+    table_map.second->syncAxesAndIndicesHData(device);
+    table_map.second->syncHData(device);
+  }
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(tensorTable2_ptr->getIndicesView().at("1")->getData()(0) == 1); // unchanged
   assert(tensorTable2_ptr->getIndicesView().at("1")->getData()(1) == 2); // unchanged
   assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(0) == 3);
@@ -873,7 +900,16 @@ void test_sortClause2Gpu()
   assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(3) == 2);
   assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(4) == 1);
 
+  for (auto& table_map : collection_1_ptr->tables_) {
+    table_map.second->syncAxesAndIndicesDData(device);
+    table_map.second->syncDData(device);
+  }
   tensorSelect.sortClause(collection_1_ptr, sort_clause_2, device);
+  for (auto& table_map : collection_1_ptr->tables_) {
+    table_map.second->syncAxesAndIndicesHData(device);
+    table_map.second->syncHData(device);
+  }
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(tensorTable2_ptr->getIndicesView().at("1")->getData()(0) == 1); // unchanged
   assert(tensorTable2_ptr->getIndicesView().at("1")->getData()(1) == 2); // unchanged
   assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(0) == 3);
