@@ -1357,6 +1357,7 @@ void test_sortIndicesViewData1Gpu()
   tensorTable.sortIndicesView("1", 0, select_labels_ptr, sortOrder::ASC, device);
   tensorTable.syncIndicesViewHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  std::cout << "Failing test_sortIndicesViewData1Gpu tests\n" << std::endl;
   for (int i = 0; i < nlabels; ++i) {
     assert(tensorTable.getIndicesView().at("1")->getData()(i) == i + 1);
     std::cout << "Predicted IndicesView2: " << tensorTable.getIndicesView().at("2")->getData()(i) << " Expected: " << i + 1 << std::endl;
@@ -1971,6 +1972,7 @@ void test_sortTensorDataGpuClassT()
   tensorTable.syncAxesHAndDData(device);
   tensorTable.syncHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  std::cout << "test_sortTensorDataGpuClassT\n" << std::endl;
   for (int i = 0; i < nlabels; ++i) {
     assert(tensorTable.getIndicesView().at("1")->getData()(i) == i + 1);
     assert(tensorTable.getIndicesView().at("2")->getData()(i) == i + 1);
@@ -4869,6 +4871,7 @@ void test_getCsvDataRowGpuClassT()
   assert(row_0.size() == nlabels);
   assert(row_1.size() == nlabels);
   assert(row_4.size() == nlabels);
+  std::cout << "Passing/Failing test_getCsvDataRowGpuClassT\n" << std::endl;
   for (int i = 0; i < nlabels; ++i) {
     std::cout << "row_0.at(" << i << "): [Test] " << row_0.at(i) << " [Expected] " << row_0_test.at(i) << std::endl;
     std::cout << "row_1.at(" << i << "): [Test] " << row_1.at(i) << " [Expected] " << row_1_test.at(i) << std::endl;

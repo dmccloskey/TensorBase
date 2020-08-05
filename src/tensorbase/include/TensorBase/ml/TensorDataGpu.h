@@ -263,25 +263,44 @@ namespace TensorBase
   template<typename TensorT, int TDim>
   inline void TensorDataGpuPrimitiveT<TensorT, TDim>::select(std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice & device)
   {
-    // Temporary device storage for the size of the selection
-    int *d_n_selected;
-    assert(cudaMalloc((void**)(&d_n_selected), sizeof(int)) == cudaSuccess);
+    //// Temporary device storage for the size of the selection
+    //int *d_n_selected;
+    //assert(cudaMalloc((void**)(&d_n_selected), sizeof(int)) == cudaSuccess);
 
-    // Determine temporary device storage requirements
-    void     *d_temp_storage = NULL;
-    size_t   temp_storage_bytes = 0;
-    cub::DeviceSelect::Flagged(d_temp_storage, temp_storage_bytes, this->getDataPointer().get(), indices->getDataPointer().get(), tensor_select->getDataPointer().get(),
-      d_n_selected, indices->getTensorSize(), device.stream());
+    //// Determine temporary device storage requirements
+    //void     *d_temp_storage = NULL;
+    //size_t   temp_storage_bytes = 0;
+    //cub::DeviceSelect::Flagged(d_temp_storage, temp_storage_bytes, this->getDataPointer().get(), indices->getDataPointer().get(), tensor_select->getDataPointer().get(),
+    //  d_n_selected, indices->getTensorSize(), device.stream());
 
-    // Allocate temporary storage
-    assert(cudaMalloc((void**)(&d_temp_storage), temp_storage_bytes) == cudaSuccess);
+    //// Allocate temporary storage
+    //assert(cudaMalloc((void**)(&d_temp_storage), temp_storage_bytes) == cudaSuccess);
 
-    // Run selection
-    cub::DeviceSelect::Flagged(d_temp_storage, temp_storage_bytes, this->getDataPointer().get(), indices->getDataPointer().get(), tensor_select->getDataPointer().get(),
-      d_n_selected, indices->getTensorSize(), device.stream());
+    //// Run selection
+    //cub::DeviceSelect::Flagged(d_temp_storage, temp_storage_bytes, this->getDataPointer().get(), indices->getDataPointer().get(), tensor_select->getDataPointer().get(),
+    //  d_n_selected, indices->getTensorSize(), device.stream());
 
-    assert(cudaFree(d_n_selected) == cudaSuccess);
-    assert(cudaFree(d_temp_storage) == cudaSuccess);
+    //assert(cudaFree(d_n_selected) == cudaSuccess);
+    //assert(cudaFree(d_temp_storage) == cudaSuccess);
+
+    // Create a copy of the data
+    auto data_copy = this->copy(device);
+    data_copy->syncHAndDData(device);
+
+    // make thrust device pointers to the data
+    thrust::device_ptr<TensorT> d_data(data_copy->getDataPointer().get());
+    thrust::device_ptr<int> d_indices(indices->getDataPointer().get());
+
+    // call remove_if on the flagged entries marked as false (i.e., 0)
+    thrust::remove_if(thrust::cuda::par.on(device.stream()), d_data, d_data + data_copy->getTensorSize(), d_indices, thrust::logical_not<bool>());
+
+    // Copy over the selected values
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> tensor_select_values(tensor_select->getDataPointer().get(), (int)tensor_select->getTensorSize());
+    Eigen::TensorMap<Eigen::Tensor<TensorT, 1>> data_copy_values(data_copy->getDataPointer().get(), (int)data_copy->getTensorSize());
+    Eigen::array<Eigen::Index, 1> offset, span;
+    offset.at(0) = 0;
+    span.at(0) = (int)tensor_select->getTensorSize();
+    tensor_select_values.slice(offset, span).device(device) = data_copy_values.slice(offset, span);
   }
   template<typename TensorT, int TDim>
   inline void TensorDataGpuPrimitiveT<TensorT, TDim>::sortIndices(std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, const std::string & sort_order, Eigen::GpuDevice & device)

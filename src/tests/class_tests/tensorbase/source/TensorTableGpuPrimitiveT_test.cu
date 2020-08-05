@@ -1275,24 +1275,21 @@ void test_whereIndicesViewData1Gpu()
     logicalContinuators::logicalContinuator::OR, logicalContinuators::logicalContinuator::AND, device);
   tensorTable.syncIndicesViewHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  std::cout << "test_whereIndicesViewData1Gpu Failing:" << std::endl;
-  std::cout << "tensorTable.getIndicesView().at(2)->getData()\n" << tensorTable.getIndicesView().at("2")->getData() << std::endl;
-  std::cout << "tensorTable.getIndicesView().at(3)->getData()\n" << tensorTable.getIndicesView().at("3")->getData() << std::endl;
   for (int i = 0; i < nlabels; ++i) {
     // indices view 1
     assert(tensorTable.getIndicesView().at("1")->getData()(i) == i + 1); // Unchanged
 
-    //// indices view 2
-    //if (i == 2) // FIXME: i==0?
-    //  assert(tensorTable.getIndicesView().at("2")->getData()(i) == i + 1);
-    //else
-    //  assert(tensorTable.getIndicesView().at("2")->getData()(i) == 0);
+    // indices view 2
+    if (i == 2)
+      assert(tensorTable.getIndicesView().at("2")->getData()(i) == i + 1);
+    else
+      assert(tensorTable.getIndicesView().at("2")->getData()(i) == 0);
 
-    //// indices view 3
-    //if (i == 1) // FIXME: i==3?
-    //  assert(tensorTable.getIndicesView().at("3")->getData()(i) == i + 1);
-    //else
-    //  assert(tensorTable.getIndicesView().at("3")->getData()(i) == 0);
+    // indices view 3
+    if (i == 1)
+      assert(tensorTable.getIndicesView().at("3")->getData()(i) == i + 1);
+    else
+      assert(tensorTable.getIndicesView().at("3")->getData()(i) == 0);
   }
 
   // Write the original data to disk, clear the data, and repeat the tests
@@ -1312,8 +1309,11 @@ void test_whereIndicesViewData1Gpu()
   tensorTable.syncHAndDData(device);
   tensorTable.storeTensorTableBinary("", device);
   tensorTable.setData();
+  tensorTable.setNotInMemoryDataStatus(true, false);
   tensorTable.syncNotInMemoryHAndDData(device);
+  tensorTable.setNotInMemoryDataStatus(true, false);
   tensorTable.syncIsModifiedHAndDData(device);
+  tensorTable.setDataStatus(true, false);
   tensorTable.syncHAndDData(device);
 
   // test
@@ -1322,24 +1322,21 @@ void test_whereIndicesViewData1Gpu()
     logicalContinuators::logicalContinuator::OR, logicalContinuators::logicalContinuator::AND, device);
   tensorTable.syncIndicesViewHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  std::cout << "test_whereIndicesViewData1Gpu Failing:" << std::endl;
-  std::cout << "tensorTable.getIndicesView().at(2)->getData()\n" << tensorTable.getIndicesView().at("2")->getData() << std::endl;
-  std::cout << "tensorTable.getIndicesView().at(3)->getData()\n" << tensorTable.getIndicesView().at("3")->getData() << std::endl;
   for (int i = 0; i < nlabels; ++i) {
     // indices view 1
     assert(tensorTable.getIndicesView().at("1")->getData()(i) == i + 1); // Unchanged
 
-    //// indices view 2
-    //if (i == 2) // FIXME: i==0?
-    //  assert(tensorTable.getIndicesView().at("2")->getData()(i) == i + 1);
-    //else
-    //  assert(tensorTable.getIndicesView().at("2")->getData()(i) == 0);
+    // indices view 2
+    if (i == 2)
+      assert(tensorTable.getIndicesView().at("2")->getData()(i) == i + 1);
+    else
+      assert(tensorTable.getIndicesView().at("2")->getData()(i) == 0);
 
-    //// indices view 3
-    //if (i == 1) // FIXME: i==3?
-    //  assert(tensorTable.getIndicesView().at("3")->getData()(i) == i + 1);
-    //else
-    //  assert(tensorTable.getIndicesView().at("3")->getData()(i) == 0);
+    // indices view 3
+    if (i == 1)
+      assert(tensorTable.getIndicesView().at("3")->getData()(i) == i + 1);
+    else
+      assert(tensorTable.getIndicesView().at("3")->getData()(i) == 0);
   }
 
   assert(cudaStreamDestroy(stream) == cudaSuccess);
@@ -1415,25 +1412,21 @@ void test_whereIndicesViewData2Gpu()
     logicalComparitors::logicalComparitor::EQUAL_TO, logicalModifiers::logicalModifier::NONE,
     logicalContinuators::logicalContinuator::OR, logicalContinuators::logicalContinuator::AND, device);
   tensorTable.syncIndicesViewHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  std::cout << "test_whereIndicesViewData1Gpu Failing:" << std::endl;
-  std::cout << "tensorTable.getIndicesView().at(2)->getData()\n" << tensorTable.getIndicesView().at("2")->getData() << std::endl;
-  std::cout << "tensorTable.getIndicesView().at(3)->getData()\n" << tensorTable.getIndicesView().at("3")->getData() << std::endl;
   for (int i = 0; i < nlabels; ++i) {
     // indices view 1
     assert(tensorTable.getIndicesView().at("1")->getData()(i) == i + 1); // Unchanged
 
-    //// indices view 2
-    //if (i == 2) // FIXME: i==0?
-    //  assert(tensorTable.getIndicesView().at("2")->getData()(i) == i + 1);
-    //else
-    //  assert(tensorTable.getIndicesView().at("2")->getData()(i) == 0);
+    // indices view 2
+    if (i == 2)
+      assert(tensorTable.getIndicesView().at("2")->getData()(i) == i + 1);
+    else
+      assert(tensorTable.getIndicesView().at("2")->getData()(i) == 0);
 
-    //// indices view 3
-    //if (i == 1) // FIXME: i==3?
-    //  assert(tensorTable.getIndicesView().at("3")->getData()(i) == i + 1);
-    //else
-    //  assert(tensorTable.getIndicesView().at("3")->getData()(i) == 0);
+    // indices view 3
+    if (i == 1)
+      assert(tensorTable.getIndicesView().at("3")->getData()(i) == i + 1);
+    else
+      assert(tensorTable.getIndicesView().at("3")->getData()(i) == 0);
   }
 
   // Write the original data to disk, clear the data, and repeat the tests
@@ -1453,8 +1446,11 @@ void test_whereIndicesViewData2Gpu()
   tensorTable.syncHAndDData(device);
   tensorTable.storeTensorTableBinary("", device);
   tensorTable.setData();
+  tensorTable.setNotInMemoryDataStatus(true, false);
   tensorTable.syncNotInMemoryHAndDData(device);
+  tensorTable.setNotInMemoryDataStatus(true, false);
   tensorTable.syncIsModifiedHAndDData(device);
+  tensorTable.setDataStatus(true, false);
   tensorTable.syncHAndDData(device);
 
   // test
@@ -1463,24 +1459,21 @@ void test_whereIndicesViewData2Gpu()
     logicalContinuators::logicalContinuator::OR, logicalContinuators::logicalContinuator::AND, device);
   tensorTable.syncIndicesViewHAndDData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  std::cout << "test_whereIndicesViewData1Gpu Failing:" << std::endl;
-  std::cout << "tensorTable.getIndicesView().at(2)->getData()\n" << tensorTable.getIndicesView().at("2")->getData() << std::endl;
-  std::cout << "tensorTable.getIndicesView().at(3)->getData()\n" << tensorTable.getIndicesView().at("3")->getData() << std::endl;
   for (int i = 0; i < nlabels; ++i) {
     // indices view 1
     assert(tensorTable.getIndicesView().at("1")->getData()(i) == i + 1); // Unchanged
 
-    //// indices view 2
-    //if (i == 2) // FIXME: i==0?
-    //  assert(tensorTable.getIndicesView().at("2")->getData()(i) == i + 1);
-    //else
-    //  assert(tensorTable.getIndicesView().at("2")->getData()(i) == 0);
+    // indices view 2
+    if (i == 2)
+      assert(tensorTable.getIndicesView().at("2")->getData()(i) == i + 1);
+    else
+      assert(tensorTable.getIndicesView().at("2")->getData()(i) == 0);
 
-    //// indices view 3
-    //if (i == 1) // FIXME: i==3?
-    //  assert(tensorTable.getIndicesView().at("3")->getData()(i) == i + 1);
-    //else
-    //  assert(tensorTable.getIndicesView().at("3")->getData()(i) == 0);
+    // indices view 3
+    if (i == 1)
+      assert(tensorTable.getIndicesView().at("3")->getData()(i) == i + 1);
+    else
+      assert(tensorTable.getIndicesView().at("3")->getData()(i) == 0);
   }
 
   assert(cudaStreamDestroy(stream) == cudaSuccess);

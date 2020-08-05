@@ -242,11 +242,11 @@ namespace TensorBase
     // determine the dimensions for making the selected tensor
     Eigen::array<Eigen::Index, TDim> tensor_select_dimensions;
     for (int i = 0; i < TDim; ++i) {
-      if (i == axes_to_dims_.at(axis_name)) {
+      if (i == this->axes_to_dims_.at(axis_name)) {
         tensor_select_dimensions.at(i) = n_select;
       }
       else {
-        tensor_select_dimensions.at(i) = dimensions_.at(i);
+        tensor_select_dimensions.at(i) = this->getDimensions().at(i);
       }
     }
 
