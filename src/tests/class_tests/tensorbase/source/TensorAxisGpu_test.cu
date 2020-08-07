@@ -120,9 +120,9 @@ void test_copyGpuPrimitiveT()
   Eigen::GpuDevice device(&stream_device);
 
   // Test expected
-  tensoraxis1.syncHAndDData(device);
+  tensoraxis1.syncDData(device);
   auto tensoraxis_copy = tensoraxis1.copy(device);
-  tensoraxis1.syncHAndDData(device);
+  tensoraxis1.syncHData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(cudaStreamDestroy(stream) == cudaSuccess);
   assert(*(tensoraxis_copy.get()) == tensoraxis1);
@@ -178,10 +178,10 @@ void test_deleteFromAxisGpuPrimitiveT()
   Eigen::GpuDevice device(&stream_device);
 
   // Test
-  indices_ptr->syncHAndDData(device);
-  tensoraxis.syncHAndDData(device);
+  indices_ptr->syncDData(device);
+  tensoraxis.syncDData(device);
   tensoraxis.deleteFromAxis(indices_ptr, device);
-  tensoraxis.syncHAndDData(device);
+  tensoraxis.syncHData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 
@@ -235,10 +235,10 @@ void test_appendLabelsToAxis1GpuPrimitiveT()
   Eigen::GpuDevice device(&stream_device);
 
   // Test
-  labels_new_ptr->syncHAndDData(device);
-  tensoraxis.syncHAndDData(device);
+  labels_new_ptr->syncDData(device);
+  tensoraxis.syncDData(device);
   tensoraxis.appendLabelsToAxis(labels_new_ptr, device);
-  tensoraxis.syncHAndDData(device);
+  tensoraxis.syncHData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 
@@ -290,10 +290,10 @@ void test_appendLabelsToAxis2GpuPrimitiveT()
   Eigen::GpuDevice device(&stream_device);
 
   // Test
-  labels_new_ptr->syncHAndDData(device);
-  tensoraxis.syncHAndDData(device);
+  labels_new_ptr->syncDData(device);
+  tensoraxis.syncDData(device);
   tensoraxis.appendLabelsToAxis(labels_new_ptr, device);
-  tensoraxis.syncHAndDData(device);
+  tensoraxis.syncHData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 
@@ -338,8 +338,8 @@ void test_makeSortIndicesGpuPrimitiveT()
   indices_view.setData(indices_view_values);
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_view_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(indices_view);
 
-  indices_view_ptr->syncHAndDData(device);
-  tensoraxis.syncHAndDData(device);
+  indices_view_ptr->syncDData(device);
+  tensoraxis.syncDData(device);
 
   // make the expected indices
   Eigen::Tensor<int, 2> indices_sort_test(n_dimensions, n_labels);
@@ -352,7 +352,7 @@ void test_makeSortIndicesGpuPrimitiveT()
   // test making the sort indices
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>> indices_sort;
   tensoraxis.makeSortIndices(indices_view_ptr, indices_sort, device);
-  indices_sort->syncHAndDData(device);
+  indices_sort->syncHData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = 0; j < n_labels; ++j) {
@@ -392,12 +392,12 @@ void test_sortLabelsGpuPrimitiveT()
   indices_view.setData(indices_view_values);
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_view_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(indices_view);
 
-  indices_view_ptr->syncHAndDData(device);
-  tensoraxis.syncHAndDData(device);
+  indices_view_ptr->syncDData(device);
+  tensoraxis.syncDData(device);
 
   // test sorting ASC
   tensoraxis.sortLabels(indices_view_ptr, device);
-  tensoraxis.syncHAndDData(device);
+  tensoraxis.syncHData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = 0; j < n_labels; ++j) {
@@ -415,12 +415,12 @@ void test_sortLabelsGpuPrimitiveT()
   indices_view_ptr->setDataStatus(true, false);
   for (int i = 0; i < n_labels; ++i)
     indices_view_ptr->getData()(i) = n_labels - i;
-  indices_view_ptr->syncHAndDData(device);
+  indices_view_ptr->syncDData(device);
 
   // test sorting DESC
   tensoraxis.setDataStatus(false, true);
   tensoraxis.sortLabels(indices_view_ptr, device);
-  tensoraxis.syncHAndDData(device);
+  tensoraxis.syncHData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = 0; j < n_labels; ++j) {
@@ -483,9 +483,9 @@ void test_getLabelsAsStringsGpuPrimitiveT()
   TensorAxisGpuPrimitiveT<int> tensoraxis("1", dimensions, labels);
 
   // Test getLabelsAsString
-  tensoraxis.syncHAndDData(device);
+  tensoraxis.syncDData(device);
   std::vector<std::string> labels_str = tensoraxis.getLabelsAsStrings(device);
-  tensoraxis.syncHAndDData(device);
+  tensoraxis.syncHData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   int iter = 0;
   for (int i = 0; i < 3; i++) {
@@ -501,9 +501,9 @@ void test_getLabelsAsStringsGpuPrimitiveT()
   TensorAxisGpuPrimitiveT<char> tensoraxis_char("1", dimensions, labels_char);
 
   // Test getLabelsAsString
-  tensoraxis_char.syncHAndDData(device);
+  tensoraxis_char.syncDData(device);
   std::vector<std::string> labels_char_str = tensoraxis_char.getLabelsAsStrings(device);
-  tensoraxis_char.syncHAndDData(device);
+  tensoraxis_char.syncHData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   iter = 0;
   for (int i = 0; i < 3; i++) {
@@ -519,9 +519,9 @@ void test_getLabelsAsStringsGpuPrimitiveT()
   TensorAxisGpuClassT<TensorArrayGpu8, int> tensoraxis_array("1", dimensions, labels_array);
 
   // Test getLabelsAsString
-  tensoraxis_array.syncHAndDData(device);
+  tensoraxis_array.syncDData(device);
   std::vector<std::string> labels_array_str = tensoraxis_array.getLabelsAsStrings(device);
-  tensoraxis_array.syncHAndDData(device);
+  tensoraxis_array.syncHData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   iter = 0;
   for (int i = 0; i < 3; i++) {
@@ -570,9 +570,9 @@ void test_appendLabelsToAxisFromCsv1GpuPrimitiveT()
   }
 
   // Test
-  tensoraxis.syncHAndDData(device);
+  tensoraxis.syncDData(device);
   tensoraxis.appendLabelsToAxisFromCsv(labels_values, device);
-  tensoraxis.syncHAndDData(device);
+  tensoraxis.syncHData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(tensoraxis.getNDimensions() == n_dimensions);
   assert(tensoraxis.getNLabels() == n_labels + 2);
@@ -616,9 +616,9 @@ void test_appendLabelsToAxisFromCsv2GpuPrimitiveT()
   }
 
   // Test
-  tensoraxis.syncHAndDData(device);
+  tensoraxis.syncDData(device);
   tensoraxis.appendLabelsToAxisFromCsv(labels_values, device);
-  tensoraxis.syncHAndDData(device);
+  tensoraxis.syncHData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(tensoraxis.getNDimensions() == n_dimensions);
   assert(tensoraxis.getNLabels() == n_labels);
@@ -746,9 +746,9 @@ void test_copyGpuClassT()
   Eigen::GpuDevice device(&stream_device);
 
   // Test expected
-  tensoraxis1.syncHAndDData(device);
+  tensoraxis1.syncDData(device);
   auto tensoraxis_copy = tensoraxis1.copy(device);
-  tensoraxis1.syncHAndDData(device);
+  tensoraxis1.syncHData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(cudaStreamDestroy(stream) == cudaSuccess);
   assert(*(tensoraxis_copy.get()) == tensoraxis1);
@@ -804,10 +804,10 @@ void test_deleteFromAxisGpuClassT()
   Eigen::GpuDevice device(&stream_device);
 
   // Test
-  indices_ptr->syncHAndDData(device);
-  tensoraxis.syncHAndDData(device);
+  indices_ptr->syncDData(device);
+  tensoraxis.syncDData(device);
   tensoraxis.deleteFromAxis(indices_ptr, device);
-  tensoraxis.syncHAndDData(device);
+  tensoraxis.syncHData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 
@@ -861,10 +861,10 @@ void test_appendLabelsToAxis1GpuClassT()
   Eigen::GpuDevice device(&stream_device);
 
   // Test
-  labels_new_ptr->syncHAndDData(device);
-  tensoraxis.syncHAndDData(device);
+  labels_new_ptr->syncDData(device);
+  tensoraxis.syncDData(device);
   tensoraxis.appendLabelsToAxis(labels_new_ptr, device);
-  tensoraxis.syncHAndDData(device);
+  tensoraxis.syncHData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 
@@ -916,10 +916,10 @@ void test_appendLabelsToAxis2GpuClassT()
   Eigen::GpuDevice device(&stream_device);
 
   // Test
-  labels_new_ptr->syncHAndDData(device);
-  tensoraxis.syncHAndDData(device);
+  labels_new_ptr->syncDData(device);
+  tensoraxis.syncDData(device);
   tensoraxis.appendLabelsToAxis(labels_new_ptr, device);
-  tensoraxis.syncHAndDData(device);
+  tensoraxis.syncHData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(cudaStreamDestroy(stream) == cudaSuccess);
 
@@ -964,8 +964,8 @@ void test_makeSortIndicesGpuClassT()
   indices_view.setData(indices_view_values);
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_view_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(indices_view);
 
-  indices_view_ptr->syncHAndDData(device);
-  tensoraxis.syncHAndDData(device);
+  indices_view_ptr->syncDData(device);
+  tensoraxis.syncDData(device);
 
   // make the expected indices
   Eigen::Tensor<int, 2> indices_sort_test(n_dimensions, n_labels);
@@ -978,7 +978,7 @@ void test_makeSortIndicesGpuClassT()
   // test making the sort indices
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>> indices_sort;
   tensoraxis.makeSortIndices(indices_view_ptr, indices_sort, device);
-  indices_sort->syncHAndDData(device);
+  indices_sort->syncHData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = 0; j < n_labels; ++j) {
@@ -1018,12 +1018,12 @@ void test_sortLabelsGpuClassT()
   indices_view.setData(indices_view_values);
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_view_ptr = std::make_shared<TensorDataGpuPrimitiveT<int, 1>>(indices_view);
 
-  indices_view_ptr->syncHAndDData(device);
-  tensoraxis.syncHAndDData(device);
+  indices_view_ptr->syncDData(device);
+  tensoraxis.syncDData(device);
 
   // test sorting ASC
   tensoraxis.sortLabels(indices_view_ptr, device);
-  tensoraxis.syncHAndDData(device);
+  tensoraxis.syncHData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = 0; j < n_labels; ++j) {
@@ -1041,12 +1041,12 @@ void test_sortLabelsGpuClassT()
   indices_view_ptr->setDataStatus(true, false);
   for (int i = 0; i < n_labels; ++i)
     indices_view_ptr->getData()(i) = n_labels - i;
-  indices_view_ptr->syncHAndDData(device);
+  indices_view_ptr->syncDData(device);
 
   // test sorting DESC
   tensoraxis.setDataStatus(false, true);
   tensoraxis.sortLabels(indices_view_ptr, device);
-  tensoraxis.syncHAndDData(device);
+  tensoraxis.syncHData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = 0; j < n_labels; ++j) {
@@ -1127,9 +1127,9 @@ void test_appendLabelsToAxisFromCsv1GpuClassT()
   }
 
   // Test
-  tensoraxis.syncHAndDData(device);
+  tensoraxis.syncDData(device);
   tensoraxis.appendLabelsToAxisFromCsv(labels_values, device);
-  tensoraxis.syncHAndDData(device);
+  tensoraxis.syncHData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(tensoraxis.getNDimensions() == n_dimensions);
   assert(tensoraxis.getNLabels() == n_labels + 2);
@@ -1173,9 +1173,9 @@ void test_appendLabelsToAxisFromCsv2GpuClassT()
   }
 
   // Test
-  tensoraxis.syncHAndDData(device);
+  tensoraxis.syncDData(device);
   tensoraxis.appendLabelsToAxisFromCsv(labels_values, device);
-  tensoraxis.syncHAndDData(device);
+  tensoraxis.syncHData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(tensoraxis.getNDimensions() == n_dimensions);
   assert(tensoraxis.getNLabels() == n_labels);

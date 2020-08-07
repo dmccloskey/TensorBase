@@ -126,7 +126,8 @@ namespace TensorBase
 #endif
 
     // All DeviceT combos of tensorDataWrappers
-    virtual bool syncHAndDData(DeviceT& device) = 0;
+    virtual bool syncDData(DeviceT& device) = 0;
+    virtual bool syncHData(DeviceT& device) = 0;
     virtual void setDataStatus(const bool& h_data_updated, const bool& d_data_updated) = 0;
     virtual std::pair<bool, bool> getDataStatus() = 0;
 
@@ -355,7 +356,8 @@ namespace TensorBase
     };
 #endif
 
-    bool syncHAndDData(DeviceT& device) override { return  tensor_axis_->syncHAndDData(device); };  
+    bool syncDData(DeviceT& device) override { return  tensor_axis_->syncDData(device); };
+    bool syncHData(DeviceT& device) override { return  tensor_axis_->syncHData(device); };
     void setDataStatus(const bool& h_data_updated, const bool& d_data_updated) override { tensor_axis_->setDataStatus(h_data_updated, d_data_updated); } 
     std::pair<bool, bool> getDataStatus() override { return  tensor_axis_->getDataStatus(); };  
 

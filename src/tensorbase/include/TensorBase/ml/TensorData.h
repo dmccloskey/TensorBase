@@ -162,6 +162,8 @@ namespace TensorBase
     virtual std::shared_ptr<TensorT[]> getDataPointer() = 0; ///< device data pointer getter
     
     virtual bool syncHAndDData(DeviceT& device) = 0;  ///< Sync the host and device data
+    bool syncDData(DeviceT& device); ///< Transfer tensor data to the device (if not already)
+    bool syncHData(DeviceT& device); ///< Transfer tensor data to the host (if not already)
     void setDataStatus(const bool& h_data_updated, const bool& d_data_updated) { h_data_updated_ = h_data_updated; d_data_updated_ = d_data_updated; } ///< Set the status of the host and device data
     std::pair<bool, bool> getDataStatus() { return std::make_pair(h_data_updated_, d_data_updated_); };   ///< Get the status of the host and device data
 
@@ -193,7 +195,6 @@ namespace TensorBase
         pinned_memory_, pinned_flag_);
     }
   };
-
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorData<TensorT, DeviceT, TDim>::setDimensions(const Eigen::array<Eigen::Index, TDim>& dimensions) {
     //dimensions_ = std::array<Eigen::Index, TDim>(); // works on gpu
@@ -205,11 +206,26 @@ namespace TensorBase
     }
     tensor_size_ = tensor_size;
   }
-
   template<typename TensorT, typename DeviceT, int TDim>
   inline Eigen::array<Eigen::Index, TDim> TensorData<TensorT, DeviceT, TDim>::getDimensions() const
   { 
     return dimensions_;
+  }
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline bool TensorData<TensorT, DeviceT, TDim>::syncDData(DeviceT& device)
+  {
+    bool synced = true;
+    if (!getDataStatus().second)
+      synced = syncHAndDData(device);
+    return synced;
+  }
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline bool TensorData<TensorT, DeviceT, TDim>::syncHData(DeviceT& device)
+  {
+    bool synced = true;
+    if (!getDataStatus().first)
+      synced = syncHAndDData(device);
+    return synced;
   }
 }
 

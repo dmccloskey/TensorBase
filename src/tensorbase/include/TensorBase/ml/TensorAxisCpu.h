@@ -85,7 +85,7 @@ namespace TensorBase
     // Allocate additional memory for the new labels
     TensorDataCpu<TensorT, 2> labels_concat(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, (int)this->n_labels_ }));
     labels_concat.setData();
-    labels_concat.syncHAndDData(device);
+    labels_concat.syncDData(device);
     Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> labels_concat_values(labels_concat.getDataPointer().get(), labels_concat.getDimensions());
 
     // Concatenate or assign the new labels to the axis
@@ -170,7 +170,7 @@ namespace TensorBase
     Eigen::Tensor<TensorT, 2> labels_data((int)this->n_dimensions_, (int)this->n_labels_);
     DataFile::loadDataBinary<TensorT, 2>(filename + ".ta", labels_data);
     this->getLabels() = labels_data;
-    this->syncHAndDData(device); // H to D
+    this->syncDData(device); // H to D
     return true;
   }
   template<typename TensorT>
@@ -178,7 +178,7 @@ namespace TensorBase
   {
     // Store the labels
     if (this->getNLabels()*this->getNLabels() > 0) {
-      this->syncHAndDData(device); // D to H
+      this->syncHData(device); // D to H
       DataFile::storeDataBinary<TensorT, 2>(filename + ".ta", this->getLabels());
       this->setDataStatus(false, true);
     }
@@ -192,13 +192,13 @@ namespace TensorBase
     // Convert to TensorT
     TensorDataCpu<TensorT, 2> labels_converted(Eigen::array<Eigen::Index, 2>({ (int)labels.dimension(0), (int)labels.dimension(1) }));
     labels_converted.setData();
-    labels_converted.syncHAndDData(device);
+    labels_converted.syncDData(device);
     labels_converted.convertFromStringToTensorT(labels, device);
 
     // Make the indices select
     TensorDataCpu<int, 2> indices_select(Eigen::array<Eigen::Index, 2>({ (int)labels.dimension(0), (int)labels.dimension(1) }));
     indices_select.setData();
-    indices_select.syncHAndDData(device);
+    indices_select.syncDData(device);
     Eigen::TensorMap<Eigen::Tensor<int, 2>> indices_select_values(indices_select.getDataPointer().get(), (int)labels.dimension(0), (int)labels.dimension(1));
 
     // Determine the unique input axis labels
@@ -253,15 +253,15 @@ namespace TensorBase
     // Determine the number of new labels
     TensorDataCpu<int, 1> n_labels_new(Eigen::array<Eigen::Index, 1>({ 1 }));
     n_labels_new.setData();
-    n_labels_new.syncHAndDData(device);
+    n_labels_new.syncDData(device);
     Eigen::TensorMap<Eigen::Tensor<int, 0>> n_labels_new_values(n_labels_new.getDataPointer().get());
     n_labels_new_values.device(device) = indices_select_values.sum() / n_labels_new_values.constant((int)labels.dimension(0));
-    n_labels_new.syncHAndDData(device); // NOTE: need sync for Gpu
+    n_labels_new.syncHData(device); // NOTE: need sync for Gpu
 
     // Allocate memory for the new labels
     TensorDataCpu<TensorT, 2> labels_select(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, n_labels_new.getData()(0) }));
     labels_select.setData();
-    labels_select.syncHAndDData(device);
+    labels_select.syncDData(device);
     std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>> labels_select_ptr = std::make_shared<TensorDataCpu<TensorT, 2>>(labels_select);
 
     // Select the labels

@@ -66,6 +66,38 @@ BOOST_AUTO_TEST_CASE(assignmentDefaultDevice)
   BOOST_CHECK_EQUAL(tensordata.getData()(0, 0, 0), tensordata_test.getData()(0, 0, 0));
 }
 
+BOOST_AUTO_TEST_CASE(syncDataDefaultDevice)
+{
+  // Initialize the device
+  Eigen::DefaultDevice device;
+
+  // Setup the dummy data
+  TensorDataDefaultDevice<float, 3> tensordata_test(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+  Eigen::Tensor<float, 3> data(2, 3, 4);
+  data.setConstant(1);
+  tensordata_test.setData(data);
+
+  // Check syncHData (no transfer)
+  BOOST_CHECK(tensordata_test.syncHData(device));
+  BOOST_CHECK(tensordata_test.getDataStatus().first);
+  BOOST_CHECK(tensordata_test.getDataStatus().second);
+
+  // Check syncDData (transfer)
+  BOOST_CHECK(tensordata_test.syncDData(device));
+  BOOST_CHECK(tensordata_test.getDataStatus().first);
+  BOOST_CHECK(tensordata_test.getDataStatus().second);
+
+  // Check syncDData (no transfer)
+  BOOST_CHECK(tensordata_test.syncDData(device));
+  BOOST_CHECK(tensordata_test.getDataStatus().first);
+  BOOST_CHECK(tensordata_test.getDataStatus().second);
+
+  // Check syncHData (transfer)
+  BOOST_CHECK(tensordata_test.syncHData(device));
+  BOOST_CHECK(tensordata_test.getDataStatus().first);
+  BOOST_CHECK(tensordata_test.getDataStatus().second);
+}
+
 BOOST_AUTO_TEST_CASE(copyDefaultDevice)
 {
   TensorDataDefaultDevice<float, 3> tensordata_test(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));

@@ -43,6 +43,43 @@ void test_assignmentGpuPrimitiveT()
   assert(tensordata.getData()(0, 0, 0) == tensordata_test.getData()(0, 0, 0));
 }
 
+void test_syncDataGpuPrimitiveT()
+{
+  // Initialize the device
+  cudaStream_t stream;
+  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  Eigen::GpuStreamDevice stream_device(&stream, 0);
+  Eigen::GpuDevice device(&stream_device);
+
+  // Setup the dummy data
+  TensorDataGpuPrimitiveT<float, 3> tensordata_test(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+  Eigen::Tensor<float, 3> data(2, 3, 4);
+  data.setConstant(1);
+  tensordata_test.setData(data);
+
+  // Check syncHData (no transfer)
+  assert(tensordata_test.syncHData(device));
+  assert(tensordata_test.getDataStatus().first);
+  assert(!tensordata_test.getDataStatus().second);
+
+  // Check syncDData (transfer)
+  assert(tensordata_test.syncDData(device));
+  assert(!tensordata_test.getDataStatus().first);
+  assert(tensordata_test.getDataStatus().second);
+
+  // Check syncDData (no transfer)
+  assert(tensordata_test.syncDData(device));
+  assert(!tensordata_test.getDataStatus().first);
+  assert(tensordata_test.getDataStatus().second);
+
+  // Check syncHData (transfer)
+  assert(tensordata_test.syncHData(device));
+  assert(tensordata_test.getDataStatus().first);
+  assert(!tensordata_test.getDataStatus().second);
+
+  assert(cudaStreamDestroy(stream) == cudaSuccess);
+}
+
 void test_copyGpuPrimitiveT()
 {
   TensorDataGpuPrimitiveT<float, 3> tensordata_test(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }), false, TensorDataGpuPinnedFlags::HostAllocPortable);
@@ -592,6 +629,42 @@ void test_destructorGpuClassT()
   ptr = new TensorDataGpuClassT<TensorArrayGpu8, float, 3>();
   delete ptr;
 }
+void test_syncDataGpuClassT()
+{
+  // Initialize the device
+  cudaStream_t stream;
+  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  Eigen::GpuStreamDevice stream_device(&stream, 0);
+  Eigen::GpuDevice device(&stream_device);
+
+  // Setup the dummy data
+  TensorDataGpuClassT<TensorArrayGpu8, char, 3> tensordata_test(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
+  Eigen::Tensor<TensorArrayGpu8<char>, 3> data(2, 3, 4);
+  data.setConstant(TensorArrayGpu8<char>("hello"));
+  tensordata_test.setData(data);
+
+  // Check syncHData (no transfer)
+  assert(tensordata_test.syncHData(device));
+  assert(tensordata_test.getDataStatus().first);
+  assert(!tensordata_test.getDataStatus().second);
+
+  // Check syncDData (transfer)
+  assert(tensordata_test.syncDData(device));
+  assert(!tensordata_test.getDataStatus().first);
+  assert(tensordata_test.getDataStatus().second);
+
+  // Check syncDData (no transfer)
+  assert(tensordata_test.syncDData(device));
+  assert(!tensordata_test.getDataStatus().first);
+  assert(tensordata_test.getDataStatus().second);
+
+  // Check syncHData (transfer)
+  assert(tensordata_test.syncHData(device));
+  assert(tensordata_test.getDataStatus().first);
+  assert(!tensordata_test.getDataStatus().second);
+
+  assert(cudaStreamDestroy(stream) == cudaSuccess);
+}
 
 void test_copyGpuClassT()
 {
@@ -1043,6 +1116,7 @@ int main(int argc, char** argv)
   test_syncHAndDGpuPrimitiveT();
   test_memoryModelsGpuPrimitiveT();
   test_assignmentGpuPrimitiveT();
+  test_syncDataGpuPrimitiveT();
   test_copyGpuPrimitiveT();
   test_selectGpuPrimitiveT();
   test_sortGpuPrimitiveT();
@@ -1056,6 +1130,7 @@ int main(int argc, char** argv)
   assert(cudaDeviceReset() == cudaSuccess);
   test_constructorGpuClassT();
   test_destructorGpuClassT();
+  test_syncDataGpuClassT();
   test_copyGpuClassT();
   test_selectGpuClassT();
   //test_sortGpuClassT(); // run time device synchronization error during sort (2nd pass in Thrust merge_sort)
