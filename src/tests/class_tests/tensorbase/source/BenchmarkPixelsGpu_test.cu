@@ -378,7 +378,7 @@ void test_InsertUpdateDelete1DGpu()
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_update_values(data_update_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
-      assert(data_update_values(i, j)== -1);
+      assert(data_update_values(i, j) == -1);
     }
   }
 

@@ -305,7 +305,7 @@ namespace TensorBaseBenchmarks
     for (int i = offset; i < offset + span; ++i) {
       labels(0, i - offset) = LabelsT(i);
       Eigen::Tensor<TensorT, 4> image(1, 1, 28, 28);
-      if (this->use_random_values_) image.setConstant(1);// image = image.random().abs(); // should be from 0 to 1
+      if (this->use_random_values_) image.setConstant(TensorT(1));// image = image.random().abs(); // should be from 0 to 1
       else image.setZero();
       values.slice(Eigen::array<Eigen::Index, 4>({ i - offset, 0, 0, 0}), Eigen::array<Eigen::Index, 4>({ 1, 1, 28, 28 })) = image;
     }
