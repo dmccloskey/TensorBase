@@ -160,7 +160,7 @@ namespace TensorBase
     indices_values.chip(0, 1).device(device) = indices_reshape;
 
     // make the output node indices
-    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> indices_copy = indices->copy(device);
+    std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> indices_copy = indices->copyToHost(device);
     indices_copy->syncHAndDData(device);
     Eigen::TensorMap<Eigen::Tensor<LabelsT, 1>> indices_count(indices_copy->getDataPointer().get(), indices_copy->getDimensions().at(0));
     auto indices_count_cumsum = (indices_count.constant(LabelsT(1)).cumsum(0) - indices_count.constant(LabelsT(1))).eval();

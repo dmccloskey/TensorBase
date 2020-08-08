@@ -33,7 +33,7 @@ void test_assignmentGpuPrimitiveT()
   data.setConstant(1);
   tensordata_test.setData(data);
 
-  // Check copy
+  // Check copyToHost
   TensorDataGpuPrimitiveT<float, 3> tensordata(tensordata_test);
   assert(tensordata == tensordata_test);
   assert(tensordata.getData()(0, 0, 0) == 1);
@@ -82,26 +82,49 @@ void test_syncDataGpuPrimitiveT()
 
 void test_copyGpuPrimitiveT()
 {
+  // Initialize the device
+  cudaStream_t stream;
+  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  Eigen::GpuStreamDevice stream_device(&stream, 0);
+  Eigen::GpuDevice device(&stream_device);
+
+  // Make the test data
   TensorDataGpuPrimitiveT<float, 3> tensordata_test(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }), false, TensorDataGpuPinnedFlags::HostAllocPortable);
   Eigen::Tensor<float, 3> data(2, 3, 4);
   data.setConstant(1);
   tensordata_test.setData(data);
-  Eigen::GpuStreamDevice stream_device;
-  Eigen::GpuDevice device(&stream_device);
+  tensordata_test.syncDData(device);
 
-  // Check copy
-  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> tensordata = tensordata_test.copy(device);
+  // Check copyToHost
+  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> tensordata = tensordata_test.copyToHost(device);
   assert(tensordata->getDimensions() == tensordata_test.getDimensions());
   assert(tensordata->getTensorSize() == tensordata_test.getTensorSize());
   assert(tensordata->getDeviceName() == tensordata_test.getDeviceName());
   assert(tensordata->getPinnedMemory() == tensordata_test.getPinnedMemory());
   assert(tensordata->getPinnedFlag() == tensordata_test.getPinnedFlag());
   assert(tensordata->getData()(0, 0, 0) == 1);
+  tensordata->setDataStatus(false, true);
+  tensordata->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  assert(tensordata->getData()(0, 0, 0) != 1);
 
   // Check reference change
   tensordata->getData()(0, 0, 0) = 2;
   assert(tensordata->getData()(0, 0, 0) != tensordata_test.getData()(0, 0, 0));
-  assert(tensordata->getData()(1, 0, 0) == tensordata_test.getData()(1, 0, 0));
+
+  // Check copyToDevice
+  std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> tensordata2 = tensordata_test.copyToDevice(device);
+  assert(tensordata2->getDimensions() == tensordata_test.getDimensions());
+  assert(tensordata2->getTensorSize() == tensordata_test.getTensorSize());
+  assert(tensordata2->getDeviceName() == tensordata_test.getDeviceName());
+  assert(tensordata2->getPinnedMemory() == tensordata_test.getPinnedMemory());
+  assert(tensordata2->getPinnedFlag() == tensordata_test.getPinnedFlag());
+  assert(tensordata2->getData()(0, 0, 0) != 1);
+  tensordata2->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  assert(tensordata2->getData()(0, 0, 0) == 1);
+
+  assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
 
 void test_selectGpuPrimitiveT()
@@ -668,6 +691,12 @@ void test_syncDataGpuClassT()
 
 void test_copyGpuClassT()
 {
+  // Initialize the device
+  cudaStream_t stream;
+  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  Eigen::GpuStreamDevice stream_device(&stream, 0);
+  Eigen::GpuDevice device(&stream_device);
+
   // make the char array
   Eigen::Tensor<TensorArrayGpu8<char>, 3> tensor_values(2, 3, 4);
   int iter = 0;
@@ -685,20 +714,34 @@ void test_copyGpuClassT()
   // make the tensor data class
   TensorDataGpuClassT<TensorArrayGpu8, char, 3> tensordata_test(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
   tensordata_test.setData(tensor_values);
-  Eigen::GpuStreamDevice stream_device;
-  Eigen::GpuDevice device(&stream_device);
+  tensordata_test.syncDData(device);
 
-  // Check copy
-  std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 3>> tensordata = tensordata_test.copy(device);
+  // Check copyToHost
+  std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 3>> tensordata = tensordata_test.copyToHost(device);
   assert(tensordata->getDimensions() == tensordata_test.getDimensions());
   assert(tensordata->getTensorSize() == tensordata_test.getTensorSize());
   assert(tensordata->getDeviceName() == tensordata_test.getDeviceName());
   assert(tensordata->getData()(0, 0, 0).at(0) == '0');
+  tensordata->setDataStatus(false, true);
+  tensordata->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  assert(tensordata->getData()(0, 0, 0).at(0) != '0');
 
   // Check reference change
   tensordata->getData()(0, 0, 0).setTensorArray({ '2' });
   assert(tensordata->getData()(0, 0, 0) != tensordata_test.getData()(0, 0, 0));
-  assert(tensordata->getData()(1, 0, 0) == tensordata_test.getData()(1, 0, 0));
+
+  // Check copyToDevice
+  std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 3>> tensordata2 = tensordata_test.copyToDevice(device);
+  assert(tensordata2->getDimensions() == tensordata_test.getDimensions());
+  assert(tensordata2->getTensorSize() == tensordata_test.getTensorSize());
+  assert(tensordata2->getDeviceName() == tensordata_test.getDeviceName());
+  assert(tensordata2->getData()(0, 0, 0).at(0) != '0');
+  tensordata2->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  assert(tensordata2->getData()(0, 0, 0).at(0) == '0');
+
+  assert(cudaStreamDestroy(stream) == cudaSuccess);
 }
 
 void test_selectGpuClassT()

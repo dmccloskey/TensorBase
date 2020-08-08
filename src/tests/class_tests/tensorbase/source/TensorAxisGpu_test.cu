@@ -121,7 +121,7 @@ void test_copyGpuPrimitiveT()
 
   // Test expected
   tensoraxis1.syncDData(device);
-  auto tensoraxis_copy = tensoraxis1.copy(device);
+  auto tensoraxis_copy = tensoraxis1.copyToHost(device);
   tensoraxis1.syncHData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(cudaStreamDestroy(stream) == cudaSuccess);
@@ -747,7 +747,7 @@ void test_copyGpuClassT()
 
   // Test expected
   tensoraxis1.syncDData(device);
-  auto tensoraxis_copy = tensoraxis1.copy(device);
+  auto tensoraxis_copy = tensoraxis1.copyToHost(device);
   tensoraxis1.syncHData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(cudaStreamDestroy(stream) == cudaSuccess);

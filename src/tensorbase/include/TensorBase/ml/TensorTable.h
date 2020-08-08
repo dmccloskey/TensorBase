@@ -123,7 +123,7 @@ namespace TensorBase
     size_t getTensorSize() const { return tensor_size_; }; ///< the size of the dimensions
     int getDimFromAxisName(const std::string& axis_name) const { return axes_to_dims_.at(axis_name); }
 		std::map<std::string, int> getAxesToDims() const { return axes_to_dims_; }  ///< axes_to_dims getter
-    virtual std::shared_ptr<TensorTable<TensorT, DeviceT, TDim>> copy(DeviceT& device) = 0; ///< copy the tensor table
+    virtual std::shared_ptr<TensorTable<TensorT, DeviceT, TDim>> copyToHost(DeviceT& device) = 0; ///< copy the tensor table
     void clear(const bool& clear_shard_spans = true);  ///< clears the axes and all associated data
 
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> getData() { return data_->getData(); } ///< data_->getData() wrapper
@@ -1511,7 +1511,7 @@ namespace TensorBase
   inline void TensorTable<TensorT, DeviceT, TDim>::sortIndicesView(const std::string & axis_name, const int & dimension_index, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT & device)
   {
     // create a copy of the indices view
-    std::shared_ptr<TensorData<int, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copy(device);
+    std::shared_ptr<TensorData<int, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copyToHost(device);
     assert(indices_view_copy->syncDData(device));
 
     // select the `labels` indices from the axis labels and store in the current indices view
@@ -1526,7 +1526,7 @@ namespace TensorBase
   inline void TensorTable<TensorT, DeviceT, TDim>::sortIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels, const sortOrder::order& order_by, DeviceT& device)
   {
     // create a copy of the indices view
-    std::shared_ptr<TensorData<int, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copy(device);
+    std::shared_ptr<TensorData<int, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copyToHost(device);
     assert(indices_view_copy->syncDData(device));
 
     // select the `labels` indices from the axis labels and store in the current indices view
@@ -1587,7 +1587,7 @@ namespace TensorBase
     const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
     const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
     // create a copy of the indices view
-    std::shared_ptr<TensorData<int, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copy(device);
+    std::shared_ptr<TensorData<int, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copyToHost(device);
     assert(indices_view_copy->syncDData(device));
 
     // select the `labels` indices from the axis labels and store in the current indices view
@@ -1633,7 +1633,7 @@ namespace TensorBase
   inline void TensorTable<TensorT, DeviceT, TDim>::whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels, const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier, const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device)
   {
     // create a copy of the indices view
-    std::shared_ptr<TensorData<int, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copy(device);
+    std::shared_ptr<TensorData<int, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copyToHost(device);
     assert(indices_view_copy->syncDData(device));
 
     // select the `labels` indices from the axis labels and store in the current indices view
@@ -1969,7 +1969,7 @@ namespace TensorBase
     loadTensorTableBinary(dir_, device);
 
     // copy the old values
-    values_old = data_->copy(device);
+    values_old = data_->copyToHost(device);
 
     // assign the new values
     updateSelectTensorDataValues(values_new, device);
@@ -2247,7 +2247,7 @@ namespace TensorBase
     axes_.at(axis_name)->appendLabelsToAxis(labels, device);
 
     // Copy the current data
-    auto data_copy = data_->copy(device);
+    auto data_copy = data_->copyToHost(device);
     data_copy->syncDData(device);
 
     // Make the extended axis indices and append to the index
@@ -2287,12 +2287,12 @@ namespace TensorBase
   inline void TensorTable<TensorT, DeviceT, TDim>::appendToIndices(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device)
   {
     // copy the current indices
-    std::shared_ptr<TensorData<int, DeviceT, 1>> indices_copy = indices_.at(axis_name)->copy(device);
-    std::shared_ptr<TensorData<int, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copy(device);
-    std::shared_ptr<TensorData<int, DeviceT, 1>> is_modified_copy = is_modified_.at(axis_name)->copy(device);
-    std::shared_ptr<TensorData<int, DeviceT, 1>> in_memory_copy = not_in_memory_.at(axis_name)->copy(device);
-    std::shared_ptr<TensorData<int, DeviceT, 1>> shard_id_copy = shard_id_.at(axis_name)->copy(device);
-    std::shared_ptr<TensorData<int, DeviceT, 1>> shard_indices_copy = shard_indices_.at(axis_name)->copy(device);
+    std::shared_ptr<TensorData<int, DeviceT, 1>> indices_copy = indices_.at(axis_name)->copyToHost(device);
+    std::shared_ptr<TensorData<int, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copyToHost(device);
+    std::shared_ptr<TensorData<int, DeviceT, 1>> is_modified_copy = is_modified_.at(axis_name)->copyToHost(device);
+    std::shared_ptr<TensorData<int, DeviceT, 1>> in_memory_copy = not_in_memory_.at(axis_name)->copyToHost(device);
+    std::shared_ptr<TensorData<int, DeviceT, 1>> shard_id_copy = shard_id_.at(axis_name)->copyToHost(device);
+    std::shared_ptr<TensorData<int, DeviceT, 1>> shard_indices_copy = shard_indices_.at(axis_name)->copyToHost(device);
     indices_copy->syncDData(device);
     indices_view_copy->syncDData(device);
     is_modified_copy->syncDData(device);
@@ -2439,7 +2439,7 @@ namespace TensorBase
     auto indices_view_bcast = indices_view.broadcast(Eigen::array<Eigen::Index, 2>({ 1, (int)indices->getTensorSize() }));
 
     // assign the output data
-    indices_select = indices_view_.at(axis_name)->copy(device);
+    indices_select = indices_view_.at(axis_name)->copyToHost(device);
     indices_select->syncDData(device);
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_select_values(indices_select->getDataPointer().get(), indices_select->getDimensions());
 
@@ -2464,12 +2464,12 @@ namespace TensorBase
 
 		if (new_dimensions.at(0) > 0) {
 			// copy and resize the current indices
-			std::shared_ptr<TensorData<int, DeviceT, 1>> indices_copy = indices_.at(axis_name)->copy(device);
-			std::shared_ptr<TensorData<int, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copy(device);
-			std::shared_ptr<TensorData<int, DeviceT, 1>> is_modified_copy = is_modified_.at(axis_name)->copy(device);
-			std::shared_ptr<TensorData<int, DeviceT, 1>> in_memory_copy = not_in_memory_.at(axis_name)->copy(device);
-			std::shared_ptr<TensorData<int, DeviceT, 1>> shard_id_copy = shard_id_.at(axis_name)->copy(device);
-			std::shared_ptr<TensorData<int, DeviceT, 1>> shard_indices_copy = shard_indices_.at(axis_name)->copy(device);
+			std::shared_ptr<TensorData<int, DeviceT, 1>> indices_copy = indices_.at(axis_name)->copyToHost(device);
+			std::shared_ptr<TensorData<int, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copyToHost(device);
+			std::shared_ptr<TensorData<int, DeviceT, 1>> is_modified_copy = is_modified_.at(axis_name)->copyToHost(device);
+			std::shared_ptr<TensorData<int, DeviceT, 1>> in_memory_copy = not_in_memory_.at(axis_name)->copyToHost(device);
+			std::shared_ptr<TensorData<int, DeviceT, 1>> shard_id_copy = shard_id_.at(axis_name)->copyToHost(device);
+			std::shared_ptr<TensorData<int, DeviceT, 1>> shard_indices_copy = shard_indices_.at(axis_name)->copyToHost(device);
  			indices_copy->setDimensions(new_dimensions);
 			indices_copy->setData();
 			indices_view_copy->setDimensions(new_dimensions);
@@ -2764,7 +2764,7 @@ namespace TensorBase
   inline void TensorTable<TensorT, DeviceT, TDim>::insertIntoTableFromCsv(const Eigen::Tensor<std::string, 2>& data_new, DeviceT & device)
   {
     // Copy the original data
-    std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> data_copy = data_->copy(device);
+    std::shared_ptr<TensorData<TensorT, DeviceT, TDim>> data_copy = data_->copyToHost(device);
     data_copy->syncDData(device);
 
     // Copy the shard indices and set the axes

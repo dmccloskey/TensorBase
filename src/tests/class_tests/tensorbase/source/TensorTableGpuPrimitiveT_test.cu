@@ -5253,7 +5253,7 @@ void test_copyGpu()
   tensorTable.syncDData(device);
 
   // test using the different reduction functions
-  auto tensorTableCopy = tensorTable.copy(device);
+  auto tensorTableCopy = tensorTable.copyToHost(device);
   tensorTableCopy->syncHData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   assert(*(tensorTableCopy.get()) == tensorTable);

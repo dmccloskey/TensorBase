@@ -109,7 +109,8 @@ namespace TensorBase
       return *this;
     }
 
-    virtual std::shared_ptr<TensorData> copy(DeviceT& device) = 0; ///< returns a copy of the TensorData
+    virtual std::shared_ptr<TensorData> copyToHost(DeviceT& device) = 0; ///< returns a copy of the TensorData synchronized to the host
+    virtual std::shared_ptr<TensorData> copyToDevice(DeviceT& device) = 0; ///< returns a copy of the TensorData synchronized to the device
 
     virtual void select(std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices, DeviceT& device) = 0; ///< return a selection of the TensorData
     virtual void sortIndices(std::shared_ptr<TensorData<int, DeviceT, TDim>>& indices, const std::string& sort_order, DeviceT& device) = 0; ///< sort the indices based on the TensorData

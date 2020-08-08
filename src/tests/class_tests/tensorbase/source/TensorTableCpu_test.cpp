@@ -4441,7 +4441,7 @@ BOOST_AUTO_TEST_CASE(copyCpu)
   tensorTable.setData(tensor_values);
 
   // test using the different reduction functions
-  auto tensorTableCopy = tensorTable.copy(device);
+  auto tensorTableCopy = tensorTable.copyToHost(device);
   BOOST_CHECK(*(tensorTableCopy.get()) == tensorTable);
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {

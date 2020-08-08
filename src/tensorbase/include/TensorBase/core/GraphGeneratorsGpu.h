@@ -114,7 +114,7 @@ namespace TensorBase
     Eigen::array<Eigen::Index, 2> span_1 = { M, 1 };
     Eigen::array<Eigen::Index, 2> offset_2 = { 0, 1 };
     Eigen::array<Eigen::Index, 2> span_2 = { M, 1 };
-    std::shared_ptr<TensorData<float, Eigen::GpuDevice, 2>> indices_copy = indices_float->copy(device);
+    std::shared_ptr<TensorData<float, Eigen::GpuDevice, 2>> indices_copy = indices_float->copyToHost(device);
     indices_copy->syncHAndDData(device);
     Eigen::TensorMap<Eigen::Tensor<float, 2>> indices_values_copy(indices_copy->getDataPointer().get(), indices_copy->getDimensions());
 

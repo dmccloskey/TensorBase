@@ -131,9 +131,10 @@ namespace TensorBase
     // TODO: check that the dimensions of the labels match the dimensions of the axis labels
 
     // Append to the axis
-    if (!labels_->getDataStatus().second) labels_->syncHAndDData(device);
-    if (!values_->getDataStatus().second) values_->syncHAndDData(device);
+    labels_->syncDData(device);
+    values_->syncDData(device);
     tensor_collection->tables_.at(table_name_)->syncAxesAndIndicesDData(device);
+    tensor_collection->tables_.at(table_name_)->syncDData(device);
     tensor_collection->tables_.at(table_name_)->appendToAxis(axis_name_, labels_, values_->getDataPointer(), indices_, device);
 
     // Log the changes
@@ -145,6 +146,7 @@ namespace TensorBase
     // Delete from the axis
     if (!indices_->getDataStatus().second) indices_->syncHAndDData(device);
     tensor_collection->tables_.at(table_name_)->syncAxesAndIndicesDData(device);
+    tensor_collection->tables_.at(table_name_)->syncDData(device);
     tensor_collection->tables_.at(table_name_)->deleteFromAxis(axis_name_, indices_, device);
 
     // Log the changes
@@ -191,6 +193,7 @@ namespace TensorBase
 
     // Execute the select methods on the tensor_collection
     tensor_collection->tables_.at(table_name_)->syncAxesAndIndicesDData(device);
+    tensor_collection->tables_.at(table_name_)->syncDData(device);
     select_function_(tensor_collection, device);
 
     // Extract out the labels to delete from the `indices_view`
@@ -201,7 +204,7 @@ namespace TensorBase
     allocateMemoryForValues(tensor_collection, device);
 
     // Delete the selected labels
-    if (!values_->getDataStatus().second) values_->syncHAndDData(device);
+    values_->syncDData(device);
     tensor_collection->tables_.at(table_name_)->deleteFromAxis(axis_name_, indices_, labels_, values_->getDataPointer(), device);
 
 		// Reset the indices view
@@ -216,10 +219,11 @@ namespace TensorBase
   inline void TensorDeleteFromAxis<LabelsT, TensorT, DeviceT, TDim>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
   {
     // Insert the deleted labels
-    if (!indices_->getDataStatus().second) indices_->syncHAndDData(device);
-    if (!values_->getDataStatus().second) values_->syncHAndDData(device);
-    if (!labels_->getDataStatus().second) labels_->syncHAndDData(device);
+    indices_->syncDData(device);
+    values_->syncDData(device);
+    labels_->syncDData(device);
     tensor_collection->tables_.at(table_name_)->syncAxesAndIndicesDData(device);
+    tensor_collection->tables_.at(table_name_)->syncDData(device);
     tensor_collection->tables_.at(table_name_)->insertIntoAxis(axis_name_, labels_, values_->getDataPointer(), indices_, device);
 
     // Log the changes
@@ -261,6 +265,7 @@ namespace TensorBase
 
 		// Execute the select methods on the tensor_collection
     tensor_collection->tables_.at(table_name_)->syncAxesAndIndicesDData(device);
+    tensor_collection->tables_.at(table_name_)->syncDData(device);
 		select_function_(tensor_collection, device);
 
 		// Check that the dimensions of the values are compatible with the selected Tensor Table Data
@@ -268,9 +273,9 @@ namespace TensorBase
 		assert(tensor_collection->tables_.at(table_name_)->getDataTensorSize() == values_new_->getTensorSize());
 
 		// Update the values with the `values_new` and copy the original values into the `values_old`
-		values_old_ = values_new_->copy(device);
-		values_old_->syncHAndDData(device);
-    if (!values_new_->getDataStatus().second) values_new_->syncHAndDData(device);
+		values_old_ = values_new_->copyToHost(device);
+		values_old_->syncDData(device);
+    values_new_->syncDData(device);
 		tensor_collection->tables_.at(table_name_)->updateSelectTensorDataValues(values_new_->getDataPointer(), values_old_->getDataPointer(), device);
 
     // Log the changes
@@ -281,6 +286,7 @@ namespace TensorBase
 	{
 		// Execute the select methods on the tensor_collection
     tensor_collection->tables_.at(table_name_)->syncAxesAndIndicesDData(device);
+    tensor_collection->tables_.at(table_name_)->syncDData(device);
 		select_function_(tensor_collection, device);
 
 		// Check that the dimensions of the values are compatible with the selected Tensor Table Data
@@ -288,7 +294,7 @@ namespace TensorBase
 		assert(tensor_collection->tables_.at(table_name_)->getDataTensorSize() == values_old_->getTensorSize());
 
 		// Update the values with the `values_old`
-    if (!values_old_->getDataStatus().second) values_old_->syncHAndDData(device);
+    values_old_->syncDData(device);
 		tensor_collection->tables_.at(table_name_)->updateSelectTensorDataValues(values_old_->getDataPointer(), device);
 
     // Log the changes
@@ -330,10 +336,11 @@ namespace TensorBase
 
     // Execute the select methods on the tensor_collection
     tensor_collection->tables_.at(table_name_)->syncAxesAndIndicesDData(device);
+    tensor_collection->tables_.at(table_name_)->syncDData(device);
     select_function_(tensor_collection, device);
 		
 		// Update the values with the `values_new` and copy the original values into the `values_old`
-    if (!values_new_->getDataStatus().second) values_new_->syncHAndDData(device);
+    values_new_->syncDData(device);
 		tensor_collection->tables_.at(table_name_)->updateTensorDataValues(values_new_->getDataPointer(), values_old_, device);
 
 		// Reset the indices view
@@ -349,10 +356,11 @@ namespace TensorBase
   {
     // Execute the select methods on the tensor_collection
     tensor_collection->tables_.at(table_name_)->syncAxesAndIndicesDData(device);
+    tensor_collection->tables_.at(table_name_)->syncDData(device);
     select_function_(tensor_collection, device);
 
 		// Update the values with the `values_old`
-    if (!values_old_->getDataStatus().second) values_old_->syncHAndDData(device);
+    values_old_->syncDData(device);
 		tensor_collection->tables_.at(table_name_)->updateTensorDataFromSparseTensorTable(values_old_, device);
 
 		// Reset the indices view
@@ -395,10 +403,11 @@ namespace TensorBase
 
     // Execute the select methods on the tensor_collection
     tensor_collection->tables_.at(table_name_)->syncAxesAndIndicesDData(device);
+    tensor_collection->tables_.at(table_name_)->syncDData(device);
     select_function_(tensor_collection, device);
 
     // Update the values with the `values_new`
-    if (!values_new_->getDataStatus().second) values_new_->syncHAndDData(device);
+    values_new_->syncDData(device);
     tensor_collection->tables_.at(table_name_)->updateTensorDataConstant(values_new_, values_old_, device);
 
     // Reset the table indices
@@ -413,10 +422,11 @@ namespace TensorBase
   {
     // Execute the select methods on the tensor_collection
     tensor_collection->tables_.at(table_name_)->syncAxesAndIndicesDData(device);
+    tensor_collection->tables_.at(table_name_)->syncDData(device);
     select_function_(tensor_collection, device);
 
     // Update the values with the `values_old`
-    if (!values_old_->getDataStatus().second) values_old_->syncHAndDData(device);
+    values_old_->syncDData(device);
     tensor_collection->tables_.at(table_name_)->updateTensorDataFromSparseTensorTable(values_old_, device);
 
 		// Reset the table indices

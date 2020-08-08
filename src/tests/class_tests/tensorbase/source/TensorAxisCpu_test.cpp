@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE(copyCpu)
   // Test expected
   Eigen::ThreadPool pool(1);
   Eigen::ThreadPoolDevice device(&pool, 1);
-  auto tensoraxis_copy = tensoraxis1.copy(device);
+  auto tensoraxis_copy = tensoraxis1.copyToHost(device);
   BOOST_CHECK(*(tensoraxis_copy.get()) == tensoraxis1);
   for (int i = 0; i < 3; ++i) {
     for (int j = 0; j < 5; ++j) {
@@ -137,7 +137,7 @@ BOOST_AUTO_TEST_CASE(getLabelsDataPointerCpu)
   labels.setConstant(1);
   TensorAxisCpu<int> tensoraxis("1", dimensions, labels);
 
-  // Test data copy
+  // Test data copyToHost
   std::shared_ptr<int[]> data_int = nullptr;
   tensoraxis.getLabelsDataPointer<int>(data_int);
   BOOST_CHECK_EQUAL(data_int.get()[0], 1);

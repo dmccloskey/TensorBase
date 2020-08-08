@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(assignmentCpu)
   data.setConstant(1);
   tensordata_test.setData(data);
 
-  // Check copy
+  // Check copyToHost
   TensorDataCpu<float, 3> tensordata(tensordata_test);
   BOOST_CHECK(tensordata == tensordata_test);
   BOOST_CHECK_EQUAL(tensordata.getData()(0, 0, 0), 1);
@@ -88,8 +88,8 @@ BOOST_AUTO_TEST_CASE(copyCpu)
   Eigen::ThreadPool pool(2);
   Eigen::ThreadPoolDevice device(&pool, 2);
 
-  // Check copy
-  std::shared_ptr<TensorData<float, Eigen::ThreadPoolDevice, 3>> tensordata = tensordata_test.copy(device);
+  // Check copyToHost
+  std::shared_ptr<TensorData<float, Eigen::ThreadPoolDevice, 3>> tensordata = tensordata_test.copyToHost(device);
   BOOST_CHECK(tensordata->getDimensions() == tensordata_test.getDimensions());
   BOOST_CHECK(tensordata->getTensorBytes() == tensordata_test.getTensorBytes());
   BOOST_CHECK(tensordata->getDeviceName() == tensordata_test.getDeviceName());
@@ -99,6 +99,18 @@ BOOST_AUTO_TEST_CASE(copyCpu)
   tensordata->getData()(0, 0, 0) = 2;
   BOOST_CHECK_NE(tensordata->getData()(0, 0, 0), tensordata_test.getData()(0, 0, 0));
   BOOST_CHECK_EQUAL(tensordata->getData()(1, 0, 0), tensordata_test.getData()(1, 0, 0));
+
+  // Check copyToDevice
+  std::shared_ptr<TensorData<float, Eigen::ThreadPoolDevice, 3>> tensordata2 = tensordata_test.copyToDevice(device);
+  BOOST_CHECK(tensordata2->getDimensions() == tensordata_test.getDimensions());
+  BOOST_CHECK(tensordata2->getTensorBytes() == tensordata_test.getTensorBytes());
+  BOOST_CHECK(tensordata2->getDeviceName() == tensordata_test.getDeviceName());
+  BOOST_CHECK_EQUAL(tensordata2->getData()(0, 0, 0), 1);
+
+  // Check reference change
+  tensordata2->getData()(0, 0, 0) = 2;
+  BOOST_CHECK_NE(tensordata2->getData()(0, 0, 0), tensordata_test.getData()(0, 0, 0));
+  BOOST_CHECK_EQUAL(tensordata2->getData()(1, 0, 0), tensordata_test.getData()(1, 0, 0));
 }
 
 BOOST_AUTO_TEST_CASE(selectCpu)

@@ -25,7 +25,7 @@ namespace TensorBase
     ~TensorAxisCpu() = default; ///< Default destructor
     void setLabels(const Eigen::Tensor<TensorT, 2>& labels) override;
     void setLabels() override;
-    std::shared_ptr<TensorAxis<TensorT, Eigen::ThreadPoolDevice>> copy(Eigen::ThreadPoolDevice& device) override;
+    std::shared_ptr<TensorAxis<TensorT, Eigen::ThreadPoolDevice>> copyToHost(Eigen::ThreadPoolDevice& device) override;
     void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>>& labels, Eigen::ThreadPoolDevice & device) override;
     void makeSortIndices(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>>& indices_sort, Eigen::ThreadPoolDevice& device) override;
     void selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>>& labels_select, Eigen::ThreadPoolDevice& device) override;
@@ -56,7 +56,7 @@ namespace TensorBase
     this->tensor_dimension_labels_->setData();
   }
   template<typename TensorT>
-  inline std::shared_ptr<TensorAxis<TensorT, Eigen::ThreadPoolDevice>> TensorAxisCpu<TensorT>::copy(Eigen::ThreadPoolDevice& device)
+  inline std::shared_ptr<TensorAxis<TensorT, Eigen::ThreadPoolDevice>> TensorAxisCpu<TensorT>::copyToHost(Eigen::ThreadPoolDevice& device)
   {
     TensorAxisCpu<TensorT> tensor_axis_copy;
     // copy the metadata
@@ -67,7 +67,7 @@ namespace TensorBase
     tensor_axis_copy.setNDimensions(this->getNDimensions());
     tensor_axis_copy.setNLabels(this->getNLabels());
     tensor_axis_copy.tensor_dimension_names_ = this->tensor_dimension_names_;
-    tensor_axis_copy.tensor_dimension_labels_ = this->tensor_dimension_labels_->copy(device);
+    tensor_axis_copy.tensor_dimension_labels_ = this->tensor_dimension_labels_->copyToHost(device);
 
     return std::make_shared<TensorAxisCpu<TensorT>>(tensor_axis_copy);
   }

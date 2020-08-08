@@ -26,7 +26,7 @@ namespace TensorBase
     void setAxes(Eigen::DefaultDevice& device) override;
     void initData(Eigen::DefaultDevice& device) override;
     void initData(const Eigen::array<Eigen::Index, TDim>& new_dimensions, Eigen::DefaultDevice& device) override;
-    std::shared_ptr<TensorTable<TensorT, Eigen::DefaultDevice, TDim>> copy(Eigen::DefaultDevice& device) override;
+    std::shared_ptr<TensorTable<TensorT, Eigen::DefaultDevice, TDim>> copyToHost(Eigen::DefaultDevice& device) override;
     // Select methods
     void broadcastSelectIndicesView(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_view_bcast, const std::string& axis_name, Eigen::DefaultDevice& device) override;
     void reduceTensorDataToSelectIndices(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_view_bcast, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, Eigen::DefaultDevice& device) override;
@@ -166,7 +166,7 @@ namespace TensorBase
   }
 
   template<typename TensorT, int TDim>
-  inline std::shared_ptr<TensorTable<TensorT, Eigen::DefaultDevice, TDim>> TensorTableDefaultDevice<TensorT, TDim>::copy(Eigen::DefaultDevice& device)
+  inline std::shared_ptr<TensorTable<TensorT, Eigen::DefaultDevice, TDim>> TensorTableDefaultDevice<TensorT, TDim>::copyToHost(Eigen::DefaultDevice& device)
   {
     TensorTableDefaultDevice<TensorT, TDim> tensor_table_copy;
     // copy the metadata
@@ -180,18 +180,18 @@ namespace TensorBase
 
     // copy the axes and indices
     for (auto& axis_to_dim : this->getAxesToDims()) {
-      tensor_table_copy.getAxes().emplace(axis_to_dim.first, this->getAxes().at(axis_to_dim.first)->copy(device));
-      tensor_table_copy.getIndices().emplace(axis_to_dim.first, this->getIndices().at(axis_to_dim.first)->copy(device));
-      tensor_table_copy.getIndicesView().emplace(axis_to_dim.first, this->getIndicesView().at(axis_to_dim.first)->copy(device));
-      tensor_table_copy.getIsModified().emplace(axis_to_dim.first, this->getIsModified().at(axis_to_dim.first)->copy(device));
-      tensor_table_copy.getNotInMemory().emplace(axis_to_dim.first, this->getNotInMemory().at(axis_to_dim.first)->copy(device));
-      tensor_table_copy.getShardId().emplace(axis_to_dim.first, this->getShardId().at(axis_to_dim.first)->copy(device));
-      tensor_table_copy.getShardIndices().emplace(axis_to_dim.first, this->getShardIndices().at(axis_to_dim.first)->copy(device));
+      tensor_table_copy.getAxes().emplace(axis_to_dim.first, this->getAxes().at(axis_to_dim.first)->copyToHost(device));
+      tensor_table_copy.getIndices().emplace(axis_to_dim.first, this->getIndices().at(axis_to_dim.first)->copyToHost(device));
+      tensor_table_copy.getIndicesView().emplace(axis_to_dim.first, this->getIndicesView().at(axis_to_dim.first)->copyToHost(device));
+      tensor_table_copy.getIsModified().emplace(axis_to_dim.first, this->getIsModified().at(axis_to_dim.first)->copyToHost(device));
+      tensor_table_copy.getNotInMemory().emplace(axis_to_dim.first, this->getNotInMemory().at(axis_to_dim.first)->copyToHost(device));
+      tensor_table_copy.getShardId().emplace(axis_to_dim.first, this->getShardId().at(axis_to_dim.first)->copyToHost(device));
+      tensor_table_copy.getShardIndices().emplace(axis_to_dim.first, this->getShardIndices().at(axis_to_dim.first)->copyToHost(device));
       tensor_table_copy.getDimensions().at(axis_to_dim.second) = this->getDimensions().at(axis_to_dim.second);
     }
 
     // copy the data
-    tensor_table_copy.setData(data_->copy(device));
+    tensor_table_copy.setData(data_->copyToHost(device));
     return std::make_shared<TensorTableDefaultDevice<TensorT, TDim>>(tensor_table_copy);
   }
 
@@ -529,7 +529,7 @@ namespace TensorBase
   inline void TensorTableDefaultDevice<TensorT, TDim>::makeIndicesFromIndicesView(const std::string & axis_name, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, Eigen::DefaultDevice & device)
   {
     // Normalize the indices view
-    auto indices_view_copy = this->indices_view_.at(axis_name)->copy(device);
+    auto indices_view_copy = this->indices_view_.at(axis_name)->copyToHost(device);
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_copy_values(indices_view_copy->getDataPointer().get(), indices_view_copy->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_values(this->indices_view_.at(axis_name)->getDataPointer().get(), this->indices_view_.at(axis_name)->getDimensions());
     indices_view_copy_values.device(device) = indices_view_values.clip(0, 1);
@@ -569,7 +569,7 @@ namespace TensorBase
       labels_size *= dim_size.getData()(0);
 
       // create the selection for the indices view
-      std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> indices_select = this->indices_view_.at(axis_to_name.first)->copy(device);
+      std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> indices_select = this->indices_view_.at(axis_to_name.first)->copyToHost(device);
       Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_select_values(indices_select->getDataPointer().get(), indices_select->getDimensions());
       indices_select_values.device(device) = indices_view_values.clip(0, 1);
 

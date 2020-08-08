@@ -105,14 +105,14 @@ void test_InsertUpdateDeleteGpu()
 
   // Test the expected tensor collection after insert
   benchmark_1_tp.insert1TimePoint(transaction_manager, data_size, in_memory, device);
-  labels_time_ptr->syncHAndDData(device);
-  values_time_ptr->syncHAndDData(device);
-  labels_labels_ptr->syncHAndDData(device);
-  values_labels_ptr->syncHAndDData(device);
-  labels_image_2d_ptr->syncHAndDData(device);
-  values_image_2d_ptr->syncHAndDData(device);
-  labels_is_valid_ptr->syncHAndDData(device);
-  values_is_valid_ptr->syncHAndDData(device);
+  labels_time_ptr->syncHDataData(device);
+  values_time_ptr->syncHDataData(device);
+  labels_labels_ptr->syncHDataData(device);
+  values_labels_ptr->syncHDataData(device);
+  labels_image_2d_ptr->syncHDataData(device);
+  values_image_2d_ptr->syncHDataData(device);
+  labels_is_valid_ptr->syncHDataData(device);
+  values_is_valid_ptr->syncHDataData(device);
   for (auto& table_map : n_dim_tensor_collection->tables_) {
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
@@ -216,14 +216,14 @@ void test_InsertUpdateDeleteGpu()
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(transaction_manager, data_size, in_memory, device);
-  labels_time_ptr->syncHAndDData(device);
-  values_time_ptr->syncHAndDData(device);
-  labels_labels_ptr->syncHAndDData(device);
-  values_labels_ptr->syncHAndDData(device);
-  labels_image_2d_ptr->syncHAndDData(device);
-  values_image_2d_ptr->syncHAndDData(device);
-  labels_is_valid_ptr->syncHAndDData(device);
-  values_is_valid_ptr->syncHAndDData(device);
+  labels_time_ptr->syncHDataData(device);
+  values_time_ptr->syncHDataData(device);
+  labels_labels_ptr->syncHDataData(device);
+  values_labels_ptr->syncHDataData(device);
+  labels_image_2d_ptr->syncHDataData(device);
+  values_image_2d_ptr->syncHDataData(device);
+  labels_is_valid_ptr->syncHDataData(device);
+  values_is_valid_ptr->syncHDataData(device);
   for (auto& table_map : n_dim_tensor_collection->tables_) {
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
@@ -410,14 +410,14 @@ void test_InsertUpdateDeleteShardingGpu()
 
   // Test the expected tensor collection after insert
   benchmark_1_tp.insert1TimePoint(transaction_manager, data_size, in_memory, device);
-  labels_time_ptr->syncHAndDData(device);
-  values_time_ptr->syncHAndDData(device);
-  labels_labels_ptr->syncHAndDData(device);
-  values_labels_ptr->syncHAndDData(device);
-  labels_image_2d_ptr->syncHAndDData(device);
-  values_image_2d_ptr->syncHAndDData(device);
-  labels_is_valid_ptr->syncHAndDData(device);
-  values_is_valid_ptr->syncHAndDData(device);
+  labels_time_ptr->syncHDataData(device);
+  values_time_ptr->syncHDataData(device);
+  labels_labels_ptr->syncHDataData(device);
+  values_labels_ptr->syncHDataData(device);
+  labels_image_2d_ptr->syncHDataData(device);
+  values_image_2d_ptr->syncHDataData(device);
+  labels_is_valid_ptr->syncHDataData(device);
+  values_is_valid_ptr->syncHDataData(device);
   for (auto& table_map : n_dim_tensor_collection->tables_) {
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
@@ -521,14 +521,14 @@ void test_InsertUpdateDeleteShardingGpu()
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(transaction_manager, data_size, in_memory, device);
-  labels_time_ptr->syncHAndDData(device);
-  values_time_ptr->syncHAndDData(device);
-  labels_labels_ptr->syncHAndDData(device);
-  values_labels_ptr->syncHAndDData(device);
-  labels_image_2d_ptr->syncHAndDData(device);
-  values_image_2d_ptr->syncHAndDData(device);
-  labels_is_valid_ptr->syncHAndDData(device);
-  values_is_valid_ptr->syncHAndDData(device);
+  labels_time_ptr->syncHDataData(device);
+  values_time_ptr->syncHDataData(device);
+  labels_labels_ptr->syncHDataData(device);
+  values_labels_ptr->syncHDataData(device);
+  labels_image_2d_ptr->syncHDataData(device);
+  values_image_2d_ptr->syncHDataData(device);
+  labels_is_valid_ptr->syncHDataData(device);
+  values_is_valid_ptr->syncHDataData(device);
   for (auto& table_map : n_dim_tensor_collection->tables_) {
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);

@@ -214,7 +214,7 @@ void test_tensorAssignmentTensorArray8Gpu()
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 1>> gpu_in1(d_in1, 3);
 
-  // Tensor copy
+  // Tensor copyToHost
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 1>> gpu_out1(d_out1, 3);
   gpu_out1.device(device) = gpu_in1;
 
@@ -565,7 +565,7 @@ void test_tensorAssignmentTensorArray32Gpu()
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu32<char>, 1>> gpu_in1(d_in1, 3);
 
-  // Tensor copy
+  // Tensor copyToHost
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu32<char>, 1>> gpu_out1(d_out1, 3);
   gpu_out1.device(device) = gpu_in1;
 
