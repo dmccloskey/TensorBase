@@ -3631,26 +3631,26 @@ void test_makeSparseTensorTableGpu()
   assert(sparse_table_ptr->getAxes().at("Indices")->getName() == "Indices");
   assert(sparse_table_ptr->getAxes().at("Indices")->getNLabels() == nlabels1);
   assert(sparse_table_ptr->getAxes().at("Indices")->getNDimensions() == 3);
-  // TODO: transfer to host
-  //std::shared_ptr<int> labels1_ptr;
-  //sparse_table_ptr->getAxes().at("Indices")->getLabelsHDataPointer(labels1_ptr);
-  //Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_values(labels1_ptr.get(), 3, nlabels1);
+
+  std::shared_ptr<int[]> labels1_ptr;
+  sparse_table_ptr->getAxes().at("Indices")->getLabelsHDataPointer(labels1_ptr);
+  Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_values(labels1_ptr.get(), 3, nlabels1);
   for (int i = 0; i < 3; ++i) {
     assert(sparse_table_ptr->getAxes().at("Indices")->getDimensions()(i) == std::to_string(i));
-    //for (int j = 0; j < nlabels1; ++j) {
-    //  assert(labels_values(i, j) == labels1(i, j));
-    //}
+    for (int j = 0; j < nlabels1; ++j) {
+      assert(labels_values(i, j) == labels1(i, j));
+    }
   }
 
   // Check the Values axes
   assert(sparse_table_ptr->getAxes().at("Values")->getName() == "Values");
   assert(sparse_table_ptr->getAxes().at("Values")->getNLabels() == 1);
   assert(sparse_table_ptr->getAxes().at("Values")->getNDimensions() == 1);
-  // TODO: transfer to host
-  //std::shared_ptr<int> labels2_ptr;
-  //sparse_table_ptr->getAxes().at("Values")->getLabelsHDataPointer(labels2_ptr);
-  //Eigen::TensorMap<Eigen::Tensor<int, 2>> labels2_values(labels2_ptr.get(), 1, 1);
-  //assert(labels2_values(0, 0), 0);
+
+  std::shared_ptr<int[]> labels2_ptr;
+  sparse_table_ptr->getAxes().at("Values")->getLabelsHDataPointer(labels2_ptr);
+  Eigen::TensorMap<Eigen::Tensor<int, 2>> labels2_values(labels2_ptr.get(), 1, 1);
+  assert(labels2_values(0, 0) == 0);
   assert(sparse_table_ptr->getAxes().at("Values")->getDimensions()(0) == "Values");
 
   // Check the indices axis indices
@@ -3752,26 +3752,26 @@ void test_getSelectTensorDataAsSparseTensorTableGpu()
   assert(sparse_table_ptr->getAxes().at("Indices")->getName() == "Indices");
   assert(sparse_table_ptr->getAxes().at("Indices")->getNLabels() == nlabels1);
   assert(sparse_table_ptr->getAxes().at("Indices")->getNDimensions() == 3);
-  // TODO: transfer to host
-  //std::shared_ptr<int> labels1_ptr;
-  //sparse_table_ptr->getAxes().at("Indices")->getLabelsHDataPointer(labels1_ptr);
-  //Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_values(labels1_ptr.get(), 3, nlabels1);
+
+  std::shared_ptr<int[]> labels1_ptr;
+  sparse_table_ptr->getAxes().at("Indices")->getLabelsHDataPointer(labels1_ptr);
+  Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_values(labels1_ptr.get(), 3, nlabels1);
   for (int i = 0; i < 3; ++i) {
     assert(sparse_table_ptr->getAxes().at("Indices")->getDimensions()(i) == std::to_string(i + 1));
-    //for (int j = 0; j < nlabels1; ++j) {
-    //  assert(labels_values(i, j) == labels1_expected(i, j));
-    //}
+    for (int j = 0; j < nlabels1; ++j) {
+      assert(labels_values(i, j) == labels1_expected(i, j));
+    }
   }
 
   // Check the Values axes
   assert(sparse_table_ptr->getAxes().at("Values")->getName() == "Values");
   assert(sparse_table_ptr->getAxes().at("Values")->getNLabels() == 1);
   assert(sparse_table_ptr->getAxes().at("Values")->getNDimensions() == 1);
-  //// TODO: transfer to host
-  //std::shared_ptr<int> labels2_ptr;
-  //sparse_table_ptr->getAxes().at("Values")->getLabelsHDataPointer(labels2_ptr);
-  //Eigen::TensorMap<Eigen::Tensor<int, 2>> labels2_values(labels2_ptr.get(), 1, 1);
-  //assert(labels2_values(0, 0) == 0);
+
+  std::shared_ptr<int[]> labels2_ptr;
+  sparse_table_ptr->getAxes().at("Values")->getLabelsHDataPointer(labels2_ptr);
+  Eigen::TensorMap<Eigen::Tensor<int, 2>> labels2_values(labels2_ptr.get(), 1, 1);
+  assert(labels2_values(0, 0) == 0);
   assert(sparse_table_ptr->getAxes().at("Values")->getDimensions()(0) == "Values");
 
   // Check the indices axis indices
@@ -3829,26 +3829,26 @@ void test_getSelectTensorDataAsSparseTensorTableGpu()
   assert(sparse_table_ptr->getAxes().at("Indices")->getName() == "Indices");
   assert(sparse_table_ptr->getAxes().at("Indices")->getNLabels() == nlabels1);
   assert(sparse_table_ptr->getAxes().at("Indices")->getNDimensions() == 3);
-  // TODO: transfer to host
-  //std::shared_ptr<int> labels1_ptr;
-  //sparse_table_ptr->getAxes().at("Indices")->getLabelsHDataPointer(labels1_ptr);
-  //Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_values(labels1_ptr.get(), 3, nlabels1);
+
+  labels1_ptr.reset();
+  sparse_table_ptr->getAxes().at("Indices")->getLabelsHDataPointer(labels1_ptr);
+  Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_values2(labels1_ptr.get(), 3, nlabels1);
   for (int i = 0; i < 3; ++i) {
     assert(sparse_table_ptr->getAxes().at("Indices")->getDimensions()(i) == std::to_string(i + 1));
-    //for (int j = 0; j < nlabels1; ++j) {
-    //  assert(labels_values(i, j) == labels1_expected(i, j));
-    //}
+    for (int j = 0; j < nlabels1; ++j) {
+      assert(labels_values2(i, j) == labels1_expected(i, j));
+    }
   }
 
   // Check the Values axes
   assert(sparse_table_ptr->getAxes().at("Values")->getName() == "Values");
   assert(sparse_table_ptr->getAxes().at("Values")->getNLabels() == 1);
   assert(sparse_table_ptr->getAxes().at("Values")->getNDimensions() == 1);
-  // TODO: transfer to host
-  //std::shared_ptr<int> labels2_ptr;
-  //sparse_table_ptr->getAxes().at("Values")->getLabelsHDataPointer(labels2_ptr);
-  //Eigen::TensorMap<Eigen::Tensor<int, 2>> labels2_values(labels2_ptr.get(), 1, 1);
-  //assert(labels2_values(0, 0) == 0);
+
+  labels2_ptr.reset();
+  sparse_table_ptr->getAxes().at("Values")->getLabelsHDataPointer(labels2_ptr);
+  Eigen::TensorMap<Eigen::Tensor<int, 2>> labels2_values2(labels2_ptr.get(), 1, 1);
+  assert(labels2_values2(0, 0) == 0);
   assert(sparse_table_ptr->getAxes().at("Values")->getDimensions()(0) == "Values");
 
   // Check the indices axis indices
