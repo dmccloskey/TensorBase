@@ -1308,54 +1308,33 @@ namespace TensorBase
     bool synced = true;
     // transfer axis data to the device from the host
     for (auto& axis_map : axes_) {
-      std::pair<bool, bool> statuses = axis_map.second->getDataStatus();
-      if (!statuses.second) {
-        bool synced_tmp = axis_map.second->syncHAndDData(device);
-        if (!synced_tmp) synced = false;
-      }
+      bool synced_tmp = axis_map.second->syncDData(device);
+      if (!synced_tmp) synced = false;
     }
     // transfer indices data to the device from the host
     for (auto& index_map : indices_) {
-      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
-      if (!statuses.second) {
-        bool synced_tmp = index_map.second->syncHAndDData(device);
-        if (!synced_tmp) synced = false;
-      }
+      bool synced_tmp = index_map.second->syncDData(device);
+      if (!synced_tmp) synced = false;
     }
     for (auto& index_map : indices_view_) {
-      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
-      if (!statuses.second) {
-        bool synced_tmp = index_map.second->syncHAndDData(device);
-        if (!synced_tmp) synced = false;
-      }
+      bool synced_tmp = index_map.second->syncDData(device);
+      if (!synced_tmp) synced = false;
     }
     for (auto& index_map : is_modified_) {
-      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
-      if (!statuses.second) {
-        bool synced_tmp = index_map.second->syncHAndDData(device);
-        if (!synced_tmp) synced = false;
-      }
+      bool synced_tmp = index_map.second->syncDData(device);
+      if (!synced_tmp) synced = false;
     }
     for (auto& index_map : not_in_memory_) {
-      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
-      if (!statuses.second) {
-        bool synced_tmp = index_map.second->syncHAndDData(device);
-        if (!synced_tmp) synced = false;
-      }
+      bool synced_tmp = index_map.second->syncDData(device);
+      if (!synced_tmp) synced = false;
     }
     for (auto& index_map : shard_id_) {
-      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
-      if (!statuses.second) {
-        bool synced_tmp = index_map.second->syncHAndDData(device);
-        if (!synced_tmp) synced = false;
-      }
+      bool synced_tmp = index_map.second->syncDData(device);
+      if (!synced_tmp) synced = false;
     }
     for (auto& index_map : shard_indices_) {
-      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
-      if (!statuses.second) {
-        bool synced_tmp = index_map.second->syncHAndDData(device);
-        if (!synced_tmp) synced = false;
-      }
+      bool synced_tmp = index_map.second->syncDData(device);
+      if (!synced_tmp) synced = false;
     }
     return synced;
   }
@@ -1366,54 +1345,33 @@ namespace TensorBase
     bool synced = true;
     // transfer axis data to the device from the host
     for (auto& axis_map : axes_) {
-      std::pair<bool, bool> statuses = axis_map.second->getDataStatus();
-      if (!statuses.first) {
-        bool synced_tmp = axis_map.second->syncHAndDData(device);
-        if (!synced_tmp) synced = false;
-      }
+      bool synced_tmp = axis_map.second->syncHData(device);
+      if (!synced_tmp) synced = false;
     }
     // transfer indices data to the device from the host
     for (auto& index_map : indices_) {
-      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
-      if (!statuses.first) {
-        bool synced_tmp = index_map.second->syncHAndDData(device);
-        if (!synced_tmp) synced = false;
-      }
+      bool synced_tmp = index_map.second->syncHData(device);
+      if (!synced_tmp) synced = false;
     }
     for (auto& index_map : indices_view_) {
-      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
-      if (!statuses.first) {
-        bool synced_tmp = index_map.second->syncHAndDData(device);
-        if (!synced_tmp) synced = false;
-      }
+      bool synced_tmp = index_map.second->syncHData(device);
+      if (!synced_tmp) synced = false;
     }
     for (auto& index_map : is_modified_) {
-      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
-      if (!statuses.first) {
-        bool synced_tmp = index_map.second->syncHAndDData(device);
-        if (!synced_tmp) synced = false;
-      }
+      bool synced_tmp = index_map.second->syncHData(device);
+      if (!synced_tmp) synced = false;
     }
     for (auto& index_map : not_in_memory_) {
-      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
-      if (!statuses.first) {
-        bool synced_tmp = index_map.second->syncHAndDData(device);
-        if (!synced_tmp) synced = false;
-      }
+      bool synced_tmp = index_map.second->syncHData(device);
+      if (!synced_tmp) synced = false;
     }
     for (auto& index_map : shard_id_) {
-      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
-      if (!statuses.first) {
-        bool synced_tmp = index_map.second->syncHAndDData(device);
-        if (!synced_tmp) synced = false;
-      }
+      bool synced_tmp = index_map.second->syncHData(device);
+      if (!synced_tmp) synced = false;
     }
     for (auto& index_map : shard_indices_) {
-      std::pair<bool, bool> statuses = index_map.second->getDataStatus();
-      if (!statuses.first) {
-        bool synced_tmp = index_map.second->syncHAndDData(device);
-        if (!synced_tmp) synced = false;
-      }
+      bool synced_tmp = index_map.second->syncHData(device);
+      if (!synced_tmp) synced = false;
     }
     return synced;
   }
@@ -1554,7 +1512,7 @@ namespace TensorBase
   {
     // create a copy of the indices view
     std::shared_ptr<TensorData<int, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copy(device);
-    assert(indices_view_copy->syncHAndDData(device));
+    assert(indices_view_copy->syncDData(device));
 
     // select the `labels` indices from the axis labels and store in the current indices view
     selectIndicesView(axis_name, dimension_index, select_labels, device);
@@ -1943,14 +1901,14 @@ namespace TensorBase
 
     // TODO: does it make sense to move this over to `setAxes()` ?
     // Sync all of the axes and reShard
-    syncIndicesHAndDData(device);
-    syncIndicesViewHAndDData(device);
-    syncIsModifiedHAndDData(device);
-    syncNotInMemoryHAndDData(device);
-    syncShardIdHAndDData(device);
-    syncShardIndicesHAndDData(device);
+    syncIndicesDData(device);
+    syncIndicesViewDData(device);
+    syncIsModifiedDData(device);
+    syncNotInMemoryDData(device);
+    syncShardIdDData(device);
+    syncShardIndicesDData(device);
     reShardIndices(device);
-    syncAxesHAndDData(device);
+    syncAxesDData(device);
 
     // update the not_in_memory and is_modified attributes
     for (auto& in_memory_map : not_in_memory_) {
@@ -2827,7 +2785,7 @@ namespace TensorBase
     syncShardIndicesDData(device);
     reShardIndices(device);
     syncAxesDData(device);
-    syncHAndDData(device);
+    syncDData(device);
 
     // Reformat into a SparseTensorTable
     std::shared_ptr<TensorTable<TensorT, DeviceT, 2>> sparse_table_ptr;
