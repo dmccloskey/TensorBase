@@ -31,6 +31,7 @@ namespace TensorBase
     void setLabels(const Eigen::Tensor<TensorT, 2>& labels) override;
     void setLabels() override;
     std::shared_ptr<TensorAxis<TensorT, Eigen::GpuDevice>> copyToHost(Eigen::GpuDevice& device) override;
+    std::shared_ptr<TensorAxis<TensorT, Eigen::GpuDevice>> copyToDevice(Eigen::GpuDevice& device) override;
     void selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 2>>& labels_select, Eigen::GpuDevice& device) override;
     void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 2>>& labels, Eigen::GpuDevice & device) override;
     void makeSortIndices(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>>& indices_sort, Eigen::GpuDevice& device) override;
@@ -73,6 +74,22 @@ namespace TensorBase
     tensor_axis_copy.setNLabels(this->getNLabels());
     tensor_axis_copy.tensor_dimension_names_ = this->tensor_dimension_names_;
     tensor_axis_copy.tensor_dimension_labels_ = this->tensor_dimension_labels_->copyToHost(device);
+
+    return std::make_shared<TensorAxisGpuPrimitiveT<TensorT>>(tensor_axis_copy);
+  }
+  template<typename TensorT>
+  inline std::shared_ptr<TensorAxis<TensorT, Eigen::GpuDevice>> TensorAxisGpuPrimitiveT<TensorT>::copyToDevice(Eigen::GpuDevice& device)
+  {
+    TensorAxisGpuPrimitiveT<TensorT> tensor_axis_copy;
+    // copy the metadata
+    tensor_axis_copy.setId(this->getId());
+    tensor_axis_copy.setName(this->getName());
+
+    // copy the dimensions and labels
+    tensor_axis_copy.setNDimensions(this->getNDimensions());
+    tensor_axis_copy.setNLabels(this->getNLabels());
+    tensor_axis_copy.tensor_dimension_names_ = this->tensor_dimension_names_;
+    tensor_axis_copy.tensor_dimension_labels_ = this->tensor_dimension_labels_->copyToDevice(device);
 
     return std::make_shared<TensorAxisGpuPrimitiveT<TensorT>>(tensor_axis_copy);
   }
@@ -307,6 +324,7 @@ namespace TensorBase
     void setLabels(const Eigen::Tensor<ArrayT<TensorT>, 2>& labels) override;
     void setLabels() override;
     std::shared_ptr<TensorAxis<ArrayT<TensorT>, Eigen::GpuDevice>> copyToHost(Eigen::GpuDevice& device) override;
+    std::shared_ptr<TensorAxis<ArrayT<TensorT>, Eigen::GpuDevice>> copyToDevice(Eigen::GpuDevice& device) override;
     void selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, std::shared_ptr<TensorData<ArrayT<TensorT>, Eigen::GpuDevice, 2>>& labels_select, Eigen::GpuDevice& device) override;
     void appendLabelsToAxis(const std::shared_ptr<TensorData<ArrayT<TensorT>, Eigen::GpuDevice, 2>>& labels, Eigen::GpuDevice & device) override;
     void makeSortIndices(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>>& indices_sort, Eigen::GpuDevice& device) override;
@@ -349,6 +367,22 @@ namespace TensorBase
     tensor_axis_copy.setNLabels(this->getNLabels());
     tensor_axis_copy.tensor_dimension_names_ = this->tensor_dimension_names_;
     tensor_axis_copy.tensor_dimension_labels_ = this->tensor_dimension_labels_->copyToHost(device);
+
+    return std::make_shared<TensorAxisGpuClassT<ArrayT, TensorT>>(tensor_axis_copy);
+  }
+  template<template<class> class ArrayT, class TensorT>
+  inline std::shared_ptr<TensorAxis<ArrayT<TensorT>, Eigen::GpuDevice>> TensorAxisGpuClassT<ArrayT, TensorT>::copyToDevice(Eigen::GpuDevice& device)
+  {
+    TensorAxisGpuClassT<ArrayT, TensorT> tensor_axis_copy;
+    // copy the metadata
+    tensor_axis_copy.setId(this->getId());
+    tensor_axis_copy.setName(this->getName());
+
+    // copy the dimensions and labels
+    tensor_axis_copy.setNDimensions(this->getNDimensions());
+    tensor_axis_copy.setNLabels(this->getNLabels());
+    tensor_axis_copy.tensor_dimension_names_ = this->tensor_dimension_names_;
+    tensor_axis_copy.tensor_dimension_labels_ = this->tensor_dimension_labels_->copyToDevice(device);
 
     return std::make_shared<TensorAxisGpuClassT<ArrayT, TensorT>>(tensor_axis_copy);
   }

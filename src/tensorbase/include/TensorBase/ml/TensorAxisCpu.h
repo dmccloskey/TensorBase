@@ -26,6 +26,7 @@ namespace TensorBase
     void setLabels(const Eigen::Tensor<TensorT, 2>& labels) override;
     void setLabels() override;
     std::shared_ptr<TensorAxis<TensorT, Eigen::ThreadPoolDevice>> copyToHost(Eigen::ThreadPoolDevice& device) override;
+    std::shared_ptr<TensorAxis<TensorT, Eigen::ThreadPoolDevice>> copyToDevice(Eigen::ThreadPoolDevice& device) override;
     void appendLabelsToAxis(const std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>>& labels, Eigen::ThreadPoolDevice & device) override;
     void makeSortIndices(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& indices, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>>& indices_sort, Eigen::ThreadPoolDevice& device) override;
     void selectFromAxis(const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 1>>& indices, std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>>& labels_select, Eigen::ThreadPoolDevice& device) override;
@@ -68,6 +69,22 @@ namespace TensorBase
     tensor_axis_copy.setNLabels(this->getNLabels());
     tensor_axis_copy.tensor_dimension_names_ = this->tensor_dimension_names_;
     tensor_axis_copy.tensor_dimension_labels_ = this->tensor_dimension_labels_->copyToHost(device);
+
+    return std::make_shared<TensorAxisCpu<TensorT>>(tensor_axis_copy);
+  }
+  template<typename TensorT>
+  inline std::shared_ptr<TensorAxis<TensorT, Eigen::ThreadPoolDevice>> TensorAxisCpu<TensorT>::copyToDevice(Eigen::ThreadPoolDevice& device)
+  {
+    TensorAxisCpu<TensorT> tensor_axis_copy;
+    // copy the metadata
+    tensor_axis_copy.setId(this->getId());
+    tensor_axis_copy.setName(this->getName());
+
+    // copy the dimensions and labels
+    tensor_axis_copy.setNDimensions(this->getNDimensions());
+    tensor_axis_copy.setNLabels(this->getNLabels());
+    tensor_axis_copy.tensor_dimension_names_ = this->tensor_dimension_names_;
+    tensor_axis_copy.tensor_dimension_labels_ = this->tensor_dimension_labels_->copyToDevice(device);
 
     return std::make_shared<TensorAxisCpu<TensorT>>(tensor_axis_copy);
   }

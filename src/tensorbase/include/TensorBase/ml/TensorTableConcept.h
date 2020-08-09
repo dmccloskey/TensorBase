@@ -96,6 +96,7 @@ namespace TensorBase
     virtual void initData(DeviceT& device) = 0;
     virtual std::map<std::string, int> getShardSpans() const = 0;
     virtual std::shared_ptr<TensorTableConcept<DeviceT>> copyToHost(DeviceT& device) = 0;
+    virtual std::shared_ptr<TensorTableConcept<DeviceT>> copyToDevice(DeviceT& device) = 0;
 
     // All TensorT combos of `getDatapointer`
     virtual void getDataPointer(std::shared_ptr<int[]>& data_copy) = 0;
@@ -1400,6 +1401,10 @@ namespace TensorBase
     std::map<std::string, int> getShardSpans() const { return tensor_table_->getShardSpans(); };
     std::shared_ptr<TensorTableConcept<DeviceT>> copyToHost(DeviceT& device) override {
       auto tensor_table_copy = tensor_table_->copyToHost(device);
+      return std::make_shared<TensorTableWrapper<T, DeviceT>>(tensor_table_copy);
+    }
+    std::shared_ptr<TensorTableConcept<DeviceT>> copyToDevice(DeviceT& device) override {
+      auto tensor_table_copy = tensor_table_->copyToDevice(device);
       return std::make_shared<TensorTableWrapper<T, DeviceT>>(tensor_table_copy);
     }
 

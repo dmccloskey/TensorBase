@@ -5018,7 +5018,7 @@ void test_copyGpu()
   tensorTable.syncAxesAndIndicesDData(device);
   tensorTable.syncDData(device);
 
-  // test using the different reduction functions
+  // test copy
   auto tensorTableCopy = tensorTable.copyToHost(device);
   tensorTableCopy->syncHData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
@@ -5027,6 +5027,17 @@ void test_copyGpu()
     for (int j = 0; j < nlabels; ++j) {
       for (int i = 0; i < nlabels; ++i) {
         assert(tensorTableCopy->getData()(i, j, k) == tensor_values(i, j, k));
+      }
+    }
+  }
+  auto tensorTableCopy2 = tensorTable.copyToDevice(device);
+  tensorTableCopy2->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  assert(*(tensorTableCopy2.get()) == tensorTable);
+  for (int k = 0; k < nlabels; ++k) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int i = 0; i < nlabels; ++i) {
+        assert(tensorTableCopy2->getData()(i, j, k) == tensor_values(i, j, k));
       }
     }
   }

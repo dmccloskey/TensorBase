@@ -34,6 +34,7 @@ namespace TensorBase
     void initData(Eigen::GpuDevice& device) override;
     void initData(const Eigen::array<Eigen::Index, TDim>& new_dimensions, Eigen::GpuDevice& device) override;
     std::shared_ptr<TensorTable<ArrayT<TensorT>, Eigen::GpuDevice, TDim>> copyToHost(Eigen::GpuDevice& device) override;
+    std::shared_ptr<TensorTable<ArrayT<TensorT>, Eigen::GpuDevice, TDim>> copyToDevice(Eigen::GpuDevice& device) override;
     // Select methods
     void broadcastSelectIndicesView(std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices_view_bcast, const std::string& axis_name, Eigen::GpuDevice& device) override;
     void reduceTensorDataToSelectIndices(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices_view_bcast, std::shared_ptr<TensorData<ArrayT<TensorT>, Eigen::GpuDevice, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, Eigen::GpuDevice& device) override;
@@ -159,6 +160,7 @@ namespace TensorBase
       Eigen::TensorMap<Eigen::Tensor<int, 1>> not_in_memory(this->not_in_memory_.at(axis_to_dim.first)->getDataPointer().get(), (int)this->not_in_memory_.at(axis_to_dim.first)->getTensorSize());
       not_in_memory.device(device) = not_in_memory.constant(1);
     }
+    this->setNotInMemoryDataStatus(false, true);
   }
 
   template<template<class> class ArrayT, class TensorT, int TDim>
@@ -169,6 +171,7 @@ namespace TensorBase
       Eigen::TensorMap<Eigen::Tensor<int, 1>> not_in_memory(this->not_in_memory_.at(axis_to_dim.first)->getDataPointer().get(), (int)this->not_in_memory_.at(axis_to_dim.first)->getTensorSize());
       not_in_memory.device(device) = not_in_memory.constant(1);
     }
+    this->setNotInMemoryDataStatus(false, true);
   }
 
   template<template<class> class ArrayT, class TensorT, int TDim>
@@ -198,6 +201,36 @@ namespace TensorBase
 
     // copy the data
     tensor_table_copy.setData(data_->copyToHost(device));
+    return std::make_shared<TensorTableGpuClassT<ArrayT, TensorT, TDim>>(tensor_table_copy);
+  }
+
+  template<template<class> class ArrayT, class TensorT, int TDim>
+  inline std::shared_ptr<TensorTable<ArrayT<TensorT>, Eigen::GpuDevice, TDim>> TensorTableGpuClassT<ArrayT, TensorT, TDim>::copyToDevice(Eigen::GpuDevice& device)
+  {
+    TensorTableGpuClassT<ArrayT, TensorT, TDim> tensor_table_copy;
+    // copy the metadata
+    tensor_table_copy.setId(this->getId());
+    tensor_table_copy.setName(this->getName());
+    tensor_table_copy.setDir(this->getDir());
+    tensor_table_copy.axes_to_dims_ = this->getAxesToDims();
+    tensor_table_copy.dimensions_ = this->getDimensions();
+    tensor_table_copy.setShardSpans(this->getShardSpans());
+    tensor_table_copy.setMaximumDimensions(this->getMaximumDimensions());
+
+    // copy the axes and indices
+    for (auto& axis_to_dim : this->getAxesToDims()) {
+      tensor_table_copy.getAxes().emplace(axis_to_dim.first, this->getAxes().at(axis_to_dim.first)->copyToDevice(device));
+      tensor_table_copy.getIndices().emplace(axis_to_dim.first, this->getIndices().at(axis_to_dim.first)->copyToDevice(device));
+      tensor_table_copy.getIndicesView().emplace(axis_to_dim.first, this->getIndicesView().at(axis_to_dim.first)->copyToDevice(device));
+      tensor_table_copy.getIsModified().emplace(axis_to_dim.first, this->getIsModified().at(axis_to_dim.first)->copyToDevice(device));
+      tensor_table_copy.getNotInMemory().emplace(axis_to_dim.first, this->getNotInMemory().at(axis_to_dim.first)->copyToDevice(device));
+      tensor_table_copy.getShardId().emplace(axis_to_dim.first, this->getShardId().at(axis_to_dim.first)->copyToDevice(device));
+      tensor_table_copy.getShardIndices().emplace(axis_to_dim.first, this->getShardIndices().at(axis_to_dim.first)->copyToDevice(device));
+      tensor_table_copy.getDimensions().at(axis_to_dim.second) = this->getDimensions().at(axis_to_dim.second);
+    }
+
+    // copy the data
+    tensor_table_copy.setData(data_->copyToDevice(device));
     return std::make_shared<TensorTableGpuClassT<ArrayT, TensorT, TDim>>(tensor_table_copy);
   }
 
@@ -546,8 +579,7 @@ namespace TensorBase
   inline void TensorTableGpuClassT<ArrayT, TensorT, TDim>::makeIndicesFromIndicesView(const std::string & axis_name, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, Eigen::GpuDevice & device)
   {
     // Normalize the indices view
-    auto indices_view_copy = this->indices_view_.at(axis_name)->copyToHost(device);
-    indices_view_copy->syncDData(device);
+    auto indices_view_copy = this->indices_view_.at(axis_name)->copyToDevice(device);
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_copy_values(indices_view_copy->getDataPointer().get(), indices_view_copy->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_values(this->indices_view_.at(axis_name)->getDataPointer().get(), this->indices_view_.at(axis_name)->getDimensions());
     indices_view_copy_values.device(device) = indices_view_values.clip(0, 1);
@@ -594,8 +626,7 @@ namespace TensorBase
       labels_size *= dim_size.getData()(0);
 
       // create the selection for the indices view
-      std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_select = this->indices_view_.at(axis_to_name.first)->copyToHost(device);
-      indices_select->syncDData(device);
+      std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> indices_select = this->indices_view_.at(axis_to_name.first)->copyToDevice(device);
       Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_select_values(indices_select->getDataPointer().get(), indices_select->getDimensions());
       indices_select_values.device(device) = indices_view_values.clip(0, 1);
 

@@ -261,6 +261,7 @@ namespace TensorBase
     TensorDataGpuPrimitiveT<TensorT, TDim> data_new(this->getDimensions(), this->getPinnedMemory(), this->getPinnedFlag());
     data_new.setData();
     // copy over the values
+    this->syncDData(device);
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_new_values(data_new.getDataPointer().get(), data_new.getDimensions());
     const Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(this->getDataPointer().get(), this->getDimensions());
     data_new_values.device(device) = data_values;
@@ -291,8 +292,7 @@ namespace TensorBase
     //assert(cudaFree(d_temp_storage) == cudaSuccess);
 
     // Create a copy of the data
-    auto data_copy = this->copyToHost(device);
-    data_copy->syncDData(device);
+    auto data_copy = this->copyToDevice(device);
 
     // make thrust device pointers to the data
     thrust::device_ptr<TensorT> d_data(data_copy->getDataPointer().get());
@@ -313,10 +313,8 @@ namespace TensorBase
   inline void TensorDataGpuPrimitiveT<TensorT, TDim>::sortIndices(std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, const std::string & sort_order, Eigen::GpuDevice & device)
   {
     // Temporary copies for the algorithm 
-    std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>> keys_copy = this->copyToHost(device);
-    keys_copy->syncDData(device);
-    std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>> values_copy = indices->copyToHost(device);
-    values_copy->syncDData(device);
+    std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>> keys_copy = this->copyToDevice(device);
+    std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>> values_copy = indices->copyToDevice(device);
 
     // Determine temporary device storage requirements
     void *d_temp_storage = NULL;
@@ -350,8 +348,7 @@ namespace TensorBase
   inline void TensorDataGpuPrimitiveT<TensorT, TDim>::sort(const std::string & sort_order, Eigen::GpuDevice & device)
   {
     // Temporary copies for the algorithm 
-    std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>> keys_copy = this->copyToHost(device);
-    keys_copy->syncDData(device);
+    std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>> keys_copy = this->copyToDevice(device);
 
     // Determine temporary device storage requirements
     void *d_temp_storage = NULL;
@@ -385,10 +382,8 @@ namespace TensorBase
   inline void TensorDataGpuPrimitiveT<TensorT, TDim>::sort(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice & device)
   {
     // Temporary copies for the algorithm 
-    std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>> keys_copy = indices->copyToHost(device);
-    keys_copy->syncDData(device);
-    std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>> values_copy = this->copyToHost(device);
-    values_copy->syncDData(device);
+    std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>> keys_copy = indices->copyToDevice(device);
+    std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>> values_copy = this->copyToDevice(device);
 
     // Determine temporary device storage requirements
     void *d_temp_storage = NULL;
@@ -412,8 +407,7 @@ namespace TensorBase
   inline void TensorDataGpuPrimitiveT<TensorT, TDim>::partition(const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice & device)
   {
     // Temporary copies for the algorithm 
-    std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>> values_copy = this->copyToHost(device);
-    values_copy->syncDData(device);
+    std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, TDim>> values_copy = this->copyToDevice(device);
 
     int  *d_num_selected_out;
     assert(cudaMalloc((void**)(&d_num_selected_out), sizeof(int)) == cudaSuccess);
@@ -475,8 +469,7 @@ namespace TensorBase
 		////END CUB HISTOGRAM_____________________________________________________________
 
 		// Copy the data
-		auto data_copy = this->copyToHost(device);
-		data_copy->syncDData(device);
+		auto data_copy = this->copyToDevice(device);
 		thrust::device_ptr<T> d_data(data_copy->getDataPointer().get());
 		thrust::device_ptr<T> d_histogram(histogram->getDataPointer().get());
 
@@ -619,6 +612,7 @@ namespace TensorBase
     TensorDataGpuClassT<ArrayT, TensorT, TDim> data_new(this->getDimensions(), this->getPinnedMemory(), this->getPinnedFlag());
     data_new.setData();
     // copy over the values
+    this->syncDData(device);
     Eigen::TensorMap<Eigen::Tensor<ArrayT<TensorT>, TDim>> data_new_values(data_new.getDataPointer().get(), data_new.getDimensions());
     const Eigen::TensorMap<Eigen::Tensor<ArrayT<TensorT>, TDim>> data_values(this->getDataPointer().get(), this->getDimensions());
     data_new_values.device(device) = data_values;
@@ -629,8 +623,7 @@ namespace TensorBase
   inline void TensorDataGpuClassT<ArrayT, TensorT, TDim>::select(std::shared_ptr<TensorData<ArrayT<TensorT>, Eigen::GpuDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, Eigen::GpuDevice & device)
   {
     // Create a copy of the data
-    auto data_copy = this->copyToHost(device);
-    data_copy->syncDData(device);
+    auto data_copy = this->copyToDevice(device);
 
     // make thrust device pointers to the data
     thrust::device_ptr<ArrayT<TensorT>> d_data(data_copy->getDataPointer().get());
@@ -651,8 +644,7 @@ namespace TensorBase
   inline void TensorDataGpuClassT<ArrayT, TensorT, TDim>::sortIndices(std::shared_ptr<TensorData<int, Eigen::GpuDevice, TDim>>& indices, const std::string & sort_order, Eigen::GpuDevice & device)
   {
     // Create a copy of the data
-    auto data_copy = this->copyToHost(device);
-    data_copy->syncDData(device);
+    auto data_copy = this->copyToDevice(device);
 
     // make thrust device pointers to the data
     thrust::device_ptr<ArrayT<TensorT>> d_data(data_copy->getDataPointer().get());

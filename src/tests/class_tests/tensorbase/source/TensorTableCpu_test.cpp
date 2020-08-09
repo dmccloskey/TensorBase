@@ -409,7 +409,7 @@ BOOST_AUTO_TEST_CASE(tensorDataWrappersCpu)
     BOOST_CHECK(!index_status.second.first);
     BOOST_CHECK(!index_status.second.second);
   }
-  tensorTable.syncIndicesHAndDData(device);
+  tensorTable.syncIndicesDData(device);
   statuses = tensorTable.getIndicesDataStatus();
   for (auto& index_status : statuses) {
     BOOST_CHECK(index_status.second.first);
@@ -423,7 +423,7 @@ BOOST_AUTO_TEST_CASE(tensorDataWrappersCpu)
     BOOST_CHECK(!index_status.second.first);
     BOOST_CHECK(!index_status.second.second);
   }
-  tensorTable.syncIndicesViewHAndDData(device);
+  tensorTable.syncIndicesViewDData(device);
   statuses = tensorTable.getIndicesViewDataStatus();
   for (auto& index_status : statuses) {
     BOOST_CHECK(index_status.second.first);
@@ -437,7 +437,7 @@ BOOST_AUTO_TEST_CASE(tensorDataWrappersCpu)
     BOOST_CHECK(!index_status.second.first);
     BOOST_CHECK(!index_status.second.second);
   }
-  tensorTable.syncIsModifiedHAndDData(device);
+  tensorTable.syncIsModifiedDData(device);
   statuses = tensorTable.getIsModifiedDataStatus();
   for (auto& index_status : statuses) {
     BOOST_CHECK(index_status.second.first);
@@ -451,7 +451,7 @@ BOOST_AUTO_TEST_CASE(tensorDataWrappersCpu)
     BOOST_CHECK(!index_status.second.first);
     BOOST_CHECK(!index_status.second.second);
   }
-  tensorTable.syncNotInMemoryHAndDData(device);
+  tensorTable.syncNotInMemoryDData(device);
   statuses = tensorTable.getNotInMemoryDataStatus();
   for (auto& index_status : statuses) {
     BOOST_CHECK(index_status.second.first);
@@ -465,7 +465,7 @@ BOOST_AUTO_TEST_CASE(tensorDataWrappersCpu)
     BOOST_CHECK(!index_status.second.first);
     BOOST_CHECK(!index_status.second.second);
   }
-  tensorTable.syncShardIdHAndDData(device);
+  tensorTable.syncShardIdDData(device);
   statuses = tensorTable.getShardIdDataStatus();
   for (auto& index_status : statuses) {
     BOOST_CHECK(index_status.second.first);
@@ -479,7 +479,7 @@ BOOST_AUTO_TEST_CASE(tensorDataWrappersCpu)
     BOOST_CHECK(!index_status.second.first);
     BOOST_CHECK(!index_status.second.second);
   }
-  tensorTable.syncShardIndicesHAndDData(device);
+  tensorTable.syncShardIndicesDData(device);
   statuses = tensorTable.getShardIndicesDataStatus();
   for (auto& index_status : statuses) {
     BOOST_CHECK(index_status.second.first);
@@ -493,7 +493,7 @@ BOOST_AUTO_TEST_CASE(tensorDataWrappersCpu)
     BOOST_CHECK(!axis_status.second.first);
     BOOST_CHECK(!axis_status.second.second);
   }
-  tensorTable.syncAxesHAndDData(device);
+  tensorTable.syncAxesDData(device);
   statuses = tensorTable.getAxesDataStatus();
   for (auto& axis_status : statuses) {
     BOOST_CHECK(axis_status.second.first);
@@ -4440,13 +4440,22 @@ BOOST_AUTO_TEST_CASE(copyCpu)
   }
   tensorTable.setData(tensor_values);
 
-  // test using the different reduction functions
+  // test copy
   auto tensorTableCopy = tensorTable.copyToHost(device);
   BOOST_CHECK(*(tensorTableCopy.get()) == tensorTable);
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {
       for (int i = 0; i < nlabels; ++i) {
         BOOST_CHECK_CLOSE(tensorTableCopy->getData()(i, j, k), tensor_values(i, j, k), 1e-3);
+      }
+    }
+  }
+  auto tensorTableCopy2 = tensorTable.copyToDevice(device);
+  BOOST_CHECK(*(tensorTableCopy2.get()) == tensorTable);
+  for (int k = 0; k < nlabels; ++k) {
+    for (int j = 0; j < nlabels; ++j) {
+      for (int i = 0; i < nlabels; ++i) {
+        BOOST_CHECK_CLOSE(tensorTableCopy2->getData()(i, j, k), tensor_values(i, j, k), 1e-3);
       }
     }
   }

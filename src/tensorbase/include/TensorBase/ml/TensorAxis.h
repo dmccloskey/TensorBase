@@ -84,6 +84,7 @@ namespace TensorBase
     void getLabelsHDataPointer(std::shared_ptr<T[]>& data_copy); ///< TensorAxisConcept labels getter
 
     virtual std::shared_ptr<TensorAxis<TensorT, DeviceT>> copyToHost(DeviceT& device) = 0;
+    virtual std::shared_ptr<TensorAxis<TensorT, DeviceT>> copyToDevice(DeviceT& device) = 0;
     
     /*
     @brief Delete from axis based on a selection index

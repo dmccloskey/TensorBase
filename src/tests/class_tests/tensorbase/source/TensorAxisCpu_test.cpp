@@ -125,6 +125,13 @@ BOOST_AUTO_TEST_CASE(copyCpu)
       BOOST_CHECK_EQUAL(tensoraxis_copy->getLabels()(i, j), labels(i, j));
     }
   }
+  auto tensoraxis2_copy = tensoraxis1.copyToDevice(device);
+  BOOST_CHECK(*(tensoraxis2_copy.get()) == tensoraxis1);
+  for (int i = 0; i < 3; ++i) {
+    for (int j = 0; j < 5; ++j) {
+      BOOST_CHECK_EQUAL(tensoraxis_copy->getLabels()(i, j), labels(i, j));
+    }
+  }
 }
 
 BOOST_AUTO_TEST_CASE(getLabelsDataPointerCpu)

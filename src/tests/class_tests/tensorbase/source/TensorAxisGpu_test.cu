@@ -124,11 +124,20 @@ void test_copyGpuPrimitiveT()
   auto tensoraxis_copy = tensoraxis1.copyToHost(device);
   tensoraxis1.syncHData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
   assert(*(tensoraxis_copy.get()) == tensoraxis1);
   for (int i = 0; i < 3; ++i) {
     for (int j = 0; j < 5; ++j) {
       assert(tensoraxis_copy->getLabels()(i, j) == labels(i, j));
+    }
+  }
+  auto tensoraxis2_copy = tensoraxis1.copyToDevice(device);
+  tensoraxis2_copy->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  assert(*(tensoraxis2_copy.get()) == tensoraxis1);
+  for (int i = 0; i < 3; ++i) {
+    for (int j = 0; j < 5; ++j) {
+      assert(tensoraxis2_copy->getLabels()(i, j) == labels(i, j));
     }
   }
 }
@@ -750,11 +759,20 @@ void test_copyGpuClassT()
   auto tensoraxis_copy = tensoraxis1.copyToHost(device);
   tensoraxis1.syncHData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
   assert(*(tensoraxis_copy.get()) == tensoraxis1);
   for (int i = 0; i < 3; ++i) {
     for (int j = 0; j < 5; ++j) {
       assert(tensoraxis_copy->getLabels()(i, j) == labels(i, j));
+    }
+  }
+  auto tensoraxis2_copy = tensoraxis1.copyToDevice(device);
+  tensoraxis2_copy->syncHData(device);
+  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  assert(*(tensoraxis2_copy.get()) == tensoraxis1);
+  for (int i = 0; i < 3; ++i) {
+    for (int j = 0; j < 5; ++j) {
+      assert(tensoraxis2_copy->getLabels()(i, j) == labels(i, j));
     }
   }
 }

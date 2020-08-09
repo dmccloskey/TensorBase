@@ -102,7 +102,7 @@ namespace TensorBase
         tensor_collection->tables_.at(table_names.at(i))->selectTensorData(device);
       }
       else {
-        auto tensor_table_copy = tensor_collection->tables_.at(table_names.at(i))->copyToHost(device);
+        auto tensor_table_copy = tensor_collection->tables_.at(table_names.at(i))->copyToDevice(device);
         tensor_table_copy->setName(table_names_new.at(i));
         tensor_collection->addTensorTableConcept(tensor_table_copy, tensor_collection->getUserNameFromTableName(table_names.at(i)));
         tensor_collection->tables_.at(table_names_new.at(i))->syncAxesAndIndicesDData(device);
@@ -122,7 +122,7 @@ namespace TensorBase
         tensor_collection->tables_.at(table_names.at(i))->sortTensorData(device);
       }
       else {
-        auto tensor_table_copy = tensor_collection->tables_.at(table_names.at(i))->copyToHost(device);
+        auto tensor_table_copy = tensor_collection->tables_.at(table_names.at(i))->copyToDevice(device);
         tensor_table_copy->setName(table_names_new.at(i));
         tensor_collection->addTensorTableConcept(tensor_table_copy, tensor_collection->getUserNameFromTableName(table_names.at(i)));
         tensor_collection->tables_.at(table_names_new.at(i))->syncAxesAndIndicesDData(device);
