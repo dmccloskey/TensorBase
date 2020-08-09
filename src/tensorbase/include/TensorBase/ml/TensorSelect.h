@@ -96,17 +96,15 @@ namespace TensorBase
   void TensorSelect::applySelect(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, const std::vector<std::string>& table_names, const std::vector<std::string>& table_names_new, DeviceT& device) {
     assert(table_names.size() == table_names_new.size());
     for (int i = 0; i < table_names.size(); ++i) {
+      tensor_collection->tables_.at(table_names.at(i))->syncAxesAndIndicesDData(device);
+      tensor_collection->tables_.at(table_names.at(i))->syncDData(device);
       if (table_names.at(i) == table_names_new.at(i)) {
-        tensor_collection->tables_.at(table_names.at(i))->syncAxesAndIndicesDData(device);
-        tensor_collection->tables_.at(table_names.at(i))->syncDData(device);
         tensor_collection->tables_.at(table_names.at(i))->selectTensorData(device);
       }
       else {
         auto tensor_table_copy = tensor_collection->tables_.at(table_names.at(i))->copyToDevice(device);
         tensor_table_copy->setName(table_names_new.at(i));
         tensor_collection->addTensorTableConcept(tensor_table_copy, tensor_collection->getUserNameFromTableName(table_names.at(i)));
-        tensor_collection->tables_.at(table_names_new.at(i))->syncAxesAndIndicesDData(device);
-        tensor_collection->tables_.at(table_names_new.at(i))->syncDData(device);
         tensor_collection->tables_.at(table_names_new.at(i))->selectTensorData(device);
       }
     }
@@ -116,17 +114,15 @@ namespace TensorBase
   void TensorSelect::applySort(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, const std::vector<std::string>& table_names, const std::vector<std::string>& table_names_new, DeviceT& device) {
     assert(table_names.size() == table_names_new.size());
     for (int i = 0; i < table_names.size(); ++i) {
+      tensor_collection->tables_.at(table_names.at(i))->syncAxesAndIndicesDData(device);
+      tensor_collection->tables_.at(table_names.at(i))->syncDData(device);
       if (table_names.at(i) == table_names_new.at(i)) {
-        tensor_collection->tables_.at(table_names.at(i))->syncAxesAndIndicesDData(device);
-        tensor_collection->tables_.at(table_names.at(i))->syncDData(device);
         tensor_collection->tables_.at(table_names.at(i))->sortTensorData(device);
       }
       else {
         auto tensor_table_copy = tensor_collection->tables_.at(table_names.at(i))->copyToDevice(device);
         tensor_table_copy->setName(table_names_new.at(i));
         tensor_collection->addTensorTableConcept(tensor_table_copy, tensor_collection->getUserNameFromTableName(table_names.at(i)));
-        tensor_collection->tables_.at(table_names_new.at(i))->syncAxesAndIndicesDData(device);
-        tensor_collection->tables_.at(table_names_new.at(i))->syncDData(device);
         tensor_collection->tables_.at(table_names_new.at(i))->sortTensorData(device);
       }
     }
@@ -137,11 +133,11 @@ namespace TensorBase
     // iterate through each table axis
     for (auto& axis : tensor_collection->tables_.at(select_clause.table_name)->getAxes()) {
       if (axis.first == select_clause.axis_name) {
+        tensor_collection->tables_.at(select_clause.table_name)->syncAxesAndIndicesDData(device);
         // TODO: check for select_clause.axis_name == ""
 				if (select_clause.dimension_name == "" && select_clause.axis_labels != nullptr) { 
 					// Select option 2
           select_clause.axis_labels->syncDData(device);
-          tensor_collection->tables_.at(select_clause.table_name)->syncAxesAndIndicesDData(device);
 					tensor_collection->tables_.at(select_clause.table_name)->selectIndicesView(
 						select_clause.axis_name, select_clause.axis_labels, device);
 				}				
@@ -151,7 +147,6 @@ namespace TensorBase
 						if (axis.second->getDimensions()(d) == select_clause.dimension_name) {
 							// Select option 1
               select_clause.labels->syncDData(device);
-              tensor_collection->tables_.at(select_clause.table_name)->syncAxesAndIndicesDData(device);
 							tensor_collection->tables_.at(select_clause.table_name)->selectIndicesView(
 								select_clause.axis_name, d, select_clause.labels, device);
 						}
@@ -179,13 +174,13 @@ namespace TensorBase
     // iterate through each table axis
     for (auto& axis : tensor_collection->tables_.at(where_clause.table_name)->getAxes()) {
       if (axis.first == where_clause.axis_name) {
+        tensor_collection->tables_.at(where_clause.table_name)->syncAxesAndIndicesDData(device);
+        tensor_collection->tables_.at(where_clause.table_name)->syncDData(device);
         // TODO: check for select_clause.axis_name == ""
         if (where_clause.dimension_name == "" && where_clause.axis_labels != nullptr) {
           // Select option 2
           where_clause.values->syncDData(device);
           where_clause.axis_labels->syncDData(device);
-          tensor_collection->tables_.at(where_clause.table_name)->syncAxesAndIndicesDData(device);
-          tensor_collection->tables_.at(where_clause.table_name)->syncDData(device);
           tensor_collection->tables_.at(where_clause.table_name)->whereIndicesView(
             where_clause.axis_name, where_clause.axis_labels,
             where_clause.values, where_clause.comparitor, where_clause.modifier,
@@ -198,8 +193,6 @@ namespace TensorBase
               // select axis indices based on the where clause critiera
               where_clause.values->syncDData(device);
               where_clause.labels->syncDData(device);
-              tensor_collection->tables_.at(where_clause.table_name)->syncAxesAndIndicesDData(device);
-              tensor_collection->tables_.at(where_clause.table_name)->syncDData(device);
               tensor_collection->tables_.at(where_clause.table_name)->whereIndicesView(
                 where_clause.axis_name, d, where_clause.labels,
                 where_clause.values, where_clause.comparitor, where_clause.modifier,

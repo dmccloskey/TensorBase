@@ -188,6 +188,7 @@ namespace TensorBase
     tensor_table_copy.dimensions_ = this->getDimensions();
     tensor_table_copy.setShardSpans(this->getShardSpans());
     tensor_table_copy.setMaximumDimensions(this->getMaximumDimensions());
+    tensor_table_copy.tensor_size_ = this->tensor_size_;
 
     // copy the axes and indices
     for (auto& axis_to_dim : this->getAxesToDims()) {
@@ -218,6 +219,7 @@ namespace TensorBase
     tensor_table_copy.dimensions_ = this->getDimensions();
     tensor_table_copy.setShardSpans(this->getShardSpans());
     tensor_table_copy.setMaximumDimensions(this->getMaximumDimensions());
+    tensor_table_copy.tensor_size_ = this->tensor_size_;
 
     // copy the axes and indices
     for (auto& axis_to_dim : this->getAxesToDims()) {
@@ -582,6 +584,7 @@ namespace TensorBase
   template<typename TensorT, int TDim>
   inline void TensorTableGpuPrimitiveT<TensorT, TDim>::makeIndicesFromIndicesView(const std::string & axis_name, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>>& indices, Eigen::GpuDevice & device)
   {
+    this->indices_view_.at(axis_name)->syncDData(device);
     // Normalize the indices view
     auto indices_view_copy = this->indices_view_.at(axis_name)->copyToDevice(device);
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_copy_values(indices_view_copy->getDataPointer().get(), indices_view_copy->getDimensions());
@@ -865,6 +868,7 @@ namespace TensorBase
   template<typename TensorT, int TDim>
   inline bool TensorTableGpuPrimitiveT<TensorT, TDim>::loadTensorTableBinary(const std::string & dir, Eigen::GpuDevice & device)
   {
+    syncAxesAndIndicesDData(device);
     // determine the shards to read from disk
     std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> not_in_memory_shard_ids;
     makeNotInMemoryShardIDTensor(not_in_memory_shard_ids, device);
@@ -920,6 +924,7 @@ namespace TensorBase
   template<typename TensorT, int TDim>
   inline bool TensorTableGpuPrimitiveT<TensorT, TDim>::storeTensorTableBinary(const std::string & dir, Eigen::GpuDevice & device)
   {
+    syncAxesAndIndicesDData(device);
     // determine the shards to write to disk
     if (this->getDataTensorSize()) {
       std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> modified_shard_ids;

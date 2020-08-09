@@ -1464,6 +1464,9 @@ namespace TensorBase
   template<typename LabelsT>
   inline void TensorTable<TensorT, DeviceT, TDim>::selectIndicesView(const std::string & axis_name, const int& dimension_index, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& select_labels, DeviceT & device)
   {
+    select_labels->syncDData(device);
+    indices_.at(axis_name)->syncDData(device);
+    indices_view_.at(axis_name)->syncDData(device);
     // reshape to match the axis labels shape and broadcast the length of the labels
     Eigen::TensorMap<Eigen::Tensor<LabelsT, 2>> labels_names_selected_reshape(select_labels->getDataPointer().get(), 1, (int)select_labels->getData().size());
  
@@ -1491,6 +1494,9 @@ namespace TensorBase
   template<typename LabelsT>
   inline void TensorTable<TensorT, DeviceT, TDim>::selectIndicesView(const std::string & axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels, DeviceT & device)
   {
+    select_labels->syncDData(device);
+    indices_.at(axis_name)->syncDData(device);
+    indices_view_.at(axis_name)->syncDData(device);
     assert(axes_.at(axis_name)->getNDimensions() == select_labels->getDimensions().at(0));
     // reshape to match the axis labels shape and broadcast the length of the labels
     Eigen::TensorMap<Eigen::Tensor<LabelsT, 3>> labels_names_selected_reshape(select_labels->getDataPointer().get(), select_labels->getDimensions().at(0), 1, select_labels->getDimensions().at(1));
@@ -1519,6 +1525,8 @@ namespace TensorBase
   template<typename LabelsT>
   inline void TensorTable<TensorT, DeviceT, TDim>::sortIndicesView(const std::string & axis_name, const int & dimension_index, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& select_labels, const sortOrder::order& order_by, DeviceT & device)
   {
+    syncAxesAndIndicesDData(device);
+    syncDData(device);
     // create a copy of the indices view
     std::shared_ptr<TensorData<int, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copyToDevice(device);
 
@@ -1593,6 +1601,8 @@ namespace TensorBase
   inline void TensorTable<TensorT, DeviceT, TDim>::whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& select_labels, 
     const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
     const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) {
+    syncAxesAndIndicesDData(device);
+    syncDData(device);
     // create a copy of the indices view
     std::shared_ptr<TensorData<int, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copyToDevice(device);
 
@@ -1638,6 +1648,8 @@ namespace TensorBase
   template<typename LabelsT>
   inline void TensorTable<TensorT, DeviceT, TDim>::whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& select_labels, const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier, const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device)
   {
+    syncAxesAndIndicesDData(device);
+    syncDData(device);
     // create a copy of the indices view
     std::shared_ptr<TensorData<int, DeviceT, 1>> indices_view_copy = indices_view_.at(axis_name)->copyToDevice(device);
 
@@ -1672,19 +1684,23 @@ namespace TensorBase
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorTable<TensorT, DeviceT, TDim>::resetIndicesView(DeviceT& device)
   {
+    syncIndicesDData(device);
     for (const auto& axis_to_dim : axes_to_dims_) {
       Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_to_dim.first)->getDataPointer().get(), indices_view_.at(axis_to_dim.first)->getDimensions());
       Eigen::TensorMap<Eigen::Tensor<int, 1>> indices(indices_.at(axis_to_dim.first)->getDataPointer().get(), indices_.at(axis_to_dim.first)->getDimensions());
       indices_view.device(device) = indices;
     }
+    setIndicesViewDataStatus(false, true);
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorTable<TensorT, DeviceT, TDim>::resetIndicesView(const std::string& axis_name, DeviceT& device)
   {
+    indices_.at(axis_name)->syncDData(device);
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_name)->getDataPointer().get(), indices_view_.at(axis_name)->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices(indices_.at(axis_name)->getDataPointer().get(), indices_.at(axis_name)->getDimensions());
     indices_view.device(device) = indices;
+    indices_view_.at(axis_name)->setDataStatus(false, true);
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
@@ -1692,15 +1708,18 @@ namespace TensorBase
   {
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view(indices_view_.at(axis_name)->getDataPointer().get(), indices_view_.at(axis_name)->getDimensions());
     indices_view.device(device) = indices_view.constant(0);
+    setIndicesViewDataStatus(false, true);
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorTable<TensorT, DeviceT, TDim>::replaceIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices_view, DeviceT& device)
   {
+    indices_view->syncDData(device);
     assert(indices_view->getDimensions() == indices_view_.at(axis_name)->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_current(indices_view_.at(axis_name)->getDataPointer().get(), indices_view_.at(axis_name)->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_new(indices_view->getDataPointer().get(), indices_view->getDimensions());
     indices_view_current.device(device) = indices_view_new;
+    indices_view_.at(axis_name)->setDataStatus(false, true);
   }
 
   template<typename TensorT, typename DeviceT, int TDim>
@@ -1887,6 +1906,8 @@ namespace TensorBase
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorTable<TensorT, DeviceT, TDim>::selectTensorData(DeviceT & device)
   {
+    syncAxesAndIndicesDData(device);
+    syncDData(device);
     // make the selection indices from the indices view
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_select;
     makeSelectIndicesFromTensorIndicesComponent(this->indices_view_, indices_select, device);
@@ -1929,6 +1950,8 @@ namespace TensorBase
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorTable<TensorT, DeviceT, TDim>::sortTensorData(DeviceT & device)
   {
+    syncAxesAndIndicesDData(device);
+    syncDData(device);
     // make the sort index tensor from the indices view
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_sort;
     makeSortIndicesFromTensorIndicesComponent(indices_view_, indices_sort, device);
@@ -1968,6 +1991,8 @@ namespace TensorBase
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorTable<TensorT, DeviceT, TDim>::updateSelectTensorDataValues(const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_new, std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_old, DeviceT & device)
   {
+    syncAxesAndIndicesDData(device);
+    syncDData(device);
     assert(values_new->getDimensions() == data_->getDimensions()); // TODO: will need to be relocated
 
     // Check that the update values are in memory
@@ -1983,6 +2008,8 @@ namespace TensorBase
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorTable<TensorT, DeviceT, TDim>::updateSelectTensorDataValues(const std::shared_ptr<TensorData<TensorT, DeviceT, TDim>>& values_new, DeviceT & device)
   {
+    syncAxesAndIndicesDData(device);
+    syncDData(device);
     assert(values_new->getDimensions() == data_->getDimensions()); // TODO: will need to be relocated
 
     // assign the new values
@@ -2050,6 +2077,8 @@ namespace TensorBase
 	template<typename TensorT, typename DeviceT, int TDim>
 	inline void TensorTable<TensorT, DeviceT, TDim>::updateTensorDataValues(const std::shared_ptr<TensorT[]>& values_new, std::shared_ptr<TensorTable<TensorT, DeviceT, 2>>& values_old, DeviceT& device)
 	{
+    syncAxesAndIndicesDData(device);
+    syncDData(device);
 		// copy the old values
 		getSelectTensorDataAsSparseTensorTable(values_old, device);
 
@@ -2070,6 +2099,8 @@ namespace TensorBase
 	template<typename TensorT, typename DeviceT, int TDim>
 	inline void TensorTable<TensorT, DeviceT, TDim>::updateTensorDataValues(const std::shared_ptr<TensorT[]>& values_new, DeviceT& device)
 	{
+    syncAxesAndIndicesDData(device);
+    syncDData(device);
 		// make the sparseTensorTable update
 		// TODO: replace with new method `TensorTable::copy` (which does not yet exist...)
 		std::shared_ptr<TensorTable<TensorT, DeviceT, 2>> sparse_table_new;
@@ -2097,6 +2128,8 @@ namespace TensorBase
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorTable<TensorT, DeviceT, TDim>::updateTensorDataConstant(const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values_new, std::shared_ptr<TensorTable<TensorT, DeviceT, 2>>& values_old, DeviceT & device)
   {
+    syncAxesAndIndicesDData(device);
+    syncDData(device);
     // copy the old values
     getSelectTensorDataAsSparseTensorTable(values_old, device);
 
@@ -2147,6 +2180,8 @@ namespace TensorBase
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorTable<TensorT, DeviceT, TDim>::updateTensorDataFromSparseTensorTable(const std::shared_ptr<TensorTable<TensorT, DeviceT, 2>>& values_old, DeviceT & device)
   {
+    syncAxesAndIndicesDData(device);
+    syncDData(device);
     // make the partition index tensor from the indices view
     std::shared_ptr<TensorData<int, DeviceT, TDim>> indices_partition;
     makeSelectIndicesFromTensorIndicesComponent(indices_view_, indices_partition, device);
@@ -2247,6 +2282,8 @@ namespace TensorBase
 			// TODO [not_in_memory]: only the shards on the "edge" of the insert will be needed
 			loadTensorTableBinary(dir_, device);
 		}
+    syncAxesAndIndicesDData(device);
+    syncDData(device);
 
     // Append the new labels to the axis
     axes_.at(axis_name)->appendLabelsToAxis(labels, device);
@@ -2378,6 +2415,8 @@ namespace TensorBase
   template<typename LabelsT>
   inline void TensorTable<TensorT, DeviceT, TDim>::deleteFromAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<TensorT[]>& values, DeviceT & device)
   {
+    syncAxesAndIndicesDData(device);
+    syncDData(device);
     // Make the selection indices for copying from the labels
     std::shared_ptr<TensorData<int, DeviceT, 1>> indices_select_labels_copy;
     makeIndicesViewSelectFromIndices(axis_name, indices_select_labels_copy, indices, false, device);
@@ -2403,6 +2442,8 @@ namespace TensorBase
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorTable<TensorT, DeviceT, TDim>::deleteFromAxis(const std::string & axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device)
   {
+    syncAxesAndIndicesDData(device);
+    syncDData(device);
     // Make the selection indices for deleting the labels
     std::shared_ptr<TensorData<int, DeviceT, 1>> indices_select_labels_delete;
     makeIndicesViewSelectFromIndices(axis_name, indices_select_labels_delete, indices, true, device);
@@ -2534,6 +2575,8 @@ namespace TensorBase
   template<typename LabelsT>
   inline void TensorTable<TensorT, DeviceT, TDim>::insertIntoAxis(const std::string & axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels, std::shared_ptr<TensorT[]>& values, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT & device)
   {
+    syncAxesAndIndicesDData(device);
+    syncDData(device);
     // Append the new labels and values
     std::shared_ptr<TensorData<int, DeviceT, 1>> indices_append;
     appendToAxis(axis_name, labels, values, indices_append, device);
@@ -2831,6 +2874,7 @@ namespace TensorBase
   template<typename T, std::enable_if_t<std::is_same<T, int>::value || std::is_same<T, float>::value || std::is_same<T, double>::value || std::is_same<T, bool>::value, int>>
   inline void TensorTable<TensorT, DeviceT, TDim>::reduceTensorData(const reductionFunctions::reductionFunction& reduction_function, DeviceT& device)
   {
+    syncDData(device);
     // prepare the new dimensions
     Eigen::array<Eigen::Index, TDim> new_dimensions, reduction_dims;
     Eigen::array<Eigen::Index, 2 * TDim> dims_2x;
@@ -2887,6 +2931,7 @@ namespace TensorBase
   template<typename T, std::enable_if_t<std::is_same<T, int>::value || std::is_same<T, float>::value || std::is_same<T, double>::value || std::is_same<T, bool>::value, int>>
   inline void TensorTable<TensorT, DeviceT, TDim>::scanTensorData(const std::vector<std::string>& axes_names, const scanFunctions::scanFunction& scan_function, DeviceT& device)
   {
+    syncDData(device);
     Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(getDataPointer().get(), getDataDimensions());
     for (const std::string& axis_name : axes_names) {
       if (scan_function == scanFunctions::CUMSUM) {

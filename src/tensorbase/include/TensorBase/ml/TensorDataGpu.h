@@ -187,7 +187,7 @@ namespace TensorBase
       return true;
     }
     else {
-      std::cout << "Both host and device are synchronized." << std::endl;
+      //std::cout << "Both host and device are synchronized." << std::endl;
       return false;
     }
   }

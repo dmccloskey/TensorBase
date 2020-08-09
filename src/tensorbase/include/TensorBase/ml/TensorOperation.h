@@ -204,30 +204,40 @@ namespace TensorBase
     allocateMemoryForValues(tensor_collection, device);
 
     // Delete the selected labels
-    values_->syncDData(device);
-    tensor_collection->tables_.at(table_name_)->deleteFromAxis(axis_name_, indices_, labels_, values_->getDataPointer(), device);
+    if (values_->getTensorSize() > 0) {
+      values_->syncDData(device);
+      tensor_collection->tables_.at(table_name_)->deleteFromAxis(axis_name_, indices_, labels_, values_->getDataPointer(), device);
+
+      // Log the changes
+      this->setRedoLog(TensorOperationLog(labels_->getTensorSize(), 0, 0, indices_->getTensorSize(), 0, 0, values_->getTensorSize(), 0, 0));
+    }
+    else {
+      std::cout << "There is no data to delete from table " << table_name_ << "." << std::endl;
+    }
 
 		// Reset the indices view
 		for (const auto& axes_to_dims : tensor_collection->tables_.at(table_name_)->getAxesToDims()) {
 			tensor_collection->tables_.at(table_name_)->resetIndicesView(axes_to_dims.first, device);
 		}
-
-    // Log the changes
-    this->setRedoLog(TensorOperationLog(labels_->getTensorSize(), 0, 0, indices_->getTensorSize(), 0, 0, values_->getTensorSize(), 0, 0));
   }
   template<typename LabelsT, typename TensorT, typename DeviceT, int TDim>
   inline void TensorDeleteFromAxis<LabelsT, TensorT, DeviceT, TDim>::undo(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, DeviceT& device)
   {
     // Insert the deleted labels
-    indices_->syncDData(device);
-    values_->syncDData(device);
-    labels_->syncDData(device);
-    tensor_collection->tables_.at(table_name_)->syncAxesAndIndicesDData(device);
-    tensor_collection->tables_.at(table_name_)->syncDData(device);
-    tensor_collection->tables_.at(table_name_)->insertIntoAxis(axis_name_, labels_, values_->getDataPointer(), indices_, device);
+    if (values_->getTensorSize() > 0) {
+      indices_->syncDData(device);
+      values_->syncDData(device);
+      labels_->syncDData(device);
+      tensor_collection->tables_.at(table_name_)->syncAxesAndIndicesDData(device);
+      tensor_collection->tables_.at(table_name_)->syncDData(device);
+      tensor_collection->tables_.at(table_name_)->insertIntoAxis(axis_name_, labels_, values_->getDataPointer(), indices_, device);
 
-    // Log the changes
-    this->setUndoLog(TensorOperationLog(0, 0, labels_->getTensorSize(), 0, 0, indices_->getTensorSize(), 0, 0, values_->getTensorSize()));
+      // Log the changes
+      this->setUndoLog(TensorOperationLog(0, 0, labels_->getTensorSize(), 0, 0, indices_->getTensorSize(), 0, 0, values_->getTensorSize()));
+    }
+    else {
+      std::cout << "There is no data to add to table " << table_name_ << " because there was no data that was deleted." << std::endl;
+    }
   }
 
 	/**

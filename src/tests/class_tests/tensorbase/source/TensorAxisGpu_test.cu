@@ -120,7 +120,6 @@ void test_copyGpuPrimitiveT()
   Eigen::GpuDevice device(&stream_device);
 
   // Test expected
-  tensoraxis1.syncDData(device);
   auto tensoraxis_copy = tensoraxis1.copyToHost(device);
   tensoraxis1.syncHData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);
@@ -755,7 +754,6 @@ void test_copyGpuClassT()
   Eigen::GpuDevice device(&stream_device);
 
   // Test expected
-  tensoraxis1.syncDData(device);
   auto tensoraxis_copy = tensoraxis1.copyToHost(device);
   tensoraxis1.syncHData(device);
   assert(cudaStreamSynchronize(stream) == cudaSuccess);

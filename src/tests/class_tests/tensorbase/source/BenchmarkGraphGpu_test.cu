@@ -478,6 +478,12 @@ void test_InsertUpdateDeleteShardingGpu()
     assert(data_insert_values_link_property(i, 0) == values_link_property_ptr->getData()(i, 0));
   }
 
+  // Reset the tables prior to running the queries
+  for (auto& table_map : n_dim_tensor_collection->tables_) {
+    table_map.second->initData(device);
+    assert(table_map.second->getDataTensorSize() == 0);
+  }
+
   // Query for the number of white nodes
   SelectAndCountNodePropertyGpu<TensorArrayGpu8<char>, TensorArrayGpu8<char>> selectAndCountNodeProperty;
   selectAndCountNodeProperty(transaction_manager.getTensorCollection(), device);

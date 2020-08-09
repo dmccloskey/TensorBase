@@ -5248,10 +5248,6 @@ void test_copyGpu()
   }
   tensorTable.setData(tensor_values);
 
-  // sync the tensorTable
-  tensorTable.syncAxesAndIndicesDData(device);
-  tensorTable.syncDData(device);
-
   // test copy
   auto tensorTableCopy = tensorTable.copyToHost(device);
   tensorTableCopy->syncHData(device);

@@ -488,6 +488,12 @@ void test_InsertUpdateDeleteShardingGpu()
     assert(data_insert_values_is_valid(i, 0) == values_is_valid_ptr->getData()(i, 0));
   }
 
+  // Reset the tables prior to running the queries
+  for (auto& table_map : n_dim_tensor_collection->tables_) {
+    table_map.second->initData(device);
+    assert(table_map.second->getDataTensorSize() == 0);
+  }
+
   // Query for the number of valid entries
   auto select_is_valid = benchmark_1_tp.selectAndSumIsValid(transaction_manager, data_size, in_memory, device);
   assert(select_is_valid.second == data_size / 2);

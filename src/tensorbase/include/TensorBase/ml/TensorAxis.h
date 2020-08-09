@@ -215,7 +215,7 @@ namespace TensorBase
 			setNLabels(labels_select->getDimensions().at(1));
 		}
 		else {
-			tensor_dimension_labels_.reset();
+			setLabels();
 			setNLabels(labels_select->getDimensions().at(1));
 		}
   }
