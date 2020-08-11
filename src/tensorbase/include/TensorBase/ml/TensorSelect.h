@@ -94,7 +94,7 @@ namespace TensorBase
 
   template<typename DeviceT>
   void TensorSelect::applySelect(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, const std::vector<std::string>& table_names, const std::vector<std::string>& table_names_new, DeviceT& device) {
-    gpuCheckEqual((table_names.size(), table_names_new.size());
+    assert(table_names.size() == table_names_new.size());
     for (int i = 0; i < table_names.size(); ++i) {
       tensor_collection->tables_.at(table_names.at(i))->syncAxesAndIndicesDData(device);
       tensor_collection->tables_.at(table_names.at(i))->syncDData(device);
@@ -112,7 +112,7 @@ namespace TensorBase
 
   template<typename DeviceT>
   void TensorSelect::applySort(std::shared_ptr<TensorCollection<DeviceT>>& tensor_collection, const std::vector<std::string>& table_names, const std::vector<std::string>& table_names_new, DeviceT& device) {
-    gpuCheckEqual((table_names.size(), table_names_new.size());
+    assert(table_names.size() == table_names_new.size());
     for (int i = 0; i < table_names.size(); ++i) {
       tensor_collection->tables_.at(table_names.at(i))->syncAxesAndIndicesDData(device);
       tensor_collection->tables_.at(table_names.at(i))->syncDData(device);

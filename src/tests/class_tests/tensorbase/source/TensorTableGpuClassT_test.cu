@@ -477,9 +477,13 @@ void test_selectIndicesView1Gpu()
   gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < nlabels; ++i) {
     if (i % 2 == 0)
+    {
       gpuCheckEqual(tensorTable.getIndicesView().at("1")->getData()(i), i + 1);
+    }
     else
+    {
       gpuCheckEqual(tensorTable.getIndicesView().at("1")->getData()(i), 0);
+    }
   }
 
   gpuErrchk(cudaStreamDestroy(stream));
@@ -526,9 +530,13 @@ void test_selectIndicesView2Gpu()
   gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < nlabels; ++i) {
     if (i % 2 == 0)
+    {
       gpuCheckEqual(tensorTable.getIndicesView().at("1")->getData()(i), i + 1);
+    }
     else
+    {
       gpuCheckEqual(tensorTable.getIndicesView().at("1")->getData()(i), 0);
+    }
   }
 
   gpuErrchk(cudaStreamDestroy(stream));
@@ -581,7 +589,6 @@ void test_broadcastSelectIndicesViewGpu()
   for (int i = 0; i < nlabels; ++i) {
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
-        //std::cout << "Test broadcastSelectIndicesView i,j,k :" << i << "," << j << "," << k << "; Labels: " << indices_view_bcast->getData()(i, j, k) << "; Expected: " << indices_test(i, j, k) << std::endl;
         gpuCheckEqual(indices_view_bcast->getData()(i, j, k), indices_test(i, j, k));
       }
     }
@@ -722,9 +729,13 @@ void test_selectTensorIndicesGpu()
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
         if (tensor_select_values(i, j, k) == TensorArrayGpu8<char>("2"))
+        {
           gpuCheckEqual(indices_select->getData()(i, j, k), 0);
+        }
         else
+        {
           gpuCheckEqual(indices_select->getData()(i, j, k), 1);
+        }
       }
     }
   }
@@ -739,9 +750,13 @@ void test_selectTensorIndicesGpu()
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
         if (tensor_select_values(i, j, k) == TensorArrayGpu8<char>("2"))
+        {
           gpuCheckEqual(indices_select->getData()(i, j, k), 1);
+        }
         else
+        {
           gpuCheckEqual(indices_select->getData()(i, j, k), 0);
+        }
       }
     }
   }
@@ -756,9 +771,13 @@ void test_selectTensorIndicesGpu()
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
         if (tensor_select_values(i, j, k) < TensorArrayGpu8<char>("2"))
+        {
           gpuCheckEqual(indices_select->getData()(i, j, k), 1);
+        }
         else
+        {
           gpuCheckEqual(indices_select->getData()(i, j, k), 0);
+        }
       }
     }
   }
@@ -773,9 +792,13 @@ void test_selectTensorIndicesGpu()
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
         if (tensor_select_values(i, j, k) <= TensorArrayGpu8<char>("2"))
+        {
           gpuCheckEqual(indices_select->getData()(i, j, k), 1);
+        }
         else
+        {
           gpuCheckEqual(indices_select->getData()(i, j, k), 0);
+        }
       }
     }
   }
@@ -790,9 +813,13 @@ void test_selectTensorIndicesGpu()
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
         if (tensor_select_values(i, j, k) > TensorArrayGpu8<char>("2"))
+        {
           gpuCheckEqual(indices_select->getData()(i, j, k), 1);
+        }
         else
+        {
           gpuCheckEqual(indices_select->getData()(i, j, k), 0);
+        }
       }
     }
   }
@@ -807,9 +834,13 @@ void test_selectTensorIndicesGpu()
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
         if (tensor_select_values(i, j, k) >= TensorArrayGpu8<char>("2"))
+        {
           gpuCheckEqual(indices_select->getData()(i, j, k), 1);
+        }
         else
+        {
           gpuCheckEqual(indices_select->getData()(i, j, k), 0);
+        }
       }
     }
   }
@@ -875,9 +906,13 @@ void test_applyIndicesSelectToIndicesViewGpu()
   gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < nlabels; ++i) {
     if (i == nlabels - 1)
+    {
       gpuCheckEqual(tensorTable.getIndicesView().at("2")->getData()(i), 0);
+    }
     else
+    {
       gpuCheckEqual(tensorTable.getIndicesView().at("2")->getData()(i), i + 1);
+    }
   }
 
   // reset and modify the indices view
@@ -894,9 +929,13 @@ void test_applyIndicesSelectToIndicesViewGpu()
   gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < nlabels; ++i) {
     if (i == 0)
+    {
       gpuCheckEqual(tensorTable.getIndicesView().at("2")->getData()(i), 0);
+    }
     else
+    {
       gpuCheckEqual(tensorTable.getIndicesView().at("2")->getData()(i), i + 1);
+    }
   }
 
   // Reset and modify the indices view
@@ -914,9 +953,13 @@ void test_applyIndicesSelectToIndicesViewGpu()
   gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < nlabels; ++i) {
     if (i != 0 && i < nlabels - 1)
+    {
       gpuCheckEqual(tensorTable.getIndicesView().at("2")->getData()(i), i + 1);
+    }
     else
+    {
       gpuCheckEqual(tensorTable.getIndicesView().at("2")->getData()(i), 0);
+    }
   }
 
   // Reset the indices view
@@ -947,9 +990,13 @@ void test_applyIndicesSelectToIndicesViewGpu()
   gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < nlabels; ++i) {
     if (i == 0)
+    {
       gpuCheckEqual(tensorTable.getIndicesView().at("2")->getData()(i), i + 1);
+    }
     else
+    {
       gpuCheckEqual(tensorTable.getIndicesView().at("2")->getData()(i), 0);
+    }
   }
 
   // TODO: lacking code coverage for the case of TDim = 2
@@ -1027,16 +1074,24 @@ void test_whereIndicesViewData1Gpu()
     gpuCheckEqual(tensorTable.getIndicesView().at("1")->getData()(i), i + 1); // Unchanged
 
     // indices view 2
-    if (i == 2) 
+    if (i == 2)
+    {
       gpuCheckEqual(tensorTable.getIndicesView().at("2")->getData()(i), i + 1);
+    }
     else
+    {
       gpuCheckEqual(tensorTable.getIndicesView().at("2")->getData()(i), 0);
+    }
 
     // indices view 3
     if (i == 1)
+    {
       gpuCheckEqual(tensorTable.getIndicesView().at("3")->getData()(i), i + 1);
+    }
     else
+    {
       gpuCheckEqual(tensorTable.getIndicesView().at("3")->getData()(i), 0);
+    }
   }
 
   // Write the original data to disk, clear the data, and repeat the tests
@@ -1074,16 +1129,24 @@ void test_whereIndicesViewData1Gpu()
     gpuCheckEqual(tensorTable.getIndicesView().at("1")->getData()(i), i + 1); // Unchanged
 
     // indices view 2
-    if (i == 2) // FIXME: i==0?
+    if (i == 2)
+    {
       gpuCheckEqual(tensorTable.getIndicesView().at("2")->getData()(i), i + 1);
+    }
     else
+    {
       gpuCheckEqual(tensorTable.getIndicesView().at("2")->getData()(i), 0);
+    }
 
     // indices view 3
-    if (i == 1) // FIXME: i==3?
+    if (i == 1)
+    {
       gpuCheckEqual(tensorTable.getIndicesView().at("3")->getData()(i), i + 1);
+    }
     else
+    {
       gpuCheckEqual(tensorTable.getIndicesView().at("3")->getData()(i), 0);
+    }
   }
 
   gpuErrchk(cudaStreamDestroy(stream));
@@ -1161,15 +1224,23 @@ void test_whereIndicesViewData2Gpu()
 
     // indices view 2
     if (i == 2)
+    {
       gpuCheckEqual(tensorTable.getIndicesView().at("2")->getData()(i), i + 1);
+    }
     else
+    {
       gpuCheckEqual(tensorTable.getIndicesView().at("2")->getData()(i), 0);
+    }
 
     // indices view 3
     if (i == 1)
+    {
       gpuCheckEqual(tensorTable.getIndicesView().at("3")->getData()(i), i + 1);
+    }
     else
+    {
       gpuCheckEqual(tensorTable.getIndicesView().at("3")->getData()(i), 0);
+    }
   }
 
   // Write the original data to disk, clear the data, and repeat the tests
@@ -1208,15 +1279,23 @@ void test_whereIndicesViewData2Gpu()
 
     // indices view 2
     if (i == 2)
+    {
       gpuCheckEqual(tensorTable.getIndicesView().at("2")->getData()(i), i + 1);
+    }
     else
+    {
       gpuCheckEqual(tensorTable.getIndicesView().at("2")->getData()(i), 0);
+    }
 
     // indices view 3
     if (i == 1)
+    {
       gpuCheckEqual(tensorTable.getIndicesView().at("3")->getData()(i), i + 1);
+    }
     else
+    {
       gpuCheckEqual(tensorTable.getIndicesView().at("3")->getData()(i), 0);
+    }
   }
 
   gpuErrchk(cudaStreamDestroy(stream));
@@ -1343,13 +1422,10 @@ void test_sortIndicesViewData1Gpu()
   tensorTable.syncHData(device);
   tensorTable.syncIndicesViewHData(device);
   gpuErrchk(cudaStreamSynchronize(stream));
-  std::cout << "\nFailing test_sortIndicesViewData1Gpu tests:" << std::endl;
   for (int i = 0; i < nlabels; ++i) {
     gpuCheckEqual(tensorTable.getIndicesView().at("1")->getData()(i), i + 1);
-    std::cout << "Predicted IndicesView2: " << tensorTable.getIndicesView().at("2")->getData()(i) << " Expected: " << i + 1 << std::endl;
-    std::cout << "Predicted IndicesView3: " << tensorTable.getIndicesView().at("3")->getData()(i) << " Expected: " << i + 1 << std::endl;
-    //gpuCheckEqual(tensorTable.getIndicesView().at("2")->getData()(i), i + 1); // FIXME
-    //gpuCheckEqual(tensorTable.getIndicesView().at("3")->getData()(i), i + 1); // FIXME
+    gpuCheckEqual(tensorTable.getIndicesView().at("2")->getData()(i), i + 1);
+    gpuCheckEqual(tensorTable.getIndicesView().at("3")->getData()(i), i + 1);
   }
 
   // test sort DESC
@@ -1360,10 +1436,8 @@ void test_sortIndicesViewData1Gpu()
   gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < nlabels; ++i) {
     gpuCheckEqual(tensorTable.getIndicesView().at("1")->getData()(i), i + 1);
-    std::cout << "Predicted IndicesView2: " << tensorTable.getIndicesView().at("2")->getData()(i) << " Expected: " << nlabels - i << std::endl;
-    std::cout << "Predicted IndicesView3: " << tensorTable.getIndicesView().at("3")->getData()(i) << " Expected: " << nlabels - i << std::endl;
-    //gpuCheckEqual(tensorTable.getIndicesView().at("2")->getData()(i), nlabels - i); // FIXME
-    //gpuCheckEqual(tensorTable.getIndicesView().at("3")->getData()(i), nlabels - i); // FIXME
+    gpuCheckEqual(tensorTable.getIndicesView().at("2")->getData()(i), nlabels - i); // FIXME
+    gpuCheckEqual(tensorTable.getIndicesView().at("3")->getData()(i), nlabels - i); // FIXME
   }
 
   gpuErrchk(cudaStreamDestroy(stream));
@@ -1427,10 +1501,8 @@ void test_sortIndicesViewData2Gpu()
   gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < nlabels; ++i) {
     gpuCheckEqual(tensorTable.getIndicesView().at("1")->getData()(i), i + 1);
-    std::cout << "Predicted IndicesView2: " << tensorTable.getIndicesView().at("2")->getData()(i) << " Expected: " << i + 1 << std::endl;
-    std::cout << "Predicted IndicesView3: " << tensorTable.getIndicesView().at("3")->getData()(i) << " Expected: " << i + 1 << std::endl;
-    //gpuCheckEqual(tensorTable.getIndicesView().at("2")->getData()(i), i + 1); // FIXME
-    //gpuCheckEqual(tensorTable.getIndicesView().at("3")->getData()(i), i + 1); // FIXME
+    gpuCheckEqual(tensorTable.getIndicesView().at("2")->getData()(i), i + 1); // FIXME
+    gpuCheckEqual(tensorTable.getIndicesView().at("3")->getData()(i), i + 1); // FIXME
   }
 
   // test sort DESC
@@ -1441,10 +1513,8 @@ void test_sortIndicesViewData2Gpu()
   gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < nlabels; ++i) {
     gpuCheckEqual(tensorTable.getIndicesView().at("1")->getData()(i), i + 1);
-    std::cout << "Predicted IndicesView2: " << tensorTable.getIndicesView().at("2")->getData()(i) << " Expected: " << nlabels - i << std::endl;
-    std::cout << "Predicted IndicesView3: " << tensorTable.getIndicesView().at("3")->getData()(i) << " Expected: " << nlabels - i << std::endl;
-    //gpuCheckEqual(tensorTable.getIndicesView().at("2")->getData()(i), nlabels - i); // FIXME
-    //gpuCheckEqual(tensorTable.getIndicesView().at("3")->getData()(i), nlabels - i); // FIXME
+    gpuCheckEqual(tensorTable.getIndicesView().at("2")->getData()(i), nlabels - i); // FIXME
+    gpuCheckEqual(tensorTable.getIndicesView().at("3")->getData()(i), nlabels - i); // FIXME
   }
 
   gpuErrchk(cudaStreamDestroy(stream));
@@ -1613,7 +1683,7 @@ void test_getSelectTensorDataFromIndicesViewGpu()
   tensorTable.getSelectTensorDataFromIndicesView(tensor_select_ptr, indices_select_ptr, device);
   tensor_select_ptr->syncHData(device);
   gpuErrchk(cudaStreamSynchronize(stream));
-  gpuCheckEqual(tensor_select_ptr->getDimensions(), select_dimensions);
+  gpuCheck(tensor_select_ptr->getDimensions() == select_dimensions);
   for (int j = 0; j < nlabels; ++j) {
     for (int k = 0; k < nlabels; ++k) {
       gpuCheckEqual(tensor_select_ptr->getData()(0, j, k), tensor_select_test(0, j, k), 1e-3);
@@ -1941,21 +2011,18 @@ void test_sortTensorDataGpuClassT()
   tensorTable.syncAxesAndIndicesHData(device);
   tensorTable.syncHData(device);
   gpuErrchk(cudaStreamSynchronize(stream));
-  std::cout << "test_sortTensorDataGpuClassT\n" << std::endl;
   for (int i = 0; i < nlabels; ++i) {
     gpuCheckEqual(tensorTable.getIndicesView().at("1")->getData()(i), i + 1);
     gpuCheckEqual(tensorTable.getIndicesView().at("2")->getData()(i), i + 1);
     gpuCheckEqual(tensorTable.getIndicesView().at("3")->getData()(i), i + 1);
     gpuCheckEqual(axis_1_ptr->getLabels()(0, i), i);
     gpuCheckEqual(axis_2_ptr->getLabels()(0, i), nlabels - i - 1);
-    std::cout << "axis_3_ptr->getLabels() Predicted: " << axis_3_ptr->getLabels()(0, i) << " Expected: " << nlabels - i - 1 << std::endl;
-    //gpuCheckEqual(axis_3_ptr->getLabels()(0, i), nlabels - i - 1); //FIXME
+    gpuCheckEqual(axis_3_ptr->getLabels()(0, i), nlabels - i - 1); //FIXME
   }
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {
       for (int i = 0; i < nlabels; ++i) {
-        std::cout << "Predicted: " << tensorTable.getData()(i, j, k) << " Expected: " << tensor_sorted_values(i, j, k) << std::endl;
-        //gpuCheckEqual(tensorTable.getData()(i, j, k), tensor_sorted_values(i, j, k)); //FIXME
+        gpuCheckEqual(tensorTable.getData()(i, j, k), tensor_sorted_values(i, j, k)); //FIXME
       }
     }
   }
@@ -1994,14 +2061,12 @@ void test_sortTensorDataGpuClassT()
     gpuCheckEqual(tensorTable.getIndicesView().at("3")->getData()(i), i + 1);
     gpuCheckEqual(axis_1_ptr->getLabels()(0, i), i);
     gpuCheckEqual(axis_2_ptr->getLabels()(0, i), nlabels - i - 1);
-    std::cout << "axis_3_ptr->getLabels() Predicted: " << axis_3_ptr->getLabels()(0, i) << " Expected: " << nlabels - i - 1 << std::endl;
-    //gpuCheckEqual(axis_3_ptr->getLabels()(0, i), nlabels - i - 1); // FIXME
+    gpuCheckEqual(axis_3_ptr->getLabels()(0, i), nlabels - i - 1); // FIXME
   }
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {
       for (int i = 0; i < nlabels; ++i) {
-        std::cout << "Predicted: " << tensorTable.getData()(i, j, k) << " Expected: " << tensor_sorted_values(i, j, k) << std::endl;
-        //gpuCheckEqual(tensorTable.getData()(i, j, k), tensor_sorted_values(i, j, k)); // FIXME
+        gpuCheckEqual(tensorTable.getData()(i, j, k), tensor_sorted_values(i, j, k)); // FIXME
       }
     }
   }
@@ -2541,7 +2606,7 @@ void test_appendToIndicesGpu()
 
   // Check the dimensions and tensor size
   Eigen::array<Eigen::Index, 3> dimensions_test = { nlabels + nlabels - 1, nlabels, nlabels };
-  gpuCheckEqual(tensorTable.getDimensions(), dimensions_test);
+  gpuCheck(tensorTable.getDimensions() == dimensions_test);
   gpuCheckEqual(tensorTable.getTensorSize(), (nlabels + nlabels - 1) * nlabels * nlabels);
 
   gpuErrchk(cudaStreamDestroy(stream));
@@ -2644,7 +2709,7 @@ void test_appendToAxis1Gpu()
 
   // test the expected dimensions
   Eigen::array<Eigen::Index, 3> dimensions_test = { nlabels + 1, nlabels, nlabels };
-  gpuCheckEqual(tensorTable.getDimensions(), dimensions_test);
+  gpuCheck(tensorTable.getDimensions() == dimensions_test);
   gpuCheckEqual(tensorTable.getTensorSize(), (nlabels + 1) * nlabels * nlabels);
 
   // Write the original data to disk, clear the data, and repeat the tests
@@ -2693,7 +2758,7 @@ void test_appendToAxis1Gpu()
 
   // test the expected dimensions
   dimensions_test = Eigen::array<Eigen::Index, 3>({ nlabels + 1, nlabels, nlabels });
-  gpuCheckEqual(tensorTable.getDimensions(), dimensions_test);
+  gpuCheck(tensorTable.getDimensions() == dimensions_test);
   gpuCheckEqual(tensorTable.getTensorSize(), (nlabels + 1) * nlabels * nlabels);
 
   // Check that the binarized data was written correctly
@@ -2729,7 +2794,7 @@ void test_appendToAxis1Gpu()
 
   // test the expected dimensions
   dimensions_test = Eigen::array<Eigen::Index, 3>({ nlabels + 1, nlabels, nlabels });
-  gpuCheckEqual(tensorTable.getDimensions(), dimensions_test);
+  gpuCheck(tensorTable.getDimensions() == dimensions_test);
   gpuCheckEqual(tensorTable.getTensorSize(), (nlabels + 1) * nlabels * nlabels);
 
   gpuErrchk(cudaStreamDestroy(stream));
@@ -2816,7 +2881,7 @@ void test_appendToAxis2Gpu()
 
   // test the expected dimensions
   Eigen::array<Eigen::Index, 3> dimensions_test = { nlabels, nlabels, nlabels };
-  gpuCheckEqual(tensorTable.getDimensions(), dimensions_test);
+  gpuCheck(tensorTable.getDimensions() == dimensions_test);
   gpuCheckEqual(tensorTable.getTensorSize(), nlabels * nlabels * nlabels);
 
   // Check that the binarized data was written correctly
@@ -2849,7 +2914,7 @@ void test_appendToAxis2Gpu()
 
   // test the expected dimensions
   dimensions_test = Eigen::array<Eigen::Index, 3>({ nlabels, nlabels, nlabels });
-  gpuCheckEqual(tensorTable.getDimensions(), dimensions_test);
+  gpuCheck(tensorTable.getDimensions() == dimensions_test);
   gpuCheckEqual(tensorTable.getTensorSize(), nlabels * nlabels * nlabels);
 
 
@@ -2904,9 +2969,13 @@ void test_makeIndicesViewSelectFromIndicesGpu()
   gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < nlabels; ++i) {
     if (i > 1)
+    {
       gpuCheckEqual(indices_select_ptr->getData()(i), 1);
+    }
     else
+    {
       gpuCheckEqual(indices_select_ptr->getData()(i), 0);
+    }
   }
   indices_select_ptr.reset();
   tensorTable.makeIndicesViewSelectFromIndices("1", indices_select_ptr, indices_to_select_ptr, false, device);
@@ -2914,9 +2983,13 @@ void test_makeIndicesViewSelectFromIndicesGpu()
   gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < nlabels; ++i) {
     if (i <= 1)
+    {
       gpuCheckEqual(indices_select_ptr->getData()(i), 1);
+    }
     else
+    {
       gpuCheckEqual(indices_select_ptr->getData()(i), 0);
+    }
   }
   gpuErrchk(cudaStreamDestroy(stream));
 }
@@ -3038,9 +3111,13 @@ void test_makeSelectIndicesFromIndicesGpu()
     for (int j = 0; j < nlabels; ++j) {
       for (int k = 0; k < nlabels; ++k) {
         if (i % 2 == 0)
+        {
           gpuCheckEqual(indices_select_ptr->getData()(i, j, k), 1);
+        }
         else
+        {
           gpuCheckEqual(indices_select_ptr->getData()(i, j, k), 0);
+        }
       }
     }
   }
@@ -3296,9 +3373,13 @@ void test_insertIntoAxisGpu()
   for (int i = 0; i < nlabels + 1; ++i) {
     // check the axis
     if (i == 2)
+    {
       gpuCheckEqual(axis_1_ptr->getLabels()(0, i), 100);
+    }
     else
+    {
       gpuCheckEqual(axis_1_ptr->getLabels()(0, i), labels1(iter));
+    }
 
     // check the indices
     gpuCheckEqual(tensorTable.getIndices().at("1")->getData()(i), i + 1);
@@ -3318,9 +3399,13 @@ void test_insertIntoAxisGpu()
       for (int k = 0; k < nlabels; ++k) {
         // check the tensor data
         if (i == 2)
+        {
           gpuCheckEqual(tensorTable.getData()(i, j, k), TensorArrayGpu8<char>(std::to_string(100)));
+        }
         else
+        {
           gpuCheckEqual(tensorTable.getData()(i, j, k), tensor_values(iter, j, k));
+        }
       }
     }
     if (i != 2) ++iter;
@@ -4042,8 +4127,8 @@ void test_makeModifiedShardIDTensorGpu()
   int iter = 1;
   for (const auto& slice_indices_map : slice_indices) {
     gpuCheckEqual(slice_indices_map.first, iter);
-    gpuCheckEqual(slice_indices_map.second.first, slice_indices_test.at(slice_indices_map.first).first);
-    gpuCheckEqual(slice_indices_map.second.second, slice_indices_test.at(slice_indices_map.first).second);
+    gpuCheck(slice_indices_map.second.first == slice_indices_test.at(slice_indices_map.first).first);
+    gpuCheck(slice_indices_map.second.second == slice_indices_test.at(slice_indices_map.first).second);
     ++iter;
   }
   for (int i = 0; i < 3; ++i) {
@@ -4081,8 +4166,8 @@ void test_makeModifiedShardIDTensorGpu()
   iter = 1;
   for (const auto& slice_indices_map : slice_indices) {
     gpuCheckEqual(slice_indices_map.first, iter);
-    gpuCheckEqual(slice_indices_map.second.first, slice_indices_test.at(slice_indices_map.first).first);
-    gpuCheckEqual(slice_indices_map.second.second, slice_indices_test.at(slice_indices_map.first).second);
+    gpuCheck(slice_indices_map.second.first == slice_indices_test.at(slice_indices_map.first).first);
+    gpuCheck(slice_indices_map.second.second == slice_indices_test.at(slice_indices_map.first).second);
     ++iter;
   }
   for (int i = 0; i < 3; ++i) {
@@ -4210,8 +4295,8 @@ void test_makeNotInMemoryShardIDTensorGpu()
   int iter = 1;
   for (const auto& slice_indices_map : slice_indices) {
     gpuCheckEqual(slice_indices_map.first, iter);
-    gpuCheckEqual(slice_indices_map.second.first, slice_indices_test.at(slice_indices_map.first).first);
-    gpuCheckEqual(slice_indices_map.second.second, slice_indices_test.at(slice_indices_map.first).second);
+    gpuCheck(slice_indices_map.second.first == slice_indices_test.at(slice_indices_map.first).first);
+    gpuCheck(slice_indices_map.second.second == slice_indices_test.at(slice_indices_map.first).second);
     ++iter;
   }
   for (int i = 0; i < 3; ++i) {
@@ -4249,8 +4334,8 @@ void test_makeNotInMemoryShardIDTensorGpu()
   iter = 1;
   for (const auto& slice_indices_map : slice_indices) {
     gpuCheckEqual(slice_indices_map.first, iter);
-    gpuCheckEqual(slice_indices_map.second.first, slice_indices_test.at(slice_indices_map.first).first);
-    gpuCheckEqual(slice_indices_map.second.second, slice_indices_test.at(slice_indices_map.first).second);
+    gpuCheck(slice_indices_map.second.first == slice_indices_test.at(slice_indices_map.first).first);
+    gpuCheck(slice_indices_map.second.second == slice_indices_test.at(slice_indices_map.first).second);
     ++iter;
   }
   for (int i = 0; i < 3; ++i) {
@@ -4298,8 +4383,8 @@ void test_makeNotInMemoryShardIDTensorGpu()
   iter = 1;
   for (const auto& slice_indices_map : slice_indices) {
     gpuCheckEqual(slice_indices_map.first, iter);
-    gpuCheckEqual(slice_indices_map.second.first, slice_indices_test.at(slice_indices_map.first).first);
-    gpuCheckEqual(slice_indices_map.second.second, slice_indices_test.at(slice_indices_map.first).second);
+    gpuCheck(slice_indices_map.second.first == slice_indices_test.at(slice_indices_map.first).first);
+    gpuCheck(slice_indices_map.second.second == slice_indices_test.at(slice_indices_map.first).second);
     ++iter;
   }
   for (int i = 0; i < 3; ++i) {
@@ -4527,9 +4612,13 @@ void test_storeAndLoadBinaryGpu()
     for (int j = 0; j < nlabels; ++j) {
       for (int i = 0; i < nlabels; ++i) {
         if (i < shard_span && j < shard_span && k < shard_span)
+        {
           gpuCheckEqual(tensorTable.getData()(i, j, k), tensor_values(i, j, k));
+        }
         else
+        {
           gpuCheckEqual(tensorTable.getData()(i, j, k), TensorArrayGpu8<char>("0"));
+        }
       }
     }
   }
@@ -4670,14 +4759,10 @@ void test_getCsvDataRowGpuClassT()
   gpuCheckEqual(row_0.size(), nlabels);
   gpuCheckEqual(row_1.size(), nlabels);
   gpuCheckEqual(row_4.size(), nlabels);
-  std::cout << "Passing/Failing test_getCsvDataRowGpuClassT\n" << std::endl;
   for (int i = 0; i < nlabels; ++i) {
-    std::cout << "row_0.at(" << i << "): [Test] " << row_0.at(i) << " [Expected] " << row_0_test.at(i) << std::endl;
-    std::cout << "row_1.at(" << i << "): [Test] " << row_1.at(i) << " [Expected] " << row_1_test.at(i) << std::endl;
-    std::cout << "row_4.at(" << i << "): [Test] " << row_4.at(i) << " [Expected] " << row_4_test.at(i) << std::endl;
-    //gpuCheckEqual(row_0.at(i), row_0_test.at(i)); // FIXME: issue with \0?
-    //gpuCheckEqual(row_1.at(i), row_1_test.at(i));
-    //gpuCheckEqual(row_4.at(i), row_4_test.at(i));
+    gpuCheckEqual(row_0.at(i), row_0_test.at(i));
+    gpuCheckEqual(row_1.at(i), row_1_test.at(i));
+    gpuCheckEqual(row_4.at(i), row_4_test.at(i));
   }
 
   // Make the expected labels row values
@@ -5018,7 +5103,7 @@ void test_copyGpu()
   auto tensorTableCopy = tensorTable.copyToHost(device);
   tensorTableCopy->syncHData(device);
   gpuErrchk(cudaStreamSynchronize(stream));
-  gpuCheckEqual(*(tensorTableCopy.get()), tensorTable);
+  gpuCheck(*(tensorTableCopy.get()) == tensorTable);
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {
       for (int i = 0; i < nlabels; ++i) {
@@ -5029,7 +5114,7 @@ void test_copyGpu()
   auto tensorTableCopy2 = tensorTable.copyToDevice(device);
   tensorTableCopy2->syncHData(device);
   gpuErrchk(cudaStreamSynchronize(stream));
-  gpuCheckEqual(*(tensorTableCopy2.get()), tensorTable);
+  gpuCheck(*(tensorTableCopy2.get()) == tensorTable);
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {
       for (int i = 0; i < nlabels; ++i) {

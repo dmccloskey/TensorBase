@@ -902,7 +902,7 @@ namespace TensorBase
       const std::string filename = makeTensorTableShardFilename(dir, getName(), slice_index.first);
       Eigen::Tensor<TensorT, TDim> shard_data(slice_index.second.second);
       DataFile::loadDataBinary<TensorT, TDim>(filename, shard_data);
-      gpuCheckEqual(slice_index.second.second, shard_data.dimensions());
+      gpuCheck(slice_index.second.second == shard_data.dimensions());
 
       // slice and update the data with the shard data
       this->getData().slice(slice_index.second.first, slice_index.second.second) = shard_data;

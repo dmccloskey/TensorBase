@@ -19,7 +19,7 @@ namespace TensorBaseAssert
   {
     if (code != cudaSuccess)
     {
-      fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
+      std::cout << "GPUassert: " << cudaGetErrorString(code) << " " << file << " " << line << std::endl;
       if (abort) exit(code);
     }
   }
@@ -30,7 +30,7 @@ namespace TensorBaseAssert
   {
     if (!(lhs == static_cast<TensorTLHS>(rhs)))
     {
-      fprintf(stderr, "GPUassert: %s == %s %s %d\n", lhs, rhs, file, line);
+      std::cout << "GPUassert: " << file << " " << line << " " << lhs << " == " << rhs << std::endl;
       if (abort) exit(1);
     }
   }
@@ -39,7 +39,7 @@ namespace TensorBaseAssert
   {
     if (!(lhs != static_cast<TensorTLHS>(rhs)))
     {
-      fprintf(stderr, "GPUassert: %s != %s %s %d\n", lhs, rhs, file, line);
+      std::cout << "GPUassert: " << file << " " << line << " " << lhs << " != " << rhs << std::endl;
       if (abort) exit(1);
     }
   }
@@ -48,7 +48,7 @@ namespace TensorBaseAssert
   {
     if (!(lhs < static_cast<TensorTLHS>(rhs)))
     {
-      fprintf(stderr, "GPUassert: %s < %s %s %d\n", lhs, rhs, file, line);
+      std::cout << "GPUassert: " << file << " " << line << " " << lhs << " < " << rhs << std::endl;
       if (abort) exit(1);
     }
   }
@@ -57,7 +57,7 @@ namespace TensorBaseAssert
   {
     if (!(lhs > static_cast<TensorTLHS>(rhs)))
     {
-      fprintf(stderr, "GPUassert: %s > %s %s %d\n", lhs, rhs, file, line);
+      std::cout << "GPUassert: " << file << " " << line << " " << lhs << " > " << rhs << std::endl;
       if (abort) exit(1);
     }
   }
@@ -66,7 +66,7 @@ namespace TensorBaseAssert
   {
     if (!ans)
     {
-      fprintf(stderr, "GPUassert: %s %s %d\n", ans, file, line);
+      std::cout << "GPUassert: " << file << " " << line << " " << ans << std::endl;
       if (abort) exit(1);
     }
   }
