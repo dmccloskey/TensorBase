@@ -449,10 +449,14 @@ void test_redoAndTensorDeleteFromAxis()
   // Test for the expected axis data
   gpuCheckEqual(axis_2_ptr->getNLabels(), nlabels2 - 1);
   for (int i = 0; i < nlabels2 - 1; ++i) {
-    if (i<1)
+    if (i < 1)
+    {
       gpuCheckEqual(axis_2_ptr->getLabels()(0, i), i);
+    }
     else
+    {
       gpuCheckEqual(axis_2_ptr->getLabels()(0, i), i + 1);
+    }
   }
 
   // Test for the expected indices data
@@ -854,10 +858,14 @@ void test_redoAndUndoTensorUpdateValues()
 		gpuCheckEqual(tensorUpdate.getValuesOld()->getData()(i), tensor_values1(i, 0, 0));
 		for (int j = 0; j < nlabels2; ++j) {
 			for (int k = 0; k < nlabels3; ++k) {
-				if (j == 0 && k == 0)
-					gpuCheckEqual(tensorTable1_ptr->getData()(i, j, k), values_new_values(i, j, k));
-				else
-					gpuCheckEqual(tensorTable1_ptr->getData()(i, j, k), tensor_values1(i, j, k));
+        if (j == 0 && k == 0)
+        {
+          gpuCheckEqual(tensorTable1_ptr->getData()(i, j, k), values_new_values(i, j, k));
+        }
+        else
+        {
+          gpuCheckEqual(tensorTable1_ptr->getData()(i, j, k), tensor_values1(i, j, k));
+        }
 			}
 		}
 	}
@@ -872,10 +880,14 @@ void test_redoAndUndoTensorUpdateValues()
 	for (int i = 0; i < nlabels2; ++i) {
 		gpuCheckEqual(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
 		gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
-		if (i == 0)
-			gpuCheckEqual(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
-		else
-			gpuCheckEqual(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
+    if (i == 0)
+    {
+      gpuCheckEqual(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
+    }
+    else
+    {
+      gpuCheckEqual(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
+    }
 		gpuCheckEqual(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
 		gpuCheckEqual(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1);
 		gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 1);
@@ -883,10 +895,14 @@ void test_redoAndUndoTensorUpdateValues()
 	for (int i = 0; i < nlabels3; ++i) {
 		gpuCheckEqual(tensorTable1_ptr->getIndices().at("3")->getData()(i), i + 1);
 		gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(i), i + 1);
-		if (i == 0)
-			gpuCheckEqual(tensorTable1_ptr->getIsModified().at("3")->getData()(i), 1);
-		else
-			gpuCheckEqual(tensorTable1_ptr->getIsModified().at("3")->getData()(i), 0);
+    if (i == 0)
+    {
+      gpuCheckEqual(tensorTable1_ptr->getIsModified().at("3")->getData()(i), 1);
+    }
+    else
+    {
+      gpuCheckEqual(tensorTable1_ptr->getIsModified().at("3")->getData()(i), 0);
+    }
 		gpuCheckEqual(tensorTable1_ptr->getNotInMemory().at("3")->getData()(i), 0);
 		gpuCheckEqual(tensorTable1_ptr->getShardId().at("3")->getData()(i), 1);
 		gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("3")->getData()(i), i + 1);
@@ -941,10 +957,14 @@ void test_redoAndUndoTensorUpdateValues()
 	for (int i = 0; i < nlabels2; ++i) {
 		gpuCheckEqual(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
 		gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
-		if (i == 0)
-			gpuCheckEqual(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
-		else
-			gpuCheckEqual(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
+    if (i == 0)
+    {
+      gpuCheckEqual(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
+    }
+    else
+    {
+      gpuCheckEqual(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
+    }
 		gpuCheckEqual(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
 		gpuCheckEqual(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1);
 		gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 1);
@@ -952,10 +972,14 @@ void test_redoAndUndoTensorUpdateValues()
 	for (int i = 0; i < nlabels3; ++i) {
 		gpuCheckEqual(tensorTable1_ptr->getIndices().at("3")->getData()(i), i + 1);
 		gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(i), i + 1);
-		if (i == 0)
-			gpuCheckEqual(tensorTable1_ptr->getIsModified().at("3")->getData()(i), 1);
-		else
-			gpuCheckEqual(tensorTable1_ptr->getIsModified().at("3")->getData()(i), 0);
+    if (i == 0)
+    {
+      gpuCheckEqual(tensorTable1_ptr->getIsModified().at("3")->getData()(i), 1);
+    }
+    else
+    {
+      gpuCheckEqual(tensorTable1_ptr->getIsModified().at("3")->getData()(i), 0);
+    }
 		gpuCheckEqual(tensorTable1_ptr->getNotInMemory().at("3")->getData()(i), 0);
 		gpuCheckEqual(tensorTable1_ptr->getShardId().at("3")->getData()(i), 1);
 		gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("3")->getData()(i), i + 1);
@@ -1089,10 +1113,14 @@ void test_redoAndUndoTensorUpdateConstant()
     gpuCheckEqual(tensorUpdate.getValuesOld()->getData()(i), tensor_values1(i, 0, 0));
     for (int j = 0; j < nlabels2; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
-        if (j==0 && k==0)
+        if (j == 0 && k == 0)
+        {
           gpuCheckEqual(tensorTable1_ptr->getData()(i, j, k), 100);
+        }
         else
-          gpuCheckEqual(tensorTable1_ptr->getData()(i, j, k), tensor_values1(i,j,k));
+        {
+          gpuCheckEqual(tensorTable1_ptr->getData()(i, j, k), tensor_values1(i, j, k));
+        }
       }
     }
   }
@@ -1107,10 +1135,14 @@ void test_redoAndUndoTensorUpdateConstant()
   for (int i = 0; i < nlabels2; ++i) {
     gpuCheckEqual(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
     gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
-    if (i==0)
+    if (i == 0)
+    {
       gpuCheckEqual(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
+    }
     else
+    {
       gpuCheckEqual(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
+    }
     gpuCheckEqual(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
     gpuCheckEqual(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1);
     gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 1);
@@ -1118,10 +1150,14 @@ void test_redoAndUndoTensorUpdateConstant()
   for (int i = 0; i < nlabels3; ++i) {
     gpuCheckEqual(tensorTable1_ptr->getIndices().at("3")->getData()(i), i + 1);
     gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(i), i + 1);
-    if (i==0)
+    if (i == 0)
+    {
       gpuCheckEqual(tensorTable1_ptr->getIsModified().at("3")->getData()(i), 1);
+    }
     else
+    {
       gpuCheckEqual(tensorTable1_ptr->getIsModified().at("3")->getData()(i), 0);
+    }
     gpuCheckEqual(tensorTable1_ptr->getNotInMemory().at("3")->getData()(i), 0);
     gpuCheckEqual(tensorTable1_ptr->getShardId().at("3")->getData()(i), 1);
     gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("3")->getData()(i), i + 1);
@@ -1177,9 +1213,13 @@ void test_redoAndUndoTensorUpdateConstant()
     gpuCheckEqual(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
     gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
     if (i == 0)
+    {
       gpuCheckEqual(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
+    }
     else
+    {
       gpuCheckEqual(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
+    }
     gpuCheckEqual(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
     gpuCheckEqual(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1);
     gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 1);
@@ -1188,9 +1228,13 @@ void test_redoAndUndoTensorUpdateConstant()
     gpuCheckEqual(tensorTable1_ptr->getIndices().at("3")->getData()(i), i + 1);
     gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(i), i + 1);
     if (i == 0)
+    {
       gpuCheckEqual(tensorTable1_ptr->getIsModified().at("3")->getData()(i), 1);
+    }
     else
+    {
       gpuCheckEqual(tensorTable1_ptr->getIsModified().at("3")->getData()(i), 0);
+    }
     gpuCheckEqual(tensorTable1_ptr->getNotInMemory().at("3")->getData()(i), 0);
     gpuCheckEqual(tensorTable1_ptr->getShardId().at("3")->getData()(i), 1);
     gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("3")->getData()(i), i + 1);

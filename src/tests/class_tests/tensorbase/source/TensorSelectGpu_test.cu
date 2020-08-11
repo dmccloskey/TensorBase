@@ -156,8 +156,8 @@ void test_selectClause1Gpu()
   Eigen::TensorMap<Eigen::Tensor<int, 2>> table_2a_values(table_2a_data_ptr.get(), nlabels1, nlabels2-1);
   for (int j = 0; j < nlabels2; ++j) {
     for (int i = 0; i < nlabels1; ++i) {
-      if (j < 1) gpuCheckEqual(table_2a_values(i, j), tensor_values2(i, j));
-      else if (j > 1) gpuCheckEqual(table_2a_values(i, j-1), tensor_values2(i, j));
+      if (j < 1) { gpuCheckEqual(table_2a_values(i, j), tensor_values2(i, j)); }
+      else if (j > 1) { gpuCheckEqual(table_2a_values(i, j - 1), tensor_values2(i, j)); }
     }
   }
 
@@ -293,8 +293,8 @@ void test_selectClause2Gpu()
   Eigen::TensorMap<Eigen::Tensor<int, 2>> table_2a_values(table_2a_data_ptr.get(), nlabels1, nlabels2 - 1);
   for (int j = 0; j < nlabels2; ++j) {
     for (int i = 0; i < nlabels1; ++i) {
-      if (j < 1) gpuCheckEqual(table_2a_values(i, j), tensor_values2(i, j));
-      else if (j > 1) gpuCheckEqual(table_2a_values(i, j - 1), tensor_values2(i, j));
+      if (j < 1) { gpuCheckEqual(table_2a_values(i, j), tensor_values2(i, j)); }
+      else if (j > 1) { gpuCheckEqual(table_2a_values(i, j - 1), tensor_values2(i, j)); }
     }
   }
 
