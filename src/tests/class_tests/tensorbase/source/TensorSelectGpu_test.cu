@@ -17,7 +17,7 @@ void test_constructorTensorSelectGpu()
   TensorSelect* ptr = nullptr;
   TensorSelect* nullPointer = nullptr;
 	ptr = new TensorSelect();
-  assert(ptr != nullPointer);
+  gpuCheckNotEqual(ptr, nullPointer);
 }
 
 void test_destructorTensorSelectGpu()
@@ -29,7 +29,7 @@ void test_destructorTensorSelectGpu()
 
 void test_selectClause1Gpu()
 {
-  cudaStream_t stream; assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess); Eigen::GpuStreamDevice stream_device(&stream, 0); Eigen::GpuDevice device(&stream_device);
+  cudaStream_t stream; gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking)); Eigen::GpuStreamDevice stream_device(&stream, 0); Eigen::GpuDevice device(&stream_device);
 
   // Set up the tables
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
@@ -90,11 +90,11 @@ void test_selectClause1Gpu()
   SelectClause<int, Eigen::GpuDevice> select_clause2("2", "2", "y", select_labels2);
 
   // Test the unchanged values
-  assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(0) == 1);
-  assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(1) == 2);
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(0) == 1);
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(1) == 2);
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(2) == 3);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(0), 1);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(1), 2);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 1);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(1), 2);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 3);
 
   TensorSelect tensorSelect;
   // Test the expected view indices after the select command
@@ -108,23 +108,23 @@ void test_selectClause1Gpu()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(0) == 0);
-  assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(1) == 2);
-  assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(0) == 1); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(1) == 2); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(2) == 3); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(0) == 1); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(1) == 2); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(2) == 3); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(3) == 4); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(4) == 5); // unchanged
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(0), 0);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(1), 2);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(0), 1); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(1), 2); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(2), 3); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(0), 1); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(1), 2); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(2), 3); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(3), 4); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(4), 5); // unchanged
 
-  assert(tensorTable2_ptr->getIndicesView().at("1")->getData()(0) == 1); // unchanged
-  assert(tensorTable2_ptr->getIndicesView().at("1")->getData()(1) == 2); // unchanged
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(0) == 1);
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(1) == 0);
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(2) == 3);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("1")->getData()(0), 1); // unchanged
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("1")->getData()(1), 2); // unchanged
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 1);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(1), 0);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 3);
 
   // Test the expected data sizes after the apply command
   for (auto& table_map : collection_1_ptr->tables_) {
@@ -136,37 +136,37 @@ void test_selectClause1Gpu()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(collection_1_ptr->getTableNames() == std::vector<std::string>({ "1","2","2a" }));
-  assert(collection_1_ptr->getTensorTableConcept("1")->getDataTensorSize() == (nlabels1 - 1) * nlabels2 * nlabels3);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckEqual(collection_1_ptr->getTableNames(), std::vector<std::string>({ "1","2","2a" }));
+  gpuCheckEqual(collection_1_ptr->getTensorTableConcept("1")->getDataTensorSize(), (nlabels1 - 1) * nlabels2 * nlabels3);
   std::shared_ptr<float[]> table_1_data_ptr;
   collection_1_ptr->getTensorTableConcept("1")->getHDataPointer(table_1_data_ptr);
   Eigen::TensorMap<Eigen::Tensor<float, 3>> table_1_values(table_1_data_ptr.get(), (nlabels1 - 1), nlabels2, nlabels3);
   for (int k = 0; k < nlabels3; ++k) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int i = 1; i < nlabels1; ++i) {
-        assert(table_1_values(i-1,j,k) == tensor_values1(i, j, k));
+        gpuCheckEqual(table_1_values(i-1,j,k), tensor_values1(i, j, k));
       }
     }
   }
-  assert(collection_1_ptr->getTensorTableConcept("2")->getDataTensorSize() == nlabels1 * nlabels2); // unchanged
-  assert(collection_1_ptr->getTensorTableConcept("2a")->getDataTensorSize() == nlabels1 * (nlabels2 - 1));
+  gpuCheckEqual(collection_1_ptr->getTensorTableConcept("2")->getDataTensorSize(), nlabels1 * nlabels2); // unchanged
+  gpuCheckEqual(collection_1_ptr->getTensorTableConcept("2a")->getDataTensorSize(), nlabels1 * (nlabels2 - 1));
   std::shared_ptr<int[]> table_2a_data_ptr;
   collection_1_ptr->getTensorTableConcept("2a")->getHDataPointer(table_2a_data_ptr);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> table_2a_values(table_2a_data_ptr.get(), nlabels1, nlabels2-1);
   for (int j = 0; j < nlabels2; ++j) {
     for (int i = 0; i < nlabels1; ++i) {
-      if (j < 1) assert(table_2a_values(i, j) == tensor_values2(i, j));
-      else if (j > 1) assert(table_2a_values(i, j-1) == tensor_values2(i, j));
+      if (j < 1) gpuCheckEqual(table_2a_values(i, j), tensor_values2(i, j));
+      else if (j > 1) gpuCheckEqual(table_2a_values(i, j-1), tensor_values2(i, j));
     }
   }
 
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_selectClause2Gpu()
 {
-	cudaStream_t stream; assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess); Eigen::GpuStreamDevice stream_device(&stream, 0); Eigen::GpuDevice device(&stream_device);
+	cudaStream_t stream; gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking)); Eigen::GpuStreamDevice stream_device(&stream, 0); Eigen::GpuDevice device(&stream_device);
 
 	// Set up the tables
 	Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
@@ -227,11 +227,11 @@ void test_selectClause2Gpu()
 	SelectClause<int, Eigen::GpuDevice> select_clause2("2", "2", select_labels2);
 
 	// Test the unchanged values
-	assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(0) == 1);
-	assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(1) == 2);
-	assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(0) == 1);
-	assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(1) == 2);
-	assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(2) == 3);
+	gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(0), 1);
+	gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(1), 2);
+	gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 1);
+	gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(1), 2);
+	gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 3);
 
 	TensorSelect tensorSelect;
 	// Test the expected view indices after the select command
@@ -245,23 +245,23 @@ void test_selectClause2Gpu()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-	assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(0) == 0);
-	assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(1) == 2);
-	assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(0) == 1); // unchanged
-	assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(1) == 2); // unchanged
-	assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(2) == 3); // unchanged
-	assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(0) == 1); // unchanged
-	assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(1) == 2); // unchanged
-	assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(2) == 3); // unchanged
-	assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(3) == 4); // unchanged
-	assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(4) == 5); // unchanged
+  gpuErrchk(cudaStreamSynchronize(stream));
+	gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(0), 0);
+	gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(1), 2);
+	gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(0), 1); // unchanged
+	gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(1), 2); // unchanged
+	gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(2), 3); // unchanged
+	gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(0), 1); // unchanged
+	gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(1), 2); // unchanged
+	gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(2), 3); // unchanged
+	gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(3), 4); // unchanged
+	gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(4), 5); // unchanged
 
-	assert(tensorTable2_ptr->getIndicesView().at("1")->getData()(0) == 1); // unchanged
-	assert(tensorTable2_ptr->getIndicesView().at("1")->getData()(1) == 2); // unchanged
-	assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(0) == 1);
-	assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(1) == 0);
-	assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(2) == 3);
+	gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("1")->getData()(0), 1); // unchanged
+	gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("1")->getData()(1), 2); // unchanged
+	gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 1);
+	gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(1), 0);
+	gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 3);
 
   // Test the expected data indices after the apply commend
   for (auto& table_map : collection_1_ptr->tables_) {
@@ -273,37 +273,37 @@ void test_selectClause2Gpu()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(collection_1_ptr->getTableNames() == std::vector<std::string>({ "1","2","2a" }));
-  assert(collection_1_ptr->getTensorTableConcept("1")->getDataTensorSize() == (nlabels1 - 1) * nlabels2 * nlabels3);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckEqual(collection_1_ptr->getTableNames(), std::vector<std::string>({ "1","2","2a" }));
+  gpuCheckEqual(collection_1_ptr->getTensorTableConcept("1")->getDataTensorSize(), (nlabels1 - 1) * nlabels2 * nlabels3);
   std::shared_ptr<float[]> table_1_data_ptr;
   collection_1_ptr->getTensorTableConcept("1")->getHDataPointer(table_1_data_ptr);
   Eigen::TensorMap<Eigen::Tensor<float, 3>> table_1_values(table_1_data_ptr.get(), (nlabels1 - 1), nlabels2, nlabels3);
   for (int k = 0; k < nlabels3; ++k) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int i = 1; i < nlabels1; ++i) {
-        assert(table_1_values(i - 1, j, k) == tensor_values1(i, j, k));
+        gpuCheckEqual(table_1_values(i - 1, j, k), tensor_values1(i, j, k));
       }
     }
   }
-  assert(collection_1_ptr->getTensorTableConcept("2")->getDataTensorSize() == nlabels1 * nlabels2); // unchanged
-  assert(collection_1_ptr->getTensorTableConcept("2a")->getDataTensorSize() == nlabels1 * (nlabels2 - 1));
+  gpuCheckEqual(collection_1_ptr->getTensorTableConcept("2")->getDataTensorSize(), nlabels1 * nlabels2); // unchanged
+  gpuCheckEqual(collection_1_ptr->getTensorTableConcept("2a")->getDataTensorSize(), nlabels1 * (nlabels2 - 1));
   std::shared_ptr<int[]> table_2a_data_ptr;
   collection_1_ptr->getTensorTableConcept("2a")->getHDataPointer(table_2a_data_ptr);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> table_2a_values(table_2a_data_ptr.get(), nlabels1, nlabels2 - 1);
   for (int j = 0; j < nlabels2; ++j) {
     for (int i = 0; i < nlabels1; ++i) {
-      if (j < 1) assert(table_2a_values(i, j) == tensor_values2(i, j));
-      else if (j > 1) assert(table_2a_values(i, j - 1) == tensor_values2(i, j));
+      if (j < 1) gpuCheckEqual(table_2a_values(i, j), tensor_values2(i, j));
+      else if (j > 1) gpuCheckEqual(table_2a_values(i, j - 1), tensor_values2(i, j));
     }
   }
 
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_whereClause1Gpu()
 {
-  cudaStream_t stream; assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess); Eigen::GpuStreamDevice stream_device(&stream, 0); Eigen::GpuDevice device(&stream_device);
+  cudaStream_t stream; gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking)); Eigen::GpuStreamDevice stream_device(&stream, 0); Eigen::GpuDevice device(&stream_device);
 
   // Set up the axes
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
@@ -396,17 +396,17 @@ void test_whereClause1Gpu()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(0) == 1); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(1) == 2); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(0) == 1);
-  assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(1) == 0);
-  assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(2) == 0);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(0) == 1);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(1) == 2);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(2) == 0);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(3) == 0);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(4) == 0);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(0), 1); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(1), 2); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(0), 1);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(1), 0);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(2), 0);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(0), 1);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(1), 2);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(2), 0);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(3), 0);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(4), 0);
 
   for (auto& table_map : collection_1_ptr->tables_) {
     table_map.second->syncAxesAndIndicesDData(device);
@@ -417,12 +417,12 @@ void test_whereClause1Gpu()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(tensorTable2_ptr->getIndicesView().at("1")->getData()(0) == 1);
-  assert(tensorTable2_ptr->getIndicesView().at("1")->getData()(1) == 0);
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(0) == 1); // unchanged
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(1) == 2); // unchanged
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(2) == 3); // unchanged
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("1")->getData()(0), 1);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("1")->getData()(1), 0);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 1); // unchanged
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(1), 2); // unchanged
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 3); // unchanged
 
   // Apply the select clause
   for (auto& table_map : collection_1_ptr->tables_) {
@@ -434,36 +434,36 @@ void test_whereClause1Gpu()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
 
   // Test for the expected table attributes
   Eigen::array<Eigen::Index, 3> dimensions1_test = { 2, 1, 2 };
   for (int i = 0; i < 3; ++i) {
-    assert(tensorTable1_ptr->getDimensions().at(i) == dimensions1_test.at(i));
-    assert(tensorTable1_ptr->getDataDimensions().at(i) == dimensions1_test.at(i));
+    gpuCheckEqual(tensorTable1_ptr->getDimensions().at(i), dimensions1_test.at(i));
+    gpuCheckEqual(tensorTable1_ptr->getDataDimensions().at(i), dimensions1_test.at(i));
   }
-  assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(0) == 1);
-  assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(1) == 2);
-  assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(0) == 1);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(0) == 1);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(1) == 2);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(0), 1);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(1), 2);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(0), 1);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(0), 1);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(1), 2);
 
   Eigen::array<Eigen::Index, 2> dimensions2_test = { 1, 3 };
   for (int i = 0; i < 2; ++i) {
-    assert(tensorTable2_ptr->getDimensions().at(i) == dimensions2_test.at(i));
-    assert(tensorTable2_ptr->getDataDimensions().at(i) == dimensions2_test.at(i));
+    gpuCheckEqual(tensorTable2_ptr->getDimensions().at(i), dimensions2_test.at(i));
+    gpuCheckEqual(tensorTable2_ptr->getDataDimensions().at(i), dimensions2_test.at(i));
   }
-  assert(tensorTable2_ptr->getIndicesView().at("1")->getData()(0) == 1);
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(0) == 1); 
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(1) == 2);
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(2) == 3);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("1")->getData()(0), 1);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 1); 
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(1), 2);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 3);
 
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_whereClause2Gpu()
 {
-  cudaStream_t stream; assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess); Eigen::GpuStreamDevice stream_device(&stream, 0); Eigen::GpuDevice device(&stream_device);
+  cudaStream_t stream; gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking)); Eigen::GpuStreamDevice stream_device(&stream, 0); Eigen::GpuDevice device(&stream_device);
 
   // Set up the axes
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
@@ -556,17 +556,17 @@ void test_whereClause2Gpu()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(0) == 1); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(1) == 2); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(0) == 1);
-  assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(1) == 0);
-  assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(2) == 0);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(0) == 1);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(1) == 2);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(2) == 0);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(3) == 0);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(4) == 0);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(0), 1); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(1), 2); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(0), 1);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(1), 0);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(2), 0);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(0), 1);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(1), 2);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(2), 0);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(3), 0);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(4), 0);
 
   for (auto& table_map : collection_1_ptr->tables_) {
     table_map.second->syncAxesAndIndicesDData(device);
@@ -577,12 +577,12 @@ void test_whereClause2Gpu()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(tensorTable2_ptr->getIndicesView().at("1")->getData()(0) == 1);
-  assert(tensorTable2_ptr->getIndicesView().at("1")->getData()(1) == 0);
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(0) == 1); // unchanged
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(1) == 2); // unchanged
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(2) == 3); // unchanged
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("1")->getData()(0), 1);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("1")->getData()(1), 0);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 1); // unchanged
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(1), 2); // unchanged
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 3); // unchanged
 
   // Apply the select clause
   for (auto& table_map : collection_1_ptr->tables_) {
@@ -594,36 +594,36 @@ void test_whereClause2Gpu()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
 
   // Test for the expected table attributes
   Eigen::array<Eigen::Index, 3> dimensions1_test = { 2, 1, 2 };
   for (int i = 0; i < 3; ++i) {
-    assert(tensorTable1_ptr->getDimensions().at(i) == dimensions1_test.at(i));
-    assert(tensorTable1_ptr->getDataDimensions().at(i) == dimensions1_test.at(i));
+    gpuCheckEqual(tensorTable1_ptr->getDimensions().at(i), dimensions1_test.at(i));
+    gpuCheckEqual(tensorTable1_ptr->getDataDimensions().at(i), dimensions1_test.at(i));
   }
-  assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(0) == 1);
-  assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(1) == 2);
-  assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(0) == 1);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(0) == 1);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(1) == 2);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(0), 1);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(1), 2);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(0), 1);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(0), 1);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(1), 2);
 
   Eigen::array<Eigen::Index, 2> dimensions2_test = { 1, 3 };
   for (int i = 0; i < 2; ++i) {
-    assert(tensorTable2_ptr->getDimensions().at(i) == dimensions2_test.at(i));
-    assert(tensorTable2_ptr->getDataDimensions().at(i) == dimensions2_test.at(i));
+    gpuCheckEqual(tensorTable2_ptr->getDimensions().at(i), dimensions2_test.at(i));
+    gpuCheckEqual(tensorTable2_ptr->getDataDimensions().at(i), dimensions2_test.at(i));
   }
-  assert(tensorTable2_ptr->getIndicesView().at("1")->getData()(0) == 1);
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(0) == 1);
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(1) == 2);
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(2) == 3);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("1")->getData()(0), 1);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 1);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(1), 2);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 3);
 
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_sortClause1Gpu()
 {
-  cudaStream_t stream; assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess); Eigen::GpuStreamDevice stream_device(&stream, 0); Eigen::GpuDevice device(&stream_device);
+  cudaStream_t stream; gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking)); Eigen::GpuStreamDevice stream_device(&stream, 0); Eigen::GpuDevice device(&stream_device);
 
   // Set up the axes
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
@@ -705,17 +705,17 @@ void test_sortClause1Gpu()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(0) == 2);
-  assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(1) == 1);
-  assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(0) == 1); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(1) == 2); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(2) == 3); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(0) == 5);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(1) == 4);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(2) == 3);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(3) == 2);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(4) == 1);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(0), 2);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(1), 1);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(0), 1); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(1), 2); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(2), 3); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(0), 5);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(1), 4);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(2), 3);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(3), 2);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(4), 1);
 
   for (auto& table_map : collection_1_ptr->tables_) {
     table_map.second->syncAxesAndIndicesDData(device);
@@ -726,12 +726,12 @@ void test_sortClause1Gpu()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(tensorTable2_ptr->getIndicesView().at("1")->getData()(0) == 1); // unchanged
-  assert(tensorTable2_ptr->getIndicesView().at("1")->getData()(1) == 2); // unchanged
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(0) == 3);
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(1) == 2);
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(2) == 1);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("1")->getData()(0), 1); // unchanged
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("1")->getData()(1), 2); // unchanged
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 3);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(1), 2);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 1);
 
   // Apply the select clause
   for (auto& table_map : collection_1_ptr->tables_) {
@@ -743,70 +743,70 @@ void test_sortClause1Gpu()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
 
   // Test for the expected table attributes
   Eigen::array<Eigen::Index, 3> dimensions1_test = { nlabels1, nlabels2, nlabels3 };
   for (int i = 0; i < 3; ++i) {
-    assert(tensorTable1_ptr->getDimensions().at(i) == dimensions1_test.at(i));
-    assert(tensorTable1_ptr->getDataDimensions().at(i) == dimensions1_test.at(i));
+    gpuCheckEqual(tensorTable1_ptr->getDimensions().at(i), dimensions1_test.at(i));
+    gpuCheckEqual(tensorTable1_ptr->getDataDimensions().at(i), dimensions1_test.at(i));
   }
-  assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(0) == 1);
-  assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(1) == 2);
-  assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(0) == 1);
-  assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(1) == 2);
-  assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(2) == 3);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(0) == 1);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(1) == 2);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(2) == 3);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(3) == 4);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(4) == 5);
-  assert(collection_1_ptr->getTableNames() == std::vector<std::string>({ "1","2","2a" }));
-  assert(collection_1_ptr->getTensorTableConcept("1")->getDataTensorSize() == nlabels1 * nlabels2 * nlabels3);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(0), 1);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(1), 2);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(0), 1);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(1), 2);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(2), 3);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(0), 1);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(1), 2);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(2), 3);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(3), 4);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(4), 5);
+  gpuCheckEqual(collection_1_ptr->getTableNames(), std::vector<std::string>({ "1","2","2a" }));
+  gpuCheckEqual(collection_1_ptr->getTensorTableConcept("1")->getDataTensorSize(), nlabels1 * nlabels2 * nlabels3);
   std::shared_ptr<float[]> table_1_data_ptr;
   collection_1_ptr->getTensorTableConcept("1")->getHDataPointer(table_1_data_ptr);
   Eigen::TensorMap<Eigen::Tensor<float, 3>> table_1_values(table_1_data_ptr.get(), nlabels1, nlabels2, nlabels3);
   for (int k = 0; k < nlabels3; ++k) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int i = 0; i < nlabels1; ++i) {
-        assert(table_1_values(i, j, k) == tensor_values1(nlabels1 - i - 1, j, nlabels3 - k - 1));
+        gpuCheckEqual(table_1_values(i, j, k), tensor_values1(nlabels1 - i - 1, j, nlabels3 - k - 1));
       }
     }
   }
 
   Eigen::array<Eigen::Index, 2> dimensions2_test = { nlabels1, nlabels2 };
   for (int i = 0; i < 2; ++i) {
-    assert(tensorTable2_ptr->getDimensions().at(i) == dimensions2_test.at(i));
-    assert(tensorTable2_ptr->getDataDimensions().at(i) == dimensions2_test.at(i));
+    gpuCheckEqual(tensorTable2_ptr->getDimensions().at(i), dimensions2_test.at(i));
+    gpuCheckEqual(tensorTable2_ptr->getDataDimensions().at(i), dimensions2_test.at(i));
   }
-  assert(tensorTable2_ptr->getIndicesView().at("1")->getData()(0) == 1);
-  assert(tensorTable2_ptr->getIndicesView().at("1")->getData()(1) == 2);
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(0) == 3);
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(1) == 2);
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(2) == 1);
-  assert(collection_1_ptr->getTensorTableConcept("2")->getDataTensorSize() == nlabels1 * nlabels2);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("1")->getData()(0), 1);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("1")->getData()(1), 2);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 3);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(1), 2);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 1);
+  gpuCheckEqual(collection_1_ptr->getTensorTableConcept("2")->getDataTensorSize(), nlabels1 * nlabels2);
 
-  assert(collection_1_ptr->getTensorTableConcept("2a")->getIndicesView().at("1")->getData()(0) == 1);
-  assert(collection_1_ptr->getTensorTableConcept("2a")->getIndicesView().at("1")->getData()(1) == 2);
-  assert(collection_1_ptr->getTensorTableConcept("2a")->getIndicesView().at("2")->getData()(0) == 1);
-  assert(collection_1_ptr->getTensorTableConcept("2a")->getIndicesView().at("2")->getData()(1) == 2);
-  assert(collection_1_ptr->getTensorTableConcept("2a")->getIndicesView().at("2")->getData()(2) == 3);
-  assert(collection_1_ptr->getTensorTableConcept("2a")->getDataTensorSize() == nlabels1 * nlabels2);
+  gpuCheckEqual(collection_1_ptr->getTensorTableConcept("2a")->getIndicesView().at("1")->getData()(0), 1);
+  gpuCheckEqual(collection_1_ptr->getTensorTableConcept("2a")->getIndicesView().at("1")->getData()(1), 2);
+  gpuCheckEqual(collection_1_ptr->getTensorTableConcept("2a")->getIndicesView().at("2")->getData()(0), 1);
+  gpuCheckEqual(collection_1_ptr->getTensorTableConcept("2a")->getIndicesView().at("2")->getData()(1), 2);
+  gpuCheckEqual(collection_1_ptr->getTensorTableConcept("2a")->getIndicesView().at("2")->getData()(2), 3);
+  gpuCheckEqual(collection_1_ptr->getTensorTableConcept("2a")->getDataTensorSize(), nlabels1 * nlabels2);
   std::shared_ptr<double[]> table_2a_data_ptr;
   collection_1_ptr->getTensorTableConcept("2a")->getHDataPointer(table_2a_data_ptr);
   Eigen::TensorMap<Eigen::Tensor<double, 2>> table_2a_values(table_2a_data_ptr.get(), nlabels1, nlabels2);
   for (int j = 0; j < nlabels2; ++j) {
     for (int i = 0; i < nlabels1; ++i) {
-      assert(table_2a_values(i, j) == tensor_values2(i, nlabels2 - j -1));
+      gpuCheckEqual(table_2a_values(i, j), tensor_values2(i, nlabels2 - j -1));
     }
   }
 
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_sortClause2Gpu()
 {
-  cudaStream_t stream; assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess); Eigen::GpuStreamDevice stream_device(&stream, 0); Eigen::GpuDevice device(&stream_device);
+  cudaStream_t stream; gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking)); Eigen::GpuStreamDevice stream_device(&stream, 0); Eigen::GpuDevice device(&stream_device);
 
   // Set up the axes
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
@@ -888,17 +888,17 @@ void test_sortClause2Gpu()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(0) == 2);
-  assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(1) == 1);
-  assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(0) == 1); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(1) == 2); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(2) == 3); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(0) == 5);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(1) == 4);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(2) == 3);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(3) == 2);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(4) == 1);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(0), 2);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(1), 1);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(0), 1); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(1), 2); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(2), 3); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(0), 5);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(1), 4);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(2), 3);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(3), 2);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(4), 1);
 
   for (auto& table_map : collection_1_ptr->tables_) {
     table_map.second->syncAxesAndIndicesDData(device);
@@ -909,12 +909,12 @@ void test_sortClause2Gpu()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(tensorTable2_ptr->getIndicesView().at("1")->getData()(0) == 1); // unchanged
-  assert(tensorTable2_ptr->getIndicesView().at("1")->getData()(1) == 2); // unchanged
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(0) == 3);
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(1) == 2);
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(2) == 1);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("1")->getData()(0), 1); // unchanged
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("1")->getData()(1), 2); // unchanged
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 3);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(1), 2);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 1);
 
   // Apply the select clause
   for (auto& table_map : collection_1_ptr->tables_) {
@@ -926,70 +926,70 @@ void test_sortClause2Gpu()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
 
   // Test for the expected table attributes
   Eigen::array<Eigen::Index, 3> dimensions1_test = { nlabels1, nlabels2, nlabels3 };
   for (int i = 0; i < 3; ++i) {
-    assert(tensorTable1_ptr->getDimensions().at(i) == dimensions1_test.at(i));
-    assert(tensorTable1_ptr->getDataDimensions().at(i) == dimensions1_test.at(i));
+    gpuCheckEqual(tensorTable1_ptr->getDimensions().at(i), dimensions1_test.at(i));
+    gpuCheckEqual(tensorTable1_ptr->getDataDimensions().at(i), dimensions1_test.at(i));
   }
-  assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(0) == 1);
-  assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(1) == 2);
-  assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(0) == 1);
-  assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(1) == 2);
-  assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(2) == 3);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(0) == 1);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(1) == 2);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(2) == 3);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(3) == 4);
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(4) == 5);
-  assert(collection_1_ptr->getTableNames() == std::vector<std::string>({ "1","2","2a" }));
-  assert(collection_1_ptr->getTensorTableConcept("1")->getDataTensorSize() == nlabels1 * nlabels2 * nlabels3);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(0), 1);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(1), 2);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(0), 1);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(1), 2);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(2), 3);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(0), 1);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(1), 2);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(2), 3);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(3), 4);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(4), 5);
+  gpuCheckEqual(collection_1_ptr->getTableNames(), std::vector<std::string>({ "1","2","2a" }));
+  gpuCheckEqual(collection_1_ptr->getTensorTableConcept("1")->getDataTensorSize(), nlabels1 * nlabels2 * nlabels3);
   std::shared_ptr<float[]> table_1_data_ptr;
   collection_1_ptr->getTensorTableConcept("1")->getHDataPointer(table_1_data_ptr);
   Eigen::TensorMap<Eigen::Tensor<float, 3>> table_1_values(table_1_data_ptr.get(), nlabels1, nlabels2, nlabels3);
   for (int k = 0; k < nlabels3; ++k) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int i = 0; i < nlabels1; ++i) {
-        assert(table_1_values(i, j, k) == tensor_values1(nlabels1 - i - 1, j, nlabels3 - k - 1));
+        gpuCheckEqual(table_1_values(i, j, k), tensor_values1(nlabels1 - i - 1, j, nlabels3 - k - 1));
       }
     }
   }
 
   Eigen::array<Eigen::Index, 2> dimensions2_test = { nlabels1, nlabels2 };
   for (int i = 0; i < 2; ++i) {
-    assert(tensorTable2_ptr->getDimensions().at(i) == dimensions2_test.at(i));
-    assert(tensorTable2_ptr->getDataDimensions().at(i) == dimensions2_test.at(i));
+    gpuCheckEqual(tensorTable2_ptr->getDimensions().at(i), dimensions2_test.at(i));
+    gpuCheckEqual(tensorTable2_ptr->getDataDimensions().at(i), dimensions2_test.at(i));
   }
-  assert(tensorTable2_ptr->getIndicesView().at("1")->getData()(0) == 1);
-  assert(tensorTable2_ptr->getIndicesView().at("1")->getData()(1) == 2);
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(0) == 3);
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(1) == 2);
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(2) == 1);
-  assert(collection_1_ptr->getTensorTableConcept("2")->getDataTensorSize() == nlabels1 * nlabels2);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("1")->getData()(0), 1);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("1")->getData()(1), 2);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 3);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(1), 2);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 1);
+  gpuCheckEqual(collection_1_ptr->getTensorTableConcept("2")->getDataTensorSize(), nlabels1 * nlabels2);
 
-  assert(collection_1_ptr->getTensorTableConcept("2a")->getIndicesView().at("1")->getData()(0) == 1);
-  assert(collection_1_ptr->getTensorTableConcept("2a")->getIndicesView().at("1")->getData()(1) == 2);
-  assert(collection_1_ptr->getTensorTableConcept("2a")->getIndicesView().at("2")->getData()(0) == 1);
-  assert(collection_1_ptr->getTensorTableConcept("2a")->getIndicesView().at("2")->getData()(1) == 2);
-  assert(collection_1_ptr->getTensorTableConcept("2a")->getIndicesView().at("2")->getData()(2) == 3);
-  assert(collection_1_ptr->getTensorTableConcept("2a")->getDataTensorSize() == nlabels1 * nlabels2);
+  gpuCheckEqual(collection_1_ptr->getTensorTableConcept("2a")->getIndicesView().at("1")->getData()(0), 1);
+  gpuCheckEqual(collection_1_ptr->getTensorTableConcept("2a")->getIndicesView().at("1")->getData()(1), 2);
+  gpuCheckEqual(collection_1_ptr->getTensorTableConcept("2a")->getIndicesView().at("2")->getData()(0), 1);
+  gpuCheckEqual(collection_1_ptr->getTensorTableConcept("2a")->getIndicesView().at("2")->getData()(1), 2);
+  gpuCheckEqual(collection_1_ptr->getTensorTableConcept("2a")->getIndicesView().at("2")->getData()(2), 3);
+  gpuCheckEqual(collection_1_ptr->getTensorTableConcept("2a")->getDataTensorSize(), nlabels1 * nlabels2);
   std::shared_ptr<double[]> table_2a_data_ptr;
   collection_1_ptr->getTensorTableConcept("2a")->getHDataPointer(table_2a_data_ptr);
   Eigen::TensorMap<Eigen::Tensor<double, 2>> table_2a_values(table_2a_data_ptr.get(), nlabels1, nlabels2);
   for (int j = 0; j < nlabels2; ++j) {
     for (int i = 0; i < nlabels1; ++i) {
-      assert(table_2a_values(i, j) == tensor_values2(i, nlabels2 - j - 1));
+      gpuCheckEqual(table_2a_values(i, j), tensor_values2(i, nlabels2 - j - 1));
     }
   }
 
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_reductionClause1Gpu()
 {
-  cudaStream_t stream; assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess); Eigen::GpuStreamDevice stream_device(&stream, 0); Eigen::GpuDevice device(&stream_device);
+  cudaStream_t stream; gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking)); Eigen::GpuStreamDevice stream_device(&stream, 0); Eigen::GpuDevice device(&stream_device);
 
   // Set up the tables
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
@@ -1045,11 +1045,11 @@ void test_reductionClause1Gpu()
   ReductionClause<Eigen::GpuDevice> reduction_clause1("1", reductionFunctions::SUM);
 
   // Test the unchanged values
-  assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(0) == 1);
-  assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(1) == 2);
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(0) == 1);
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(1) == 2);
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(2) == 3);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(0), 1);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(1), 2);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 1);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(1), 2);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 3);
 
   TensorSelect tensorSelect;
   // Test the expected view indices after the select command
@@ -1062,31 +1062,31 @@ void test_reductionClause1Gpu()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(tensorTable1_ptr->getData()(0, 0, 0) == tensor_values_sum1);
-  assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(0) == 1); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(1) == 2); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(0) == 1); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(1) == 2); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(2) == 3); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(0) == 1); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(1) == 2); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(2) == 3); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(3) == 4); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(4) == 5); // unchanged
-  assert(tensorTable2_ptr->getData()(0, 0) == tensor_values2(0,0));
-  assert(tensorTable2_ptr->getIndicesView().at("1")->getData()(0) == 1); // unchanged
-  assert(tensorTable2_ptr->getIndicesView().at("1")->getData()(1) == 2); // unchanged
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(0) == 1); // unchanged
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(1) == 2); // unchanged
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(2) == 3); // unchanged
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckEqual(tensorTable1_ptr->getData()(0, 0, 0), tensor_values_sum1);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(0), 1); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(1), 2); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(0), 1); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(1), 2); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(2), 3); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(0), 1); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(1), 2); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(2), 3); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(3), 4); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(4), 5); // unchanged
+  gpuCheckEqual(tensorTable2_ptr->getData()(0, 0), tensor_values2(0,0));
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("1")->getData()(0), 1); // unchanged
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("1")->getData()(1), 2); // unchanged
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 1); // unchanged
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(1), 2); // unchanged
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 3); // unchanged
 
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_scanClause1Gpu()
 {
-  cudaStream_t stream; assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess); Eigen::GpuStreamDevice stream_device(&stream, 0); Eigen::GpuDevice device(&stream_device);
+  cudaStream_t stream; gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking)); Eigen::GpuStreamDevice stream_device(&stream, 0); Eigen::GpuDevice device(&stream_device);
 
   // Set up the tables
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
@@ -1142,11 +1142,11 @@ void test_scanClause1Gpu()
   ScanClause<Eigen::GpuDevice> scan_clause1("1", {"1", "2", "3"}, scanFunctions::CUMSUM);
 
   // Test the unchanged values
-  assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(0) == 1);
-  assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(1) == 2);
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(0) == 1);
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(1) == 2);
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(2) == 3);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(0), 1);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(1), 2);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 1);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(1), 2);
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 3);
 
   TensorSelect tensorSelect;
   // Test the expected view indices after the select command
@@ -1159,28 +1159,28 @@ void test_scanClause1Gpu()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(tensorTable1_ptr->getData()(0, 0, 0) == tensor_values1(0,0,0));
-  assert(tensorTable1_ptr->getData()(nlabels1 - 1, nlabels2 - 1, nlabels3 - 1) == tensor_values_sum1);
-  assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(0) == 1); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(1) == 2); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(0) == 1); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(1) == 2); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(2) == 3); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(0) == 1); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(1) == 2); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(2) == 3); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(3) == 4); // unchanged
-  assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(4) == 5); // unchanged
-  assert(tensorTable2_ptr->getData()(0, 0) == tensor_values2(0, 0));
-  assert(tensorTable2_ptr->getData()(nlabels1 - 1, nlabels2 - 1) == tensor_values2(nlabels1 - 1, nlabels2 - 1));
-  assert(tensorTable2_ptr->getIndicesView().at("1")->getData()(0) == 1); // unchanged
-  assert(tensorTable2_ptr->getIndicesView().at("1")->getData()(1) == 2); // unchanged
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(0) == 1); // unchanged
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(1) == 2); // unchanged
-  assert(tensorTable2_ptr->getIndicesView().at("2")->getData()(2) == 3); // unchanged
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckEqual(tensorTable1_ptr->getData()(0, 0, 0), tensor_values1(0,0,0));
+  gpuCheckEqual(tensorTable1_ptr->getData()(nlabels1 - 1, nlabels2 - 1, nlabels3 - 1), tensor_values_sum1);
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(0), 1); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(1), 2); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(0), 1); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(1), 2); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(2), 3); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(0), 1); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(1), 2); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(2), 3); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(3), 4); // unchanged
+  gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(4), 5); // unchanged
+  gpuCheckEqual(tensorTable2_ptr->getData()(0, 0), tensor_values2(0, 0));
+  gpuCheckEqual(tensorTable2_ptr->getData()(nlabels1 - 1, nlabels2 - 1), tensor_values2(nlabels1 - 1, nlabels2 - 1));
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("1")->getData()(0), 1); // unchanged
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("1")->getData()(1), 2); // unchanged
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(0), 1); // unchanged
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(1), 2); // unchanged
+  gpuCheckEqual(tensorTable2_ptr->getIndicesView().at("2")->getData()(2), 3); // unchanged
 
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 int main(int argc, char** argv)

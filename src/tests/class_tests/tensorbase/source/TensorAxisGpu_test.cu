@@ -11,7 +11,7 @@ void test_constructorGpuPrimitiveT()
 	TensorAxisGpuPrimitiveT<int>* ptr = nullptr;
 	TensorAxisGpuPrimitiveT<int>* nullPointer = nullptr;
 	ptr = new TensorAxisGpuPrimitiveT<int>();
-  assert(ptr != nullPointer);
+  gpuCheckNotEqual(ptr, nullPointer);
   delete ptr;
 }
 
@@ -32,15 +32,15 @@ void test_constructor1GpuPrimitiveT()
   labels.setConstant(1);
   TensorAxisGpuPrimitiveT<int> tensoraxis("1", dimensions, labels);
 
-  assert(tensoraxis.getId() == -1);
-  assert(tensoraxis.getName() == "1");
-  assert(tensoraxis.getNDimensions() == 3);
-  assert(tensoraxis.getNLabels() == 5);
-  assert(tensoraxis.getDimensions()(0) == "TensorDimension1");
-  assert(tensoraxis.getDimensions()(1) == "TensorDimension2");
-  assert(tensoraxis.getDimensions()(2) == "TensorDimension3");
-  assert(tensoraxis.getLabels()(0, 0) == 1);
-  assert(tensoraxis.getLabels()(2, 4) == 1);
+  gpuCheckEqual(tensoraxis.getId(), -1);
+  gpuCheckEqual(tensoraxis.getName(), "1");
+  gpuCheckEqual(tensoraxis.getNDimensions(), 3);
+  gpuCheckEqual(tensoraxis.getNLabels(), 5);
+  gpuCheckEqual(tensoraxis.getDimensions()(0), "TensorDimension1");
+  gpuCheckEqual(tensoraxis.getDimensions()(1), "TensorDimension2");
+  gpuCheckEqual(tensoraxis.getDimensions()(2), "TensorDimension3");
+  gpuCheckEqual(tensoraxis.getLabels()(0, 0), 1);
+  gpuCheckEqual(tensoraxis.getLabels()(2, 4), 1);
 }
 
 void test_constructor2GpuPrimitiveT()
@@ -53,33 +53,33 @@ void test_constructor2GpuPrimitiveT()
   labels.setConstant(1);
   TensorAxisGpuPrimitiveT<int> tensoraxis("1", 1, 1);
 
-  assert(tensoraxis.getId() == -1);
-  assert(tensoraxis.getName() == "1");
-  assert(tensoraxis.getNDimensions() == 1);
-  assert(tensoraxis.getNLabels() == 1);
+  gpuCheckEqual(tensoraxis.getId(), -1);
+  gpuCheckEqual(tensoraxis.getName(), "1");
+  gpuCheckEqual(tensoraxis.getNDimensions(), 1);
+  gpuCheckEqual(tensoraxis.getNLabels(), 1);
 
   tensoraxis.setDimensions(dimensions);
   tensoraxis.setLabels(labels);
 
-  assert(tensoraxis.getId() == -1);
-  assert(tensoraxis.getName() == "1");
-  assert(tensoraxis.getNDimensions() == 3);
-  assert(tensoraxis.getNLabels() == 5);
-  assert(tensoraxis.getDimensions()(0) == "TensorDimension1");
-  assert(tensoraxis.getDimensions()(1) == "TensorDimension2");
-  assert(tensoraxis.getDimensions()(2) == "TensorDimension3");
-  assert(tensoraxis.getLabels()(0, 0) == 1);
-  assert(tensoraxis.getLabels()(2, 4) == 1);
+  gpuCheckEqual(tensoraxis.getId(), -1);
+  gpuCheckEqual(tensoraxis.getName(), "1");
+  gpuCheckEqual(tensoraxis.getNDimensions(), 3);
+  gpuCheckEqual(tensoraxis.getNLabels(), 5);
+  gpuCheckEqual(tensoraxis.getDimensions()(0), "TensorDimension1");
+  gpuCheckEqual(tensoraxis.getDimensions()(1), "TensorDimension2");
+  gpuCheckEqual(tensoraxis.getDimensions()(2), "TensorDimension3");
+  gpuCheckEqual(tensoraxis.getLabels()(0, 0), 1);
+  gpuCheckEqual(tensoraxis.getLabels()(2, 4), 1);
 }
 
 void test_gettersAndSettersGpuPrimitiveT()
 {
   TensorAxisGpuPrimitiveT<int> tensoraxis;
   // Check defaults
-  assert(tensoraxis.getId() == -1);
-  assert(tensoraxis.getName() == "");
-  assert(tensoraxis.getNLabels() == 0);
-  assert(tensoraxis.getNDimensions() == 0);
+  gpuCheckEqual(tensoraxis.getId(), -1);
+  gpuCheckEqual(tensoraxis.getName(), "");
+  gpuCheckEqual(tensoraxis.getNLabels(), 0);
+  gpuCheckEqual(tensoraxis.getNDimensions(), 0);
 
   // Check getters/setters
   tensoraxis.setId(1);
@@ -92,15 +92,15 @@ void test_gettersAndSettersGpuPrimitiveT()
   labels.setConstant(1);
   tensoraxis.setDimensionsAndLabels(dimensions, labels);
 
-  assert(tensoraxis.getId() == 1);
-  assert(tensoraxis.getName() == "1");
-  assert(tensoraxis.getNDimensions() == 3);
-  assert(tensoraxis.getNLabels() == 5);
-  assert(tensoraxis.getDimensions()(0) == "TensorDimension1");
-  assert(tensoraxis.getDimensions()(1) == "TensorDimension2");
-  assert(tensoraxis.getDimensions()(2) == "TensorDimension3");
-  assert(tensoraxis.getLabels()(0, 0) == 1);
-  assert(tensoraxis.getLabels()(2, 4) == 1);
+  gpuCheckEqual(tensoraxis.getId(), 1);
+  gpuCheckEqual(tensoraxis.getName(), "1");
+  gpuCheckEqual(tensoraxis.getNDimensions(), 3);
+  gpuCheckEqual(tensoraxis.getNLabels(), 5);
+  gpuCheckEqual(tensoraxis.getDimensions()(0), "TensorDimension1");
+  gpuCheckEqual(tensoraxis.getDimensions()(1), "TensorDimension2");
+  gpuCheckEqual(tensoraxis.getDimensions()(2), "TensorDimension3");
+  gpuCheckEqual(tensoraxis.getLabels()(0, 0), 1);
+  gpuCheckEqual(tensoraxis.getLabels()(2, 4), 1);
 }
 
 void test_copyGpuPrimitiveT()
@@ -115,28 +115,28 @@ void test_copyGpuPrimitiveT()
 
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
   // Test expected
   auto tensoraxis_copy = tensoraxis1.copyToHost(device);
   tensoraxis1.syncHData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(*(tensoraxis_copy.get()) == tensoraxis1);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckEqual(*(tensoraxis_copy.get()), tensoraxis1);
   for (int i = 0; i < 3; ++i) {
     for (int j = 0; j < 5; ++j) {
-      assert(tensoraxis_copy->getLabels()(i, j) == labels(i, j));
+      gpuCheckEqual(tensoraxis_copy->getLabels()(i, j), labels(i, j));
     }
   }
   auto tensoraxis2_copy = tensoraxis1.copyToDevice(device);
   tensoraxis2_copy->syncHData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
-  assert(*(tensoraxis2_copy.get()) == tensoraxis1);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuErrchk(cudaStreamDestroy(stream));
+  gpuCheckEqual(*(tensoraxis2_copy.get()), tensoraxis1);
   for (int i = 0; i < 3; ++i) {
     for (int j = 0; j < 5; ++j) {
-      assert(tensoraxis2_copy->getLabels()(i, j) == labels(i, j));
+      gpuCheckEqual(tensoraxis2_copy->getLabels()(i, j), labels(i, j));
     }
   }
 }
@@ -181,7 +181,7 @@ void test_deleteFromAxisGpuPrimitiveT()
 
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -190,17 +190,17 @@ void test_deleteFromAxisGpuPrimitiveT()
   tensoraxis.syncDData(device);
   tensoraxis.deleteFromAxis(indices_ptr, device);
   tensoraxis.syncHData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuErrchk(cudaStreamDestroy(stream));
 
-  assert(tensoraxis.getNDimensions() == n_dimensions);
-  assert(tensoraxis.getNLabels() == n_select_labels);
-  assert(tensoraxis.getDimensions()(0) == "TensorDimension1");
-  assert(tensoraxis.getDimensions()(1) == "TensorDimension2");
+  gpuCheckEqual(tensoraxis.getNDimensions(), n_dimensions);
+  gpuCheckEqual(tensoraxis.getNLabels(), n_select_labels);
+  gpuCheckEqual(tensoraxis.getDimensions()(0), "TensorDimension1");
+  gpuCheckEqual(tensoraxis.getDimensions()(1), "TensorDimension2");
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = 0; j < n_select_labels; ++j) {
       std::cout << "Test Labels i,j :" << i << "," << j << "; Reduced labels: " << tensoraxis.getLabels()(i, j) << "; Expected: " << labels_test(i, j) << std::endl;
-      //assert(tensoraxis.getLabels()(i, j) == labels_test(i, j)); // FIXME
+      //gpuCheckEqual(tensoraxis.getLabels()(i, j), labels_test(i, j)); // FIXME
     }
   }
 }
@@ -238,7 +238,7 @@ void test_appendLabelsToAxis1GpuPrimitiveT()
 
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -247,23 +247,23 @@ void test_appendLabelsToAxis1GpuPrimitiveT()
   tensoraxis.syncDData(device);
   tensoraxis.appendLabelsToAxis(labels_new_ptr, device);
   tensoraxis.syncHData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuErrchk(cudaStreamDestroy(stream));
 
-  assert(tensoraxis.getNDimensions() == n_dimensions);
-  assert(tensoraxis.getNLabels() == n_labels + n_new_labels);
-  assert(tensoraxis.getDimensions()(0) == "TensorDimension1");
-  assert(tensoraxis.getDimensions()(1) == "TensorDimension2");
+  gpuCheckEqual(tensoraxis.getNDimensions(), n_dimensions);
+  gpuCheckEqual(tensoraxis.getNLabels(), n_labels + n_new_labels);
+  gpuCheckEqual(tensoraxis.getDimensions()(0), "TensorDimension1");
+  gpuCheckEqual(tensoraxis.getDimensions()(1), "TensorDimension2");
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = 0; j < n_labels; ++j) {
       //std::cout << "Test Labels i,j :" << i << "," << j << "; Original labels: " << tensoraxis.getLabels()(i, j) << "; Expected: " << labels(i, j) << std::endl;
-      assert(tensoraxis.getLabels()(i, j) == labels(i, j));
+      gpuCheckEqual(tensoraxis.getLabels()(i, j), labels(i, j));
     }
   }
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = n_labels; j < tensoraxis.getNLabels(); ++j) {
       //std::cout << "Test Labels i,j :" << i << "," << j << "; New labels: " << tensoraxis.getLabels()(i, j) << "; Expected: " << labels_values(i, j - n_labels) << std::endl;
-      assert(tensoraxis.getLabels()(i, j) == labels_values(i, j - n_labels));
+      gpuCheckEqual(tensoraxis.getLabels()(i, j), labels_values(i, j - n_labels));
     }
   }
 }
@@ -293,7 +293,7 @@ void test_appendLabelsToAxis2GpuPrimitiveT()
 
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -302,17 +302,17 @@ void test_appendLabelsToAxis2GpuPrimitiveT()
   tensoraxis.syncDData(device);
   tensoraxis.appendLabelsToAxis(labels_new_ptr, device);
   tensoraxis.syncHData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuErrchk(cudaStreamDestroy(stream));
 
-  assert(tensoraxis.getNDimensions() == n_dimensions);
-  assert(tensoraxis.getNLabels() == n_labels);
-  assert(tensoraxis.getDimensions()(0) == "TensorDimension1");
-  assert(tensoraxis.getDimensions()(1) == "TensorDimension2");
+  gpuCheckEqual(tensoraxis.getNDimensions(), n_dimensions);
+  gpuCheckEqual(tensoraxis.getNLabels(), n_labels);
+  gpuCheckEqual(tensoraxis.getDimensions()(0), "TensorDimension1");
+  gpuCheckEqual(tensoraxis.getDimensions()(1), "TensorDimension2");
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = 0; j < n_labels; ++j) {
       //std::cout << "Test Labels i,j :" << i << "," << j << "; Original labels: " << tensoraxis.getLabels()(i, j) << "; Expected: " << labels(i, j) << std::endl;
-      assert(tensoraxis.getLabels()(i, j) == labels(i, j));
+      gpuCheckEqual(tensoraxis.getLabels()(i, j), labels(i, j));
     }
   }
 }
@@ -334,7 +334,7 @@ void test_makeSortIndicesGpuPrimitiveT()
 
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -361,14 +361,14 @@ void test_makeSortIndicesGpuPrimitiveT()
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>> indices_sort;
   tensoraxis.makeSortIndices(indices_view_ptr, indices_sort, device);
   indices_sort->syncHData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = 0; j < n_labels; ++j) {
-      assert(indices_sort->getData()(i, j) == indices_sort_test(i, j));
+      gpuCheckEqual(indices_sort->getData()(i, j), indices_sort_test(i, j));
     }
   }
 
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_sortLabelsGpuPrimitiveT()
@@ -388,7 +388,7 @@ void test_sortLabelsGpuPrimitiveT()
 
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -406,10 +406,10 @@ void test_sortLabelsGpuPrimitiveT()
   // test sorting ASC
   tensoraxis.sortLabels(indices_view_ptr, device);
   tensoraxis.syncHData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = 0; j < n_labels; ++j) {
-      assert(tensoraxis.getLabels()(i, j) == labels(i, j));
+      gpuCheckEqual(tensoraxis.getLabels()(i, j), labels(i, j));
     }
   }
 
@@ -429,13 +429,13 @@ void test_sortLabelsGpuPrimitiveT()
   tensoraxis.setDataStatus(false, true);
   tensoraxis.sortLabels(indices_view_ptr, device);
   tensoraxis.syncHData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = 0; j < n_labels; ++j) {
-      assert(tensoraxis.getLabels()(i, j) == labels_sort_test(i, j));
+      gpuCheckEqual(tensoraxis.getLabels()(i, j), labels_sort_test(i, j));
     }
   }
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_storeAndLoadLabelsGpuPrimitiveT()
@@ -451,7 +451,7 @@ void test_storeAndLoadLabelsGpuPrimitiveT()
 
   // Store the axis data
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
   tensoraxis_io.storeLabelsBinary("axis", device);
@@ -460,24 +460,24 @@ void test_storeAndLoadLabelsGpuPrimitiveT()
   TensorAxisGpuPrimitiveT<int> tensoraxis("1", 3, 5);
   tensoraxis.loadLabelsBinary("axis", device);
 
-  assert(tensoraxis.getId() == -1);
-  assert(tensoraxis.getName() == "1");
-  assert(tensoraxis.getNDimensions() == 3);
-  assert(tensoraxis.getNLabels() == 5);
-  //assert(tensoraxis.getDimensions()(0) == "TensorDimension1"); // Not loaded
-  //assert(tensoraxis.getDimensions()(1) == "TensorDimension2"); // Not loaded
-  //assert(tensoraxis.getDimensions()(2) == "TensorDimension3"); // Not loaded
-  assert(tensoraxis.getLabels()(0, 0) == 1);
-  assert(tensoraxis.getLabels()(2, 4) == 1);
+  gpuCheckEqual(tensoraxis.getId(), -1);
+  gpuCheckEqual(tensoraxis.getName(), "1");
+  gpuCheckEqual(tensoraxis.getNDimensions(), 3);
+  gpuCheckEqual(tensoraxis.getNLabels(), 5);
+  //gpuCheckEqual(tensoraxis.getDimensions()(0), "TensorDimension1"); // Not loaded
+  //gpuCheckEqual(tensoraxis.getDimensions()(1), "TensorDimension2"); // Not loaded
+  //gpuCheckEqual(tensoraxis.getDimensions()(2), "TensorDimension3"); // Not loaded
+  gpuCheckEqual(tensoraxis.getLabels()(0, 0), 1);
+  gpuCheckEqual(tensoraxis.getLabels()(2, 4), 1);
 
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_getLabelsAsStringsGpuPrimitiveT()
 {
   // Setup the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -494,11 +494,11 @@ void test_getLabelsAsStringsGpuPrimitiveT()
   tensoraxis.syncDData(device);
   std::vector<std::string> labels_str = tensoraxis.getLabelsAsStrings(device);
   tensoraxis.syncHData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   int iter = 0;
   for (int i = 0; i < 3; i++) {
     for (int j = 0; j < 5; j++) {
-      assert(labels_str.at(iter) == std::to_string(tensoraxis.getLabels()(i, j)));
+      gpuCheckEqual(labels_str.at(iter), std::to_string(tensoraxis.getLabels()(i, j)));
     }
     ++iter;
   }
@@ -512,11 +512,11 @@ void test_getLabelsAsStringsGpuPrimitiveT()
   tensoraxis_char.syncDData(device);
   std::vector<std::string> labels_char_str = tensoraxis_char.getLabelsAsStrings(device);
   tensoraxis_char.syncHData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   iter = 0;
   for (int i = 0; i < 3; i++) {
     for (int j = 0; j < 5; j++) {
-      assert(labels_char_str.at(iter) == std::to_string(tensoraxis_char.getLabels()(i, j)));
+      gpuCheckEqual(labels_char_str.at(iter), std::to_string(tensoraxis_char.getLabels()(i, j)));
     }
     ++iter;
   }
@@ -530,23 +530,23 @@ void test_getLabelsAsStringsGpuPrimitiveT()
   tensoraxis_array.syncDData(device);
   std::vector<std::string> labels_array_str = tensoraxis_array.getLabelsAsStrings(device);
   tensoraxis_array.syncHData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   iter = 0;
   for (int i = 0; i < 3; i++) {
     for (int j = 0; j < 5; j++) {
-      assert(labels_array_str.at(iter) == labels_array(i, j).getTensorArrayAsString());
+      gpuCheckEqual(labels_array_str.at(iter), labels_array(i, j).getTensorArrayAsString());
     }
     ++iter;
   }
 
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_appendLabelsToAxisFromCsv1GpuPrimitiveT()
 {
   // Setup the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -581,29 +581,29 @@ void test_appendLabelsToAxisFromCsv1GpuPrimitiveT()
   tensoraxis.syncDData(device);
   tensoraxis.appendLabelsToAxisFromCsv(labels_values, device);
   tensoraxis.syncHData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(tensoraxis.getNDimensions() == n_dimensions);
-  assert(tensoraxis.getNLabels() == n_labels + 2);
-  assert(tensoraxis.getDimensions()(0) == "TensorDimension1");
-  assert(tensoraxis.getDimensions()(1) == "TensorDimension2");
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckEqual(tensoraxis.getNDimensions(), n_dimensions);
+  gpuCheckEqual(tensoraxis.getNLabels(), n_labels + 2);
+  gpuCheckEqual(tensoraxis.getDimensions()(0), "TensorDimension1");
+  gpuCheckEqual(tensoraxis.getDimensions()(1), "TensorDimension2");
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = 0; j < n_labels; ++j) {
-      assert(tensoraxis.getLabels()(i, j) == labels(i, j));
+      gpuCheckEqual(tensoraxis.getLabels()(i, j), labels(i, j));
     }
   }
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = n_labels; j < tensoraxis.getNLabels(); ++j) {
-      assert(tensoraxis.getLabels()(i, j) == std::stoi(labels_values(i, j - n_labels)));
+      gpuCheckEqual(tensoraxis.getLabels()(i, j), std::stoi(labels_values(i, j - n_labels)));
     }
   }
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_appendLabelsToAxisFromCsv2GpuPrimitiveT()
 {
   // Setup the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -627,17 +627,17 @@ void test_appendLabelsToAxisFromCsv2GpuPrimitiveT()
   tensoraxis.syncDData(device);
   tensoraxis.appendLabelsToAxisFromCsv(labels_values, device);
   tensoraxis.syncHData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(tensoraxis.getNDimensions() == n_dimensions);
-  assert(tensoraxis.getNLabels() == n_labels);
-  assert(tensoraxis.getDimensions()(0) == "TensorDimension1");
-  assert(tensoraxis.getDimensions()(1) == "TensorDimension2");
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckEqual(tensoraxis.getNDimensions(), n_dimensions);
+  gpuCheckEqual(tensoraxis.getNLabels(), n_labels);
+  gpuCheckEqual(tensoraxis.getDimensions()(0), "TensorDimension1");
+  gpuCheckEqual(tensoraxis.getDimensions()(1), "TensorDimension2");
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = 0; j < n_labels; ++j) {
-      assert(tensoraxis.getLabels()(i, j) == i + j * n_dimensions);
+      gpuCheckEqual(tensoraxis.getLabels()(i, j), i + j * n_dimensions);
     }
   }
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_constructorGpuClassT()
@@ -645,7 +645,7 @@ void test_constructorGpuClassT()
   TensorAxisGpuClassT<TensorArrayGpu8, int>* ptr = nullptr;
   TensorAxisGpuClassT<TensorArrayGpu8, int>* nullPointer = nullptr;
   ptr = new TensorAxisGpuClassT<TensorArrayGpu8, int>();
-  assert(ptr != nullPointer);
+  gpuCheckNotEqual(ptr, nullPointer);
   delete ptr;
 }
 
@@ -666,15 +666,15 @@ void test_constructor1GpuClassT()
   labels.setConstant(TensorArrayGpu8<int>({1, 1, 1, 1, 1, 1, 1, 1 }));
   TensorAxisGpuClassT<TensorArrayGpu8, int> tensoraxis("1", dimensions, labels);
 
-  assert(tensoraxis.getId() == -1);
-  assert(tensoraxis.getName() == "1");
-  assert(tensoraxis.getNDimensions() == 3);
-  assert(tensoraxis.getNLabels() == 5);
-  assert(tensoraxis.getDimensions()(0) == "TensorDimension1");
-  assert(tensoraxis.getDimensions()(1) == "TensorDimension2");
-  assert(tensoraxis.getDimensions()(2) == "TensorDimension3");
-  assert(tensoraxis.getLabels()(0, 0).getTensorArray()(0) == 1);
-  assert(tensoraxis.getLabels()(2, 4).getTensorArray()(0) == 1);
+  gpuCheckEqual(tensoraxis.getId(), -1);
+  gpuCheckEqual(tensoraxis.getName(), "1");
+  gpuCheckEqual(tensoraxis.getNDimensions(), 3);
+  gpuCheckEqual(tensoraxis.getNLabels(), 5);
+  gpuCheckEqual(tensoraxis.getDimensions()(0), "TensorDimension1");
+  gpuCheckEqual(tensoraxis.getDimensions()(1), "TensorDimension2");
+  gpuCheckEqual(tensoraxis.getDimensions()(2), "TensorDimension3");
+  gpuCheckEqual(tensoraxis.getLabels()(0, 0).getTensorArray()(0), 1);
+  gpuCheckEqual(tensoraxis.getLabels()(2, 4).getTensorArray()(0), 1);
 }
 
 void test_constructor2GpuClassT()
@@ -687,33 +687,33 @@ void test_constructor2GpuClassT()
   labels.setConstant(TensorArrayGpu8<int>({ 1, 1, 1, 1, 1, 1, 1, 1 }));
   TensorAxisGpuClassT<TensorArrayGpu8, int> tensoraxis("1", 1, 1);
 
-  assert(tensoraxis.getId() == -1);
-  assert(tensoraxis.getName() == "1");
-  assert(tensoraxis.getNDimensions() == 1);
-  assert(tensoraxis.getNLabels() == 1);
+  gpuCheckEqual(tensoraxis.getId(), -1);
+  gpuCheckEqual(tensoraxis.getName(), "1");
+  gpuCheckEqual(tensoraxis.getNDimensions(), 1);
+  gpuCheckEqual(tensoraxis.getNLabels(), 1);
 
   tensoraxis.setDimensions(dimensions);
   tensoraxis.setLabels(labels);
 
-  assert(tensoraxis.getId() == -1);
-  assert(tensoraxis.getName() == "1");
-  assert(tensoraxis.getNDimensions() == 3);
-  assert(tensoraxis.getNLabels() == 5);
-  assert(tensoraxis.getDimensions()(0) == "TensorDimension1");
-  assert(tensoraxis.getDimensions()(1) == "TensorDimension2");
-  assert(tensoraxis.getDimensions()(2) == "TensorDimension3");
-  assert(tensoraxis.getLabels()(0, 0).getTensorArray()(0) == 1);
-  assert(tensoraxis.getLabels()(2, 4).getTensorArray()(0) == 1);
+  gpuCheckEqual(tensoraxis.getId(), -1);
+  gpuCheckEqual(tensoraxis.getName(), "1");
+  gpuCheckEqual(tensoraxis.getNDimensions(), 3);
+  gpuCheckEqual(tensoraxis.getNLabels(), 5);
+  gpuCheckEqual(tensoraxis.getDimensions()(0), "TensorDimension1");
+  gpuCheckEqual(tensoraxis.getDimensions()(1), "TensorDimension2");
+  gpuCheckEqual(tensoraxis.getDimensions()(2), "TensorDimension3");
+  gpuCheckEqual(tensoraxis.getLabels()(0, 0).getTensorArray()(0), 1);
+  gpuCheckEqual(tensoraxis.getLabels()(2, 4).getTensorArray()(0), 1);
 }
 
 void test_gettersAndSettersGpuClassT()
 {
   TensorAxisGpuClassT<TensorArrayGpu8, int> tensoraxis;
   // Check defaults
-  assert(tensoraxis.getId() == -1);
-  assert(tensoraxis.getName() == "");
-  assert(tensoraxis.getNLabels() == 0);
-  assert(tensoraxis.getNDimensions() == 0);
+  gpuCheckEqual(tensoraxis.getId(), -1);
+  gpuCheckEqual(tensoraxis.getName(), "");
+  gpuCheckEqual(tensoraxis.getNLabels(), 0);
+  gpuCheckEqual(tensoraxis.getNDimensions(), 0);
 
   // Check getters/setters
   tensoraxis.setId(1);
@@ -726,15 +726,15 @@ void test_gettersAndSettersGpuClassT()
   labels.setConstant(TensorArrayGpu8<int>({ 1, 1, 1, 1, 1, 1, 1, 1 }));
   tensoraxis.setDimensionsAndLabels(dimensions, labels);
 
-  assert(tensoraxis.getId() == 1);
-  assert(tensoraxis.getName() == "1");
-  assert(tensoraxis.getNDimensions() == 3);
-  assert(tensoraxis.getNLabels() == 5);
-  assert(tensoraxis.getDimensions()(0) == "TensorDimension1");
-  assert(tensoraxis.getDimensions()(1) == "TensorDimension2");
-  assert(tensoraxis.getDimensions()(2) == "TensorDimension3");
-  assert(tensoraxis.getLabels()(0, 0).getTensorArray()(0) == 1);
-  assert(tensoraxis.getLabels()(2, 4).getTensorArray()(0) == 1);
+  gpuCheckEqual(tensoraxis.getId(), 1);
+  gpuCheckEqual(tensoraxis.getName(), "1");
+  gpuCheckEqual(tensoraxis.getNDimensions(), 3);
+  gpuCheckEqual(tensoraxis.getNLabels(), 5);
+  gpuCheckEqual(tensoraxis.getDimensions()(0), "TensorDimension1");
+  gpuCheckEqual(tensoraxis.getDimensions()(1), "TensorDimension2");
+  gpuCheckEqual(tensoraxis.getDimensions()(2), "TensorDimension3");
+  gpuCheckEqual(tensoraxis.getLabels()(0, 0).getTensorArray()(0), 1);
+  gpuCheckEqual(tensoraxis.getLabels()(2, 4).getTensorArray()(0), 1);
 }
 
 void test_copyGpuClassT()
@@ -749,28 +749,28 @@ void test_copyGpuClassT()
 
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
   // Test expected
   auto tensoraxis_copy = tensoraxis1.copyToHost(device);
   tensoraxis1.syncHData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(*(tensoraxis_copy.get()) == tensoraxis1);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckEqual(*(tensoraxis_copy.get()), tensoraxis1);
   for (int i = 0; i < 3; ++i) {
     for (int j = 0; j < 5; ++j) {
-      assert(tensoraxis_copy->getLabels()(i, j) == labels(i, j));
+      gpuCheckEqual(tensoraxis_copy->getLabels()(i, j), labels(i, j));
     }
   }
   auto tensoraxis2_copy = tensoraxis1.copyToDevice(device);
   tensoraxis2_copy->syncHData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
-  assert(*(tensoraxis2_copy.get()) == tensoraxis1);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuErrchk(cudaStreamDestroy(stream));
+  gpuCheckEqual(*(tensoraxis2_copy.get()), tensoraxis1);
   for (int i = 0; i < 3; ++i) {
     for (int j = 0; j < 5; ++j) {
-      assert(tensoraxis2_copy->getLabels()(i, j) == labels(i, j));
+      gpuCheckEqual(tensoraxis2_copy->getLabels()(i, j), labels(i, j));
     }
   }
 }
@@ -815,7 +815,7 @@ void test_deleteFromAxisGpuClassT()
 
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -824,17 +824,17 @@ void test_deleteFromAxisGpuClassT()
   tensoraxis.syncDData(device);
   tensoraxis.deleteFromAxis(indices_ptr, device);
   tensoraxis.syncHData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuErrchk(cudaStreamDestroy(stream));
 
-  assert(tensoraxis.getNDimensions() == n_dimensions);
-  assert(tensoraxis.getNLabels() == n_select_labels);
-  assert(tensoraxis.getDimensions()(0) == "TensorDimension1");
-  assert(tensoraxis.getDimensions()(1) == "TensorDimension2");
+  gpuCheckEqual(tensoraxis.getNDimensions(), n_dimensions);
+  gpuCheckEqual(tensoraxis.getNLabels(), n_select_labels);
+  gpuCheckEqual(tensoraxis.getDimensions()(0), "TensorDimension1");
+  gpuCheckEqual(tensoraxis.getDimensions()(1), "TensorDimension2");
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = 0; j < n_select_labels; ++j) {
       //std::cout << "Test Labels i,j :" << i << "," << j << "; Reduced labels: " << tensoraxis.getLabels()(i, j) << "; Expected: " << labels_test(i, j) << std::endl;
-      assert(tensoraxis.getLabels()(i, j) == labels_test(i, j));
+      gpuCheckEqual(tensoraxis.getLabels()(i, j), labels_test(i, j));
     }
   }
 }
@@ -872,7 +872,7 @@ void test_appendLabelsToAxis1GpuClassT()
 
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -881,23 +881,23 @@ void test_appendLabelsToAxis1GpuClassT()
   tensoraxis.syncDData(device);
   tensoraxis.appendLabelsToAxis(labels_new_ptr, device);
   tensoraxis.syncHData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuErrchk(cudaStreamDestroy(stream));
 
-  assert(tensoraxis.getNDimensions() == n_dimensions);
-  assert(tensoraxis.getNLabels() == n_labels + n_new_labels);
-  assert(tensoraxis.getDimensions()(0) == "TensorDimension1");
-  assert(tensoraxis.getDimensions()(1) == "TensorDimension2");
+  gpuCheckEqual(tensoraxis.getNDimensions(), n_dimensions);
+  gpuCheckEqual(tensoraxis.getNLabels(), n_labels + n_new_labels);
+  gpuCheckEqual(tensoraxis.getDimensions()(0), "TensorDimension1");
+  gpuCheckEqual(tensoraxis.getDimensions()(1), "TensorDimension2");
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = 0; j < n_labels; ++j) {
       //std::cout << "Test Labels i,j :" << i << "," << j << "; Original labels: " << tensoraxis.getLabels()(i, j) << "; Expected: " << labels(i, j) << std::endl;
-      assert(tensoraxis.getLabels()(i, j) == labels(i, j));
+      gpuCheckEqual(tensoraxis.getLabels()(i, j), labels(i, j));
     }
   }
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = n_labels; j < tensoraxis.getNLabels(); ++j) {
       //std::cout << "Test Labels i,j :" << i << "," << j << "; New labels: " << tensoraxis.getLabels()(i, j) << "; Expected: " << labels_values(i, j - n_labels) << std::endl;
-      assert(tensoraxis.getLabels()(i, j) == labels_values(i, j - n_labels));
+      gpuCheckEqual(tensoraxis.getLabels()(i, j), labels_values(i, j - n_labels));
     }
   }
 }
@@ -927,7 +927,7 @@ void test_appendLabelsToAxis2GpuClassT()
 
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -936,17 +936,17 @@ void test_appendLabelsToAxis2GpuClassT()
   tensoraxis.syncDData(device);
   tensoraxis.appendLabelsToAxis(labels_new_ptr, device);
   tensoraxis.syncHData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuErrchk(cudaStreamDestroy(stream));
 
-  assert(tensoraxis.getNDimensions() == n_dimensions);
-  assert(tensoraxis.getNLabels() == n_labels);
-  assert(tensoraxis.getDimensions()(0) == "TensorDimension1");
-  assert(tensoraxis.getDimensions()(1) == "TensorDimension2");
+  gpuCheckEqual(tensoraxis.getNDimensions(), n_dimensions);
+  gpuCheckEqual(tensoraxis.getNLabels(), n_labels);
+  gpuCheckEqual(tensoraxis.getDimensions()(0), "TensorDimension1");
+  gpuCheckEqual(tensoraxis.getDimensions()(1), "TensorDimension2");
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = 0; j < n_labels; ++j) {
       //std::cout << "Test Labels i,j :" << i << "," << j << "; Original labels: " << tensoraxis.getLabels()(i, j) << "; Expected: " << labels_values(i, j) << std::endl;
-      assert(tensoraxis.getLabels()(i, j) == labels_values(i, j));
+      gpuCheckEqual(tensoraxis.getLabels()(i, j), labels_values(i, j));
     }
   }
 }
@@ -968,7 +968,7 @@ void test_makeSortIndicesGpuClassT()
 
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -995,14 +995,14 @@ void test_makeSortIndicesGpuClassT()
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>> indices_sort;
   tensoraxis.makeSortIndices(indices_view_ptr, indices_sort, device);
   indices_sort->syncHData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = 0; j < n_labels; ++j) {
-      assert(indices_sort->getData()(i, j) == indices_sort_test(i, j));
+      gpuCheckEqual(indices_sort->getData()(i, j), indices_sort_test(i, j));
     }
   }
 
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_sortLabelsGpuClassT()
@@ -1022,7 +1022,7 @@ void test_sortLabelsGpuClassT()
 
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -1040,10 +1040,10 @@ void test_sortLabelsGpuClassT()
   // test sorting ASC
   tensoraxis.sortLabels(indices_view_ptr, device);
   tensoraxis.syncHData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = 0; j < n_labels; ++j) {
-      assert(tensoraxis.getLabels()(i, j) == labels(i, j));
+      gpuCheckEqual(tensoraxis.getLabels()(i, j), labels(i, j));
     }
   }
 
@@ -1063,13 +1063,13 @@ void test_sortLabelsGpuClassT()
   tensoraxis.setDataStatus(false, true);
   tensoraxis.sortLabels(indices_view_ptr, device);
   tensoraxis.syncHData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = 0; j < n_labels; ++j) {
-      assert(tensoraxis.getLabels()(i, j) == labels_sort_test(i, j));
+      gpuCheckEqual(tensoraxis.getLabels()(i, j), labels_sort_test(i, j));
     }
   }
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_storeAndLoadLabelsGpuClassT()
@@ -1085,7 +1085,7 @@ void test_storeAndLoadLabelsGpuClassT()
 
   // Store the axis data
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
   tensoraxis_io.storeLabelsBinary("axis", device);
@@ -1094,24 +1094,24 @@ void test_storeAndLoadLabelsGpuClassT()
   TensorAxisGpuClassT<TensorArrayGpu8, int> tensoraxis("1", 3, 5);
   tensoraxis.loadLabelsBinary("axis", device);
 
-  assert(tensoraxis.getId() == -1);
-  assert(tensoraxis.getName() == "1");
-  assert(tensoraxis.getNDimensions() == 3);
-  assert(tensoraxis.getNLabels() == 5);
-  //assert(tensoraxis.getDimensions()(0) == "TensorDimension1"); // Not loaded
-  //assert(tensoraxis.getDimensions()(1) == "TensorDimension2"); // Not loaded
-  //assert(tensoraxis.getDimensions()(2) == "TensorDimension3"); // Not loaded
-  assert(tensoraxis.getLabels()(0, 0).getTensorArray()(0) == 1);
-  assert(tensoraxis.getLabels()(2, 4).getTensorArray()(0) == 1);
+  gpuCheckEqual(tensoraxis.getId(), -1);
+  gpuCheckEqual(tensoraxis.getName(), "1");
+  gpuCheckEqual(tensoraxis.getNDimensions(), 3);
+  gpuCheckEqual(tensoraxis.getNLabels(), 5);
+  //gpuCheckEqual(tensoraxis.getDimensions()(0), "TensorDimension1"); // Not loaded
+  //gpuCheckEqual(tensoraxis.getDimensions()(1), "TensorDimension2"); // Not loaded
+  //gpuCheckEqual(tensoraxis.getDimensions()(2), "TensorDimension3"); // Not loaded
+  gpuCheckEqual(tensoraxis.getLabels()(0, 0).getTensorArray()(0), 1);
+  gpuCheckEqual(tensoraxis.getLabels()(2, 4).getTensorArray()(0), 1);
 
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_appendLabelsToAxisFromCsv1GpuClassT()
 {
   // Setup the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -1146,29 +1146,29 @@ void test_appendLabelsToAxisFromCsv1GpuClassT()
   tensoraxis.syncDData(device);
   tensoraxis.appendLabelsToAxisFromCsv(labels_values, device);
   tensoraxis.syncHData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(tensoraxis.getNDimensions() == n_dimensions);
-  assert(tensoraxis.getNLabels() == n_labels + 2);
-  assert(tensoraxis.getDimensions()(0) == "TensorDimension1");
-  assert(tensoraxis.getDimensions()(1) == "TensorDimension2");
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckEqual(tensoraxis.getNDimensions(), n_dimensions);
+  gpuCheckEqual(tensoraxis.getNLabels(), n_labels + 2);
+  gpuCheckEqual(tensoraxis.getDimensions()(0), "TensorDimension1");
+  gpuCheckEqual(tensoraxis.getDimensions()(1), "TensorDimension2");
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = 0; j < n_labels; ++j) {
-      assert(tensoraxis.getLabels()(i, j) == TensorArrayGpu8<char>(labels(i, j)));
+      gpuCheckEqual(tensoraxis.getLabels()(i, j), TensorArrayGpu8<char>(labels(i, j)));
     }
   }
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = n_labels; j < tensoraxis.getNLabels(); ++j) {
-      assert(tensoraxis.getLabels()(i, j) == TensorArrayGpu8<char>(labels_values(i, j - n_labels)));
+      gpuCheckEqual(tensoraxis.getLabels()(i, j), TensorArrayGpu8<char>(labels_values(i, j - n_labels)));
     }
   }
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_appendLabelsToAxisFromCsv2GpuClassT()
 {
   // Setup the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -1192,22 +1192,22 @@ void test_appendLabelsToAxisFromCsv2GpuClassT()
   tensoraxis.syncDData(device);
   tensoraxis.appendLabelsToAxisFromCsv(labels_values, device);
   tensoraxis.syncHData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(tensoraxis.getNDimensions() == n_dimensions);
-  assert(tensoraxis.getNLabels() == n_labels);
-  assert(tensoraxis.getDimensions()(0) == "TensorDimension1");
-  assert(tensoraxis.getDimensions()(1) == "TensorDimension2");
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckEqual(tensoraxis.getNDimensions(), n_dimensions);
+  gpuCheckEqual(tensoraxis.getNLabels(), n_labels);
+  gpuCheckEqual(tensoraxis.getDimensions()(0), "TensorDimension1");
+  gpuCheckEqual(tensoraxis.getDimensions()(1), "TensorDimension2");
   for (int i = 0; i < n_dimensions; ++i) {
     for (int j = 0; j < n_labels; ++j) {
-      assert(tensoraxis.getLabels()(i, j) == TensorArrayGpu8<char>(std::to_string(i + j * n_dimensions)));
+      gpuCheckEqual(tensoraxis.getLabels()(i, j), TensorArrayGpu8<char>(std::to_string(i + j * n_dimensions)));
     }
   }
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 int main(int argc, char** argv)
 {
-  assert(cudaDeviceReset() == cudaSuccess);
+  gpuErrchk(cudaDeviceReset());
   test_constructorGpuPrimitiveT();
   test_destructorGpuPrimitiveT();
   test_constructor1GpuPrimitiveT();
@@ -1223,7 +1223,7 @@ int main(int argc, char** argv)
   test_appendLabelsToAxisFromCsv1GpuPrimitiveT();
   test_appendLabelsToAxisFromCsv2GpuPrimitiveT();
 
-  assert(cudaDeviceReset() == cudaSuccess);
+  gpuErrchk(cudaDeviceReset());
   test_constructorGpuClassT();
   test_destructorGpuClassT();
   test_constructor1GpuClassT(); 

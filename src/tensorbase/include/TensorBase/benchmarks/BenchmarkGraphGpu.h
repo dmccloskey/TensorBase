@@ -569,7 +569,7 @@ namespace TensorBaseBenchmarks
       transaction_manager.initTensorCollectionTensorData(device);
     }
     select_and_sum.adjacency_->syncHAndDData(device);
-    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+    gpuErrchk(cudaStreamSynchronize(device.stream()));
     return select_and_sum.adjacency_->getData()(0, 0);
   }
   inline float BenchmarkGraph1LinkGpu::_selectBFS(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& scale, const int& edge_factor, const bool& in_memory, Eigen::GpuDevice& device) const
@@ -581,7 +581,7 @@ namespace TensorBaseBenchmarks
       transaction_manager.initTensorCollectionTensorData(device);
     }
     select_and_sum.tree_->syncHAndDData(device);
-    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+    gpuErrchk(cudaStreamSynchronize(device.stream()));
     return select_and_sum.tree_->getData()(0, 0);
   }
   inline float BenchmarkGraph1LinkGpu::_selectSSSP(TransactionManager<Eigen::GpuDevice>& transaction_manager, const int& scale, const int& edge_factor, const bool& in_memory, Eigen::GpuDevice& device) const
@@ -593,7 +593,7 @@ namespace TensorBaseBenchmarks
       transaction_manager.initTensorCollectionTensorData(device);
     }
     select_and_sum.path_lengths_->syncHAndDData(device);
-    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+    gpuErrchk(cudaStreamSynchronize(device.stream()));
     return select_and_sum.path_lengths_->getData()(0);
   }
 

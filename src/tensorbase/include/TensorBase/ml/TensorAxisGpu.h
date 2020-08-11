@@ -107,7 +107,7 @@ namespace TensorBase
     auto indices_view_norm = (indices_values.cast<float>() / (indices_values.cast<float>() + indices_values.cast<float>().constant(1e-12))).cast<int>();
     axis_size_value.device(device) = indices_view_norm.sum();
     axis_size.syncHData(device);
-    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+    gpuErrchk(cudaStreamSynchronize(device.stream()));
 
     // allocate memory for the new labels
     TensorDataGpuPrimitiveT<TensorT, 2> new_labels(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, axis_size.getData()(0) }));
@@ -131,7 +131,7 @@ namespace TensorBase
   template<typename TensorT>
   inline void TensorAxisGpuPrimitiveT<TensorT>::appendLabelsToAxis(const std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 2>>& labels, Eigen::GpuDevice & device)
   {
-    assert(labels->getDimensions().at(0) == this->n_dimensions_);
+    gpuCheckEqual(labels->getDimensions().at(0), this->n_dimensions_);
 
     // copy the original number of labels
     size_t n_labels_copy = this->n_labels_;
@@ -209,7 +209,7 @@ namespace TensorBase
     // Store the labels
     if (this->getNLabels()*this->getNLabels() > 0) {
       this->syncHData(device); // D to H
-      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+      gpuErrchk(cudaStreamSynchronize(device.stream()));
       DataFile::storeDataBinary<TensorT, 2>(filename + ".ta", this->getLabels());
       this->setDataStatus(false, true);
     }
@@ -218,7 +218,7 @@ namespace TensorBase
   template<typename TensorT>
   inline void TensorAxisGpuPrimitiveT<TensorT>::appendLabelsToAxisFromCsv(const Eigen::Tensor<std::string, 2>& labels, Eigen::GpuDevice & device)
   {
-    assert(this->n_dimensions_ == (int)labels.dimension(0));
+    gpuCheckEqual(this->n_dimensions_, (int)labels.dimension(0));
 
     // Convert to TensorT
     TensorDataGpuPrimitiveT<TensorT, 2> labels_converted(Eigen::array<Eigen::Index, 2>({ (int)labels.dimension(0), (int)labels.dimension(1) }));
@@ -298,7 +298,7 @@ namespace TensorBase
     Eigen::TensorMap<Eigen::Tensor<int, 0>> n_labels_new_values(n_labels_new.getDataPointer().get());
     n_labels_new_values.device(device) = indices_select_values.sum() / n_labels_new_values.constant((int)labels.dimension(0));
     n_labels_new.syncHData(device);
-    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+    gpuErrchk(cudaStreamSynchronize(device.stream()));
 
     // Allocate memory for the new labels
     TensorDataGpuPrimitiveT<TensorT, 2> labels_select(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, n_labels_new.getData()(0) }));
@@ -400,7 +400,7 @@ namespace TensorBase
     auto indices_view_norm = (indices_values.cast<float>() / (indices_values.cast<float>() + indices_values.cast<float>().constant(1e-12))).cast<int>();
     axis_size_value.device(device) = indices_view_norm.sum();
     axis_size.syncHData(device);
-    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+    gpuErrchk(cudaStreamSynchronize(device.stream()));
 
     // allocate memory for the new labels
     TensorDataGpuClassT<ArrayT, TensorT, 2> new_labels(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, axis_size.getData()(0) }));
@@ -424,7 +424,7 @@ namespace TensorBase
   template<template<class> class ArrayT, class TensorT>
   inline void TensorAxisGpuClassT<ArrayT, TensorT>::appendLabelsToAxis(const std::shared_ptr<TensorData<ArrayT<TensorT>, Eigen::GpuDevice, 2>>& labels, Eigen::GpuDevice & device)
   {
-    assert(labels->getDimensions().at(0) == this->n_dimensions_);
+    gpuCheckEqual(labels->getDimensions().at(0), this->n_dimensions_);
 
     // copy the original number of labels
     size_t n_labels_copy = this->n_labels_;
@@ -501,7 +501,7 @@ namespace TensorBase
   {
     // Store the labels
     this->syncHData(device); // D to H
-    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+    gpuErrchk(cudaStreamSynchronize(device.stream()));
     DataFile::storeDataBinary<ArrayT<TensorT>, 2>(filename + ".ta", this->getLabels());
     this->setDataStatus(false, true);
     return true;
@@ -509,7 +509,7 @@ namespace TensorBase
   template<template<class> class ArrayT, class TensorT>
   inline void TensorAxisGpuClassT<ArrayT, TensorT>::appendLabelsToAxisFromCsv(const Eigen::Tensor<std::string, 2>& labels, Eigen::GpuDevice & device)
   {
-    assert(this->n_dimensions_ == (int)labels.dimension(0));
+    gpuCheckEqual(this->n_dimensions_, (int)labels.dimension(0));
 
     // Convert to ArrayT<TensorT>
     TensorDataGpuClassT<ArrayT, TensorT, 2> labels_converted(Eigen::array<Eigen::Index, 2>({ (int)labels.dimension(0), (int)labels.dimension(1) }));
@@ -589,7 +589,7 @@ namespace TensorBase
     Eigen::TensorMap<Eigen::Tensor<int, 0>> n_labels_new_values(n_labels_new.getDataPointer().get());
     n_labels_new_values.device(device) = indices_select_values.sum() / n_labels_new_values.constant((int)labels.dimension(0));
     n_labels_new.syncHData(device);
-    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+    gpuErrchk(cudaStreamSynchronize(device.stream()));
 
     // Allocate memory for the new labels
     TensorDataGpuClassT<ArrayT, TensorT, 2> labels_select(Eigen::array<Eigen::Index, 2>({ (int)this->n_dimensions_, n_labels_new.getData()(0) }));

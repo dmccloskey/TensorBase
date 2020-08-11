@@ -11,7 +11,7 @@ void test_indicesAndWeightsToAdjacencyMatrixGpu()
 {
   // init the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -32,29 +32,29 @@ void test_indicesAndWeightsToAdjacencyMatrixGpu()
   IndicesAndWeightsToAdjacencyMatrixGpu<int, float> to_adjacency;
   to_adjacency(node_ids, indices, weights, adjacency, device);
   adjacency->syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   Eigen::array<Eigen::Index, 2> indices_dims = { int(node_ids->getTensorSize()), int(node_ids->getTensorSize()) };
-  assert(adjacency->getDimensions() == indices_dims);
+  gpuCheckEqual(adjacency->getDimensions(), indices_dims);
   for (int i = 0; i < node_ids->getTensorSize(); ++i) {
     for (int j = 0; j < node_ids->getTensorSize(); ++j) {
       if ((j == 0 && i == 1) || (j == 0 && i == 2) || (j == 1 && i == 3) || (j == 1 && i == 4) ||
         (j == 2 && i == 5) || (j == 2 && i == 6)) {
-        assert(adjacency->getData()(i, j) > 0);
+        gpuCheckGreaterThan(adjacency->getData()(i, j), 0);
       }
       else {
-        assert(adjacency->getData()(i, j) == 0);
+        gpuCheckEqual(adjacency->getData()(i, j), 0);
       }
     }
   }
 
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_breadthFirstSearchGpu()
 {
   // init the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -80,32 +80,32 @@ void test_breadthFirstSearchGpu()
   BreadthFirstSearchGpu<int, float> breadth_first_search;
   breadth_first_search(0, node_ids, adjacency, tree, device);
   tree->syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   Eigen::array<Eigen::Index, 2> indices_dims = { int(node_ids->getTensorSize()), int(node_ids->getTensorSize()) + 1 };
-  assert(tree->getDimensions() == indices_dims);
+  gpuCheckEqual(tree->getDimensions(), indices_dims);
   for (int i = 0; i < node_ids->getTensorSize(); ++i) {
     for (int j = 0; j < node_ids->getTensorSize() + 1; ++j) {
       if ((j == 0 && i == 0)) {
-        assert(tree->getData()(i, j) == 1);
+        gpuCheckEqual(tree->getData()(i, j), 1);
       }
       else if ((j == 1 && i == 1) || (j == 1 && i == 2) || (j == 2 && i == 3) || (j == 2 && i == 4) ||
         (j == 2 && i == 5) || (j == 2 && i == 6)) {
-        assert(tree->getData()(i, j) > 0);
+        gpuCheckGreaterThan(tree->getData()(i, j), 0);
       }
       else {
-        assert(tree->getData()(i, j) == 0);
+        gpuCheckEqual(tree->getData()(i, j), 0);
       }
     }
   }
 
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_singleSourceShortestPathGpu()
 {
   // init the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -136,24 +136,24 @@ void test_singleSourceShortestPathGpu()
   SingleSourceShortestPathGpu<int, float> sssp;
   sssp(tree, path_lengths, device);
   path_lengths->syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   Eigen::array<Eigen::Index, 1> indices_dims = { int(node_ids->getTensorSize()) };
-  assert(path_lengths->getDimensions() == indices_dims);
+  gpuCheckEqual(path_lengths->getDimensions(), indices_dims);
   for (int i = 0; i < node_ids->getTensorSize(); ++i) {
     if (i == 0) {
-      assert(path_lengths->getData()(i) == 1);
+      gpuCheckEqual(path_lengths->getData()(i), 1);
     }
     else {
-      assert(path_lengths->getData()(i) > 0);
+      gpuCheckGreaterThan(path_lengths->getData()(i), 0);
     }
   }
 
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 int main(int argc, char** argv)
 {
-  assert(cudaDeviceReset() == cudaSuccess);
+  gpuErrchk(cudaDeviceReset());
   test_indicesAndWeightsToAdjacencyMatrixGpu();
   test_breadthFirstSearchGpu();
   test_singleSourceShortestPathGpu();

@@ -3,6 +3,7 @@ set(directory include/TensorBase/core)
 
 ### list all header files of the directory here
 set(sources_list_h
+	AssertGpu.h
 	Helloworld.h
 	GraphAlgorithms.h
 	GraphAlgorithmsCpu.h

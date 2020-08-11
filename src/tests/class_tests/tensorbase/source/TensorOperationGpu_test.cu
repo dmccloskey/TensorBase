@@ -71,7 +71,7 @@ void test_constructorTensorAppendToAxis()
   TensorAppendToAxis<int, float, Eigen::GpuDevice, 3>* ptr = nullptr;
   TensorAppendToAxis<int, float, Eigen::GpuDevice, 3>* nullPointer = nullptr;
 	ptr = new TensorAppendToAxis<int, float, Eigen::GpuDevice, 3>();
-  assert(ptr != nullPointer);
+  gpuCheckNotEqual(ptr, nullPointer);
 }
 
 void test_destructorTensorAppendToAxis()
@@ -83,7 +83,7 @@ void test_destructorTensorAppendToAxis()
 
 void test_redoAndUndoTensorAppendToAxis()
 {
-  cudaStream_t stream; assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess); Eigen::GpuStreamDevice stream_device(&stream, 0); Eigen::GpuDevice device(&stream_device);
+  cudaStream_t stream; gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking)); Eigen::GpuStreamDevice stream_device(&stream, 0); Eigen::GpuDevice device(&stream_device);
 
   // Set up the axes
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
@@ -176,83 +176,83 @@ void test_redoAndUndoTensorAppendToAxis()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
 
   // Test for the expected table data
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
-        assert(tensorTable1_ptr->getData()(i, j, k) == tensor_values1(i, j, k));
+        gpuCheckEqual(tensorTable1_ptr->getData()(i, j, k), tensor_values1(i, j, k));
       }
     }
   }
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
-        assert(tensorTable1_ptr->getData()(i, j + nlabels2, k) == tensor_values_new(i, j, k));
+        gpuCheckEqual(tensorTable1_ptr->getData()(i, j + nlabels2, k), tensor_values_new(i, j, k));
       }
     }
   }
 
   // Test for the expected axis data
-  assert(axis_2_ptr->getNLabels() == nlabels2 + nlabels2);
+  gpuCheckEqual(axis_2_ptr->getNLabels(), nlabels2 + nlabels2);
   for (int i = 0; i < nlabels2 + nlabels2; ++i) {
-    assert(axis_2_ptr->getLabels()(0, i) == i);
+    gpuCheckEqual(axis_2_ptr->getLabels()(0, i), i);
   }
 
   // Test for the expected indices data
-  assert(tensorTable1_ptr->getDimensions().at(tensorTable1_ptr->getDimFromAxisName("2")) == nlabels2 + nlabels2);
+  gpuCheckEqual(tensorTable1_ptr->getDimensions().at(tensorTable1_ptr->getDimFromAxisName("2")), nlabels2 + nlabels2);
   for (int i = 0; i < nlabels2 + nlabels2; ++i) {
-    assert(tensorTable1_ptr->getIndices().at("2")->getData()(i) == i + 1);
-    assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(i) == i + 1);
-    assert(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i) == 0);
+    gpuCheckEqual(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
     if (i < nlabels2) {
-      assert(tensorTable1_ptr->getIsModified().at("2")->getData()(i) == 0);
-      assert(tensorTable1_ptr->getShardId().at("2")->getData()(i) == 1);
-      assert(tensorTable1_ptr->getShardIndices().at("2")->getData()(i) == i + 1);
+      gpuCheckEqual(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
+      gpuCheckEqual(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1);
+      gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 1);
     }
     else {
-      assert(tensorTable1_ptr->getIsModified().at("2")->getData()(i) == 1);
-      assert(tensorTable1_ptr->getShardId().at("2")->getData()(i) == 2);
-      assert(tensorTable1_ptr->getShardIndices().at("2")->getData()(i) == i - nlabels2 + 1);
+      gpuCheckEqual(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
+      gpuCheckEqual(tensorTable1_ptr->getShardId().at("2")->getData()(i), 2);
+      gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i - nlabels2 + 1);
     }
   }
   for (int i = 0; i < nlabels1; ++i) {
-    assert(tensorTable1_ptr->getIndices().at("1")->getData()(i) == i + 1);
-    assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(i) == i + 1);
-    assert(tensorTable1_ptr->getNotInMemory().at("1")->getData()(i) == 0);
-    assert(tensorTable1_ptr->getIsModified().at("1")->getData()(i) == 1);
-    assert(tensorTable1_ptr->getShardId().at("1")->getData()(i) == 1);
-    assert(tensorTable1_ptr->getShardIndices().at("1")->getData()(i) == i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIndices().at("1")->getData()(i), i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(i), i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getNotInMemory().at("1")->getData()(i), 0);
+    gpuCheckEqual(tensorTable1_ptr->getIsModified().at("1")->getData()(i), 1);
+    gpuCheckEqual(tensorTable1_ptr->getShardId().at("1")->getData()(i), 1);
+    gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("1")->getData()(i), i + 1);
   }
   for (int i = 0; i < nlabels3; ++i) {
-    assert(tensorTable1_ptr->getIndices().at("3")->getData()(i) == i + 1);
-    assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(i) == i + 1);
-    assert(tensorTable1_ptr->getNotInMemory().at("3")->getData()(i) == 0);
-    assert(tensorTable1_ptr->getIsModified().at("3")->getData()(i) == 1);
-    assert(tensorTable1_ptr->getShardId().at("3")->getData()(i) == 1);
-    assert(tensorTable1_ptr->getShardIndices().at("3")->getData()(i) == i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIndices().at("3")->getData()(i), i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(i), i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getNotInMemory().at("3")->getData()(i), 0);
+    gpuCheckEqual(tensorTable1_ptr->getIsModified().at("3")->getData()(i), 1);
+    gpuCheckEqual(tensorTable1_ptr->getShardId().at("3")->getData()(i), 1);
+    gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("3")->getData()(i), i + 1);
   }
 
   // Test for the expected redo/undo log data
-  assert(appendToAxis.getRedoLog().n_labels_deleted_ == 0);
-  assert(appendToAxis.getRedoLog().n_labels_updated_ == 0);
-  assert(appendToAxis.getRedoLog().n_labels_inserted_ == 3);
-  assert(appendToAxis.getRedoLog().n_indices_deleted_ == 0);
-  assert(appendToAxis.getRedoLog().n_indices_updated_ == 0);
-  assert(appendToAxis.getRedoLog().n_indices_inserted_ == 3);
-  assert(appendToAxis.getRedoLog().n_data_deleted_ == 0);
-  assert(appendToAxis.getRedoLog().n_data_updated_ == 0);
-  assert(appendToAxis.getRedoLog().n_data_inserted_ == 30);
-  assert(appendToAxis.getUndoLog().n_labels_deleted_ == 0);
-  assert(appendToAxis.getUndoLog().n_labels_updated_ == 0);
-  assert(appendToAxis.getUndoLog().n_labels_inserted_ == 0);
-  assert(appendToAxis.getUndoLog().n_indices_deleted_ == 0);
-  assert(appendToAxis.getUndoLog().n_indices_updated_ == 0);
-  assert(appendToAxis.getUndoLog().n_indices_inserted_ == 0);
-  assert(appendToAxis.getUndoLog().n_data_deleted_ == 0);
-  assert(appendToAxis.getUndoLog().n_data_updated_ == 0);
-  assert(appendToAxis.getUndoLog().n_data_inserted_ == 0);
+  gpuCheckEqual(appendToAxis.getRedoLog().n_labels_deleted_, 0);
+  gpuCheckEqual(appendToAxis.getRedoLog().n_labels_updated_, 0);
+  gpuCheckEqual(appendToAxis.getRedoLog().n_labels_inserted_, 3);
+  gpuCheckEqual(appendToAxis.getRedoLog().n_indices_deleted_, 0);
+  gpuCheckEqual(appendToAxis.getRedoLog().n_indices_updated_, 0);
+  gpuCheckEqual(appendToAxis.getRedoLog().n_indices_inserted_, 3);
+  gpuCheckEqual(appendToAxis.getRedoLog().n_data_deleted_, 0);
+  gpuCheckEqual(appendToAxis.getRedoLog().n_data_updated_, 0);
+  gpuCheckEqual(appendToAxis.getRedoLog().n_data_inserted_, 30);
+  gpuCheckEqual(appendToAxis.getUndoLog().n_labels_deleted_, 0);
+  gpuCheckEqual(appendToAxis.getUndoLog().n_labels_updated_, 0);
+  gpuCheckEqual(appendToAxis.getUndoLog().n_labels_inserted_, 0);
+  gpuCheckEqual(appendToAxis.getUndoLog().n_indices_deleted_, 0);
+  gpuCheckEqual(appendToAxis.getUndoLog().n_indices_updated_, 0);
+  gpuCheckEqual(appendToAxis.getUndoLog().n_indices_inserted_, 0);
+  gpuCheckEqual(appendToAxis.getUndoLog().n_data_deleted_, 0);
+  gpuCheckEqual(appendToAxis.getUndoLog().n_data_updated_, 0);
+  gpuCheckEqual(appendToAxis.getUndoLog().n_data_inserted_, 0);
 
   // Test undo to remove the appended values
   for (auto& table_map : collection_1_ptr->tables_) {
@@ -264,71 +264,71 @@ void test_redoAndUndoTensorAppendToAxis()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
 
   // Test for the expected table data
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
-        assert(tensorTable1_ptr->getData()(i, j, k) == tensor_values1(i, j, k));
+        gpuCheckEqual(tensorTable1_ptr->getData()(i, j, k), tensor_values1(i, j, k));
       }
     }
   }
 
   // Test for the expected axis data
-  assert(axis_2_ptr->getNLabels() == nlabels2);
+  gpuCheckEqual(axis_2_ptr->getNLabels(), nlabels2);
   for (int i = 0; i < nlabels2; ++i) {
-    assert(axis_2_ptr->getLabels()(0, i) == i);
+    gpuCheckEqual(axis_2_ptr->getLabels()(0, i), i);
   }
 
   // Test for the expected indices data
-  assert(tensorTable1_ptr->getDimensions().at(tensorTable1_ptr->getDimFromAxisName("2")) == nlabels2);
+  gpuCheckEqual(tensorTable1_ptr->getDimensions().at(tensorTable1_ptr->getDimFromAxisName("2")), nlabels2);
   for (int i = 0; i < nlabels2; ++i) {
-    assert(tensorTable1_ptr->getIndices().at("2")->getData()(i) == i + 1);
-    assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(i) == i + 1);
-    assert(tensorTable1_ptr->getIsModified().at("2")->getData()(i) == 0);
-    assert(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i) == 0);
-    assert(tensorTable1_ptr->getShardId().at("2")->getData()(i) == 1);
-    assert(tensorTable1_ptr->getShardIndices().at("2")->getData()(i) == i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
+    gpuCheckEqual(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
+    gpuCheckEqual(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1);
+    gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 1);
   }
   for (int i = 0; i < nlabels1; ++i) {
-    assert(tensorTable1_ptr->getIndices().at("1")->getData()(i) == i + 1);
-    assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(i) == i + 1);
-    assert(tensorTable1_ptr->getNotInMemory().at("1")->getData()(i) == 0);
-    assert(tensorTable1_ptr->getIsModified().at("1")->getData()(i) == 1);
-    assert(tensorTable1_ptr->getShardId().at("1")->getData()(i) == 1);
-    assert(tensorTable1_ptr->getShardIndices().at("1")->getData()(i) == i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIndices().at("1")->getData()(i), i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(i), i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getNotInMemory().at("1")->getData()(i), 0);
+    gpuCheckEqual(tensorTable1_ptr->getIsModified().at("1")->getData()(i), 1);
+    gpuCheckEqual(tensorTable1_ptr->getShardId().at("1")->getData()(i), 1);
+    gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("1")->getData()(i), i + 1);
   }
   for (int i = 0; i < nlabels3; ++i) {
-    assert(tensorTable1_ptr->getIndices().at("3")->getData()(i) == i + 1);
-    assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(i) == i + 1);
-    assert(tensorTable1_ptr->getNotInMemory().at("3")->getData()(i) == 0);
-    assert(tensorTable1_ptr->getIsModified().at("3")->getData()(i) == 1);
-    assert(tensorTable1_ptr->getShardId().at("3")->getData()(i) == 1);
-    assert(tensorTable1_ptr->getShardIndices().at("3")->getData()(i) == i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIndices().at("3")->getData()(i), i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(i), i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getNotInMemory().at("3")->getData()(i), 0);
+    gpuCheckEqual(tensorTable1_ptr->getIsModified().at("3")->getData()(i), 1);
+    gpuCheckEqual(tensorTable1_ptr->getShardId().at("3")->getData()(i), 1);
+    gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("3")->getData()(i), i + 1);
   }
 
   // Test for the expected redo/undo log data
-  assert(appendToAxis.getRedoLog().n_labels_deleted_ == 0);
-  assert(appendToAxis.getRedoLog().n_labels_updated_ == 0);
-  assert(appendToAxis.getRedoLog().n_labels_inserted_ == 3);
-  assert(appendToAxis.getRedoLog().n_indices_deleted_ == 0);
-  assert(appendToAxis.getRedoLog().n_indices_updated_ == 0);
-  assert(appendToAxis.getRedoLog().n_indices_inserted_ == 3);
-  assert(appendToAxis.getRedoLog().n_data_deleted_ == 0);
-  assert(appendToAxis.getRedoLog().n_data_updated_ == 0);
-  assert(appendToAxis.getRedoLog().n_data_inserted_ == 30);
-  assert(appendToAxis.getUndoLog().n_labels_deleted_ == 3);
-  assert(appendToAxis.getUndoLog().n_labels_updated_ == 0);
-  assert(appendToAxis.getUndoLog().n_labels_inserted_ == 0);
-  assert(appendToAxis.getUndoLog().n_indices_deleted_ == 3);
-  assert(appendToAxis.getUndoLog().n_indices_updated_ == 0);
-  assert(appendToAxis.getUndoLog().n_indices_inserted_ == 0);
-  assert(appendToAxis.getUndoLog().n_data_deleted_ == 30);
-  assert(appendToAxis.getUndoLog().n_data_updated_ == 0);
-  assert(appendToAxis.getUndoLog().n_data_inserted_ == 0);
+  gpuCheckEqual(appendToAxis.getRedoLog().n_labels_deleted_, 0);
+  gpuCheckEqual(appendToAxis.getRedoLog().n_labels_updated_, 0);
+  gpuCheckEqual(appendToAxis.getRedoLog().n_labels_inserted_, 3);
+  gpuCheckEqual(appendToAxis.getRedoLog().n_indices_deleted_, 0);
+  gpuCheckEqual(appendToAxis.getRedoLog().n_indices_updated_, 0);
+  gpuCheckEqual(appendToAxis.getRedoLog().n_indices_inserted_, 3);
+  gpuCheckEqual(appendToAxis.getRedoLog().n_data_deleted_, 0);
+  gpuCheckEqual(appendToAxis.getRedoLog().n_data_updated_, 0);
+  gpuCheckEqual(appendToAxis.getRedoLog().n_data_inserted_, 30);
+  gpuCheckEqual(appendToAxis.getUndoLog().n_labels_deleted_, 3);
+  gpuCheckEqual(appendToAxis.getUndoLog().n_labels_updated_, 0);
+  gpuCheckEqual(appendToAxis.getUndoLog().n_labels_inserted_, 0);
+  gpuCheckEqual(appendToAxis.getUndoLog().n_indices_deleted_, 3);
+  gpuCheckEqual(appendToAxis.getUndoLog().n_indices_updated_, 0);
+  gpuCheckEqual(appendToAxis.getUndoLog().n_indices_inserted_, 0);
+  gpuCheckEqual(appendToAxis.getUndoLog().n_data_deleted_, 30);
+  gpuCheckEqual(appendToAxis.getUndoLog().n_data_updated_, 0);
+  gpuCheckEqual(appendToAxis.getUndoLog().n_data_inserted_, 0);
 
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 /*TensorDeleteFromAxis Tests*/
@@ -337,7 +337,7 @@ void test_constructorTensorDeleteFromAxis()
   TensorDeleteFromAxisGpuPrimitiveT<int, float, 3>* ptr = nullptr;
   TensorDeleteFromAxisGpuPrimitiveT<int, float, 3>* nullPointer = nullptr;
   ptr = new TensorDeleteFromAxisGpuPrimitiveT<int, float, 3>();
-  assert(ptr != nullPointer);
+  gpuCheckNotEqual(ptr, nullPointer);
 }
 
 void test_destructorTensorDeleteFromAxis()
@@ -349,7 +349,7 @@ void test_destructorTensorDeleteFromAxis()
 
 void test_redoAndTensorDeleteFromAxis()
 {
-  cudaStream_t stream; assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess); Eigen::GpuStreamDevice stream_device(&stream, 0); Eigen::GpuDevice device(&stream_device);
+  cudaStream_t stream; gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking)); Eigen::GpuStreamDevice stream_device(&stream, 0); Eigen::GpuDevice device(&stream_device);
 
   // Set up the axes
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
@@ -435,63 +435,63 @@ void test_redoAndTensorDeleteFromAxis()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
 
   // Test for the expected table data
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2 - 1; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
-        assert(tensorTable1_ptr->getData()(i, j, k) == expected_tensor_values(i, j, k));
+        gpuCheckEqual(tensorTable1_ptr->getData()(i, j, k), expected_tensor_values(i, j, k));
       }
     }
   }
 
   // Test for the expected axis data
-  assert(axis_2_ptr->getNLabels() == nlabels2 - 1);
+  gpuCheckEqual(axis_2_ptr->getNLabels(), nlabels2 - 1);
   for (int i = 0; i < nlabels2 - 1; ++i) {
     if (i<1)
-      assert(axis_2_ptr->getLabels()(0, i) == i);
+      gpuCheckEqual(axis_2_ptr->getLabels()(0, i), i);
     else
-      assert(axis_2_ptr->getLabels()(0, i) == i + 1);
+      gpuCheckEqual(axis_2_ptr->getLabels()(0, i), i + 1);
   }
 
   // Test for the expected indices data
-  assert(tensorTable1_ptr->getDimensions().at(tensorTable1_ptr->getDimFromAxisName("2")) == nlabels2 - 1);
+  gpuCheckEqual(tensorTable1_ptr->getDimensions().at(tensorTable1_ptr->getDimFromAxisName("2")), nlabels2 - 1);
   for (int i = 0; i < nlabels2 - 1; ++i) {
     if (i < 1) {
-      assert(tensorTable1_ptr->getIndices().at("2")->getData()(i) == i + 1);
-      assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(i) == i + 1);
-      assert(tensorTable1_ptr->getShardIndices().at("2")->getData()(i) == i + 1);
+      gpuCheckEqual(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
+      gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
+      gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 1);
     }
     else {
-      assert(tensorTable1_ptr->getIndices().at("2")->getData()(i) == i + 2);
-      assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(i) == i + 2);
-      assert(tensorTable1_ptr->getShardIndices().at("2")->getData()(i) == i + 2);
+      gpuCheckEqual(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 2);
+      gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 2);
+      gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 2);
     }
-    assert(tensorTable1_ptr->getIsModified().at("2")->getData()(i) == 0);
-    assert(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i) == 0);
-    assert(tensorTable1_ptr->getShardId().at("2")->getData()(i) == 1);
+    gpuCheckEqual(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
+    gpuCheckEqual(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
+    gpuCheckEqual(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1);
   }
 
   // Test for the expected redo/undo log data
-  assert(deleteFromAxis.getRedoLog().n_labels_deleted_ == 1);
-  assert(deleteFromAxis.getRedoLog().n_labels_updated_ == 0);
-  assert(deleteFromAxis.getRedoLog().n_labels_inserted_ == 0);
-  assert(deleteFromAxis.getRedoLog().n_indices_deleted_ == 1);
-  assert(deleteFromAxis.getRedoLog().n_indices_updated_ == 0);
-  assert(deleteFromAxis.getRedoLog().n_indices_inserted_ == 0);
-  assert(deleteFromAxis.getRedoLog().n_data_deleted_ == 10);
-  assert(deleteFromAxis.getRedoLog().n_data_updated_ == 0);
-  assert(deleteFromAxis.getRedoLog().n_data_inserted_ == 0);
-  assert(deleteFromAxis.getUndoLog().n_labels_deleted_ == 0);
-  assert(deleteFromAxis.getUndoLog().n_labels_updated_ == 0);
-  assert(deleteFromAxis.getUndoLog().n_labels_inserted_ == 0);
-  assert(deleteFromAxis.getUndoLog().n_indices_deleted_ == 0);
-  assert(deleteFromAxis.getUndoLog().n_indices_updated_ == 0);
-  assert(deleteFromAxis.getUndoLog().n_indices_inserted_ == 0);
-  assert(deleteFromAxis.getUndoLog().n_data_deleted_ == 0);
-  assert(deleteFromAxis.getUndoLog().n_data_updated_ == 0);
-  assert(deleteFromAxis.getUndoLog().n_data_inserted_ == 0);
+  gpuCheckEqual(deleteFromAxis.getRedoLog().n_labels_deleted_, 1);
+  gpuCheckEqual(deleteFromAxis.getRedoLog().n_labels_updated_, 0);
+  gpuCheckEqual(deleteFromAxis.getRedoLog().n_labels_inserted_, 0);
+  gpuCheckEqual(deleteFromAxis.getRedoLog().n_indices_deleted_, 1);
+  gpuCheckEqual(deleteFromAxis.getRedoLog().n_indices_updated_, 0);
+  gpuCheckEqual(deleteFromAxis.getRedoLog().n_indices_inserted_, 0);
+  gpuCheckEqual(deleteFromAxis.getRedoLog().n_data_deleted_, 10);
+  gpuCheckEqual(deleteFromAxis.getRedoLog().n_data_updated_, 0);
+  gpuCheckEqual(deleteFromAxis.getRedoLog().n_data_inserted_, 0);
+  gpuCheckEqual(deleteFromAxis.getUndoLog().n_labels_deleted_, 0);
+  gpuCheckEqual(deleteFromAxis.getUndoLog().n_labels_updated_, 0);
+  gpuCheckEqual(deleteFromAxis.getUndoLog().n_labels_inserted_, 0);
+  gpuCheckEqual(deleteFromAxis.getUndoLog().n_indices_deleted_, 0);
+  gpuCheckEqual(deleteFromAxis.getUndoLog().n_indices_updated_, 0);
+  gpuCheckEqual(deleteFromAxis.getUndoLog().n_indices_inserted_, 0);
+  gpuCheckEqual(deleteFromAxis.getUndoLog().n_data_deleted_, 0);
+  gpuCheckEqual(deleteFromAxis.getUndoLog().n_data_updated_, 0);
+  gpuCheckEqual(deleteFromAxis.getUndoLog().n_data_inserted_, 0);
 
   // Test redo to restore the deleted values
   for (auto& table_map : collection_1_ptr->tables_) {
@@ -503,60 +503,60 @@ void test_redoAndTensorDeleteFromAxis()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
 
   // Test for the expected table data
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
-        assert(tensorTable1_ptr->getData()(i, j, k) == tensor_values1(i, j, k));
+        gpuCheckEqual(tensorTable1_ptr->getData()(i, j, k), tensor_values1(i, j, k));
       }
     }
   }
 
   // Test for the expected axis data
-  assert(axis_2_ptr->getNLabels() == nlabels2);
+  gpuCheckEqual(axis_2_ptr->getNLabels(), nlabels2);
   for (int i = 0; i < nlabels2; ++i) {
-    assert(axis_2_ptr->getLabels()(0, i) == i);
+    gpuCheckEqual(axis_2_ptr->getLabels()(0, i), i);
   }
 
   // Test for the expected indices data
-  assert(tensorTable1_ptr->getDimensions().at(tensorTable1_ptr->getDimFromAxisName("2")) == nlabels2);
+  gpuCheckEqual(tensorTable1_ptr->getDimensions().at(tensorTable1_ptr->getDimFromAxisName("2")), nlabels2);
   for (int i = 0; i < nlabels2; ++i) {
     if (i == 1) {
-      assert(tensorTable1_ptr->getIsModified().at("2")->getData()(i) == 1);
+      gpuCheckEqual(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
     }
     else {
-      assert(tensorTable1_ptr->getIsModified().at("2")->getData()(i) == 0);
+      gpuCheckEqual(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
     }
-    assert(tensorTable1_ptr->getIndices().at("2")->getData()(i) == i + 1);
-    assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(i) == i + 1);
-    assert(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i) == 0);
-    assert(tensorTable1_ptr->getShardId().at("2")->getData()(i) == 1);
-    assert(tensorTable1_ptr->getShardIndices().at("2")->getData()(i) == i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
+    gpuCheckEqual(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1);
+    gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 1);
   }
 
   // Test for the expected redo/undo log data
-  assert(deleteFromAxis.getRedoLog().n_labels_deleted_ == 1);
-  assert(deleteFromAxis.getRedoLog().n_labels_updated_ == 0);
-  assert(deleteFromAxis.getRedoLog().n_labels_inserted_ == 0);
-  assert(deleteFromAxis.getRedoLog().n_indices_deleted_ == 1);
-  assert(deleteFromAxis.getRedoLog().n_indices_updated_ == 0);
-  assert(deleteFromAxis.getRedoLog().n_indices_inserted_ == 0);
-  assert(deleteFromAxis.getRedoLog().n_data_deleted_ == 10);
-  assert(deleteFromAxis.getRedoLog().n_data_updated_ == 0);
-  assert(deleteFromAxis.getRedoLog().n_data_inserted_ == 0);
-  assert(deleteFromAxis.getUndoLog().n_labels_deleted_ == 0);
-  assert(deleteFromAxis.getUndoLog().n_labels_updated_ == 0);
-  assert(deleteFromAxis.getUndoLog().n_labels_inserted_ == 1);
-  assert(deleteFromAxis.getUndoLog().n_indices_deleted_ == 0);
-  assert(deleteFromAxis.getUndoLog().n_indices_updated_ == 0);
-  assert(deleteFromAxis.getUndoLog().n_indices_inserted_ == 1);
-  assert(deleteFromAxis.getUndoLog().n_data_deleted_ == 0);
-  assert(deleteFromAxis.getUndoLog().n_data_updated_ == 0);
-  assert(deleteFromAxis.getUndoLog().n_data_inserted_ == 10);
+  gpuCheckEqual(deleteFromAxis.getRedoLog().n_labels_deleted_, 1);
+  gpuCheckEqual(deleteFromAxis.getRedoLog().n_labels_updated_, 0);
+  gpuCheckEqual(deleteFromAxis.getRedoLog().n_labels_inserted_, 0);
+  gpuCheckEqual(deleteFromAxis.getRedoLog().n_indices_deleted_, 1);
+  gpuCheckEqual(deleteFromAxis.getRedoLog().n_indices_updated_, 0);
+  gpuCheckEqual(deleteFromAxis.getRedoLog().n_indices_inserted_, 0);
+  gpuCheckEqual(deleteFromAxis.getRedoLog().n_data_deleted_, 10);
+  gpuCheckEqual(deleteFromAxis.getRedoLog().n_data_updated_, 0);
+  gpuCheckEqual(deleteFromAxis.getRedoLog().n_data_inserted_, 0);
+  gpuCheckEqual(deleteFromAxis.getUndoLog().n_labels_deleted_, 0);
+  gpuCheckEqual(deleteFromAxis.getUndoLog().n_labels_updated_, 0);
+  gpuCheckEqual(deleteFromAxis.getUndoLog().n_labels_inserted_, 1);
+  gpuCheckEqual(deleteFromAxis.getUndoLog().n_indices_deleted_, 0);
+  gpuCheckEqual(deleteFromAxis.getUndoLog().n_indices_updated_, 0);
+  gpuCheckEqual(deleteFromAxis.getUndoLog().n_indices_inserted_, 1);
+  gpuCheckEqual(deleteFromAxis.getUndoLog().n_data_deleted_, 0);
+  gpuCheckEqual(deleteFromAxis.getUndoLog().n_data_updated_, 0);
+  gpuCheckEqual(deleteFromAxis.getUndoLog().n_data_inserted_, 10);
 
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 /*TensorUpdateSelectValues Tests*/
@@ -565,7 +565,7 @@ void test_constructorTensorUpdateSelectValues()
   TensorUpdateSelectValues<float, Eigen::GpuDevice, 3>* ptr = nullptr;
   TensorUpdateSelectValues<float, Eigen::GpuDevice, 3>* nullPointer = nullptr;
   ptr = new TensorUpdateSelectValues<float, Eigen::GpuDevice, 3>();
-  assert(ptr != nullPointer);
+  gpuCheckNotEqual(ptr, nullPointer);
 }
 
 void test_destructorTensorUpdateSelectValues()
@@ -577,7 +577,7 @@ void test_destructorTensorUpdateSelectValues()
 
 void test_redoAndUndoTensorUpdateSelectValues()
 {
-  cudaStream_t stream; assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess); Eigen::GpuStreamDevice stream_device(&stream, 0); Eigen::GpuDevice device(&stream_device);
+  cudaStream_t stream; gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking)); Eigen::GpuStreamDevice stream_device(&stream, 0); Eigen::GpuDevice device(&stream_device);
 
   // Set up the axes
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
@@ -657,45 +657,45 @@ void test_redoAndUndoTensorUpdateSelectValues()
     table_map.second->syncHData(device);
   }
   tensorUpdate.getValuesOld()->syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < 1; ++j) {
       for (int k = 0; k < 1; ++k) {
-        assert(tensorTable1_ptr->getData()(i, j, k) == values_new_values(i, j, k));
-        assert(tensorUpdate.getValuesOld()->getData()(i, j, k) == tensor_values1(i, j, k));
+        gpuCheckEqual(tensorTable1_ptr->getData()(i, j, k), values_new_values(i, j, k));
+        gpuCheckEqual(tensorUpdate.getValuesOld()->getData()(i, j, k), tensor_values1(i, j, k));
       }
     }
   }
 
   // Test the changed indices
   for (int i = 0; i < nlabels1; ++i) {
-    assert(tensorTable1_ptr->getIndices().at("1")->getData()(i) == i + 1);
-    assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(i) == i + 1);
-    assert(tensorTable1_ptr->getIsModified().at("1")->getData()(i) == 1);
-    assert(tensorTable1_ptr->getNotInMemory().at("1")->getData()(i) == 0);
-    assert(tensorTable1_ptr->getShardId().at("1")->getData()(i) == 1);
-    assert(tensorTable1_ptr->getShardIndices().at("1")->getData()(i) == i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIndices().at("1")->getData()(i), i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(i), i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIsModified().at("1")->getData()(i), 1);
+    gpuCheckEqual(tensorTable1_ptr->getNotInMemory().at("1")->getData()(i), 0);
+    gpuCheckEqual(tensorTable1_ptr->getShardId().at("1")->getData()(i), 1);
+    gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("1")->getData()(i), i + 1);
   }
 
   // Test for the expected redo/undo log data
-  assert(tensorUpdate.getRedoLog().n_labels_deleted_ == 0);
-  assert(tensorUpdate.getRedoLog().n_labels_updated_ == 0);
-  assert(tensorUpdate.getRedoLog().n_labels_inserted_ == 0);
-  assert(tensorUpdate.getRedoLog().n_indices_deleted_ == 0);
-  assert(tensorUpdate.getRedoLog().n_indices_updated_ == 0);
-  assert(tensorUpdate.getRedoLog().n_indices_inserted_ == 0);
-  assert(tensorUpdate.getRedoLog().n_data_deleted_ == 0);
-  assert(tensorUpdate.getRedoLog().n_data_updated_ == 2);
-  assert(tensorUpdate.getRedoLog().n_data_inserted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_labels_deleted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_labels_updated_ == 0);
-  assert(tensorUpdate.getUndoLog().n_labels_inserted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_indices_deleted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_indices_updated_ == 0);
-  assert(tensorUpdate.getUndoLog().n_indices_inserted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_data_deleted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_data_updated_ == 0);
-  assert(tensorUpdate.getUndoLog().n_data_inserted_ == 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_labels_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_labels_updated_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_labels_inserted_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_indices_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_indices_updated_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_indices_inserted_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_data_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_data_updated_, 2);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_data_inserted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_labels_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_labels_updated_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_labels_inserted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_indices_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_indices_updated_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_indices_inserted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_data_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_data_updated_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_data_inserted_, 0);
 
   // Test undo
   for (auto& table_map : collection_1_ptr->tables_) {
@@ -707,46 +707,46 @@ void test_redoAndUndoTensorUpdateSelectValues()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < 1; ++j) {
       for (int k = 0; k < 1; ++k) {
-        assert(tensorTable1_ptr->getData()(i, j, k) == tensor_values1(i, j, k));
+        gpuCheckEqual(tensorTable1_ptr->getData()(i, j, k), tensor_values1(i, j, k));
       }
     }
   }
 
   // Test the changed indices
   for (int i = 0; i < nlabels1; ++i) {
-    assert(tensorTable1_ptr->getIndices().at("1")->getData()(i) == i + 1);
-    assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(i) == i + 1);
-    assert(tensorTable1_ptr->getIsModified().at("1")->getData()(i) == 1); // TODO: should be reverted to 0
-    assert(tensorTable1_ptr->getNotInMemory().at("1")->getData()(i) == 0);
-    assert(tensorTable1_ptr->getShardId().at("1")->getData()(i) == 1);
-    assert(tensorTable1_ptr->getShardIndices().at("1")->getData()(i) == i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIndices().at("1")->getData()(i), i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(i), i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIsModified().at("1")->getData()(i), 1); // TODO: should be reverted to 0
+    gpuCheckEqual(tensorTable1_ptr->getNotInMemory().at("1")->getData()(i), 0);
+    gpuCheckEqual(tensorTable1_ptr->getShardId().at("1")->getData()(i), 1);
+    gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("1")->getData()(i), i + 1);
   }
 
   // Test for the expected redo/undo log data
-  assert(tensorUpdate.getRedoLog().n_labels_deleted_ == 0);
-  assert(tensorUpdate.getRedoLog().n_labels_updated_ == 0);
-  assert(tensorUpdate.getRedoLog().n_labels_inserted_ == 0);
-  assert(tensorUpdate.getRedoLog().n_indices_deleted_ == 0);
-  assert(tensorUpdate.getRedoLog().n_indices_updated_ == 0);
-  assert(tensorUpdate.getRedoLog().n_indices_inserted_ == 0);
-  assert(tensorUpdate.getRedoLog().n_data_deleted_ == 0);
-  assert(tensorUpdate.getRedoLog().n_data_updated_ == 2);
-  assert(tensorUpdate.getRedoLog().n_data_inserted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_labels_deleted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_labels_updated_ == 0);
-  assert(tensorUpdate.getUndoLog().n_labels_inserted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_indices_deleted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_indices_updated_ == 0);
-  assert(tensorUpdate.getUndoLog().n_indices_inserted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_data_deleted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_data_updated_ == 2);
-  assert(tensorUpdate.getUndoLog().n_data_inserted_ == 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_labels_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_labels_updated_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_labels_inserted_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_indices_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_indices_updated_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_indices_inserted_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_data_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_data_updated_, 2);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_data_inserted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_labels_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_labels_updated_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_labels_inserted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_indices_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_indices_updated_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_indices_inserted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_data_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_data_updated_, 2);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_data_inserted_, 0);
 
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 /*TensorUpdateValues Tests*/
@@ -755,7 +755,7 @@ void test_constructorTensorUpdateValues()
 	TensorUpdateSelectValues<float, Eigen::GpuDevice, 3>* ptr = nullptr;
 	TensorUpdateSelectValues<float, Eigen::GpuDevice, 3>* nullPointer = nullptr;
 	ptr = new TensorUpdateSelectValues<float, Eigen::GpuDevice, 3>();
-	assert(ptr != nullPointer);
+	gpuCheckNotEqual(ptr, nullPointer);
 }
 
 void test_destructorTensorUpdateValues()
@@ -767,7 +767,7 @@ void test_destructorTensorUpdateValues()
 
 void test_redoAndUndoTensorUpdateValues()
 {
-	cudaStream_t stream; assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess); Eigen::GpuStreamDevice stream_device(&stream, 0); Eigen::GpuDevice device(&stream_device);
+	cudaStream_t stream; gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking)); Eigen::GpuStreamDevice stream_device(&stream, 0); Eigen::GpuDevice device(&stream_device);
 
 	// Set up the axes
 	Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
@@ -849,68 +849,68 @@ void test_redoAndUndoTensorUpdateValues()
     table_map.second->syncHData(device);
   }
   tensorUpdate.getValuesOld()->syncHData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
 	for (int i = 0; i < nlabels1; ++i) {
-		assert(tensorUpdate.getValuesOld()->getData()(i) == tensor_values1(i, 0, 0));
+		gpuCheckEqual(tensorUpdate.getValuesOld()->getData()(i), tensor_values1(i, 0, 0));
 		for (int j = 0; j < nlabels2; ++j) {
 			for (int k = 0; k < nlabels3; ++k) {
 				if (j == 0 && k == 0)
-					assert(tensorTable1_ptr->getData()(i, j, k) == values_new_values(i, j, k));
+					gpuCheckEqual(tensorTable1_ptr->getData()(i, j, k), values_new_values(i, j, k));
 				else
-					assert(tensorTable1_ptr->getData()(i, j, k) == tensor_values1(i, j, k));
+					gpuCheckEqual(tensorTable1_ptr->getData()(i, j, k), tensor_values1(i, j, k));
 			}
 		}
 	}
 	for (int i = 0; i < nlabels1; ++i) {
-		assert(tensorTable1_ptr->getIndices().at("1")->getData()(i) == i + 1);
-		assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(i) == i + 1);
-		assert(tensorTable1_ptr->getIsModified().at("1")->getData()(i) == 1);
-		assert(tensorTable1_ptr->getNotInMemory().at("1")->getData()(i) == 0);
-		assert(tensorTable1_ptr->getShardId().at("1")->getData()(i) == 1);
-		assert(tensorTable1_ptr->getShardIndices().at("1")->getData()(i) == i + 1);
+		gpuCheckEqual(tensorTable1_ptr->getIndices().at("1")->getData()(i), i + 1);
+		gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(i), i + 1);
+		gpuCheckEqual(tensorTable1_ptr->getIsModified().at("1")->getData()(i), 1);
+		gpuCheckEqual(tensorTable1_ptr->getNotInMemory().at("1")->getData()(i), 0);
+		gpuCheckEqual(tensorTable1_ptr->getShardId().at("1")->getData()(i), 1);
+		gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("1")->getData()(i), i + 1);
 	}
 	for (int i = 0; i < nlabels2; ++i) {
-		assert(tensorTable1_ptr->getIndices().at("2")->getData()(i) == i + 1);
-		assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(i) == i + 1);
+		gpuCheckEqual(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
+		gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
 		if (i == 0)
-			assert(tensorTable1_ptr->getIsModified().at("2")->getData()(i) == 1);
+			gpuCheckEqual(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
 		else
-			assert(tensorTable1_ptr->getIsModified().at("2")->getData()(i) == 0);
-		assert(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i) == 0);
-		assert(tensorTable1_ptr->getShardId().at("2")->getData()(i) == 1);
-		assert(tensorTable1_ptr->getShardIndices().at("2")->getData()(i) == i + 1);
+			gpuCheckEqual(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
+		gpuCheckEqual(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
+		gpuCheckEqual(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1);
+		gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 1);
 	}
 	for (int i = 0; i < nlabels3; ++i) {
-		assert(tensorTable1_ptr->getIndices().at("3")->getData()(i) == i + 1);
-		assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(i) == i + 1);
+		gpuCheckEqual(tensorTable1_ptr->getIndices().at("3")->getData()(i), i + 1);
+		gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(i), i + 1);
 		if (i == 0)
-			assert(tensorTable1_ptr->getIsModified().at("3")->getData()(i) == 1);
+			gpuCheckEqual(tensorTable1_ptr->getIsModified().at("3")->getData()(i), 1);
 		else
-			assert(tensorTable1_ptr->getIsModified().at("3")->getData()(i) == 0);
-		assert(tensorTable1_ptr->getNotInMemory().at("3")->getData()(i) == 0);
-		assert(tensorTable1_ptr->getShardId().at("3")->getData()(i) == 1);
-		assert(tensorTable1_ptr->getShardIndices().at("3")->getData()(i) == i + 1);
+			gpuCheckEqual(tensorTable1_ptr->getIsModified().at("3")->getData()(i), 0);
+		gpuCheckEqual(tensorTable1_ptr->getNotInMemory().at("3")->getData()(i), 0);
+		gpuCheckEqual(tensorTable1_ptr->getShardId().at("3")->getData()(i), 1);
+		gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("3")->getData()(i), i + 1);
 	}
 
   // Test for the expected redo/undo log data
-  assert(tensorUpdate.getRedoLog().n_labels_deleted_ == 0);
-  assert(tensorUpdate.getRedoLog().n_labels_updated_ == 0);
-  assert(tensorUpdate.getRedoLog().n_labels_inserted_ == 0);
-  assert(tensorUpdate.getRedoLog().n_indices_deleted_ == 0);
-  assert(tensorUpdate.getRedoLog().n_indices_updated_ == 0);
-  assert(tensorUpdate.getRedoLog().n_indices_inserted_ == 0);
-  assert(tensorUpdate.getRedoLog().n_data_deleted_ == 0);
-  assert(tensorUpdate.getRedoLog().n_data_updated_ == 2);
-  assert(tensorUpdate.getRedoLog().n_data_inserted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_labels_deleted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_labels_updated_ == 0);
-  assert(tensorUpdate.getUndoLog().n_labels_inserted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_indices_deleted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_indices_updated_ == 0);
-  assert(tensorUpdate.getUndoLog().n_indices_inserted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_data_deleted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_data_updated_ == 0);
-  assert(tensorUpdate.getUndoLog().n_data_inserted_ == 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_labels_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_labels_updated_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_labels_inserted_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_indices_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_indices_updated_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_indices_inserted_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_data_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_data_updated_, 2);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_data_inserted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_labels_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_labels_updated_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_labels_inserted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_indices_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_indices_updated_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_indices_inserted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_data_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_data_updated_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_data_inserted_, 0);
 
 	// Test undo
   for (auto& table_map : collection_1_ptr->tables_) {
@@ -922,66 +922,66 @@ void test_redoAndUndoTensorUpdateValues()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
 	for (int i = 0; i < nlabels1; ++i) {
 		for (int j = 0; j < nlabels2; ++j) {
 			for (int k = 0; k < nlabels3; ++k) {
-				assert(tensorTable1_ptr->getData()(i, j, k) == tensor_values1(i, j, k));
+				gpuCheckEqual(tensorTable1_ptr->getData()(i, j, k), tensor_values1(i, j, k));
 			}
 		}
 	}
 	for (int i = 0; i < nlabels1; ++i) {
-		assert(tensorTable1_ptr->getIndices().at("1")->getData()(i) == i + 1);
-		assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(i) == i + 1);
-		assert(tensorTable1_ptr->getIsModified().at("1")->getData()(i) == 1);
-		assert(tensorTable1_ptr->getNotInMemory().at("1")->getData()(i) == 0);
-		assert(tensorTable1_ptr->getShardId().at("1")->getData()(i) == 1);
-		assert(tensorTable1_ptr->getShardIndices().at("1")->getData()(i) == i + 1);
+		gpuCheckEqual(tensorTable1_ptr->getIndices().at("1")->getData()(i), i + 1);
+		gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(i), i + 1);
+		gpuCheckEqual(tensorTable1_ptr->getIsModified().at("1")->getData()(i), 1);
+		gpuCheckEqual(tensorTable1_ptr->getNotInMemory().at("1")->getData()(i), 0);
+		gpuCheckEqual(tensorTable1_ptr->getShardId().at("1")->getData()(i), 1);
+		gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("1")->getData()(i), i + 1);
 	}
 	for (int i = 0; i < nlabels2; ++i) {
-		assert(tensorTable1_ptr->getIndices().at("2")->getData()(i) == i + 1);
-		assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(i) == i + 1);
+		gpuCheckEqual(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
+		gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
 		if (i == 0)
-			assert(tensorTable1_ptr->getIsModified().at("2")->getData()(i) == 1);
+			gpuCheckEqual(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
 		else
-			assert(tensorTable1_ptr->getIsModified().at("2")->getData()(i) == 0);
-		assert(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i) == 0);
-		assert(tensorTable1_ptr->getShardId().at("2")->getData()(i) == 1);
-		assert(tensorTable1_ptr->getShardIndices().at("2")->getData()(i) == i + 1);
+			gpuCheckEqual(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
+		gpuCheckEqual(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
+		gpuCheckEqual(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1);
+		gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 1);
 	}
 	for (int i = 0; i < nlabels3; ++i) {
-		assert(tensorTable1_ptr->getIndices().at("3")->getData()(i) == i + 1);
-		assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(i) == i + 1);
+		gpuCheckEqual(tensorTable1_ptr->getIndices().at("3")->getData()(i), i + 1);
+		gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(i), i + 1);
 		if (i == 0)
-			assert(tensorTable1_ptr->getIsModified().at("3")->getData()(i) == 1);
+			gpuCheckEqual(tensorTable1_ptr->getIsModified().at("3")->getData()(i), 1);
 		else
-			assert(tensorTable1_ptr->getIsModified().at("3")->getData()(i) == 0);
-		assert(tensorTable1_ptr->getNotInMemory().at("3")->getData()(i) == 0);
-		assert(tensorTable1_ptr->getShardId().at("3")->getData()(i) == 1);
-		assert(tensorTable1_ptr->getShardIndices().at("3")->getData()(i) == i + 1);
+			gpuCheckEqual(tensorTable1_ptr->getIsModified().at("3")->getData()(i), 0);
+		gpuCheckEqual(tensorTable1_ptr->getNotInMemory().at("3")->getData()(i), 0);
+		gpuCheckEqual(tensorTable1_ptr->getShardId().at("3")->getData()(i), 1);
+		gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("3")->getData()(i), i + 1);
 	}
 
   // Test for the expected redo/undo log data
-  assert(tensorUpdate.getRedoLog().n_labels_deleted_ == 0);
-  assert(tensorUpdate.getRedoLog().n_labels_updated_ == 0);
-  assert(tensorUpdate.getRedoLog().n_labels_inserted_ == 0);
-  assert(tensorUpdate.getRedoLog().n_indices_deleted_ == 0);
-  assert(tensorUpdate.getRedoLog().n_indices_updated_ == 0);
-  assert(tensorUpdate.getRedoLog().n_indices_inserted_ == 0);
-  assert(tensorUpdate.getRedoLog().n_data_deleted_ == 0);
-  assert(tensorUpdate.getRedoLog().n_data_updated_ == 2);
-  assert(tensorUpdate.getRedoLog().n_data_inserted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_labels_deleted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_labels_updated_ == 0);
-  assert(tensorUpdate.getUndoLog().n_labels_inserted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_indices_deleted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_indices_updated_ == 0);
-  assert(tensorUpdate.getUndoLog().n_indices_inserted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_data_deleted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_data_updated_ == 2);
-  assert(tensorUpdate.getUndoLog().n_data_inserted_ == 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_labels_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_labels_updated_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_labels_inserted_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_indices_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_indices_updated_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_indices_inserted_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_data_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_data_updated_, 2);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_data_inserted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_labels_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_labels_updated_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_labels_inserted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_indices_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_indices_updated_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_indices_inserted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_data_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_data_updated_, 2);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_data_inserted_, 0);
 
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 /*TensorUpdateConstant Tests*/
@@ -990,7 +990,7 @@ void test_constructorTensorUpdateConstant()
   TensorUpdateConstant<float, Eigen::GpuDevice>* ptr = nullptr;
   TensorUpdateConstant<float, Eigen::GpuDevice>* nullPointer = nullptr;
   ptr = new TensorUpdateConstant<float, Eigen::GpuDevice>();
-  assert(ptr != nullPointer);
+  gpuCheckNotEqual(ptr, nullPointer);
 }
 
 void test_destructorTensorUpdateConstant()
@@ -1002,7 +1002,7 @@ void test_destructorTensorUpdateConstant()
 
 void test_redoAndUndoTensorUpdateConstant()
 {
-  cudaStream_t stream; assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess); Eigen::GpuStreamDevice stream_device(&stream, 0); Eigen::GpuDevice device(&stream_device);
+  cudaStream_t stream; gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking)); Eigen::GpuStreamDevice stream_device(&stream, 0); Eigen::GpuDevice device(&stream_device);
 
   // Set up the axes
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
@@ -1084,68 +1084,68 @@ void test_redoAndUndoTensorUpdateConstant()
     table_map.second->syncHData(device);
   }
   tensorUpdate.getValuesOld()->syncHData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < nlabels1; ++i) {
-    assert(tensorUpdate.getValuesOld()->getData()(i) == tensor_values1(i, 0, 0));
+    gpuCheckEqual(tensorUpdate.getValuesOld()->getData()(i), tensor_values1(i, 0, 0));
     for (int j = 0; j < nlabels2; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
         if (j==0 && k==0)
-          assert(tensorTable1_ptr->getData()(i, j, k) == 100);
+          gpuCheckEqual(tensorTable1_ptr->getData()(i, j, k), 100);
         else
-          assert(tensorTable1_ptr->getData()(i, j, k) == tensor_values1(i,j,k));
+          gpuCheckEqual(tensorTable1_ptr->getData()(i, j, k), tensor_values1(i,j,k));
       }
     }
   }
   for (int i = 0; i < nlabels1; ++i) {
-    assert(tensorTable1_ptr->getIndices().at("1")->getData()(i) == i + 1);
-    assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(i) == i + 1);
-    assert(tensorTable1_ptr->getIsModified().at("1")->getData()(i) == 1);
-    assert(tensorTable1_ptr->getNotInMemory().at("1")->getData()(i) == 0);
-    assert(tensorTable1_ptr->getShardId().at("1")->getData()(i) == 1);
-    assert(tensorTable1_ptr->getShardIndices().at("1")->getData()(i) == i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIndices().at("1")->getData()(i), i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(i), i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIsModified().at("1")->getData()(i), 1);
+    gpuCheckEqual(tensorTable1_ptr->getNotInMemory().at("1")->getData()(i), 0);
+    gpuCheckEqual(tensorTable1_ptr->getShardId().at("1")->getData()(i), 1);
+    gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("1")->getData()(i), i + 1);
   }
   for (int i = 0; i < nlabels2; ++i) {
-    assert(tensorTable1_ptr->getIndices().at("2")->getData()(i) == i + 1);
-    assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(i) == i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
     if (i==0)
-      assert(tensorTable1_ptr->getIsModified().at("2")->getData()(i) == 1);
+      gpuCheckEqual(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
     else
-      assert(tensorTable1_ptr->getIsModified().at("2")->getData()(i) == 0);
-    assert(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i) == 0);
-    assert(tensorTable1_ptr->getShardId().at("2")->getData()(i) == 1);
-    assert(tensorTable1_ptr->getShardIndices().at("2")->getData()(i) == i + 1);
+      gpuCheckEqual(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
+    gpuCheckEqual(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
+    gpuCheckEqual(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1);
+    gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 1);
   }
   for (int i = 0; i < nlabels3; ++i) {
-    assert(tensorTable1_ptr->getIndices().at("3")->getData()(i) == i + 1);
-    assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(i) == i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIndices().at("3")->getData()(i), i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(i), i + 1);
     if (i==0)
-      assert(tensorTable1_ptr->getIsModified().at("3")->getData()(i) == 1);
+      gpuCheckEqual(tensorTable1_ptr->getIsModified().at("3")->getData()(i), 1);
     else
-      assert(tensorTable1_ptr->getIsModified().at("3")->getData()(i) == 0);
-    assert(tensorTable1_ptr->getNotInMemory().at("3")->getData()(i) == 0);
-    assert(tensorTable1_ptr->getShardId().at("3")->getData()(i) == 1);
-    assert(tensorTable1_ptr->getShardIndices().at("3")->getData()(i) == i + 1);
+      gpuCheckEqual(tensorTable1_ptr->getIsModified().at("3")->getData()(i), 0);
+    gpuCheckEqual(tensorTable1_ptr->getNotInMemory().at("3")->getData()(i), 0);
+    gpuCheckEqual(tensorTable1_ptr->getShardId().at("3")->getData()(i), 1);
+    gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("3")->getData()(i), i + 1);
   }
 
   // Test for the expected redo/undo log data
-  assert(tensorUpdate.getRedoLog().n_labels_deleted_ == 0);
-  assert(tensorUpdate.getRedoLog().n_labels_updated_ == 0);
-  assert(tensorUpdate.getRedoLog().n_labels_inserted_ == 0);
-  assert(tensorUpdate.getRedoLog().n_indices_deleted_ == 0);
-  assert(tensorUpdate.getRedoLog().n_indices_updated_ == 0);
-  assert(tensorUpdate.getRedoLog().n_indices_inserted_ == 0);
-  assert(tensorUpdate.getRedoLog().n_data_deleted_ == 0);
-  assert(tensorUpdate.getRedoLog().n_data_updated_ == 2);
-  assert(tensorUpdate.getRedoLog().n_data_inserted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_labels_deleted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_labels_updated_ == 0);
-  assert(tensorUpdate.getUndoLog().n_labels_inserted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_indices_deleted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_indices_updated_ == 0);
-  assert(tensorUpdate.getUndoLog().n_indices_inserted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_data_deleted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_data_updated_ == 0);
-  assert(tensorUpdate.getUndoLog().n_data_inserted_ == 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_labels_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_labels_updated_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_labels_inserted_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_indices_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_indices_updated_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_indices_inserted_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_data_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_data_updated_, 2);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_data_inserted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_labels_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_labels_updated_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_labels_inserted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_indices_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_indices_updated_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_indices_inserted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_data_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_data_updated_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_data_inserted_, 0);
 
   // Test undo
   for (auto& table_map : collection_1_ptr->tables_) {
@@ -1157,66 +1157,66 @@ void test_redoAndUndoTensorUpdateConstant()
     table_map.second->syncAxesAndIndicesHData(device);
     table_map.second->syncHData(device);
   }
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < nlabels1; ++i) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int k = 0; k < nlabels3; ++k) {
-        assert(tensorTable1_ptr->getData()(i, j, k) == tensor_values1(i, j, k));
+        gpuCheckEqual(tensorTable1_ptr->getData()(i, j, k), tensor_values1(i, j, k));
       }
     }
   }
   for (int i = 0; i < nlabels1; ++i) {
-    assert(tensorTable1_ptr->getIndices().at("1")->getData()(i) == i + 1);
-    assert(tensorTable1_ptr->getIndicesView().at("1")->getData()(i) == i + 1);
-    assert(tensorTable1_ptr->getIsModified().at("1")->getData()(i) == 1);
-    assert(tensorTable1_ptr->getNotInMemory().at("1")->getData()(i) == 0);
-    assert(tensorTable1_ptr->getShardId().at("1")->getData()(i) == 1);
-    assert(tensorTable1_ptr->getShardIndices().at("1")->getData()(i) == i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIndices().at("1")->getData()(i), i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("1")->getData()(i), i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIsModified().at("1")->getData()(i), 1);
+    gpuCheckEqual(tensorTable1_ptr->getNotInMemory().at("1")->getData()(i), 0);
+    gpuCheckEqual(tensorTable1_ptr->getShardId().at("1")->getData()(i), 1);
+    gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("1")->getData()(i), i + 1);
   }
   for (int i = 0; i < nlabels2; ++i) {
-    assert(tensorTable1_ptr->getIndices().at("2")->getData()(i) == i + 1);
-    assert(tensorTable1_ptr->getIndicesView().at("2")->getData()(i) == i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIndices().at("2")->getData()(i), i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("2")->getData()(i), i + 1);
     if (i == 0)
-      assert(tensorTable1_ptr->getIsModified().at("2")->getData()(i) == 1);
+      gpuCheckEqual(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 1);
     else
-      assert(tensorTable1_ptr->getIsModified().at("2")->getData()(i) == 0);
-    assert(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i) == 0);
-    assert(tensorTable1_ptr->getShardId().at("2")->getData()(i) == 1);
-    assert(tensorTable1_ptr->getShardIndices().at("2")->getData()(i) == i + 1);
+      gpuCheckEqual(tensorTable1_ptr->getIsModified().at("2")->getData()(i), 0);
+    gpuCheckEqual(tensorTable1_ptr->getNotInMemory().at("2")->getData()(i), 0);
+    gpuCheckEqual(tensorTable1_ptr->getShardId().at("2")->getData()(i), 1);
+    gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("2")->getData()(i), i + 1);
   }
   for (int i = 0; i < nlabels3; ++i) {
-    assert(tensorTable1_ptr->getIndices().at("3")->getData()(i) == i + 1);
-    assert(tensorTable1_ptr->getIndicesView().at("3")->getData()(i) == i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIndices().at("3")->getData()(i), i + 1);
+    gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(i), i + 1);
     if (i == 0)
-      assert(tensorTable1_ptr->getIsModified().at("3")->getData()(i) == 1);
+      gpuCheckEqual(tensorTable1_ptr->getIsModified().at("3")->getData()(i), 1);
     else
-      assert(tensorTable1_ptr->getIsModified().at("3")->getData()(i) == 0);
-    assert(tensorTable1_ptr->getNotInMemory().at("3")->getData()(i) == 0);
-    assert(tensorTable1_ptr->getShardId().at("3")->getData()(i) == 1);
-    assert(tensorTable1_ptr->getShardIndices().at("3")->getData()(i) == i + 1);
+      gpuCheckEqual(tensorTable1_ptr->getIsModified().at("3")->getData()(i), 0);
+    gpuCheckEqual(tensorTable1_ptr->getNotInMemory().at("3")->getData()(i), 0);
+    gpuCheckEqual(tensorTable1_ptr->getShardId().at("3")->getData()(i), 1);
+    gpuCheckEqual(tensorTable1_ptr->getShardIndices().at("3")->getData()(i), i + 1);
   }
 
   // Test for the expected redo/undo log data
-  assert(tensorUpdate.getRedoLog().n_labels_deleted_ == 0);
-  assert(tensorUpdate.getRedoLog().n_labels_updated_ == 0);
-  assert(tensorUpdate.getRedoLog().n_labels_inserted_ == 0);
-  assert(tensorUpdate.getRedoLog().n_indices_deleted_ == 0);
-  assert(tensorUpdate.getRedoLog().n_indices_updated_ == 0);
-  assert(tensorUpdate.getRedoLog().n_indices_inserted_ == 0);
-  assert(tensorUpdate.getRedoLog().n_data_deleted_ == 0);
-  assert(tensorUpdate.getRedoLog().n_data_updated_ == 2);
-  assert(tensorUpdate.getRedoLog().n_data_inserted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_labels_deleted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_labels_updated_ == 0);
-  assert(tensorUpdate.getUndoLog().n_labels_inserted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_indices_deleted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_indices_updated_ == 0);
-  assert(tensorUpdate.getUndoLog().n_indices_inserted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_data_deleted_ == 0);
-  assert(tensorUpdate.getUndoLog().n_data_updated_ == 2);
-  assert(tensorUpdate.getUndoLog().n_data_inserted_ == 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_labels_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_labels_updated_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_labels_inserted_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_indices_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_indices_updated_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_indices_inserted_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_data_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_data_updated_, 2);
+  gpuCheckEqual(tensorUpdate.getRedoLog().n_data_inserted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_labels_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_labels_updated_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_labels_inserted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_indices_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_indices_updated_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_indices_inserted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_data_deleted_, 0);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_data_updated_, 2);
+  gpuCheckEqual(tensorUpdate.getUndoLog().n_data_inserted_, 0);
 
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 /*TensorAddTable Tests*/
@@ -1225,7 +1225,7 @@ void test_constructorTensorAddTable()
   TensorAddTable<TensorTable<float, Eigen::GpuDevice, 3>, Eigen::GpuDevice>* ptr = nullptr;
   TensorAddTable<TensorTable<float, Eigen::GpuDevice, 3>, Eigen::GpuDevice>* nullPointer = nullptr;
   ptr = new TensorAddTable<TensorTable<float, Eigen::GpuDevice, 3>, Eigen::GpuDevice>();
-  assert(ptr != nullPointer);
+  gpuCheckNotEqual(ptr, nullPointer);
 }
 
 void test_destructorTensorAddTable()
@@ -1237,7 +1237,7 @@ void test_destructorTensorAddTable()
 
 void test_redoAndUndoTensorAddTable()
 {
-  cudaStream_t stream; assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess); Eigen::GpuStreamDevice stream_device(&stream, 0); Eigen::GpuDevice device(&stream_device);
+  cudaStream_t stream; gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking)); Eigen::GpuStreamDevice stream_device(&stream, 0); Eigen::GpuDevice device(&stream_device);
 
   // Set up the axes
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
@@ -1291,11 +1291,11 @@ void test_redoAndUndoTensorAddTable()
   // Test Redo
   TensorAddTable<TensorTable<int, Eigen::GpuDevice, 2>, Eigen::GpuDevice> tensorAddTable(tensorTable2_ptr, "1");
   tensorAddTable.redo(collection_1_ptr, device);
-  assert(collection_1_ptr->getTableNames() == std::vector<std::string>({ "1", "2" }));
+  gpuCheckEqual(collection_1_ptr->getTableNames(), std::vector<std::string>({ "1", "2" }));
 
   // Test Undo
   tensorAddTable.undo(collection_1_ptr, device);
-  assert(collection_1_ptr->getTableNames() == std::vector<std::string>({ "1" }));
+  gpuCheckEqual(collection_1_ptr->getTableNames(), std::vector<std::string>({ "1" }));
 }
 
 /*TensorDropTable Tests*/
@@ -1304,7 +1304,7 @@ void test_constructorTensorDropTable()
   TensorDropTable<Eigen::GpuDevice>* ptr = nullptr;
   TensorDropTable<Eigen::GpuDevice>* nullPointer = nullptr;
   ptr = new TensorDropTable<Eigen::GpuDevice>();
-  assert(ptr != nullPointer);
+  gpuCheckNotEqual(ptr, nullPointer);
 }
 
 void test_destructorTensorDropTable()
@@ -1316,7 +1316,7 @@ void test_destructorTensorDropTable()
 
 void test_redoAndUndoTensorDropTable()
 {
-  cudaStream_t stream; assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess); Eigen::GpuStreamDevice stream_device(&stream, 0); Eigen::GpuDevice device(&stream_device);
+  cudaStream_t stream; gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking)); Eigen::GpuStreamDevice stream_device(&stream, 0); Eigen::GpuDevice device(&stream_device);
 
   // Set up the axes
   Eigen::Tensor<std::string, 1> dimensions1(1), dimensions2(1), dimensions3(1);
@@ -1371,11 +1371,11 @@ void test_redoAndUndoTensorDropTable()
   // Test redo drop table
   TensorDropTable<Eigen::GpuDevice> tensorDropTable("1");
   tensorDropTable.redo(collection_1_ptr, device);
-  assert(collection_1_ptr->getTableNames() == std::vector<std::string>({ "2" }));
+  gpuCheckEqual(collection_1_ptr->getTableNames(), std::vector<std::string>({ "2" }));
 
   // Test undo drop table
   tensorDropTable.undo(collection_1_ptr, device);
-  assert(collection_1_ptr->getTableNames() == std::vector<std::string>({ "1", "2" }));
+  gpuCheckEqual(collection_1_ptr->getTableNames(), std::vector<std::string>({ "1", "2" }));
 }
 
 int main(int argc, char** argv)

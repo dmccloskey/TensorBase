@@ -525,7 +525,7 @@ namespace TensorBaseBenchmarks
     if (!in_memory) {
       transaction_manager.initTensorCollectionTensorData(device);
     }
-    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+    gpuErrchk(cudaStreamSynchronize(device.stream()));
     select_sum_pixels.result_->syncHAndDData(device);
     return select_sum_pixels.result_->getData()(0);
   }
@@ -537,7 +537,7 @@ namespace TensorBaseBenchmarks
     if (!in_memory) {
       transaction_manager.initTensorCollectionTensorData(device);
     }
-    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+    gpuErrchk(cudaStreamSynchronize(device.stream()));
     select_sum_pixels.result_->syncHAndDData(device);
     return select_sum_pixels.result_->getData()(0);
   }
@@ -549,7 +549,7 @@ namespace TensorBaseBenchmarks
     if (!in_memory) {
       transaction_manager.initTensorCollectionTensorData(device);
     }
-    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+    gpuErrchk(cudaStreamSynchronize(device.stream()));
     select_sum_pixels.result_->syncHAndDData(device);
     return select_sum_pixels.result_->getData()(0);
   }
@@ -561,7 +561,7 @@ namespace TensorBaseBenchmarks
     if (!in_memory) {
       transaction_manager.initTensorCollectionTensorData(device);
     }
-    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+    gpuErrchk(cudaStreamSynchronize(device.stream()));
     select_sum_pixels.result_->syncHAndDData(device);
     return select_sum_pixels.result_->getData()(0);
   }
@@ -573,7 +573,7 @@ namespace TensorBaseBenchmarks
     if (!in_memory) {
       transaction_manager.initTensorCollectionTensorData(device);
     }
-    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+    gpuErrchk(cudaStreamSynchronize(device.stream()));
     select_sum_pixels.result_->syncHAndDData(device);
     return select_sum_pixels.result_->getData()(0);
   }

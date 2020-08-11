@@ -13,7 +13,7 @@ void test_constructorGpu()
 	TensorCollectionGpu* ptr = nullptr;
 	TensorCollectionGpu* nullPointer = nullptr;
 	ptr = new TensorCollectionGpu();
-  assert(ptr != nullPointer);
+  gpuCheckNotEqual(ptr, nullPointer);
   delete ptr;
 }
 
@@ -28,7 +28,7 @@ void test_comparisonGpu()
 {
   // Set up the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -74,12 +74,12 @@ void test_comparisonGpu()
   tensorCollection1.addTensorTable(tensorTable2_ptr, "1");
   tensorCollection1.addTensorTable(tensorTable3_ptr, "1");
 
-  assert(tensorCollection_test == tensorCollection1); // Control
+  gpuCheckEqual(tensorCollection_test, tensorCollection1); // Control
   tensorCollection1.setName("3");
-  assert(tensorCollection_test != tensorCollection1); // Different names but same data
+  gpuCheckNotEqual(tensorCollection_test, tensorCollection1); // Different names but same data
   tensorCollection1.setName("1");
   tensorCollection1.removeTensorTable("1");
-  assert(tensorCollection_test != tensorCollection1); // Different data but same names
+  gpuCheckNotEqual(tensorCollection_test, tensorCollection1); // Different data but same names
 
 }
 
@@ -87,7 +87,7 @@ void test_gettersAndSettersGpu()
 {
   // Set up the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -127,35 +127,35 @@ void test_gettersAndSettersGpu()
   tensorCollection.addTensorTable(tensorTable3_ptr, "1");
 
   // name getter
-  assert(tensorCollection.getTableNames() == std::vector<std::string>({ "1", "2", "3" }));
-  assert(tensorCollection.getTableNamesFromUserName("1") == std::set<std::string>({ "1", "2", "3" }));
+  gpuCheckEqual(tensorCollection.getTableNames(), std::vector<std::string>({ "1", "2", "3" }));
+  gpuCheckEqual(tensorCollection.getTableNamesFromUserName("1"), std::set<std::string>({ "1", "2", "3" }));
 
   // table concept getter
   auto tt1_ptr = tensorCollection.getTensorTableConcept("1");
-  assert(tt1_ptr->getName() == tensorTable1_ptr->getName());
-  assert(tt1_ptr->getAxes() == tensorTable1_ptr->getAxes());
-  assert(tt1_ptr->getIndices() == tensorTable1_ptr->getIndices());
-  assert(tt1_ptr->getIndicesView() == tensorTable1_ptr->getIndicesView());
-  assert(tt1_ptr->getIsModified() == tensorTable1_ptr->getIsModified());
-  assert(tt1_ptr->getNotInMemory() == tensorTable1_ptr->getNotInMemory());
-  assert(tt1_ptr->getShardId() == tensorTable1_ptr->getShardId());
+  gpuCheckEqual(tt1_ptr->getName(), tensorTable1_ptr->getName());
+  gpuCheckEqual(tt1_ptr->getAxes(), tensorTable1_ptr->getAxes());
+  gpuCheckEqual(tt1_ptr->getIndices(), tensorTable1_ptr->getIndices());
+  gpuCheckEqual(tt1_ptr->getIndicesView(), tensorTable1_ptr->getIndicesView());
+  gpuCheckEqual(tt1_ptr->getIsModified(), tensorTable1_ptr->getIsModified());
+  gpuCheckEqual(tt1_ptr->getNotInMemory(), tensorTable1_ptr->getNotInMemory());
+  gpuCheckEqual(tt1_ptr->getShardId(), tensorTable1_ptr->getShardId());
 
   // remove tensor tables
   tensorCollection.removeTensorTable("2");
-  assert(tensorCollection.getTableNames() == std::vector<std::string>({ "1", "3" }));
-  assert(tensorCollection.getTableNamesFromUserName("1") == std::set<std::string>({ "1", "3" }));
+  gpuCheckEqual(tensorCollection.getTableNames(), std::vector<std::string>({ "1", "3" }));
+  gpuCheckEqual(tensorCollection.getTableNamesFromUserName("1"), std::set<std::string>({ "1", "3" }));
 
   // clear the collection
   tensorCollection.clear();
-  assert(tensorCollection.getTableNames() == std::vector<std::string>());
-  assert(tensorCollection.getTableNamesFromUserName("1") == std::set<std::string>());
+  gpuCheckEqual(tensorCollection.getTableNames(), std::vector<std::string>());
+  gpuCheckEqual(tensorCollection.getTableNamesFromUserName("1"), std::set<std::string>());
 }
 
 void test_addTensorTableConceptGpu()
 {
   // Set up the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -196,105 +196,105 @@ void test_addTensorTableConceptGpu()
 
   // table concept getter
   const std::shared_ptr<TensorTableConcept<Eigen::GpuDevice>> tt1_ptr = tensorCollection.getTensorTableConcept("1");
-  assert(tt1_ptr->getName() == tensorTable1_ptr->getName());
-  assert(tt1_ptr->getAxes() == tensorTable1_ptr->getAxes());
-  assert(tt1_ptr->getIndices() == tensorTable1_ptr->getIndices());
-  assert(tt1_ptr->getIndicesView() == tensorTable1_ptr->getIndicesView());
-  assert(tt1_ptr->getIsModified() == tensorTable1_ptr->getIsModified());
-  assert(tt1_ptr->getNotInMemory() == tensorTable1_ptr->getNotInMemory());
-  assert(tt1_ptr->getShardId() == tensorTable1_ptr->getShardId());
+  gpuCheckEqual(tt1_ptr->getName(), tensorTable1_ptr->getName());
+  gpuCheckEqual(tt1_ptr->getAxes(), tensorTable1_ptr->getAxes());
+  gpuCheckEqual(tt1_ptr->getIndices(), tensorTable1_ptr->getIndices());
+  gpuCheckEqual(tt1_ptr->getIndicesView(), tensorTable1_ptr->getIndicesView());
+  gpuCheckEqual(tt1_ptr->getIsModified(), tensorTable1_ptr->getIsModified());
+  gpuCheckEqual(tt1_ptr->getNotInMemory(), tensorTable1_ptr->getNotInMemory());
+  gpuCheckEqual(tt1_ptr->getShardId(), tensorTable1_ptr->getShardId());
 
   // table concept adder
   tensorCollection.removeTensorTable("1");
-  assert(tensorCollection.getTableNames() == std::vector<std::string>({ "2", "3" }));
-  assert(tensorCollection.getTableNamesFromUserName("1") == std::set<std::string>({ "2", "3" }));
+  gpuCheckEqual(tensorCollection.getTableNames(), std::vector<std::string>({ "2", "3" }));
+  gpuCheckEqual(tensorCollection.getTableNamesFromUserName("1"), std::set<std::string>({ "2", "3" }));
   tensorCollection.addTensorTableConcept(tt1_ptr, "1");
-  assert(tensorCollection.getTableNames() == std::vector<std::string>({ "1", "2", "3" }));
-  assert(tensorCollection.getTableNamesFromUserName("1") == std::set<std::string>({ "1", "2", "3" }));;
+  gpuCheckEqual(tensorCollection.getTableNames(), std::vector<std::string>({ "1", "2", "3" }));
+  gpuCheckEqual(tensorCollection.getTableNamesFromUserName("1"), std::set<std::string>({ "1", "2", "3" }));;
 
   // test default axes and indices linkage
-  assert(tensorCollection.getTensorTableConcept("1")->getAxes().at("1") == tensorTable1.getAxes().at("1"));
-  assert(tensorCollection.getTensorTableConcept("1")->getAxes().at("2") == tensorTable1.getAxes().at("2"));
-  assert(tensorCollection.getTensorTableConcept("1")->getAxes().at("3") == tensorTable1.getAxes().at("3"));
-  assert(tensorCollection.getTensorTableConcept("2")->getAxes().at("1") != tensorTable1.getAxes().at("1"));
-  assert(tensorCollection.getTensorTableConcept("2")->getAxes().at("2") != tensorTable1.getAxes().at("2"));
-  assert(tensorCollection.getTensorTableConcept("3")->getAxes().at("1") != tensorTable1.getAxes().at("1"));
-  assert(tensorCollection.getTensorTableConcept("3")->getAxes().at("2") != tensorTable1.getAxes().at("2"));
-  assert(tensorCollection.getTensorTableConcept("3")->getAxes().at("3") != tensorTable1.getAxes().at("3"));
-  assert(tensorCollection.getTensorTableConcept("1")->getIndices().at("1") == tensorTable1.getIndices().at("1"));
-  assert(tensorCollection.getTensorTableConcept("1")->getIndices().at("2") == tensorTable1.getIndices().at("2"));
-  assert(tensorCollection.getTensorTableConcept("1")->getIndices().at("3") == tensorTable1.getIndices().at("3"));
-  assert(tensorCollection.getTensorTableConcept("2")->getIndices().at("1") != tensorTable1.getIndices().at("1"));
-  assert(tensorCollection.getTensorTableConcept("2")->getIndices().at("2") != tensorTable1.getIndices().at("2"));
-  assert(tensorCollection.getTensorTableConcept("3")->getIndices().at("1") != tensorTable1.getIndices().at("1"));
-  assert(tensorCollection.getTensorTableConcept("3")->getIndices().at("2") != tensorTable1.getIndices().at("2"));
-  assert(tensorCollection.getTensorTableConcept("3")->getIndices().at("3") != tensorTable1.getIndices().at("3"));
-  assert(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("1") == tensorTable1.getIndicesView().at("1"));
-  assert(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("2") == tensorTable1.getIndicesView().at("2"));
-  assert(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("3") == tensorTable1.getIndicesView().at("3"));
-  assert(tensorCollection.getTensorTableConcept("2")->getIndicesView().at("1") != tensorTable1.getIndicesView().at("1"));
-  assert(tensorCollection.getTensorTableConcept("2")->getIndicesView().at("2") != tensorTable1.getIndicesView().at("2"));
-  assert(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("1") != tensorTable1.getIndicesView().at("1"));
-  assert(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("2") != tensorTable1.getIndicesView().at("2"));
-  assert(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("3") != tensorTable1.getIndicesView().at("3"));
-  assert(tensorCollection.getTensorTableConcept("1")->getIsModified().at("1") == tensorTable1.getIsModified().at("1"));
-  assert(tensorCollection.getTensorTableConcept("1")->getIsModified().at("2") == tensorTable1.getIsModified().at("2"));
-  assert(tensorCollection.getTensorTableConcept("1")->getIsModified().at("3") == tensorTable1.getIsModified().at("3"));
-  assert(tensorCollection.getTensorTableConcept("2")->getIsModified().at("1") != tensorTable1.getIsModified().at("1"));
-  assert(tensorCollection.getTensorTableConcept("2")->getIsModified().at("2") != tensorTable1.getIsModified().at("2"));
-  assert(tensorCollection.getTensorTableConcept("3")->getIsModified().at("1") != tensorTable1.getIsModified().at("1"));
-  assert(tensorCollection.getTensorTableConcept("3")->getIsModified().at("2") != tensorTable1.getIsModified().at("2"));
-  assert(tensorCollection.getTensorTableConcept("3")->getIsModified().at("3") != tensorTable1.getIsModified().at("3"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getAxes().at("1"), tensorTable1.getAxes().at("1"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getAxes().at("2"), tensorTable1.getAxes().at("2"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getAxes().at("3"), tensorTable1.getAxes().at("3"));
+  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("2")->getAxes().at("1"), tensorTable1.getAxes().at("1"));
+  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("2")->getAxes().at("2"), tensorTable1.getAxes().at("2"));
+  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getAxes().at("1"), tensorTable1.getAxes().at("1"));
+  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getAxes().at("2"), tensorTable1.getAxes().at("2"));
+  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getAxes().at("3"), tensorTable1.getAxes().at("3"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIndices().at("1"), tensorTable1.getIndices().at("1"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIndices().at("2"), tensorTable1.getIndices().at("2"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIndices().at("3"), tensorTable1.getIndices().at("3"));
+  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("2")->getIndices().at("1"), tensorTable1.getIndices().at("1"));
+  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("2")->getIndices().at("2"), tensorTable1.getIndices().at("2"));
+  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getIndices().at("1"), tensorTable1.getIndices().at("1"));
+  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getIndices().at("2"), tensorTable1.getIndices().at("2"));
+  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getIndices().at("3"), tensorTable1.getIndices().at("3"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("1"), tensorTable1.getIndicesView().at("1"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("2"), tensorTable1.getIndicesView().at("2"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("3"), tensorTable1.getIndicesView().at("3"));
+  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("2")->getIndicesView().at("1"), tensorTable1.getIndicesView().at("1"));
+  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("2")->getIndicesView().at("2"), tensorTable1.getIndicesView().at("2"));
+  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("1"), tensorTable1.getIndicesView().at("1"));
+  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("2"), tensorTable1.getIndicesView().at("2"));
+  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("3"), tensorTable1.getIndicesView().at("3"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIsModified().at("1"), tensorTable1.getIsModified().at("1"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIsModified().at("2"), tensorTable1.getIsModified().at("2"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIsModified().at("3"), tensorTable1.getIsModified().at("3"));
+  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("2")->getIsModified().at("1"), tensorTable1.getIsModified().at("1"));
+  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("2")->getIsModified().at("2"), tensorTable1.getIsModified().at("2"));
+  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getIsModified().at("1"), tensorTable1.getIsModified().at("1"));
+  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getIsModified().at("2"), tensorTable1.getIsModified().at("2"));
+  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getIsModified().at("3"), tensorTable1.getIsModified().at("3"));
 
   // test linkAxesAndIndicesByUserTableName
   tensorCollection.linkAxesAndIndicesByUserTableName("1", "1");
-  assert(tensorCollection.getTensorTableConcept("1")->getAxes().at("1") == tensorTable1.getAxes().at("1"));
-  assert(tensorCollection.getTensorTableConcept("1")->getAxes().at("2") == tensorTable1.getAxes().at("2"));
-  assert(tensorCollection.getTensorTableConcept("1")->getAxes().at("3") == tensorTable1.getAxes().at("3"));
-  assert(tensorCollection.getTensorTableConcept("2")->getAxes().at("1") != tensorTable1.getAxes().at("1"));
-  assert(tensorCollection.getTensorTableConcept("2")->getAxes().at("2") == tensorTable1.getAxes().at("2"));
-  assert(tensorCollection.getTensorTableConcept("3")->getAxes().at("1") != tensorTable1.getAxes().at("1"));
-  assert(tensorCollection.getTensorTableConcept("3")->getAxes().at("2") == tensorTable1.getAxes().at("2"));
-  assert(tensorCollection.getTensorTableConcept("3")->getAxes().at("3") == tensorTable1.getAxes().at("3"));
-  assert(tensorCollection.getTensorTableConcept("1")->getIndices().at("1") == tensorTable1.getIndices().at("1"));
-  assert(tensorCollection.getTensorTableConcept("1")->getIndices().at("2") == tensorTable1.getIndices().at("2"));
-  assert(tensorCollection.getTensorTableConcept("1")->getIndices().at("3") == tensorTable1.getIndices().at("3"));
-  assert(tensorCollection.getTensorTableConcept("2")->getIndices().at("1") != tensorTable1.getIndices().at("1"));
-  assert(tensorCollection.getTensorTableConcept("2")->getIndices().at("2") == tensorTable1.getIndices().at("2"));
-  assert(tensorCollection.getTensorTableConcept("3")->getIndices().at("1") != tensorTable1.getIndices().at("1"));
-  assert(tensorCollection.getTensorTableConcept("3")->getIndices().at("2") == tensorTable1.getIndices().at("2"));
-  assert(tensorCollection.getTensorTableConcept("3")->getIndices().at("3") == tensorTable1.getIndices().at("3"));
-  assert(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("1") == tensorTable1.getIndicesView().at("1"));
-  assert(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("2") == tensorTable1.getIndicesView().at("2"));
-  assert(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("3") == tensorTable1.getIndicesView().at("3"));
-  assert(tensorCollection.getTensorTableConcept("2")->getIndicesView().at("1") != tensorTable1.getIndicesView().at("1"));
-  assert(tensorCollection.getTensorTableConcept("2")->getIndicesView().at("2") == tensorTable1.getIndicesView().at("2"));
-  assert(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("1") != tensorTable1.getIndicesView().at("1"));
-  assert(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("2") == tensorTable1.getIndicesView().at("2"));
-  assert(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("3") == tensorTable1.getIndicesView().at("3"));
-  assert(tensorCollection.getTensorTableConcept("1")->getIsModified().at("1") == tensorTable1.getIsModified().at("1"));
-  assert(tensorCollection.getTensorTableConcept("1")->getIsModified().at("2") == tensorTable1.getIsModified().at("2"));
-  assert(tensorCollection.getTensorTableConcept("1")->getIsModified().at("3") == tensorTable1.getIsModified().at("3"));
-  assert(tensorCollection.getTensorTableConcept("2")->getIsModified().at("1") != tensorTable1.getIsModified().at("1"));
-  assert(tensorCollection.getTensorTableConcept("2")->getIsModified().at("2") == tensorTable1.getIsModified().at("2"));
-  assert(tensorCollection.getTensorTableConcept("3")->getIsModified().at("1") != tensorTable1.getIsModified().at("1"));
-  assert(tensorCollection.getTensorTableConcept("3")->getIsModified().at("2") == tensorTable1.getIsModified().at("2"));
-  assert(tensorCollection.getTensorTableConcept("3")->getIsModified().at("3") == tensorTable1.getIsModified().at("3"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getAxes().at("1"), tensorTable1.getAxes().at("1"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getAxes().at("2"), tensorTable1.getAxes().at("2"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getAxes().at("3"), tensorTable1.getAxes().at("3"));
+  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("2")->getAxes().at("1"), tensorTable1.getAxes().at("1"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("2")->getAxes().at("2"), tensorTable1.getAxes().at("2"));
+  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getAxes().at("1"), tensorTable1.getAxes().at("1"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("3")->getAxes().at("2"), tensorTable1.getAxes().at("2"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("3")->getAxes().at("3"), tensorTable1.getAxes().at("3"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIndices().at("1"), tensorTable1.getIndices().at("1"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIndices().at("2"), tensorTable1.getIndices().at("2"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIndices().at("3"), tensorTable1.getIndices().at("3"));
+  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("2")->getIndices().at("1"), tensorTable1.getIndices().at("1"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("2")->getIndices().at("2"), tensorTable1.getIndices().at("2"));
+  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getIndices().at("1"), tensorTable1.getIndices().at("1"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("3")->getIndices().at("2"), tensorTable1.getIndices().at("2"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("3")->getIndices().at("3"), tensorTable1.getIndices().at("3"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("1"), tensorTable1.getIndicesView().at("1"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("2"), tensorTable1.getIndicesView().at("2"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("3"), tensorTable1.getIndicesView().at("3"));
+  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("2")->getIndicesView().at("1"), tensorTable1.getIndicesView().at("1"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("2")->getIndicesView().at("2"), tensorTable1.getIndicesView().at("2"));
+  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("1"), tensorTable1.getIndicesView().at("1"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("2"), tensorTable1.getIndicesView().at("2"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("3"), tensorTable1.getIndicesView().at("3"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIsModified().at("1"), tensorTable1.getIsModified().at("1"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIsModified().at("2"), tensorTable1.getIsModified().at("2"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIsModified().at("3"), tensorTable1.getIsModified().at("3"));
+  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("2")->getIsModified().at("1"), tensorTable1.getIsModified().at("1"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("2")->getIsModified().at("2"), tensorTable1.getIsModified().at("2"));
+  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getIsModified().at("1"), tensorTable1.getIsModified().at("1"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("3")->getIsModified().at("2"), tensorTable1.getIsModified().at("2"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("3")->getIsModified().at("3"), tensorTable1.getIsModified().at("3"));
 
   // test linkAxesAndIndicesByAxisName
   tensorCollection.linkAxesAndIndicesByAxisName({ "1" });
-  assert(tensorCollection.getTensorTableConcept("1")->getAxes().at("1") == tensorTable1.getAxes().at("1"));
-  assert(tensorCollection.getTensorTableConcept("2")->getAxes().at("1") == tensorTable1.getAxes().at("1"));
-  assert(tensorCollection.getTensorTableConcept("3")->getAxes().at("1") == tensorTable1.getAxes().at("1"));
-  assert(tensorCollection.getTensorTableConcept("1")->getIndices().at("1") == tensorTable1.getIndices().at("1"));
-  assert(tensorCollection.getTensorTableConcept("2")->getIndices().at("1") == tensorTable1.getIndices().at("1"));
-  assert(tensorCollection.getTensorTableConcept("3")->getIndices().at("1") == tensorTable1.getIndices().at("1"));
-  assert(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("1") == tensorTable1.getIndicesView().at("1"));
-  assert(tensorCollection.getTensorTableConcept("2")->getIndicesView().at("1") == tensorTable1.getIndicesView().at("1"));
-  assert(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("1") == tensorTable1.getIndicesView().at("1"));
-  assert(tensorCollection.getTensorTableConcept("1")->getIsModified().at("1") == tensorTable1.getIsModified().at("1"));
-  assert(tensorCollection.getTensorTableConcept("2")->getIsModified().at("1") == tensorTable1.getIsModified().at("1"));
-  assert(tensorCollection.getTensorTableConcept("3")->getIsModified().at("1") == tensorTable1.getIsModified().at("1"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getAxes().at("1"), tensorTable1.getAxes().at("1"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("2")->getAxes().at("1"), tensorTable1.getAxes().at("1"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("3")->getAxes().at("1"), tensorTable1.getAxes().at("1"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIndices().at("1"), tensorTable1.getIndices().at("1"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("2")->getIndices().at("1"), tensorTable1.getIndices().at("1"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("3")->getIndices().at("1"), tensorTable1.getIndices().at("1"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("1"), tensorTable1.getIndicesView().at("1"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("2")->getIndicesView().at("1"), tensorTable1.getIndicesView().at("1"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("1"), tensorTable1.getIndicesView().at("1"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIsModified().at("1"), tensorTable1.getIsModified().at("1"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("2")->getIsModified().at("1"), tensorTable1.getIsModified().at("1"));
+  gpuCheckEqual(tensorCollection.getTensorTableConcept("3")->getIsModified().at("1"), tensorTable1.getIsModified().at("1"));
 }
 
 int main(int argc, char** argv)

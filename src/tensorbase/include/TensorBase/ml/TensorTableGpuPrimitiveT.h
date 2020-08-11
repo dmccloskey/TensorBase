@@ -73,7 +73,7 @@ namespace TensorBase
 
   template<typename TensorT, int TDim>
   void TensorTableGpuPrimitiveT<TensorT, TDim>::setAxes(Eigen::GpuDevice& device) {
-    assert(TDim == this->axes_.size()); // "The number of tensor_axes and the template TDim do not match.";
+    gpuCheckEqual(TDim, this->axes_.size()); // "The number of tensor_axes and the template TDim do not match.";
     // Clear existing data
     this->dimensions_ = Eigen::array<Eigen::Index, TDim>();
     this->indices_.clear();
@@ -414,7 +414,7 @@ namespace TensorBase
 
       // update the dimensions
       dim_size.syncHData(device);
-      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+      gpuErrchk(cudaStreamSynchronize(device.stream()));
       select_dimensions.at(axis_to_name.second) = dim_size.getData()(0);
     }
 
@@ -503,7 +503,7 @@ namespace TensorBase
   template<typename TensorT, int TDim>
   inline int TensorTableGpuPrimitiveT<TensorT, TDim>::getFirstIndexFromIndicesView(const std::string & axis_name, Eigen::GpuDevice & device)
   {
-    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+    gpuErrchk(cudaStreamSynchronize(device.stream()));
     return this->indices_view_.at(axis_name)->getData()(0); // the first occurance of the label
   }
 
@@ -598,7 +598,7 @@ namespace TensorBase
     Eigen::TensorMap<Eigen::Tensor<int, 0>> dim_size_value(dim_size.getDataPointer().get());
     dim_size_value.device(device) = indices_view_copy_values.sum();
     dim_size.syncHData(device);
-    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+    gpuErrchk(cudaStreamSynchronize(device.stream()));
 
     // Allocate memory for the indices
     TensorDataGpuPrimitiveT<int, 1> indices_tmp(Eigen::array<Eigen::Index, 1>({ dim_size.getData()(0) }));
@@ -629,7 +629,7 @@ namespace TensorBase
 
       // update the dimensions
       dim_size.syncHData(device); // d to h
-      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+      gpuErrchk(cudaStreamSynchronize(device.stream()));
       labels_size *= dim_size.getData()(0);
 
       // create the selection for the indices view
@@ -682,7 +682,7 @@ namespace TensorBase
   {
     sparse_labels->syncHData(device); // d to h
     sparse_data->syncHData(device); // d to h
-    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+    gpuErrchk(cudaStreamSynchronize(device.stream()));
 
     // make the sparse axis
     std::shared_ptr<TensorAxis<int, Eigen::GpuDevice>> axis_1_ptr = std::make_shared<TensorAxisGpuPrimitiveT<int>>(TensorAxisGpuPrimitiveT<int>("Indices", sparse_dimensions, sparse_labels->getData()));
@@ -794,7 +794,7 @@ namespace TensorBase
 
     // initialize the slice indices
     modified_shard_ids->syncHData(device);// D to H
-    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+    gpuErrchk(cudaStreamSynchronize(device.stream()));
     for (int i = 0; i < modified_shard_ids->getTensorSize(); ++i) {
       slice_indices.emplace(modified_shard_ids->getData()(i), std::make_pair(Eigen::array<Eigen::Index, TDim>(), Eigen::array<Eigen::Index, TDim>()));
     }
@@ -847,7 +847,7 @@ namespace TensorBase
     num_runs->syncHData(device); // d to h
 
     if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
-      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+      gpuErrchk(cudaStreamSynchronize(device.stream()));
     }
 
     if (num_runs->getData()(0) == 1 && unique->getData()(0) == 0) {
@@ -892,7 +892,7 @@ namespace TensorBase
     else {
       this->syncHData(device); // D to H
       if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
-        assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+        gpuErrchk(cudaStreamSynchronize(device.stream()));
       }
     }
 
@@ -902,7 +902,7 @@ namespace TensorBase
       const std::string filename = makeTensorTableShardFilename(dir, getName(), slice_index.first);
       Eigen::Tensor<TensorT, TDim> shard_data(slice_index.second.second);
       DataFile::loadDataBinary<TensorT, TDim>(filename, shard_data);
-      assert(slice_index.second.second == shard_data.dimensions());
+      gpuCheckEqual(slice_index.second.second, shard_data.dimensions());
 
       // slice and update the data with the shard data
       this->getData().slice(slice_index.second.first, slice_index.second.second) = shard_data;
@@ -940,7 +940,7 @@ namespace TensorBase
       // write the TensorTable shards to disk asyncronously
       this->syncHData(device); // D to H
       if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
-        assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+        gpuErrchk(cudaStreamSynchronize(device.stream()));
       }
       for (const auto slice_index : slice_indices) {
         const std::string filename = makeTensorTableShardFilename(dir, getName(), slice_index.first);

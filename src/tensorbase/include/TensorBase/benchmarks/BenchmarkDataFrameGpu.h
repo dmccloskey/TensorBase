@@ -337,7 +337,7 @@ namespace TensorBaseBenchmarks
       transaction_manager.commit(device);
       transaction_manager.initTensorCollectionTensorData(device);
     }
-    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+    gpuErrchk(cudaStreamSynchronize(device.stream()));
     select_and_sum.result_->syncHAndDData(device);
     return select_and_sum.result_->getData()(0);
   }
@@ -359,7 +359,7 @@ namespace TensorBaseBenchmarks
       transaction_manager.commit(device);
       transaction_manager.initTensorCollectionTensorData(device);
     }
-    assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+    gpuErrchk(cudaStreamSynchronize(device.stream()));
     select_and_sum.result_->syncHAndDData(device);
     return select_and_sum.result_->getData()(0);
   }

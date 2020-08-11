@@ -15,7 +15,7 @@ void test_constructorGpuPrimitiveT()
   TensorDataGpuPrimitiveT<float, 3>* ptr = nullptr;
   TensorDataGpuPrimitiveT<float, 3>* nullPointer = nullptr;
   ptr = new TensorDataGpuPrimitiveT<float, 3>();
-  assert(ptr != nullPointer);
+  gpuCheckNotEqual(ptr, nullPointer);
   delete ptr;
 }
 
@@ -35,19 +35,19 @@ void test_assignmentGpuPrimitiveT()
 
   // Check copyToHost
   TensorDataGpuPrimitiveT<float, 3> tensordata(tensordata_test);
-  assert(tensordata == tensordata_test);
-  assert(tensordata.getData()(0, 0, 0) == 1);
+  gpuCheckEqual(tensordata, tensordata_test);
+  gpuCheckEqual(tensordata.getData()(0, 0, 0),1);
 
   // Check reference sharing
   tensordata.getData()(0, 0, 0) = 2;
-  assert(tensordata.getData()(0, 0, 0) == tensordata_test.getData()(0, 0, 0));
+  gpuCheckEqual(tensordata.getData()(0, 0, 0),tensordata_test.getData()(0, 0, 0));
 }
 
 void test_syncDataGpuPrimitiveT()
 {
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking))
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -77,14 +77,14 @@ void test_syncDataGpuPrimitiveT()
   assert(tensordata_test.getDataStatus().first);
   assert(!tensordata_test.getDataStatus().second);
 
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_copyGpuPrimitiveT()
 {
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking))
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -97,34 +97,34 @@ void test_copyGpuPrimitiveT()
 
   // Check copyToHost
   std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> tensordata = tensordata_test.copyToHost(device);
-  assert(tensordata->getDimensions() == tensordata_test.getDimensions());
-  assert(tensordata->getTensorSize() == tensordata_test.getTensorSize());
-  assert(tensordata->getDeviceName() == tensordata_test.getDeviceName());
-  assert(tensordata->getPinnedMemory() == tensordata_test.getPinnedMemory());
-  assert(tensordata->getPinnedFlag() == tensordata_test.getPinnedFlag());
-  assert(tensordata->getData()(0, 0, 0) == 1);
+  gpuCheckEqual(tensordata->getDimensions(),tensordata_test.getDimensions());
+  gpuCheckEqual(tensordata->getTensorSize(),tensordata_test.getTensorSize());
+  gpuCheckEqual(tensordata->getDeviceName(),tensordata_test.getDeviceName());
+  gpuCheckEqual(tensordata->getPinnedMemory(),tensordata_test.getPinnedMemory());
+  gpuCheckEqual(tensordata->getPinnedFlag(),tensordata_test.getPinnedFlag());
+  gpuCheckEqual(tensordata->getData()(0, 0, 0),1);
   tensordata->setDataStatus(false, true);
   tensordata->syncHData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(tensordata->getData()(0, 0, 0) != 1);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckNotEqual(tensordata->getData()(0, 0, 0), 1);
 
   // Check reference change
   tensordata->getData()(0, 0, 0) = 2;
-  assert(tensordata->getData()(0, 0, 0) != tensordata_test.getData()(0, 0, 0));
+  gpuCheckNotEqual(tensordata->getData()(0, 0, 0), tensordata_test.getData()(0, 0, 0));
 
   // Check copyToDevice
   std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> tensordata2 = tensordata_test.copyToDevice(device);
-  assert(tensordata2->getDimensions() == tensordata_test.getDimensions());
-  assert(tensordata2->getTensorSize() == tensordata_test.getTensorSize());
-  assert(tensordata2->getDeviceName() == tensordata_test.getDeviceName());
-  assert(tensordata2->getPinnedMemory() == tensordata_test.getPinnedMemory());
-  assert(tensordata2->getPinnedFlag() == tensordata_test.getPinnedFlag());
-  assert(tensordata2->getData()(0, 0, 0) != 1);
+  gpuCheckEqual(tensordata2->getDimensions(),tensordata_test.getDimensions());
+  gpuCheckEqual(tensordata2->getTensorSize(),tensordata_test.getTensorSize());
+  gpuCheckEqual(tensordata2->getDeviceName(),tensordata_test.getDeviceName());
+  gpuCheckEqual(tensordata2->getPinnedMemory(),tensordata_test.getPinnedMemory());
+  gpuCheckEqual(tensordata2->getPinnedFlag(),tensordata_test.getPinnedFlag());
+  gpuCheckNotEqual(tensordata2->getData()(0, 0, 0), 1);
   tensordata2->syncHData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(tensordata2->getData()(0, 0, 0) == 1);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckEqual(tensordata2->getData()(0, 0, 0),1);
 
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_selectGpuPrimitiveT()
@@ -171,7 +171,7 @@ void test_selectGpuPrimitiveT()
 
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking))
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -182,14 +182,14 @@ void test_selectGpuPrimitiveT()
   tensordata.select(tensorselect_ptr, indices_ptr, device);
   tensordata.syncHAndDData(device);
   tensorselect_ptr->syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuErrchk(cudaStreamDestroy(stream));
 
   for (int i = 0; i < dim_sizes_select; ++i) {
     for (int j = 0; j < dim_sizes_select; ++j) {
       for (int k = 0; k < dim_sizes_select; ++k) {
         //std::cout << "Test Select i,j,k :" << i << "," << j << "," << k << "; Tensor select: " << tensorselect_ptr->getData()(i, j, k) << "; Expected: " << tensor_values_test(i, j, k) << std::endl;
-        assert(tensorselect_ptr->getData()(i, j, k) == tensor_values_test(i, j, k));
+        gpuCheckEqual(tensorselect_ptr->getData()(i, j, k),tensor_values_test(i, j, k));
       }
     }
   }
@@ -208,7 +208,7 @@ void test_sortGpuPrimitiveT()
 
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking))
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -216,11 +216,11 @@ void test_sortGpuPrimitiveT()
   tensordata.syncHAndDData(device);
   tensordata.sort("ASC", device);
   tensordata.syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < dim_sizes; ++i) {
     for (int j = 0; j < dim_sizes; ++j) {
       for (int k = 0; k < dim_sizes; ++k) {
-        assert(tensordata.getData()(i, j, k) == tensor_values(i, j, k));
+        gpuCheckEqual(tensordata.getData()(i, j, k),tensor_values(i, j, k));
       }
     }
   }
@@ -235,15 +235,15 @@ void test_sortGpuPrimitiveT()
   tensordata.setDataStatus(false, true);
   tensordata.sort("DESC", device);
   tensordata.syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < dim_sizes; ++i) {
     for (int j = 0; j < dim_sizes; ++j) {
       for (int k = 0; k < dim_sizes; ++k) {
-        assert(tensordata.getData()(i, j, k) == tensor_values_test(i, j, k));
+        gpuCheckEqual(tensordata.getData()(i, j, k),tensor_values_test(i, j, k));
       }
     }
   }
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_sortIndicesGpuPrimitiveT()
@@ -264,7 +264,7 @@ void test_sortIndicesGpuPrimitiveT()
 
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking))
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -275,14 +275,14 @@ void test_sortIndicesGpuPrimitiveT()
   tensordata.sort(indices_ptr, device);
   tensordata.syncHAndDData(device);
   indices_ptr->syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < dim_sizes; ++i) {
     for (int j = 0; j < dim_sizes; ++j) {
       for (int k = 0; k < dim_sizes; ++k) {
         //std::cout << "Test ASC i,j,k :" << i << "," << j << "," << k << "; Indices sorted: " << indices_ptr->getData()(i, j, k) << "; Expected: " << indices_values(i, j, k) << std::endl;
         //std::cout << "Test ASC i,j,k :" << i << "," << j << "," << k << "; Tensor select: " << tensordata.getData()(i, j, k) << "; Expected: " << tensor_values(i, j, k) << std::endl;
-        assert(indices_ptr->getData()(i, j, k) == indices_values(i, j, k)); 
-        assert(tensordata.getData()(i, j, k) == tensor_values(i, j, k));
+        gpuCheckEqual(indices_ptr->getData()(i, j, k),indices_values(i, j, k)); 
+        gpuCheckEqual(tensordata.getData()(i, j, k),tensor_values(i, j, k));
       }
     }
   }
@@ -302,18 +302,18 @@ void test_sortIndicesGpuPrimitiveT()
   tensordata.sort(indices_ptr, device);
   tensordata.syncHAndDData(device);
   indices_ptr->syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < dim_sizes; ++i) {
     for (int j = 0; j < dim_sizes; ++j) {
       for (int k = 0; k < dim_sizes; ++k) {
         //std::cout << "Test DESC i,j,k :" << i << "," << j << "," << k << "; Indices sorted: " << indices_ptr->getData()(i, j, k) << "; Expected: " << indices_values_test(i, j, k) << std::endl;
         //std::cout << "Test DESC i,j,k :" << i << "," << j << "," << k << "; Tensor select: " << tensordata.getData()(i, j, k) << "; Expected: " << tensor_values_test(i, j, k) << std::endl;
-        assert(indices_ptr->getData()(i, j, k) == indices_values_test(i, j, k));
-        assert(tensordata.getData()(i, j, k) == tensor_values_test(i, j, k)); //FIXME
+        gpuCheckEqual(indices_ptr->getData()(i, j, k),indices_values_test(i, j, k));
+        gpuCheckEqual(tensordata.getData()(i, j, k),tensor_values_test(i, j, k)); //FIXME
       }
     }
   }
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_partitionGpuPrimitiveT()
@@ -342,7 +342,7 @@ void test_partitionGpuPrimitiveT()
 
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking))
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -351,15 +351,15 @@ void test_partitionGpuPrimitiveT()
   tensordata.syncHAndDData(device);
   tensordata.partition(indices_ptr, device);
   tensordata.syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < dim_sizes; ++i) {
     for (int j = 0; j < dim_sizes; ++j) {
       for (int k = 0; k < dim_sizes; ++k) {
-        assert(tensordata.getData()(i, j, k) == expected_values(i, j, k));
+        gpuCheckEqual(tensordata.getData()(i, j, k),expected_values(i, j, k));
       }
     }
   }
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_runLengthEncodeGpuPrimitiveT()
@@ -391,7 +391,7 @@ void test_runLengthEncodeGpuPrimitiveT()
 
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking))
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -405,11 +405,11 @@ void test_runLengthEncodeGpuPrimitiveT()
   uniquev_ptr->syncHAndDData(device);
   count_ptr->syncHAndDData(device);
   num_runs_ptr->syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(num_runs_ptr->getData()(0) == 3);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckEqual(num_runs_ptr->getData()(0),3);
   for (int i = 0; i < num_runs_ptr->getData()(0); ++i) {
-    assert(uniquev_ptr->getData()(i) == unique_values(i));
-    assert(count_ptr->getData()(i) == count_values(i));
+    gpuCheckEqual(uniquev_ptr->getData()(i),unique_values(i));
+    gpuCheckEqual(count_ptr->getData()(i),count_values(i));
   }
 
   // Test runLengthEncode for the case where the last value is not the same as the previous
@@ -427,20 +427,20 @@ void test_runLengthEncodeGpuPrimitiveT()
   count_ptr->syncHAndDData(device);
   num_runs_ptr->syncHAndDData(device);
   tensordata.syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(num_runs_ptr->getData()(0) == 4);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckEqual(num_runs_ptr->getData()(0),4);
   for (int i = 0; i < num_runs_ptr->getData()(0); ++i) {
-    assert(uniquev_ptr->getData()(i) == unique_values(i));
-    assert(count_ptr->getData()(i) == count_values(i));
+    gpuCheckEqual(uniquev_ptr->getData()(i),unique_values(i));
+    gpuCheckEqual(count_ptr->getData()(i),count_values(i));
   }
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_histogramGpuPrimitiveT()
 {
 	// Initialize the device
 	cudaStream_t stream;
-	assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+	gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking))
 	Eigen::GpuStreamDevice stream_device(&stream, 0);
 	Eigen::GpuDevice device(&stream_device);
 
@@ -473,29 +473,29 @@ void test_histogramGpuPrimitiveT()
 	tensordata.syncHAndDData(device);
 	tensordata.histogram(n_levels, lower_level, upper_level, histogram_bins_ptr, device);
 	histogram_bins_ptr->syncHAndDData(device);
-	assert(cudaStreamSynchronize(stream) == cudaSuccess);
+	gpuErrchk(cudaStreamSynchronize(stream));
 	for (int i = 0; i < n_bins; ++i) {
-		assert(histogram_bins_ptr->getData()(i) == 3.0);
+		gpuCheckEqual(histogram_bins_ptr->getData()(i),3.0);
 	}
-	assert(cudaStreamDestroy(stream) == cudaSuccess);
+	gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_gettersAndSettersGpuPrimitiveT()
 {
   TensorDataGpuPrimitiveT<float, 3> tensordata(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
-  assert(tensordata.getDimensions().at(0) == 2);
-  assert(tensordata.getDimensions().at(1) == 3);
-  assert(tensordata.getDimensions().at(2) == 4);
-  assert(tensordata.getDims() == 3);
-  assert(tensordata.getDeviceName() == typeid(Eigen::GpuDevice).name());
+  gpuCheckEqual(tensordata.getDimensions().at(0),2);
+  gpuCheckEqual(tensordata.getDimensions().at(1),3);
+  gpuCheckEqual(tensordata.getDimensions().at(2),4);
+  gpuCheckEqual(tensordata.getDims(),3);
+  gpuCheckEqual(tensordata.getDeviceName(),typeid(Eigen::GpuDevice).name());
   assert(!tensordata.getPinnedMemory()); // NOTE: changed default to False
-  assert(tensordata.getPinnedFlag() == TensorDataGpuPinnedFlags::HostAllocDefault);
+  gpuCheckEqual(tensordata.getPinnedFlag(),TensorDataGpuPinnedFlags::HostAllocDefault);
 
   Eigen::Tensor<float, 3> data(2, 3, 4);
   data.setConstant(0.5);
 
   tensordata.setData(data);
-  assert(tensordata.getData()(1, 2, 3) == 0.5);
+  gpuCheckEqual(tensordata.getData()(1, 2, 3),0.5);
   assert(tensordata.getDataStatus().first);
   assert(!tensordata.getDataStatus().second);
 
@@ -506,13 +506,13 @@ void test_gettersAndSettersGpuPrimitiveT()
 
   // Test mutability
   tensordata.getData()(0, 0, 0) = 5;
-  assert(tensordata.getData()(0, 0, 0) == 5);
+  gpuCheckEqual(tensordata.getData()(0, 0, 0),5);
 
   // NOTE: not testable on the Gpu
   //// Test getDataPointer
   //Eigen::TensorMap<Eigen::Tensor<float, 3>> data_map(tensordata.getDataPointer().get(), 2, 3, 4);
-  //assert(data_map(0, 0, 0) == 5);
-  //assert(data_map(1, 2, 3) == 0);
+  //gpuCheckEqual(data_map(0, 0, 0),5);
+  //gpuCheckEqual(data_map(1, 2, 3),0);
 }
 
 void test_syncHAndDGpuPrimitiveT()
@@ -536,11 +536,11 @@ void test_syncHAndDGpuPrimitiveT()
   assert(!tensordata.getDataStatus().second);
 
   // Test that data was copied correctly between device and host
-  assert(tensordata.getData()(0, 0, 0) == 0.5);
-  assert(tensordata.getData()(1, 0, 0) == 0.5);
-  assert(tensordata.getData()(0, 2, 0) == 0.5);
-  assert(tensordata.getData()(0, 0, 3) == 0.5);
-  assert(tensordata.getData()(1, 2, 3) == 0.5);
+  gpuCheckEqual(tensordata.getData()(0, 0, 0),0.5);
+  gpuCheckEqual(tensordata.getData()(1, 0, 0),0.5);
+  gpuCheckEqual(tensordata.getData()(0, 2, 0),0.5);
+  gpuCheckEqual(tensordata.getData()(0, 0, 3),0.5);
+  gpuCheckEqual(tensordata.getData()(1, 2, 3),0.5);
 }
 
 void test_memoryModelsGpuPrimitiveT()
@@ -553,36 +553,36 @@ void test_memoryModelsGpuPrimitiveT()
   TensorDataGpuPrimitiveT<float, 3> tensordata_0(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }), 
     true, TensorDataGpuPinnedFlags::HostAllocDefault);
   tensordata_0.setData(data);
-  assert(tensordata_0.getData()(0, 0, 0) == 1.0);
-  assert(tensordata_0.getData()(1, 2, 3) == 1.0);
+  gpuCheckEqual(tensordata_0.getData()(0, 0, 0),1.0);
+  gpuCheckEqual(tensordata_0.getData()(1, 2, 3),1.0);
 
   // Test pinned HostAllocPortable
   TensorDataGpuPrimitiveT<float, 3> tensordata_1(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }), 
     true, TensorDataGpuPinnedFlags::HostAllocPortable);
   tensordata_1.setData(data);
-  assert(tensordata_1.getData()(0, 0, 0) == 1.0);
-  assert(tensordata_1.getData()(1, 2, 3) == 1.0);
+  gpuCheckEqual(tensordata_1.getData()(0, 0, 0),1.0);
+  gpuCheckEqual(tensordata_1.getData()(1, 2, 3),1.0);
 
   //// Test pinned HostAllocMapped [TODO: bug]
   //TensorDataGpuPrimitiveT<float, 3> tensordata_2(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }), 
   //  true, TensorDataGpuPinnedFlags::HostAllocMapped);
   //tensordata_2.setData(data);
-  //assert(tensordata_2.getData()(0, 0, 0) == 1.0);
-  //assert(tensordata_2.getData()(1, 2, 3) == 1.0);
+  //gpuCheckEqual(tensordata_2.getData()(0, 0, 0),1.0);
+  //gpuCheckEqual(tensordata_2.getData()(1, 2, 3),1.0);
 
   // Test pinned HostAllocWriteCombined
   TensorDataGpuPrimitiveT<float, 3> tensordata_3(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }), 
     true, TensorDataGpuPinnedFlags::HostAllocWriteCombined);
   tensordata_3.setData(data);
-  assert(tensordata_3.getData()(0, 0, 0) == 1.0);
-  assert(tensordata_3.getData()(1, 2, 3) == 1.0);
+  gpuCheckEqual(tensordata_3.getData()(0, 0, 0),1.0);
+  gpuCheckEqual(tensordata_3.getData()(1, 2, 3),1.0);
 
   // Test pageable
   TensorDataGpuPrimitiveT<float, 3> tensordata_4(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }),
     false, TensorDataGpuPinnedFlags::HostAllocDefault);
   tensordata_4.setData(data);
-  assert(tensordata_4.getData()(0, 0, 0) == 1.0);
-  assert(tensordata_4.getData()(1, 2, 3) == 1.0);
+  gpuCheckEqual(tensordata_4.getData()(0, 0, 0),1.0);
+  gpuCheckEqual(tensordata_4.getData()(1, 2, 3),1.0);
 }
 
 void test_convertFromStringToTensorTGpuPrimitiveT()
@@ -590,7 +590,7 @@ void test_convertFromStringToTensorTGpuPrimitiveT()
   Eigen::Tensor<std::string, 3> tensor_string(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
   tensor_string.setConstant("1.001");
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking))
   Eigen::GpuStreamDevice stream_device;
   Eigen::GpuDevice device(&stream_device);
 
@@ -600,9 +600,11 @@ void test_convertFromStringToTensorTGpuPrimitiveT()
   tensordata_f.syncHAndDData(device);
   tensordata_f.convertFromStringToTensorT(tensor_string, device);
   tensordata_f.syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(tensordata_f.getData()(0, 0, 0) < 1.001 + 1e-3 && tensordata_f.getData()(0, 0, 0) > 1.001 - 1e-3);
-  assert(tensordata_f.getData()(1, 2, 3) < 1.001 + 1e-3 && tensordata_f.getData()(1, 2, 3) > 1.001 - 1e-3);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckLessThan(tensordata_f.getData()(0, 0, 0), 1.001 + 1e-3);
+  gpuCheckGreaterThan(tensordata_f.getData()(0, 0, 0), 1.001 - 1e-3);
+  gpuCheckLessThan(tensordata_f.getData()(1, 2, 3), 1.001 + 1e-3);
+  gpuCheckGreaterThan(tensordata_f.getData()(1, 2, 3),1.001 - 1e-3);
 
   // Test double
   TensorDataGpuPrimitiveT<double, 3> tensordata_d(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
@@ -610,9 +612,11 @@ void test_convertFromStringToTensorTGpuPrimitiveT()
   tensordata_d.syncHAndDData(device);
   tensordata_d.convertFromStringToTensorT(tensor_string, device);
   tensordata_d.syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(tensordata_d.getData()(0, 0, 0) < 1.001 + 1e-3 && tensordata_d.getData()(0, 0, 0) > 1.001 - 1e-3);
-  assert(tensordata_d.getData()(1, 2, 3) < 1.001 + 1e-3 && tensordata_d.getData()(0, 0, 0) > 1.001 - 1e-3);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckLessThan(tensordata_d.getData()(0, 0, 0), 1.001 + 1e-3);
+  gpuCheckGreaterThan(tensordata_d.getData()(0, 0, 0), 1.001 - 1e-3);
+  gpuCheckLessThan(tensordata_d.getData()(1, 2, 3), 1.001 + 1e-3);
+  gpuCheckGreaterThan(tensordata_d.getData()(1, 2, 3), 1.001 - 1e-3);
 
   // Test int
   TensorDataGpuPrimitiveT<int, 3> tensordata_i(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
@@ -620,9 +624,9 @@ void test_convertFromStringToTensorTGpuPrimitiveT()
   tensordata_i.syncHAndDData(device);
   tensordata_i.convertFromStringToTensorT(tensor_string, device);
   tensordata_i.syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(tensordata_i.getData()(0, 0, 0) == 1);
-  assert(tensordata_i.getData()(1, 2, 3) == 1);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckEqual(tensordata_i.getData()(0, 0, 0),1);
+  gpuCheckEqual(tensordata_i.getData()(1, 2, 3),1);
 
   // Test int
   TensorDataGpuPrimitiveT<char, 3> tensordata_c(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
@@ -630,9 +634,9 @@ void test_convertFromStringToTensorTGpuPrimitiveT()
   tensordata_c.syncHAndDData(device);
   tensordata_c.convertFromStringToTensorT(tensor_string, device);
   tensordata_c.syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(tensordata_c.getData()(0, 0, 0) == '1');
-  assert(tensordata_c.getData()(1, 2, 3) == '1');
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckEqual(tensordata_c.getData()(0, 0, 0),'1');
+  gpuCheckEqual(tensordata_c.getData()(1, 2, 3),'1');
 }
 
 /* TensorDataGpuClassT Tests
@@ -642,7 +646,7 @@ void test_constructorGpuClassT()
   TensorDataGpuClassT<TensorArrayGpu8, float, 3>* ptr = nullptr;
   TensorDataGpuClassT<TensorArrayGpu8, float, 3>* nullPointer = nullptr;
   ptr = new TensorDataGpuClassT<TensorArrayGpu8, float, 3>();
-  assert(ptr != nullPointer);
+  gpuCheckNotEqual(ptr, nullPointer);
   delete ptr;
 }
 
@@ -656,7 +660,7 @@ void test_syncDataGpuClassT()
 {
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking))
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -686,14 +690,14 @@ void test_syncDataGpuClassT()
   assert(tensordata_test.getDataStatus().first);
   assert(!tensordata_test.getDataStatus().second);
 
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_copyGpuClassT()
 {
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking))
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -718,30 +722,30 @@ void test_copyGpuClassT()
 
   // Check copyToHost
   std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 3>> tensordata = tensordata_test.copyToHost(device);
-  assert(tensordata->getDimensions() == tensordata_test.getDimensions());
-  assert(tensordata->getTensorSize() == tensordata_test.getTensorSize());
-  assert(tensordata->getDeviceName() == tensordata_test.getDeviceName());
-  assert(tensordata->getData()(0, 0, 0).at(0) == '0');
+  gpuCheckEqual(tensordata->getDimensions(),tensordata_test.getDimensions());
+  gpuCheckEqual(tensordata->getTensorSize(),tensordata_test.getTensorSize());
+  gpuCheckEqual(tensordata->getDeviceName(),tensordata_test.getDeviceName());
+  gpuCheckEqual(tensordata->getData()(0, 0, 0).at(0),'0');
   tensordata->setDataStatus(false, true);
   tensordata->syncHData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(tensordata->getData()(0, 0, 0).at(0) != '0');
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckNotEqual(tensordata->getData()(0, 0, 0).at(0),'0');
 
   // Check reference change
   tensordata->getData()(0, 0, 0).setTensorArray({ '2' });
-  assert(tensordata->getData()(0, 0, 0) != tensordata_test.getData()(0, 0, 0));
+  gpuCheckNotEqual(tensordata->getData()(0, 0, 0), tensordata_test.getData()(0, 0, 0));
 
   // Check copyToDevice
   std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 3>> tensordata2 = tensordata_test.copyToDevice(device);
-  assert(tensordata2->getDimensions() == tensordata_test.getDimensions());
-  assert(tensordata2->getTensorSize() == tensordata_test.getTensorSize());
-  assert(tensordata2->getDeviceName() == tensordata_test.getDeviceName());
-  assert(tensordata2->getData()(0, 0, 0).at(0) != '0');
+  gpuCheckEqual(tensordata2->getDimensions(),tensordata_test.getDimensions());
+  gpuCheckEqual(tensordata2->getTensorSize(),tensordata_test.getTensorSize());
+  gpuCheckEqual(tensordata2->getDeviceName(),tensordata_test.getDeviceName());
+  gpuCheckNotEqual(tensordata2->getData()(0, 0, 0).at(0), '0');
   tensordata2->syncHData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(tensordata2->getData()(0, 0, 0).at(0) == '0');
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckEqual(tensordata2->getData()(0, 0, 0).at(0),'0');
 
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_selectGpuClassT()
@@ -796,7 +800,7 @@ void test_selectGpuClassT()
 
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking))
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -807,14 +811,14 @@ void test_selectGpuClassT()
   tensordata.select(tensorselect_ptr, indices_ptr, device);
   tensordata.syncHAndDData(device);
   tensorselect_ptr->syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuErrchk(cudaStreamDestroy(stream));
 
   for (int i = 0; i < dim_sizes_select; ++i) {
     for (int j = 0; j < dim_sizes_select; ++j) {
       for (int k = 0; k < dim_sizes_select; ++k) {
         //std::cout << "Test Select i,j,k :" << i << "," << j << "," << k << "; Tensor select: " << tensorselect_ptr->getData()(i, j, k) << "; Expected: " << tensor_values_test(i, j, k) << std::endl;
-        assert(tensorselect_ptr->getData()(i, j, k) == tensor_values_test(i, j, k));
+        gpuCheckEqual(tensorselect_ptr->getData()(i, j, k),tensor_values_test(i, j, k));
       }
     }
   }
@@ -834,7 +838,7 @@ void test_sortGpuClassT()
 
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking))
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -842,11 +846,11 @@ void test_sortGpuClassT()
   tensordata.syncHAndDData(device);
   tensordata.sort("ASC", device);
   tensordata.syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < dim_sizes; ++i) {
     for (int j = 0; j < dim_sizes; ++j) {
       for (int k = 0; k < dim_sizes; ++k) {
-        assert(tensordata.getData()(i, j, k) == tensor_values(i, j, k));
+        gpuCheckEqual(tensordata.getData()(i, j, k),tensor_values(i, j, k));
       }
     }
   }
@@ -863,15 +867,15 @@ void test_sortGpuClassT()
   tensordata.setDataStatus(false, true);
   tensordata.sort("DESC", device);
   tensordata.syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < dim_sizes; ++i) {
     for (int j = 0; j < dim_sizes; ++j) {
       for (int k = 0; k < dim_sizes; ++k) {
-        assert(tensordata.getData()(i, j, k) == tensor_values_test(i, j, k));
+        gpuCheckEqual(tensordata.getData()(i, j, k),tensor_values_test(i, j, k));
       }
     }
   }
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_sortIndicesGpuClassT()
@@ -894,7 +898,7 @@ void test_sortIndicesGpuClassT()
 
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking))
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -905,14 +909,14 @@ void test_sortIndicesGpuClassT()
   tensordata.sort(indices_ptr, device);
   tensordata.syncHAndDData(device);
   indices_ptr->syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < dim_sizes; ++i) {
     for (int j = 0; j < dim_sizes; ++j) {
       for (int k = 0; k < dim_sizes; ++k) {
         //std::cout << "Test ASC i,j,k :" << i << "," << j << "," << k << "; Indices sorted: " << indices_ptr->getData()(i, j, k) << "; Expected: " << indices_values(i, j, k) << std::endl;
         //std::cout << "Test ASC i,j,k :" << i << "," << j << "," << k << "; Tensor select: " << tensordata.getData()(i, j, k) << "; Expected: " << tensor_values(i, j, k) << std::endl;
-        assert(indices_ptr->getData()(i, j, k) == indices_values(i, j, k));
-        assert(tensordata.getData()(i, j, k) == tensor_values(i, j, k));
+        gpuCheckEqual(indices_ptr->getData()(i, j, k),indices_values(i, j, k));
+        gpuCheckEqual(tensordata.getData()(i, j, k),tensor_values(i, j, k));
       }
     }
   }
@@ -935,18 +939,18 @@ void test_sortIndicesGpuClassT()
   tensordata.sort(indices_ptr, device);
   tensordata.syncHAndDData(device);
   indices_ptr->syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < dim_sizes; ++i) {
     for (int j = 0; j < dim_sizes; ++j) {
       for (int k = 0; k < dim_sizes; ++k) {
         //std::cout << "Test DESC i,j,k :" << i << "," << j << "," << k << "; Indices sorted: " << indices_ptr->getData()(i, j, k) << "; Expected: " << indices_values_test(i, j, k) << std::endl;
         //std::cout << "Test DESC i,j,k :" << i << "," << j << "," << k << "; Tensor select: " << tensordata.getData()(i, j, k) << "; Expected: " << tensor_values_test(i, j, k) << std::endl;
-        assert(indices_ptr->getData()(i, j, k) == indices_values_test(i, j, k));
-        assert(tensordata.getData()(i, j, k) == tensor_values_test(i, j, k));
+        gpuCheckEqual(indices_ptr->getData()(i, j, k),indices_values_test(i, j, k));
+        gpuCheckEqual(tensordata.getData()(i, j, k),tensor_values_test(i, j, k));
       }
     }
   }
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_partitionGpuClassT()
@@ -1017,7 +1021,7 @@ void test_partitionGpuClassT()
 
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking))
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -1026,16 +1030,16 @@ void test_partitionGpuClassT()
   tensordata.syncHAndDData(device);
   tensordata.partition(indices_ptr, device);
   tensordata.syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < dim_sizes; ++i) {
     for (int j = 0; j < dim_sizes; ++j) {
       for (int k = 0; k < dim_sizes; ++k) {
         //std::cout << "Test Partition i,j,k :" << i << "," << j << "," << k << "; Tensor partition: " << tensordata.getData()(i, j, k) << "; Expected: " << expected_values(i, j, k) << std::endl;
-        assert(tensordata.getData()(i, j, k) == expected_values(i, j, k));
+        gpuCheckEqual(tensordata.getData()(i, j, k),expected_values(i, j, k));
       }
     }
   }
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 
@@ -1076,7 +1080,7 @@ void test_runLengthEncodeGpuClassT()
 
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking))
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -1090,11 +1094,11 @@ void test_runLengthEncodeGpuClassT()
   uniquev_ptr->syncHAndDData(device);
   count_ptr->syncHAndDData(device);
   num_runs_ptr->syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(num_runs_ptr->getData()(0) == 3);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckEqual(num_runs_ptr->getData()(0),3);
   for (int i = 0; i < num_runs_ptr->getData()(0); ++i) {
-    assert(uniquev_ptr->getData()(i) == unique_values(i));
-    assert(count_ptr->getData()(i) == count_values(i));
+    gpuCheckEqual(uniquev_ptr->getData()(i),unique_values(i));
+    gpuCheckEqual(count_ptr->getData()(i),count_values(i));
   }
 
   // Test runLengthEncode for the case where the last value is not the same as the previous
@@ -1120,13 +1124,13 @@ void test_runLengthEncodeGpuClassT()
   count_ptr->syncHAndDData(device);
   num_runs_ptr->syncHAndDData(device);
   tensordata.syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(num_runs_ptr->getData()(0) == 4);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckEqual(num_runs_ptr->getData()(0),4);
   for (int i = 0; i < num_runs_ptr->getData()(0); ++i) {
-    assert(uniquev_ptr->getData()(i) == unique_values(i));
-    assert(count_ptr->getData()(i) == count_values(i));
+    gpuCheckEqual(uniquev_ptr->getData()(i),unique_values(i));
+    gpuCheckEqual(count_ptr->getData()(i),count_values(i));
   }
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_convertFromStringToTensorTGpuClassT()
@@ -1134,7 +1138,7 @@ void test_convertFromStringToTensorTGpuClassT()
   Eigen::Tensor<std::string, 3> tensor_string(Eigen::array<Eigen::Index, 3>({ 2, 3, 4 }));
   tensor_string.setConstant("1.001");
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking))
   Eigen::GpuStreamDevice stream_device;
   Eigen::GpuDevice device(&stream_device);
 
@@ -1144,15 +1148,15 @@ void test_convertFromStringToTensorTGpuClassT()
   tensordata_a8.syncHAndDData(device);
   tensordata_a8.convertFromStringToTensorT(tensor_string, device);
   tensordata_a8.syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(tensordata_a8.getData()(0, 0, 0) == TensorArrayGpu8<char>("1.001"));
-  assert(tensordata_a8.getData()(1, 2, 3) == TensorArrayGpu8<char>("1.001"));
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckEqual(tensordata_a8.getData()(0, 0, 0),TensorArrayGpu8<char>("1.001"));
+  gpuCheckEqual(tensordata_a8.getData()(1, 2, 3),TensorArrayGpu8<char>("1.001"));
 }
 
 int main(int argc, char** argv)
 {
   // PrimitiveT
-  assert(cudaDeviceReset() == cudaSuccess);
+  gpuCheckEqual(cudaDeviceReset(),cudaSuccess);
   test_constructorGpuPrimitiveT();
   test_destructorGpuPrimitiveT();
   test_gettersAndSettersGpuPrimitiveT();
@@ -1170,7 +1174,7 @@ int main(int argc, char** argv)
   test_convertFromStringToTensorTGpuPrimitiveT();
 
   // ClassT
-  assert(cudaDeviceReset() == cudaSuccess);
+  gpuCheckEqual(cudaDeviceReset(),cudaSuccess);
   test_constructorGpuClassT();
   test_destructorGpuClassT();
   test_syncDataGpuClassT();

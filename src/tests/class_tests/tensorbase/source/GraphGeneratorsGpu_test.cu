@@ -10,7 +10,7 @@ void test_kroneckerGraphGeneratorMakeKroneckerGraphGpu()
 {
   // init the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -20,9 +20,9 @@ void test_kroneckerGraphGeneratorMakeKroneckerGraphGpu()
   KroneckerGraphGeneratorGpu<int, float> graph_generator;
   graph_generator.makeKroneckerGraph(4, 8, indices, weights, device);
   Eigen::array<Eigen::Index, 2> indices_dims = { int(std::pow(2, 4) * 8), 2 };
-  assert(indices->getDimensions() == indices_dims);
+  gpuCheckEqual(indices->getDimensions(), indices_dims);
   Eigen::array<Eigen::Index, 2> weights_dims = { int(std::pow(2, 4) * 8), 1 };
-  assert(weights->getDimensions() == weights_dims);
+  gpuCheckEqual(weights->getDimensions(), weights_dims);
 
   // test getting the node/link ids for the entire graph
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> node_ids;
@@ -30,14 +30,14 @@ void test_kroneckerGraphGeneratorMakeKroneckerGraphGpu()
   graph_generator.getNodeAndLinkIds(0, std::pow(2, 4) * 8, indices, node_ids, link_ids, device);
   link_ids->syncHAndDData(device);
   node_ids->syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   Eigen::array<Eigen::Index, 1> link_ids_dims = { int(std::pow(2, 4) * 8) };
-  assert(link_ids->getDimensions() == link_ids_dims);
+  gpuCheckEqual(link_ids->getDimensions(), link_ids_dims);
   for (int i = 0; i < link_ids_dims.at(0); ++i) {
-    assert(link_ids->getData()(i) == i);
+    gpuCheckEqual(link_ids->getData()(i), i);
   }
   Eigen::array<Eigen::Index, 1> node_ids_dims = { int(std::pow(2, 4) * 8) };
-  assert(node_ids->getDimensions().at(0) <= std::pow(2, 4));
+  gpuCheckLessThan(node_ids->getDimensions().at(0),= std::pow(2, 4));
 
   // test getting the node/link ids
   node_ids.reset();
@@ -45,22 +45,22 @@ void test_kroneckerGraphGeneratorMakeKroneckerGraphGpu()
   graph_generator.getNodeAndLinkIds(8, 16, indices, node_ids, link_ids, device);
   link_ids->syncHAndDData(device);
   node_ids->syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   link_ids_dims = Eigen::array<Eigen::Index, 1>({ 16 });
-  assert(link_ids->getDimensions() == link_ids_dims);
+  gpuCheckEqual(link_ids->getDimensions(), link_ids_dims);
   for (int i = 0; i < link_ids_dims.at(0); ++i) {
-    assert(link_ids->getData()(i) == 8 + i);
+    gpuCheckEqual(link_ids->getData()(i), 8 + i);
   }
-  assert(node_ids->getDimensions().at(0) <= 16);
+  gpuCheckLessThan(node_ids->getDimensions().at(0),= 16);
 
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 void test_BinaryTreeGraphGeneratorMakeBinaryTree()
 {
   // init the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
   const int depth = 3;
@@ -74,17 +74,17 @@ void test_BinaryTreeGraphGeneratorMakeBinaryTree()
   graph_generator.makeBinaryTree(depth, indices, weights, device);
   indices->syncHAndDData(device);
   weights->syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   Eigen::array<Eigen::Index, 2> indices_dims = { n_links, 2 };
-  assert(indices->getDimensions() == indices_dims);
+  gpuCheckEqual(indices->getDimensions(), indices_dims);
   std::vector<int> expected_in_nodes = { 0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7 };
   for (int i = 0; i < n_links; ++i) {
-    assert(indices->getData()(i, 0) == expected_in_nodes.at(i));
-    if (i % 2 == 0) assert(indices->getData()(i, 1) == expected_in_nodes.at(i) * 2 + 1);
-    else assert(indices->getData()(i, 1) == expected_in_nodes.at(i) * 2 + 2);
+    gpuCheckEqual(indices->getData()(i, 0), expected_in_nodes.at(i));
+    if (i % 2 == 0) gpuCheckEqual(indices->getData()(i, 1), expected_in_nodes.at(i) * 2 + 1);
+    else gpuCheckEqual(indices->getData()(i, 1), expected_in_nodes.at(i) * 2 + 2);
   }
   Eigen::array<Eigen::Index, 2> weights_dims = { n_links, 1 };
-  assert(weights->getDimensions() == weights_dims);
+  gpuCheckEqual(weights->getDimensions(), weights_dims);
 
   // test getting the node/link ids for the entire graph
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> node_ids;
@@ -92,14 +92,14 @@ void test_BinaryTreeGraphGeneratorMakeBinaryTree()
   graph_generator.getNodeAndLinkIds(0, n_links, indices, node_ids, link_ids, device);
   node_ids->syncHAndDData(device);
   link_ids->syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(link_ids->getDimensions().at(0) == n_links);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckEqual(link_ids->getDimensions().at(0), n_links);
   for (int i = 0; i < n_links; ++i) {
-    assert(link_ids->getData()(i) == i);
+    gpuCheckEqual(link_ids->getData()(i), i);
   }
-  assert(node_ids->getDimensions().at(0) == n_nodes);
+  gpuCheckEqual(node_ids->getDimensions().at(0), n_nodes);
   for (int i = 0; i < n_nodes; ++i) {
-    assert(node_ids->getData()(i) == i);
+    gpuCheckEqual(node_ids->getData()(i), i);
   }
 
   // test getting the node/link ids for a subset
@@ -108,22 +108,22 @@ void test_BinaryTreeGraphGeneratorMakeBinaryTree()
   graph_generator.getNodeAndLinkIds(2, 4, indices, node_ids, link_ids, device);
   node_ids->syncHAndDData(device);
   link_ids->syncHAndDData(device);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(link_ids->getDimensions().at(0) == 4);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuCheckEqual(link_ids->getDimensions().at(0), 4);
   for (int i = 0; i < 4; ++i) {
-    assert(link_ids->getData()(i) == 2 + i);
+    gpuCheckEqual(link_ids->getData()(i), 2 + i);
   }
-  assert(node_ids->getDimensions().at(0) == 6);
+  gpuCheckEqual(node_ids->getDimensions().at(0), 6);
   for (int i = 0; i < 6; ++i) {
-    assert(node_ids->getData()(i) == i + 1);
+    gpuCheckEqual(node_ids->getData()(i), i + 1);
   }
 
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamDestroy(stream));
 }
 
 int main(int argc, char** argv)
 {
-  assert(cudaDeviceReset() == cudaSuccess);
+  gpuErrchk(cudaDeviceReset());
   test_kroneckerGraphGeneratorMakeKroneckerGraphGpu();
   test_BinaryTreeGraphGeneratorMakeBinaryTree();
   return 0;

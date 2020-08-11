@@ -74,7 +74,7 @@ namespace TensorBase
     // Resize the unique results
     n_runs->syncHAndDData(device); // d to h
     if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
-      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+      gpuErrchk(cudaStreamSynchronize(device.stream()));
     }
     unique->setDimensions(Eigen::array<Eigen::Index, 1>({ n_runs->getData()(0) }));
 
@@ -122,7 +122,7 @@ namespace TensorBase
     float* tmp_data;
     if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
       size_t bytes = M * M * sizeof(float);
-      assert(cudaMalloc((void**)(&tmp_data), bytes) == cudaSuccess);
+      gpuErrchk(cudaMalloc((void**)(&tmp_data), bytes));
     }
 
     // Permute vertex labels (in)
@@ -172,7 +172,7 @@ namespace TensorBase
 
     // deallocate temporary memory
     if (typeid(device).name() == typeid(Eigen::GpuDevice).name()) {
-      assert(cudaFree(tmp_data) == cudaSuccess);
+      gpuErrchk(cudaFree(tmp_data));
     }
   }
 
