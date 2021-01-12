@@ -154,7 +154,7 @@ void test_InsertUpdateDeleteGpu()
   for (int i = 0; i < data_size; ++i) {
     gpuCheckEqual(data_insert_values_weights(i, 0), values_labels_ptr->getData()(i, 0));
   }
-  gpuCheckLessThan(n_dim_tensor_collection->tables_.at("Graph_node_property")->getDataTensorSize(),= 1 * data_size);
+  gpuCheckEqual(n_dim_tensor_collection->tables_.at("Graph_node_property")->getDataTensorSize(), values_node_property_ptr->getTensorSize());
   std::shared_ptr<TensorArrayGpu8<char>[]> data_insert_data_node_property;
   n_dim_tensor_collection->tables_.at("Graph_node_property")->getHDataPointer(data_insert_data_node_property);
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 2>> data_insert_values_node_property(data_insert_data_node_property.get(), values_node_property_ptr->getTensorSize(), 1);
@@ -173,7 +173,7 @@ void test_InsertUpdateDeleteGpu()
   // Query for the number of white nodes
   SelectAndCountNodePropertyGpu<TensorArrayGpu8<char>, TensorArrayGpu8<char>> selectAndCountNodeProperty;
   selectAndCountNodeProperty(transaction_manager.getTensorCollection(), device);
-  gpuCheckGreaterThan(selectAndCountNodeProperty.result_,= 1);
+  gpuCheckGreaterThan(selectAndCountNodeProperty.result_, 0);
 
   // Query for the number of dashed links
   SelectAndCountLinkPropertyGpu<TensorArrayGpu8<char>, TensorArrayGpu8<char>> selectAndCountLinkProperty;
@@ -280,7 +280,7 @@ void test_InsertUpdateDeleteGpu()
   for (int i = 0; i < data_size; ++i) {
     gpuCheckEqual(data_update_values_weights(i, 0), values_labels_ptr->getData()(i, 0));
   }
-  gpuCheckLessThan(n_dim_tensor_collection->tables_.at("Graph_node_property")->getDataTensorSize(),= 1 * data_size);
+  gpuCheckEqual(n_dim_tensor_collection->tables_.at("Graph_node_property")->getDataTensorSize(), values_node_property_ptr->getTensorSize());
   std::shared_ptr<TensorArrayGpu8<char>[]> data_update_data_node_property;
   n_dim_tensor_collection->tables_.at("Graph_node_property")->getHDataPointer(data_update_data_node_property);
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 2>> data_update_values_node_property(data_update_data_node_property.get(), values_node_property_ptr->getTensorSize(), 1);
@@ -462,7 +462,7 @@ void test_InsertUpdateDeleteShardingGpu()
   for (int i = 0; i < data_size; ++i) {
     gpuCheckEqual(data_insert_values_weights(i, 0), values_labels_ptr->getData()(i, 0));
   }
-  gpuCheckLessThan(n_dim_tensor_collection->tables_.at("Graph_node_property")->getDataTensorSize(),= 1 * data_size);
+  gpuCheckEqual(n_dim_tensor_collection->tables_.at("Graph_node_property")->getDataTensorSize(), values_node_property_ptr->getTensorSize());
   std::shared_ptr<TensorArrayGpu8<char>[]> data_insert_data_node_property;
   n_dim_tensor_collection->tables_.at("Graph_node_property")->getHDataPointer(data_insert_data_node_property);
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 2>> data_insert_values_node_property(data_insert_data_node_property.get(), values_node_property_ptr->getTensorSize(), 1);
@@ -487,7 +487,7 @@ void test_InsertUpdateDeleteShardingGpu()
   // Query for the number of white nodes
   SelectAndCountNodePropertyGpu<TensorArrayGpu8<char>, TensorArrayGpu8<char>> selectAndCountNodeProperty;
   selectAndCountNodeProperty(transaction_manager.getTensorCollection(), device);
-  gpuCheckGreaterThan(selectAndCountNodeProperty.result_,= 1);
+  gpuCheckGreaterThan(selectAndCountNodeProperty.result_, 0);
 
   // Query for the number of dashed links
   SelectAndCountLinkPropertyGpu<TensorArrayGpu8<char>, TensorArrayGpu8<char>> selectAndCountLinkProperty;
@@ -594,7 +594,7 @@ void test_InsertUpdateDeleteShardingGpu()
   for (int i = 0; i < data_size; ++i) {
     gpuCheckEqual(data_update_values_weights(i, 0), values_labels_ptr->getData()(i, 0));
   }
-  gpuCheckLessThan(n_dim_tensor_collection->tables_.at("Graph_node_property")->getDataTensorSize(),= 1 * data_size);
+  gpuCheckEqual(n_dim_tensor_collection->tables_.at("Graph_node_property")->getDataTensorSize(), values_node_property_ptr->getTensorSize());
   std::shared_ptr<TensorArrayGpu8<char>[]> data_update_data_node_property;
   n_dim_tensor_collection->tables_.at("Graph_node_property")->getHDataPointer(data_update_data_node_property);
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 2>> data_update_values_node_property(data_update_data_node_property.get(), values_node_property_ptr->getTensorSize(), 1);

@@ -137,7 +137,7 @@ void test_selectClause1Gpu()
     table_map.second->syncHData(device);
   }
   gpuErrchk(cudaStreamSynchronize(stream));
-  gpuCheckEqual(collection_1_ptr->getTableNames(), std::vector<std::string>({ "1","2","2a" }));
+  gpuCheck(collection_1_ptr->getTableNames() == std::vector<std::string>({ "1","2","2a" }));
   gpuCheckEqual(collection_1_ptr->getTensorTableConcept("1")->getDataTensorSize(), (nlabels1 - 1) * nlabels2 * nlabels3);
   std::shared_ptr<float[]> table_1_data_ptr;
   collection_1_ptr->getTensorTableConcept("1")->getHDataPointer(table_1_data_ptr);
@@ -274,7 +274,7 @@ void test_selectClause2Gpu()
     table_map.second->syncHData(device);
   }
   gpuErrchk(cudaStreamSynchronize(stream));
-  gpuCheckEqual(collection_1_ptr->getTableNames(), std::vector<std::string>({ "1","2","2a" }));
+  gpuCheck(collection_1_ptr->getTableNames() == std::vector<std::string>({ "1","2","2a" }));
   gpuCheckEqual(collection_1_ptr->getTensorTableConcept("1")->getDataTensorSize(), (nlabels1 - 1) * nlabels2 * nlabels3);
   std::shared_ptr<float[]> table_1_data_ptr;
   collection_1_ptr->getTensorTableConcept("1")->getHDataPointer(table_1_data_ptr);
@@ -761,7 +761,7 @@ void test_sortClause1Gpu()
   gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(2), 3);
   gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(3), 4);
   gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(4), 5);
-  gpuCheckEqual(collection_1_ptr->getTableNames(), std::vector<std::string>({ "1","2","2a" }));
+  gpuCheck(collection_1_ptr->getTableNames() == std::vector<std::string>({ "1","2","2a" }));
   gpuCheckEqual(collection_1_ptr->getTensorTableConcept("1")->getDataTensorSize(), nlabels1 * nlabels2 * nlabels3);
   std::shared_ptr<float[]> table_1_data_ptr;
   collection_1_ptr->getTensorTableConcept("1")->getHDataPointer(table_1_data_ptr);
@@ -944,7 +944,7 @@ void test_sortClause2Gpu()
   gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(2), 3);
   gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(3), 4);
   gpuCheckEqual(tensorTable1_ptr->getIndicesView().at("3")->getData()(4), 5);
-  gpuCheckEqual(collection_1_ptr->getTableNames(), std::vector<std::string>({ "1","2","2a" }));
+  gpuCheck(collection_1_ptr->getTableNames() == std::vector<std::string>({ "1","2","2a" }));
   gpuCheckEqual(collection_1_ptr->getTensorTableConcept("1")->getDataTensorSize(), nlabels1 * nlabels2 * nlabels3);
   std::shared_ptr<float[]> table_1_data_ptr;
   collection_1_ptr->getTensorTableConcept("1")->getHDataPointer(table_1_data_ptr);

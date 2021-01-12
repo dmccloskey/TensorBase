@@ -194,8 +194,8 @@ void test_InsertUpdateDelete0DGpu()
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_update_values(data_update_data.get(), data_size, 5);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 5; ++j) {
-      if (j==4) gpuCheckEqual(data_update_values(i, j), -1);
-      else gpuCheckEqual(data_update_values(i, j), values(i, j));
+      if (j == 4) { gpuCheckEqual(data_update_values(i, j), -1); }
+      else { gpuCheckEqual(data_update_values(i, j), values(i, j)); }
     }
   }
 
@@ -1385,8 +1385,8 @@ void test_InsertUpdateDelete0DShardingGpu()
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_update_values(data_update_data.get(), data_size, 5);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 5; ++j) {
-      if (j == 4) gpuCheckEqual(data_update_values(i, j), -1);
-      else gpuCheckEqual(data_update_values(i, j), values(i, j));
+      if (j == 4) { gpuCheckEqual(data_update_values(i, j), -1); }
+      else { gpuCheckEqual(data_update_values(i, j), values(i, j)); }
     }
   }
 

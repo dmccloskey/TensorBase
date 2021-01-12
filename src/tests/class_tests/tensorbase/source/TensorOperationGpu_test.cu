@@ -1335,11 +1335,11 @@ void test_redoAndUndoTensorAddTable()
   // Test Redo
   TensorAddTable<TensorTable<int, Eigen::GpuDevice, 2>, Eigen::GpuDevice> tensorAddTable(tensorTable2_ptr, "1");
   tensorAddTable.redo(collection_1_ptr, device);
-  gpuCheckEqual(collection_1_ptr->getTableNames(), std::vector<std::string>({ "1", "2" }));
+  gpuCheck(collection_1_ptr->getTableNames() == std::vector<std::string>({ "1", "2" }));
 
   // Test Undo
   tensorAddTable.undo(collection_1_ptr, device);
-  gpuCheckEqual(collection_1_ptr->getTableNames(), std::vector<std::string>({ "1" }));
+  gpuCheck(collection_1_ptr->getTableNames() == std::vector<std::string>({ "1" }));
 }
 
 /*TensorDropTable Tests*/
@@ -1415,11 +1415,11 @@ void test_redoAndUndoTensorDropTable()
   // Test redo drop table
   TensorDropTable<Eigen::GpuDevice> tensorDropTable("1");
   tensorDropTable.redo(collection_1_ptr, device);
-  gpuCheckEqual(collection_1_ptr->getTableNames(), std::vector<std::string>({ "2" }));
+  gpuCheck(collection_1_ptr->getTableNames() == std::vector<std::string>({ "2" }));
 
   // Test undo drop table
   tensorDropTable.undo(collection_1_ptr, device);
-  gpuCheckEqual(collection_1_ptr->getTableNames(), std::vector<std::string>({ "1", "2" }));
+  gpuCheck(collection_1_ptr->getTableNames() == std::vector<std::string>({ "1", "2" }));
 }
 
 int main(int argc, char** argv)

@@ -35,7 +35,7 @@ void test_assignmentGpuPrimitiveT()
 
   // Check copyToHost
   TensorDataGpuPrimitiveT<float, 3> tensordata(tensordata_test);
-  gpuCheckEqual(tensordata, tensordata_test);
+  gpuCheckEqualNoLhsRhsPrint(tensordata, tensordata_test);
   gpuCheckEqual(tensordata.getData()(0, 0, 0),1);
 
   // Check reference sharing
@@ -58,24 +58,24 @@ void test_syncDataGpuPrimitiveT()
   tensordata_test.setData(data);
 
   // Check syncHData (no transfer)
-  assert(tensordata_test.syncHData(device));
-  assert(tensordata_test.getDataStatus().first);
-  assert(!tensordata_test.getDataStatus().second);
+  gpuCheck(tensordata_test.syncHData(device));
+  gpuCheck(tensordata_test.getDataStatus().first);
+  gpuCheck(!tensordata_test.getDataStatus().second);
 
   // Check syncDData (transfer)
-  assert(tensordata_test.syncDData(device));
-  assert(!tensordata_test.getDataStatus().first);
-  assert(tensordata_test.getDataStatus().second);
+  gpuCheck(tensordata_test.syncDData(device));
+  gpuCheck(!tensordata_test.getDataStatus().first);
+  gpuCheck(tensordata_test.getDataStatus().second);
 
   // Check syncDData (no transfer)
-  assert(tensordata_test.syncDData(device));
-  assert(!tensordata_test.getDataStatus().first);
-  assert(tensordata_test.getDataStatus().second);
+  gpuCheck(tensordata_test.syncDData(device));
+  gpuCheck(!tensordata_test.getDataStatus().first);
+  gpuCheck(tensordata_test.getDataStatus().second);
 
   // Check syncHData (transfer)
-  assert(tensordata_test.syncHData(device));
-  assert(tensordata_test.getDataStatus().first);
-  assert(!tensordata_test.getDataStatus().second);
+  gpuCheck(tensordata_test.syncHData(device));
+  gpuCheck(tensordata_test.getDataStatus().first);
+  gpuCheck(!tensordata_test.getDataStatus().second);
 
   gpuErrchk(cudaStreamDestroy(stream));
 }
@@ -97,11 +97,11 @@ void test_copyGpuPrimitiveT()
 
   // Check copyToHost
   std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> tensordata = tensordata_test.copyToHost(device);
-  gpuCheckEqual(tensordata->getDimensions(),tensordata_test.getDimensions());
+  gpuCheckEqualNoLhsRhsPrint(tensordata->getDimensions(),tensordata_test.getDimensions());
   gpuCheckEqual(tensordata->getTensorSize(),tensordata_test.getTensorSize());
   gpuCheckEqual(tensordata->getDeviceName(),tensordata_test.getDeviceName());
-  gpuCheckEqual(tensordata->getPinnedMemory(),tensordata_test.getPinnedMemory());
-  gpuCheckEqual(tensordata->getPinnedFlag(),tensordata_test.getPinnedFlag());
+  gpuCheckEqualNoLhsRhsPrint(tensordata->getPinnedMemory(),tensordata_test.getPinnedMemory());
+  gpuCheckEqualNoLhsRhsPrint(tensordata->getPinnedFlag(),tensordata_test.getPinnedFlag());
   gpuCheckEqual(tensordata->getData()(0, 0, 0),1);
   tensordata->setDataStatus(false, true);
   tensordata->syncHData(device);
@@ -114,11 +114,11 @@ void test_copyGpuPrimitiveT()
 
   // Check copyToDevice
   std::shared_ptr<TensorData<float, Eigen::GpuDevice, 3>> tensordata2 = tensordata_test.copyToDevice(device);
-  gpuCheckEqual(tensordata2->getDimensions(),tensordata_test.getDimensions());
+  gpuCheckEqualNoLhsRhsPrint(tensordata2->getDimensions(),tensordata_test.getDimensions());
   gpuCheckEqual(tensordata2->getTensorSize(),tensordata_test.getTensorSize());
   gpuCheckEqual(tensordata2->getDeviceName(),tensordata_test.getDeviceName());
-  gpuCheckEqual(tensordata2->getPinnedMemory(),tensordata_test.getPinnedMemory());
-  gpuCheckEqual(tensordata2->getPinnedFlag(),tensordata_test.getPinnedFlag());
+  gpuCheckEqualNoLhsRhsPrint(tensordata2->getPinnedMemory(),tensordata_test.getPinnedMemory());
+  gpuCheckEqualNoLhsRhsPrint(tensordata2->getPinnedFlag(),tensordata_test.getPinnedFlag());
   gpuCheckNotEqual(tensordata2->getData()(0, 0, 0), 1);
   tensordata2->syncHData(device);
   gpuErrchk(cudaStreamSynchronize(stream));
@@ -488,21 +488,21 @@ void test_gettersAndSettersGpuPrimitiveT()
   gpuCheckEqual(tensordata.getDimensions().at(2),4);
   gpuCheckEqual(tensordata.getDims(),3);
   gpuCheckEqual(tensordata.getDeviceName(),typeid(Eigen::GpuDevice).name());
-  assert(!tensordata.getPinnedMemory()); // NOTE: changed default to False
-  gpuCheckEqual(tensordata.getPinnedFlag(),TensorDataGpuPinnedFlags::HostAllocDefault);
+  gpuCheck(!tensordata.getPinnedMemory()); // NOTE: changed default to False
+  gpuCheckEqualNoLhsRhsPrint(tensordata.getPinnedFlag(),TensorDataGpuPinnedFlags::HostAllocDefault);
 
   Eigen::Tensor<float, 3> data(2, 3, 4);
   data.setConstant(0.5);
 
   tensordata.setData(data);
   gpuCheckEqual(tensordata.getData()(1, 2, 3),0.5);
-  assert(tensordata.getDataStatus().first);
-  assert(!tensordata.getDataStatus().second);
+  gpuCheck(tensordata.getDataStatus().first);
+  gpuCheck(!tensordata.getDataStatus().second);
 
   // Test manual data status setters
   tensordata.setDataStatus(false, true);
-  assert(!tensordata.getDataStatus().first);
-  assert(tensordata.getDataStatus().second);
+  gpuCheck(!tensordata.getDataStatus().first);
+  gpuCheck(tensordata.getDataStatus().second);
 
   // Test mutability
   tensordata.getData()(0, 0, 0) = 5;
@@ -528,12 +528,12 @@ void test_syncHAndDGpuPrimitiveT()
 
   // Test sync data status
   tensordata.syncHAndDData(device);
-  assert(!tensordata.getDataStatus().first);
-  assert(tensordata.getDataStatus().second);
+  gpuCheck(!tensordata.getDataStatus().first);
+  gpuCheck(tensordata.getDataStatus().second);
 
   tensordata.syncHAndDData(device);
-  assert(tensordata.getDataStatus().first);
-  assert(!tensordata.getDataStatus().second);
+  gpuCheck(tensordata.getDataStatus().first);
+  gpuCheck(!tensordata.getDataStatus().second);
 
   // Test that data was copied correctly between device and host
   gpuCheckEqual(tensordata.getData()(0, 0, 0),0.5);
@@ -671,24 +671,24 @@ void test_syncDataGpuClassT()
   tensordata_test.setData(data);
 
   // Check syncHData (no transfer)
-  assert(tensordata_test.syncHData(device));
-  assert(tensordata_test.getDataStatus().first);
-  assert(!tensordata_test.getDataStatus().second);
+  gpuCheck(tensordata_test.syncHData(device));
+  gpuCheck(tensordata_test.getDataStatus().first);
+  gpuCheck(!tensordata_test.getDataStatus().second);
 
   // Check syncDData (transfer)
-  assert(tensordata_test.syncDData(device));
-  assert(!tensordata_test.getDataStatus().first);
-  assert(tensordata_test.getDataStatus().second);
+  gpuCheck(tensordata_test.syncDData(device));
+  gpuCheck(!tensordata_test.getDataStatus().first);
+  gpuCheck(tensordata_test.getDataStatus().second);
 
   // Check syncDData (no transfer)
-  assert(tensordata_test.syncDData(device));
-  assert(!tensordata_test.getDataStatus().first);
-  assert(tensordata_test.getDataStatus().second);
+  gpuCheck(tensordata_test.syncDData(device));
+  gpuCheck(!tensordata_test.getDataStatus().first);
+  gpuCheck(tensordata_test.getDataStatus().second);
 
   // Check syncHData (transfer)
-  assert(tensordata_test.syncHData(device));
-  assert(tensordata_test.getDataStatus().first);
-  assert(!tensordata_test.getDataStatus().second);
+  gpuCheck(tensordata_test.syncHData(device));
+  gpuCheck(tensordata_test.getDataStatus().first);
+  gpuCheck(!tensordata_test.getDataStatus().second);
 
   gpuErrchk(cudaStreamDestroy(stream));
 }
@@ -722,7 +722,7 @@ void test_copyGpuClassT()
 
   // Check copyToHost
   std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 3>> tensordata = tensordata_test.copyToHost(device);
-  gpuCheckEqual(tensordata->getDimensions(),tensordata_test.getDimensions());
+  gpuCheckEqualNoLhsRhsPrint(tensordata->getDimensions(),tensordata_test.getDimensions());
   gpuCheckEqual(tensordata->getTensorSize(),tensordata_test.getTensorSize());
   gpuCheckEqual(tensordata->getDeviceName(),tensordata_test.getDeviceName());
   gpuCheckEqual(tensordata->getData()(0, 0, 0).at(0),'0');
@@ -737,7 +737,7 @@ void test_copyGpuClassT()
 
   // Check copyToDevice
   std::shared_ptr<TensorData<TensorArrayGpu8<char>, Eigen::GpuDevice, 3>> tensordata2 = tensordata_test.copyToDevice(device);
-  gpuCheckEqual(tensordata2->getDimensions(),tensordata_test.getDimensions());
+  gpuCheckEqualNoLhsRhsPrint(tensordata2->getDimensions(),tensordata_test.getDimensions());
   gpuCheckEqual(tensordata2->getTensorSize(),tensordata_test.getTensorSize());
   gpuCheckEqual(tensordata2->getDeviceName(),tensordata_test.getDeviceName());
   gpuCheckNotEqual(tensordata2->getData()(0, 0, 0).at(0), '0');
