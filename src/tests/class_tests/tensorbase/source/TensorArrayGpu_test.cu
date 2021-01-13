@@ -135,22 +135,22 @@ void test_comparisonTensorArray8Gpu()
   same_equal_float_2.setValues({ 1,2,3,4,5,6,7,8 });
   TensorArrayGpu8<float> tensorArrayFloat2(same_equal_float_2);
   gpuCheckEqual(tensorArrayFloat1, tensorArrayFloat2);
-  gpuCheckNotEqual(!(tensorArrayFloat1, tensorArrayFloat2));
-  gpuCheckLessThan(!(tensorArrayFloat1, tensorArrayFloat2));
-  gpuCheckGreaterThan(!(tensorArrayFloat1, tensorArrayFloat2));
-  gpuCheckLessThan(tensorArrayFloat1,= tensorArrayFloat2);
-  gpuCheckGreaterThan(tensorArrayFloat1,= tensorArrayFloat2);
+  gpuCheckNotEqual(tensorArrayFloat1, tensorArrayFloat2);
+  gpuCheckLessThan(tensorArrayFloat1, tensorArrayFloat2);
+  gpuCheckGreaterThan(tensorArrayFloat1, tensorArrayFloat2);
+  gpuCheckLessThan(tensorArrayFloat1, tensorArrayFloat2);
+  gpuCheckGreaterThan(tensorArrayFloat1, tensorArrayFloat2);
 
   // Check different and equal length float
   Eigen::Tensor<float, 1> same_equal_float_3(8);
   same_equal_float_3.setValues({ 1,2,0,4,5,6,7,8 });
   TensorArrayGpu8<float> tensorArrayFloat3(same_equal_float_3);
-  gpuCheckEqual(!(tensorArrayFloat1, tensorArrayFloat3));
+  gpuCheckEqual(tensorArrayFloat1, tensorArrayFloat3);
   gpuCheckNotEqual(tensorArrayFloat1, tensorArrayFloat3);
-  gpuCheckLessThan(!(tensorArrayFloat1, tensorArrayFloat3));
+  gpuCheckLessThan(tensorArrayFloat1, tensorArrayFloat3);
   gpuCheckGreaterThan(tensorArrayFloat1, tensorArrayFloat3);
-  gpuCheckLessThan(!(tensorArrayFloat1,= tensorArrayFloat3));
-  gpuCheckGreaterThan(tensorArrayFloat1,= tensorArrayFloat3);
+  gpuCheckLessThan(tensorArrayFloat1, tensorArrayFloat3);
+  gpuCheckGreaterThan(tensorArrayFloat1, tensorArrayFloat3);
 
   // Check same and equal length char
   Eigen::Tensor<char, 1> same_equal_char_1(8);
@@ -160,22 +160,22 @@ void test_comparisonTensorArray8Gpu()
   same_equal_char_2.setValues({ 'a', 'b', 'c', 'd', 'e', 'f', 'g', '\0' });
   TensorArrayGpu8<char> tensorArrayChar2(same_equal_char_2);
   gpuCheckEqual(tensorArrayChar1, tensorArrayChar2);
-  gpuCheckNotEqual(!(tensorArrayChar1, tensorArrayChar2));
-  gpuCheckLessThan(!(tensorArrayChar1, tensorArrayChar2));
-  gpuCheckGreaterThan(!(tensorArrayChar1, tensorArrayChar2));
-  gpuCheckLessThan(tensorArrayChar1,= tensorArrayChar2);
-  gpuCheckGreaterThan(tensorArrayChar1,= tensorArrayChar2);
+  gpuCheckNotEqual(tensorArrayChar1, tensorArrayChar2);
+  gpuCheckLessThan(tensorArrayChar1, tensorArrayChar2);
+  gpuCheckGreaterThan(tensorArrayChar1, tensorArrayChar2);
+  gpuCheckLessThan(tensorArrayChar1, tensorArrayChar2);
+  gpuCheckGreaterThan(tensorArrayChar1, tensorArrayChar2);
 
   // Check different and equal length char
   Eigen::Tensor<char, 1> same_equal_char_3(8);
   same_equal_char_3.setValues({ 'a', 'b', 'a', 'd', 'e', 'f', 'g', '\0' });
   TensorArrayGpu8<char> tensorArrayChar3(same_equal_char_3);
-  gpuCheckEqual(!(tensorArrayChar1, tensorArrayChar3));
+  gpuCheckEqual(tensorArrayChar1, tensorArrayChar3);
   gpuCheckNotEqual(tensorArrayChar1, tensorArrayChar3);
-  gpuCheckLessThan(!(tensorArrayChar1, tensorArrayChar3));
+  gpuCheckLessThan(tensorArrayChar1, tensorArrayChar3);
   gpuCheckGreaterThan(tensorArrayChar1, tensorArrayChar3);
-  gpuCheckLessThan(!(tensorArrayChar1,= tensorArrayChar3));
-  gpuCheckGreaterThan(tensorArrayChar1,= tensorArrayChar3);
+  gpuCheckLessThan(tensorArrayChar1, tensorArrayChar3);
+  gpuCheckGreaterThan(tensorArrayChar1, tensorArrayChar3);
 }
 
 void test_tensorAssignmentTensorArray8Gpu()
@@ -500,22 +500,22 @@ void test_comparisonTensorArray32Gpu()
   same_equal_float_2.setValues({ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32 });
   TensorArrayGpu32<float> tensorArrayFloat2(same_equal_float_2);
   gpuCheckEqual(tensorArrayFloat1, tensorArrayFloat2);
-  gpuCheckNotEqual(!(tensorArrayFloat1, tensorArrayFloat2));
-  gpuCheckLessThan(!(tensorArrayFloat1, tensorArrayFloat2));
-  gpuCheckGreaterThan(!(tensorArrayFloat1, tensorArrayFloat2));
-  gpuCheckLessThan(tensorArrayFloat1,= tensorArrayFloat2);
-  gpuCheckGreaterThan(tensorArrayFloat1,= tensorArrayFloat2);
+  gpuCheckNotEqual(tensorArrayFloat1, tensorArrayFloat2);
+  gpuCheckLessThan(tensorArrayFloat1, tensorArrayFloat2);
+  gpuCheckGreaterThan(tensorArrayFloat1, tensorArrayFloat2);
+  gpuCheckLessThan(tensorArrayFloat1, tensorArrayFloat2);
+  gpuCheckGreaterThan(tensorArrayFloat1, tensorArrayFloat2);
 
   // Check different and equal length float
   Eigen::Tensor<float, 1> same_equal_float_3(32);
   same_equal_float_3.setValues({ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,0,28,29,30,31,32 });
   TensorArrayGpu32<float> tensorArrayFloat3(same_equal_float_3);
-  gpuCheckEqual(!(tensorArrayFloat1, tensorArrayFloat3));
+  gpuCheckEqual(tensorArrayFloat1, tensorArrayFloat3);
   gpuCheckNotEqual(tensorArrayFloat1, tensorArrayFloat3);
-  gpuCheckLessThan(!(tensorArrayFloat1, tensorArrayFloat3));
+  gpuCheckLessThan(tensorArrayFloat1, tensorArrayFloat3);
   gpuCheckGreaterThan(tensorArrayFloat1, tensorArrayFloat3);
-  gpuCheckLessThan(!(tensorArrayFloat1,= tensorArrayFloat3));
-  gpuCheckGreaterThan(tensorArrayFloat1,= tensorArrayFloat3);
+  gpuCheckLessThan(tensorArrayFloat1, tensorArrayFloat3);
+  gpuCheckGreaterThan(tensorArrayFloat1, tensorArrayFloat3);
 }
 
 void test_getTensorArrayAsStringTensorArray32Gpu()
