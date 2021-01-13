@@ -20,9 +20,9 @@ void test_kroneckerGraphGeneratorMakeKroneckerGraphGpu()
   KroneckerGraphGeneratorGpu<int, float> graph_generator;
   graph_generator.makeKroneckerGraph(4, 8, indices, weights, device);
   Eigen::array<Eigen::Index, 2> indices_dims = { int(std::pow(2, 4) * 8), 2 };
-  gpuCheckEqual(indices->getDimensions(), indices_dims);
+  gpuCheckEqualNoLhsRhsPrint(indices->getDimensions(), indices_dims);
   Eigen::array<Eigen::Index, 2> weights_dims = { int(std::pow(2, 4) * 8), 1 };
-  gpuCheckEqual(weights->getDimensions(), weights_dims);
+  gpuCheckEqualNoLhsRhsPrint(weights->getDimensions(), weights_dims);
 
   // test getting the node/link ids for the entire graph
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> node_ids;
@@ -32,12 +32,12 @@ void test_kroneckerGraphGeneratorMakeKroneckerGraphGpu()
   node_ids->syncHAndDData(device);
   gpuErrchk(cudaStreamSynchronize(stream));
   Eigen::array<Eigen::Index, 1> link_ids_dims = { int(std::pow(2, 4) * 8) };
-  gpuCheckEqual(link_ids->getDimensions(), link_ids_dims);
+  gpuCheckEqualNoLhsRhsPrint(link_ids->getDimensions(), link_ids_dims);
   for (int i = 0; i < link_ids_dims.at(0); ++i) {
     gpuCheckEqual(link_ids->getData()(i), i);
   }
   Eigen::array<Eigen::Index, 1> node_ids_dims = { int(std::pow(2, 4) * 8) };
-  gpuCheckLessThan(node_ids->getDimensions().at(0),= std::pow(2, 4));
+  gpuCheckLessThan(node_ids->getDimensions().at(0), std::pow(2, 4));
 
   // test getting the node/link ids
   node_ids.reset();
@@ -47,11 +47,11 @@ void test_kroneckerGraphGeneratorMakeKroneckerGraphGpu()
   node_ids->syncHAndDData(device);
   gpuErrchk(cudaStreamSynchronize(stream));
   link_ids_dims = Eigen::array<Eigen::Index, 1>({ 16 });
-  gpuCheckEqual(link_ids->getDimensions(), link_ids_dims);
+  gpuCheckEqualNoLhsRhsPrint(link_ids->getDimensions(), link_ids_dims);
   for (int i = 0; i < link_ids_dims.at(0); ++i) {
     gpuCheckEqual(link_ids->getData()(i), 8 + i);
   }
-  gpuCheckLessThan(node_ids->getDimensions().at(0),= 16);
+  gpuCheckLessThan(node_ids->getDimensions().at(0), 16);
 
   gpuErrchk(cudaStreamDestroy(stream));
 }
@@ -76,15 +76,19 @@ void test_BinaryTreeGraphGeneratorMakeBinaryTree()
   weights->syncHAndDData(device);
   gpuErrchk(cudaStreamSynchronize(stream));
   Eigen::array<Eigen::Index, 2> indices_dims = { n_links, 2 };
-  gpuCheckEqual(indices->getDimensions(), indices_dims);
+  gpuCheckEqualNoLhsRhsPrint(indices->getDimensions(), indices_dims);
   std::vector<int> expected_in_nodes = { 0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7 };
   for (int i = 0; i < n_links; ++i) {
     gpuCheckEqual(indices->getData()(i, 0), expected_in_nodes.at(i));
-    if (i % 2 == 0) gpuCheckEqual(indices->getData()(i, 1), expected_in_nodes.at(i) * 2 + 1);
-    else gpuCheckEqual(indices->getData()(i, 1), expected_in_nodes.at(i) * 2 + 2);
+    if (i % 2 == 0) {
+      gpuCheckEqual(indices->getData()(i, 1), expected_in_nodes.at(i) * 2 + 1);
+    }
+    else {
+      gpuCheckEqual(indices->getData()(i, 1), expected_in_nodes.at(i) * 2 + 2);
+    }
   }
   Eigen::array<Eigen::Index, 2> weights_dims = { n_links, 1 };
-  gpuCheckEqual(weights->getDimensions(), weights_dims);
+  gpuCheckEqualNoLhsRhsPrint(weights->getDimensions(), weights_dims);
 
   // test getting the node/link ids for the entire graph
   std::shared_ptr<TensorData<int, Eigen::GpuDevice, 1>> node_ids;

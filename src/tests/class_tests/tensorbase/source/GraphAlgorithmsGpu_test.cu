@@ -34,7 +34,7 @@ void test_indicesAndWeightsToAdjacencyMatrixGpu()
   adjacency->syncHAndDData(device);
   gpuErrchk(cudaStreamSynchronize(stream));
   Eigen::array<Eigen::Index, 2> indices_dims = { int(node_ids->getTensorSize()), int(node_ids->getTensorSize()) };
-  gpuCheckEqual(adjacency->getDimensions(), indices_dims);
+  gpuCheckEqualNoLhsRhsPrint(adjacency->getDimensions(), indices_dims);
   for (int i = 0; i < node_ids->getTensorSize(); ++i) {
     for (int j = 0; j < node_ids->getTensorSize(); ++j) {
       if ((j == 0 && i == 1) || (j == 0 && i == 2) || (j == 1 && i == 3) || (j == 1 && i == 4) ||
@@ -82,7 +82,7 @@ void test_breadthFirstSearchGpu()
   tree->syncHAndDData(device);
   gpuErrchk(cudaStreamSynchronize(stream));
   Eigen::array<Eigen::Index, 2> indices_dims = { int(node_ids->getTensorSize()), int(node_ids->getTensorSize()) + 1 };
-  gpuCheckEqual(tree->getDimensions(), indices_dims);
+  gpuCheckEqualNoLhsRhsPrint(tree->getDimensions(), indices_dims);
   for (int i = 0; i < node_ids->getTensorSize(); ++i) {
     for (int j = 0; j < node_ids->getTensorSize() + 1; ++j) {
       if ((j == 0 && i == 0)) {
@@ -138,7 +138,7 @@ void test_singleSourceShortestPathGpu()
   path_lengths->syncHAndDData(device);
   gpuErrchk(cudaStreamSynchronize(stream));
   Eigen::array<Eigen::Index, 1> indices_dims = { int(node_ids->getTensorSize()) };
-  gpuCheckEqual(path_lengths->getDimensions(), indices_dims);
+  gpuCheckEqualNoLhsRhsPrint(path_lengths->getDimensions(), indices_dims);
   for (int i = 0; i < node_ids->getTensorSize(); ++i) {
     if (i == 0) {
       gpuCheckEqual(path_lengths->getData()(i), 1);

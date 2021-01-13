@@ -10,7 +10,6 @@ set(benchmark_executables_list
 )
 
 set(cuda_executables_list
-  CUDA_example
   BenchmarkArrayGpu
   BenchmarkDataFrameGpu
   BenchmarkGraphGpu
