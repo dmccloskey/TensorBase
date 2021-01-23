@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteCpu)
   DataFrameTensorCollectionGeneratorCpu tensor_collection_generator;
 
   // Setup the device
-  Eigen::ThreadPool pool(1);  Eigen::ThreadPoolDevice device(&pool, 2);
+  Eigen::ThreadPool pool(1);  Eigen::ThreadPoolDevice device(&pool, 4);
 
   // Make the nD TensorTables
   std::shared_ptr<TensorCollection<Eigen::ThreadPoolDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(data_size, shard_span_perc, is_columnar, device);
@@ -308,7 +308,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDeleteShardingCpu)
   DataFrameTensorCollectionGeneratorCpu tensor_collection_generator;
 
   // Setup the device
-  Eigen::ThreadPool pool(1);  Eigen::ThreadPoolDevice device(&pool, 2);
+  Eigen::ThreadPool pool(1);  Eigen::ThreadPoolDevice device(&pool, 4);
 
   // Make the nD TensorTables
   std::shared_ptr<TensorCollection<Eigen::ThreadPoolDevice>> n_dim_tensor_collection = tensor_collection_generator.makeTensorCollection(data_size, shard_span_perc, is_columnar, device);

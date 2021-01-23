@@ -510,8 +510,6 @@ void test_InsertUpdateDelete2DGpu()
   std::shared_ptr<int[]> data_insert_data;
   n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_insert_values(data_insert_data.get(), t_dim_size, xyz_dim_size);
-  //std::cout << "values\n" << values << std::endl;
-  //std::cout << "data_insert_values\n" << data_insert_values << std::endl;
   for (int i = 0; i < t_dim_size; ++i) {
     for (int j = 0; j < xyz_dim_size; ++j) {
       gpuCheckEqual(data_insert_values(i, j), values(i, j));
@@ -1198,7 +1196,7 @@ void test_InsertUpdateDelete0DShardingGpu()
   std::string data_dir = "";
   const int n_dims = 0;
   const int data_size = 1296;
-  const bool in_memory = true;
+  const bool in_memory = false;
   const double shard_span_perc = 1;
   const int n_engines = 1;
   const int dim_span = std::pow(data_size, 0.25);
@@ -1283,8 +1281,8 @@ void test_InsertUpdateDelete0DShardingGpu()
   for (int i = 0; i < 5; ++i) {
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("xyztv")->getData()(i), i + 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("xyztv")->getData()(i), i + 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("xyztv")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("xyztv")->getData()(i), 0);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("xyztv")->getData()(i), 0);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("xyztv")->getData()(i), 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xyztv")->getData()(i), 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xyztv")->getData()(i), i + 1);
   }
@@ -1297,13 +1295,15 @@ void test_InsertUpdateDelete0DShardingGpu()
   for (int i = 0; i < data_size; ++i) {
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("indices")->getData()(i), i + 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("indices")->getData()(i), i + 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("indices")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("indices")->getData()(i), 0);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("indices")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("indices")->getData()(i), i + 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("indices")->getData()(i), 0);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("indices")->getData()(i), 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("indices")->getData()(i), TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(data_size, shard_span_perc), i));
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("indices")->getData()(i), TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(data_size, shard_span_perc), i));
   }
 
   // Test the expected data after insert
+  gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
+  n_dim_tensor_collection->tables_.at("TTable")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("TTable")->getDir(), device);
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 6480);
   std::shared_ptr<int[]> data_insert_data;
   n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_insert_data);
@@ -1358,8 +1358,8 @@ void test_InsertUpdateDelete0DShardingGpu()
   for (int i = 0; i < 5; ++i) {
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("xyztv")->getData()(i), i + 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("xyztv")->getData()(i), i + 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("xyztv")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("xyztv")->getData()(i), 0);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("xyztv")->getData()(i), 0);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("xyztv")->getData()(i), 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xyztv")->getData()(i), 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xyztv")->getData()(i), i + 1);
   }
@@ -1372,13 +1372,15 @@ void test_InsertUpdateDelete0DShardingGpu()
   for (int i = 0; i < data_size; ++i) {
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("indices")->getData()(i), i + 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("indices")->getData()(i), i + 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("indices")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("indices")->getData()(i), 0);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("indices")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("indices")->getData()(i), i + 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("indices")->getData()(i), 0);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("indices")->getData()(i), 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("indices")->getData()(i), TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(data_size, shard_span_perc), i));
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("indices")->getData()(i), TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(data_size, shard_span_perc), i));
   }
 
   // Test the expected data after update
+  gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
+  n_dim_tensor_collection->tables_.at("TTable")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("TTable")->getDir(), device);
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 6480);
   std::shared_ptr<int[]> data_update_data;
   n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_update_data);
@@ -1407,7 +1409,7 @@ void test_InsertUpdateDelete1DShardingGpu()
   std::string data_dir = "";
   const int n_dims = 1;
   const int data_size = 1296;
-  const bool in_memory = true;
+  const bool in_memory = false;
   const double shard_span_perc = 1;
   const int n_engines = 1;
   const int dim_span = std::pow(data_size, 0.25);
@@ -1481,8 +1483,8 @@ void test_InsertUpdateDelete1DShardingGpu()
   for (int i = 0; i < 1; ++i) {
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("values")->getData()(i), i + 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("values")->getData()(i), i + 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("values")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("values")->getData()(i), 0);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("values")->getData()(i), 0);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("values")->getData()(i), 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("values")->getData()(i), 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("values")->getData()(i), i + 1);
   }
@@ -1495,13 +1497,15 @@ void test_InsertUpdateDelete1DShardingGpu()
   for (int i = 0; i < data_size; ++i) {
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("xyzt")->getData()(i), i + 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("xyzt")->getData()(i), i + 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("xyzt")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("xyzt")->getData()(i), 0);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xyzt")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xyzt")->getData()(i), i + 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("xyzt")->getData()(i), 0);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("xyzt")->getData()(i), 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xyzt")->getData()(i), TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(data_size, shard_span_perc), i));
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xyzt")->getData()(i), TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(data_size, shard_span_perc), i));
   }
 
   // Test the expected data after insert
+  gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
+  n_dim_tensor_collection->tables_.at("TTable")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("TTable")->getDir(), device);
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
   std::shared_ptr<int[]> data_insert_data;
   n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_insert_data);
@@ -1548,8 +1552,8 @@ void test_InsertUpdateDelete1DShardingGpu()
   for (int i = 0; i < 1; ++i) {
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("values")->getData()(i), i + 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("values")->getData()(i), i + 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("values")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("values")->getData()(i), 0);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("values")->getData()(i), 0);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("values")->getData()(i), 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("values")->getData()(i), 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("values")->getData()(i), i + 1);
   }
@@ -1562,13 +1566,15 @@ void test_InsertUpdateDelete1DShardingGpu()
   for (int i = 0; i < data_size; ++i) {
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("xyzt")->getData()(i), i + 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("xyzt")->getData()(i), i + 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("xyzt")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("xyzt")->getData()(i), 0);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xyzt")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xyzt")->getData()(i), i + 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("xyzt")->getData()(i), 0);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("xyzt")->getData()(i), 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xyzt")->getData()(i), TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(data_size, shard_span_perc), i));
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xyzt")->getData()(i), TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(data_size, shard_span_perc), i));
   }
 
   // Test the expected data after update
+  gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
+  n_dim_tensor_collection->tables_.at("TTable")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("TTable")->getDir(), device);
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
   std::shared_ptr<int[]> data_update_data;
   n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_update_data);
@@ -1596,7 +1602,7 @@ void test_InsertUpdateDelete2DShardingGpu()
   std::string data_dir = "";
   const int n_dims = 2;
   const int data_size = 1296;
-  const bool in_memory = true;
+  const bool in_memory = false;
   const double shard_span_perc = 1;
   const int n_engines = 1;
   const int dim_span = std::pow(data_size, 0.25);
@@ -1686,10 +1692,12 @@ void test_InsertUpdateDelete2DShardingGpu()
   for (int i = 0; i < xyz_dim_size; ++i) {
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("xyz")->getData()(i), i + 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("xyz")->getData()(i), i + 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("xyz")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("xyz")->getData()(i), 0);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xyz")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xyz")->getData()(i), i + 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("xyz")->getData()(i), 0);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("xyz")->getData()(i), 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xyz")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(xyz_dim_size, shard_span_perc), i));
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xyz")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(xyz_dim_size, shard_span_perc), i));
   }
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("t")->getTensorSize(), t_dim_size);
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("t")->getTensorSize(), t_dim_size);
@@ -1700,19 +1708,21 @@ void test_InsertUpdateDelete2DShardingGpu()
   for (int i = 0; i < t_dim_size; ++i) {
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("t")->getData()(i), i + 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("t")->getData()(i), i + 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("t")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("t")->getData()(i), 0);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("t")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("t")->getData()(i), i + 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("t")->getData()(i), 0);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("t")->getData()(i), 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("t")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(t_dim_size, shard_span_perc), i));
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("t")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(t_dim_size, shard_span_perc), i));
   }
 
   // Test the expected data after insert
+  gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
+  n_dim_tensor_collection->tables_.at("TTable")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("TTable")->getDir(), device);
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
   std::shared_ptr<int[]> data_insert_data;
   n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_insert_values(data_insert_data.get(), t_dim_size, xyz_dim_size);
-  //std::cout << "values\n" << values << std::endl;
-  //std::cout << "data_insert_values\n" << data_insert_values << std::endl;
   for (int i = 0; i < t_dim_size; ++i) {
     for (int j = 0; j < xyz_dim_size; ++j) {
       gpuCheckEqual(data_insert_values(i, j), values(i, j));
@@ -1763,10 +1773,12 @@ void test_InsertUpdateDelete2DShardingGpu()
   for (int i = 0; i < xyz_dim_size; ++i) {
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("xyz")->getData()(i), i + 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("xyz")->getData()(i), i + 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("xyz")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("xyz")->getData()(i), 0);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xyz")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xyz")->getData()(i), i + 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("xyz")->getData()(i), 0);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("xyz")->getData()(i), 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xyz")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(xyz_dim_size, shard_span_perc), i));
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xyz")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(xyz_dim_size, shard_span_perc), i));
   }
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("t")->getTensorSize(), t_dim_size);
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("t")->getTensorSize(), t_dim_size);
@@ -1777,13 +1789,17 @@ void test_InsertUpdateDelete2DShardingGpu()
   for (int i = 0; i < t_dim_size; ++i) {
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("t")->getData()(i), i + 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("t")->getData()(i), i + 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("t")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("t")->getData()(i), 0);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("t")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("t")->getData()(i), i + 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("t")->getData()(i), 0);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("t")->getData()(i), 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("t")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(t_dim_size, shard_span_perc), i));
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("t")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(t_dim_size, shard_span_perc), i));
   }
 
   // Test the expected data after update
+  gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
+  n_dim_tensor_collection->tables_.at("TTable")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("TTable")->getDir(), device);
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
   std::shared_ptr<int[]> data_update_data;
   n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_update_data);
@@ -1811,7 +1827,7 @@ void test_InsertUpdateDelete3DShardingGpu()
   std::string data_dir = "";
   const int n_dims = 3;
   const int data_size = 1296;
-  const bool in_memory = true;
+  const bool in_memory = false;
   const double shard_span_perc = 1;
   const int n_engines = 1;
   const int dim_span = std::pow(data_size, 0.25);
@@ -1919,10 +1935,12 @@ void test_InsertUpdateDelete3DShardingGpu()
   for (int i = 0; i < xy_dim_size; ++i) {
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("xy")->getData()(i), i + 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("xy")->getData()(i), i + 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("xy")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("xy")->getData()(i), 0);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xy")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xy")->getData()(i), i + 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("xy")->getData()(i), 0);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("xy")->getData()(i), 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xy")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(xy_dim_size, shard_span_perc), i));
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xy")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(xy_dim_size, shard_span_perc), i));
   }
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("z")->getTensorSize(), z_dim_size);
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("z")->getTensorSize(), z_dim_size);
@@ -1933,10 +1951,12 @@ void test_InsertUpdateDelete3DShardingGpu()
   for (int i = 0; i < z_dim_size; ++i) {
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("z")->getData()(i), i + 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("z")->getData()(i), i + 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("z")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("z")->getData()(i), 0);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("z")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("z")->getData()(i), i + 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("z")->getData()(i), 0);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("z")->getData()(i), 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("z")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(z_dim_size, shard_span_perc), i));
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("z")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(z_dim_size, shard_span_perc), i));
   }
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("t")->getTensorSize(), t_dim_size);
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("t")->getTensorSize(), t_dim_size);
@@ -1947,13 +1967,17 @@ void test_InsertUpdateDelete3DShardingGpu()
   for (int i = 0; i < t_dim_size; ++i) {
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("t")->getData()(i), i + 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("t")->getData()(i), i + 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("t")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("t")->getData()(i), 0);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("t")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("t")->getData()(i), i + 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("t")->getData()(i), 0);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("t")->getData()(i), 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("t")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(t_dim_size, shard_span_perc), i));
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("t")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(t_dim_size, shard_span_perc), i));
   }
 
   // Test the expected data after insert
+  gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
+  n_dim_tensor_collection->tables_.at("TTable")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("TTable")->getDir(), device);
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
   std::shared_ptr<int[]> data_insert_data;
   n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_insert_data);
@@ -2020,10 +2044,12 @@ void test_InsertUpdateDelete3DShardingGpu()
   for (int i = 0; i < xy_dim_size; ++i) {
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("xy")->getData()(i), i + 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("xy")->getData()(i), i + 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("xy")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("xy")->getData()(i), 0);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xy")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xy")->getData()(i), i + 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("xy")->getData()(i), 0);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("xy")->getData()(i), 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("xy")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(xy_dim_size, shard_span_perc), i));
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("xy")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(xy_dim_size, shard_span_perc), i));
   }
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("z")->getTensorSize(), z_dim_size);
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("z")->getTensorSize(), z_dim_size);
@@ -2034,10 +2060,12 @@ void test_InsertUpdateDelete3DShardingGpu()
   for (int i = 0; i < z_dim_size; ++i) {
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("z")->getData()(i), i + 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("z")->getData()(i), i + 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("z")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("z")->getData()(i), 0);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("z")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("z")->getData()(i), i + 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("z")->getData()(i), 0);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("z")->getData()(i), 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("z")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(z_dim_size, shard_span_perc), i));
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("z")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(z_dim_size, shard_span_perc), i));
   }
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("t")->getTensorSize(), t_dim_size);
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("t")->getTensorSize(), t_dim_size);
@@ -2048,13 +2076,17 @@ void test_InsertUpdateDelete3DShardingGpu()
   for (int i = 0; i < t_dim_size; ++i) {
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("t")->getData()(i), i + 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("t")->getData()(i), i + 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("t")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("t")->getData()(i), 0);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("t")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("t")->getData()(i), i + 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("t")->getData()(i), 0);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("t")->getData()(i), 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("t")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(t_dim_size, shard_span_perc), i));
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("t")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(t_dim_size, shard_span_perc), i));
   }
 
   // Test the expected data after update
+  gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
+  n_dim_tensor_collection->tables_.at("TTable")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("TTable")->getDir(), device);
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
   std::shared_ptr<int[]> data_update_data;
   n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_update_data);
@@ -2086,7 +2118,7 @@ void test_InsertUpdateDelete4DShardingGpu()
   std::string data_dir = "";
   const int n_dims = 4;
   const int data_size = 1296;
-  const bool in_memory = true;
+  const bool in_memory = false;
   const double shard_span_perc = 1;
   const int n_engines = 1;
   const int dim_span = std::pow(data_size, 0.25);
@@ -2208,10 +2240,12 @@ void test_InsertUpdateDelete4DShardingGpu()
   for (int i = 0; i < x_dim_size; ++i) {
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("x")->getData()(i), i + 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("x")->getData()(i), i + 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("x")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("x")->getData()(i), 0);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("x")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("x")->getData()(i), i + 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("x")->getData()(i), 0);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("x")->getData()(i), 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("x")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(x_dim_size, shard_span_perc), i));
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("x")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(x_dim_size, shard_span_perc), i));
   }
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("y")->getTensorSize(), y_dim_size);
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("y")->getTensorSize(), y_dim_size);
@@ -2222,10 +2256,12 @@ void test_InsertUpdateDelete4DShardingGpu()
   for (int i = 0; i < y_dim_size; ++i) {
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("y")->getData()(i), i + 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("y")->getData()(i), i + 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("y")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("y")->getData()(i), 0);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("y")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("y")->getData()(i), i + 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("y")->getData()(i), 0);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("y")->getData()(i), 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("y")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(y_dim_size, shard_span_perc), i));
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("y")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(y_dim_size, shard_span_perc), i));
   }
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("z")->getTensorSize(), z_dim_size);
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("z")->getTensorSize(), z_dim_size);
@@ -2236,10 +2272,12 @@ void test_InsertUpdateDelete4DShardingGpu()
   for (int i = 0; i < z_dim_size; ++i) {
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("z")->getData()(i), i + 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("z")->getData()(i), i + 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("z")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("z")->getData()(i), 0);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("z")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("z")->getData()(i), i + 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("z")->getData()(i), 0);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("z")->getData()(i), 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("z")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(z_dim_size, shard_span_perc), i));
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("z")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(z_dim_size, shard_span_perc), i));
   }
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("t")->getTensorSize(), t_dim_size);
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("t")->getTensorSize(), t_dim_size);
@@ -2250,13 +2288,17 @@ void test_InsertUpdateDelete4DShardingGpu()
   for (int i = 0; i < t_dim_size; ++i) {
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("t")->getData()(i), i + 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("t")->getData()(i), i + 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("t")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("t")->getData()(i), 0);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("t")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("t")->getData()(i), i + 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("t")->getData()(i), 0);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("t")->getData()(i), 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("t")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(t_dim_size, shard_span_perc), i));
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("t")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(t_dim_size, shard_span_perc), i));
   }
 
   // Test the expected data after insert
+  gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
+  n_dim_tensor_collection->tables_.at("TTable")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("TTable")->getDir(), device);
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
   std::shared_ptr<int[]> data_insert_data;
   n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_insert_data);
@@ -2335,10 +2377,12 @@ void test_InsertUpdateDelete4DShardingGpu()
   for (int i = 0; i < x_dim_size; ++i) {
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("x")->getData()(i), i + 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("x")->getData()(i), i + 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("x")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("x")->getData()(i), 0);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("x")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("x")->getData()(i), i + 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("x")->getData()(i), 0);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("x")->getData()(i), 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("x")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(x_dim_size, shard_span_perc), i));
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("x")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(x_dim_size, shard_span_perc), i));
   }
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("y")->getTensorSize(), y_dim_size);
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("y")->getTensorSize(), y_dim_size);
@@ -2349,10 +2393,12 @@ void test_InsertUpdateDelete4DShardingGpu()
   for (int i = 0; i < y_dim_size; ++i) {
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("y")->getData()(i), i + 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("y")->getData()(i), i + 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("y")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("y")->getData()(i), 0);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("y")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("y")->getData()(i), i + 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("y")->getData()(i), 0);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("y")->getData()(i), 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("y")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(y_dim_size, shard_span_perc), i));
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("y")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(y_dim_size, shard_span_perc), i));
   }
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("z")->getTensorSize(), z_dim_size);
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("z")->getTensorSize(), z_dim_size);
@@ -2363,10 +2409,12 @@ void test_InsertUpdateDelete4DShardingGpu()
   for (int i = 0; i < z_dim_size; ++i) {
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("z")->getData()(i), i + 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("z")->getData()(i), i + 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("z")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("z")->getData()(i), 0);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("z")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("z")->getData()(i), i + 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("z")->getData()(i), 0);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("z")->getData()(i), 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("z")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(z_dim_size, shard_span_perc), i));
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("z")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(z_dim_size, shard_span_perc), i));
   }
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("t")->getTensorSize(), t_dim_size);
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("t")->getTensorSize(), t_dim_size);
@@ -2377,13 +2425,17 @@ void test_InsertUpdateDelete4DShardingGpu()
   for (int i = 0; i < t_dim_size; ++i) {
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndices().at("t")->getData()(i), i + 1);
     gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIndicesView().at("t")->getData()(i), i + 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("t")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("t")->getData()(i), 0);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("t")->getData()(i), 1);
-    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("t")->getData()(i), i + 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getIsModified().at("t")->getData()(i), 0);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getNotInMemory().at("t")->getData()(i), 1);
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardId().at("t")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_id(TensorCollectionShardHelper::round_1(t_dim_size, shard_span_perc), i));
+    gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getShardIndices().at("t")->getData()(i),
+      TensorCollectionShardHelper::calc_shard_index(TensorCollectionShardHelper::round_1(t_dim_size, shard_span_perc), i));
   }
 
   // Test the expected data after update
+  gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
+  n_dim_tensor_collection->tables_.at("TTable")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("TTable")->getDir(), device);
   gpuCheckEqual(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
   std::shared_ptr<int[]> data_update_data;
   n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_update_data);
@@ -2415,6 +2467,7 @@ void test_InsertUpdateDelete4DShardingGpu()
 
 int main(int argc, char** argv)
 {
+  gpuErrchk(cudaSetDevice(0));
   test_InsertUpdateDelete0DGpu();
   test_InsertUpdateDelete1DGpu();
   test_InsertUpdateDelete2DGpu();

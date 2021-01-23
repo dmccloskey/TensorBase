@@ -323,7 +323,7 @@ void test_InsertUpdateDeleteShardingGpu()
   const int edge_factor = 16;
   const bool in_memory = true;
   const int data_size = std::pow(2, scale) * edge_factor;
-  const double shard_span_perc = 0.05;
+  const double shard_span_perc = 1.0; // 0.05;
   const int n_engines = 1;
   const int dim_span = std::pow(data_size, 0.25);
 
@@ -630,6 +630,7 @@ void test_InsertUpdateDeleteShardingGpu()
 
 int main(int argc, char** argv)
 {
+  gpuErrchk(cudaSetDevice(0));
   test_InsertUpdateDeleteGpu();
   test_InsertUpdateDeleteShardingGpu();
   return 0;
