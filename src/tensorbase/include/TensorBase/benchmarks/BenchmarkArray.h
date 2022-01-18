@@ -155,7 +155,7 @@ namespace TensorBaseBenchmarks
 	}
 
 	///Parse the command line arguments
-  static void parseCmdArgs(const int& argc, char** argv, int& data_size, int& array_size, int& n_engines) {
+  static void parseCmdArgsArray(const int& argc, char** argv, int& data_size, int& array_size, int& n_engines) {
     if (argc >= 3) {
       if (argv[2] == std::string("XS")) {
         data_size = 1e3;

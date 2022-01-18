@@ -6,6 +6,7 @@
 #include <thrust/sort.h>
 #include <thrust/device_ptr.h>
 #include <thrust/execution_policy.h>
+#include <TensorBase/core/AssertGpu.h>
 
 using namespace TensorBase;
 using namespace std;
@@ -17,7 +18,7 @@ void test_constructorTensorArray8Gpu()
 	TensorArrayGpu8<float>* ptr = nullptr;
 	TensorArrayGpu8<float>* nullPointer = nullptr;
 	ptr = new TensorArrayGpu8<float>();
-  assert(ptr != nullPointer);
+  gpuCheckNotEqual(ptr, nullPointer);
   delete ptr;
 }
 
@@ -34,82 +35,82 @@ void test_gettersAndSettersTensorArray8Gpu()
   Eigen::Tensor<float, 1> same_equal_float_1(8);
   same_equal_float_1.setValues({ 1,2,3,4,5,6,7,8 });
   TensorArrayGpu8<float> tensorArrayFloat1(same_equal_float_1);
-  assert(tensorArrayFloat1.getArraySize() == 8);
-  assert(tensorArrayFloat1.getTensorArray()(0) == 1);
-  assert(tensorArrayFloat1.getTensorArray()(1) == 2);
-  assert(tensorArrayFloat1.getTensorArray()(2) == 3);
-  assert(tensorArrayFloat1.getTensorArray()(3) == 4);
-  assert(tensorArrayFloat1.getTensorArray()(4) == 5);
-  assert(tensorArrayFloat1.getTensorArray()(5) == 6);
-  assert(tensorArrayFloat1.getTensorArray()(6) == 7);
-  assert(tensorArrayFloat1.getTensorArray()(7) == 8);
-  assert(tensorArrayFloat1.at(0) == 1);
-  assert(tensorArrayFloat1.at(1) == 2);
-  assert(tensorArrayFloat1.at(2) == 3);
-  assert(tensorArrayFloat1.at(3) == 4);
-  assert(tensorArrayFloat1.at(4) == 5);
-  assert(tensorArrayFloat1.at(5) == 6);
-  assert(tensorArrayFloat1.at(6) == 7);
-  assert(tensorArrayFloat1.at(7) == 8);
+  gpuCheckEqual(tensorArrayFloat1.getArraySize(), 8);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(0), 1);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(1), 2);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(2), 3);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(3), 4);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(4), 5);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(5), 6);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(6), 7);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(7), 8);
+  gpuCheckEqual(tensorArrayFloat1.at(0), 1);
+  gpuCheckEqual(tensorArrayFloat1.at(1), 2);
+  gpuCheckEqual(tensorArrayFloat1.at(2), 3);
+  gpuCheckEqual(tensorArrayFloat1.at(3), 4);
+  gpuCheckEqual(tensorArrayFloat1.at(4), 5);
+  gpuCheckEqual(tensorArrayFloat1.at(5), 6);
+  gpuCheckEqual(tensorArrayFloat1.at(6), 7);
+  gpuCheckEqual(tensorArrayFloat1.at(7), 8);
 
   // Check same and equal length char
   TensorArrayGpu8<char> tensorArrayChar1({ '1','2','3','4','5','6','7','8' });
-  assert(tensorArrayChar1.getArraySize() == 8);
-  assert(tensorArrayChar1.getTensorArray()(0) == '1');
-  assert(tensorArrayChar1.getTensorArray()(1) == '2');
-  assert(tensorArrayChar1.getTensorArray()(2) == '3');
-  assert(tensorArrayChar1.getTensorArray()(3) == '4');
-  assert(tensorArrayChar1.getTensorArray()(4) == '5');
-  assert(tensorArrayChar1.getTensorArray()(5) == '6');
-  assert(tensorArrayChar1.getTensorArray()(6) == '7');
-  assert(tensorArrayChar1.getTensorArray()(7) == '8');
-  assert(tensorArrayChar1.at(0) == '1');
-  assert(tensorArrayChar1.at(1) == '2');
-  assert(tensorArrayChar1.at(2) == '3');
-  assert(tensorArrayChar1.at(3) == '4');
-  assert(tensorArrayChar1.at(4) == '5');
-  assert(tensorArrayChar1.at(5) == '6');
-  assert(tensorArrayChar1.at(6) == '7');
-  assert(tensorArrayChar1.at(7) == '8');
+  gpuCheckEqual(tensorArrayChar1.getArraySize(), 8);
+  gpuCheckEqual(tensorArrayChar1.getTensorArray()(0), '1');
+  gpuCheckEqual(tensorArrayChar1.getTensorArray()(1), '2');
+  gpuCheckEqual(tensorArrayChar1.getTensorArray()(2), '3');
+  gpuCheckEqual(tensorArrayChar1.getTensorArray()(3), '4');
+  gpuCheckEqual(tensorArrayChar1.getTensorArray()(4), '5');
+  gpuCheckEqual(tensorArrayChar1.getTensorArray()(5), '6');
+  gpuCheckEqual(tensorArrayChar1.getTensorArray()(6), '7');
+  gpuCheckEqual(tensorArrayChar1.getTensorArray()(7), '8');
+  gpuCheckEqual(tensorArrayChar1.at(0), '1');
+  gpuCheckEqual(tensorArrayChar1.at(1), '2');
+  gpuCheckEqual(tensorArrayChar1.at(2), '3');
+  gpuCheckEqual(tensorArrayChar1.at(3), '4');
+  gpuCheckEqual(tensorArrayChar1.at(4), '5');
+  gpuCheckEqual(tensorArrayChar1.at(5), '6');
+  gpuCheckEqual(tensorArrayChar1.at(6), '7');
+  gpuCheckEqual(tensorArrayChar1.at(7), '8');
 
   TensorArrayGpu8<char> tensorArrayChar2({ '1','2','3','4','5','6' });
-  assert(tensorArrayChar2.getArraySize() == 8);
-  assert(tensorArrayChar2.getTensorArray()(0) == '1');
-  assert(tensorArrayChar2.getTensorArray()(1) == '2');
-  assert(tensorArrayChar2.getTensorArray()(2) == '3');
-  assert(tensorArrayChar2.getTensorArray()(3) == '4');
-  assert(tensorArrayChar2.getTensorArray()(4) == '5');
-  assert(tensorArrayChar2.getTensorArray()(5) == '6');
-  assert(tensorArrayChar2.getTensorArray()(6) == '\0');
-  assert(tensorArrayChar2.getTensorArray()(7) == '\0');
-  assert(tensorArrayChar2.at(0) == '1');
-  assert(tensorArrayChar2.at(1) == '2');
-  assert(tensorArrayChar2.at(2) == '3');
-  assert(tensorArrayChar2.at(3) == '4');
-  assert(tensorArrayChar2.at(4) == '5');
-  assert(tensorArrayChar2.at(5) == '6');
-  assert(tensorArrayChar2.at(6) == '\0');
-  assert(tensorArrayChar2.at(7) == '\0');
+  gpuCheckEqual(tensorArrayChar2.getArraySize(), 8);
+  gpuCheckEqual(tensorArrayChar2.getTensorArray()(0), '1');
+  gpuCheckEqual(tensorArrayChar2.getTensorArray()(1), '2');
+  gpuCheckEqual(tensorArrayChar2.getTensorArray()(2), '3');
+  gpuCheckEqual(tensorArrayChar2.getTensorArray()(3), '4');
+  gpuCheckEqual(tensorArrayChar2.getTensorArray()(4), '5');
+  gpuCheckEqual(tensorArrayChar2.getTensorArray()(5), '6');
+  gpuCheckEqual(tensorArrayChar2.getTensorArray()(6), '\0');
+  gpuCheckEqual(tensorArrayChar2.getTensorArray()(7), '\0');
+  gpuCheckEqual(tensorArrayChar2.at(0), '1');
+  gpuCheckEqual(tensorArrayChar2.at(1), '2');
+  gpuCheckEqual(tensorArrayChar2.at(2), '3');
+  gpuCheckEqual(tensorArrayChar2.at(3), '4');
+  gpuCheckEqual(tensorArrayChar2.at(4), '5');
+  gpuCheckEqual(tensorArrayChar2.at(5), '6');
+  gpuCheckEqual(tensorArrayChar2.at(6), '\0');
+  gpuCheckEqual(tensorArrayChar2.at(7), '\0');
 
   // Check same and equal length char
   TensorArrayGpu8<char> tensorArrayString1("12345678");
-  assert(tensorArrayString1.getArraySize() == 8);
-  assert(tensorArrayString1.getTensorArray()(0) == '1');
-  assert(tensorArrayString1.getTensorArray()(1) == '2');
-  assert(tensorArrayString1.getTensorArray()(2) == '3');
-  assert(tensorArrayString1.getTensorArray()(3) == '4');
-  assert(tensorArrayString1.getTensorArray()(4) == '5');
-  assert(tensorArrayString1.getTensorArray()(5) == '6');
-  assert(tensorArrayString1.getTensorArray()(6) == '7');
-  assert(tensorArrayString1.getTensorArray()(7) == '8');
-  assert(tensorArrayString1.at(0) == '1');
-  assert(tensorArrayString1.at(1) == '2');
-  assert(tensorArrayString1.at(2) == '3');
-  assert(tensorArrayString1.at(3) == '4');
-  assert(tensorArrayString1.at(4) == '5');
-  assert(tensorArrayString1.at(5) == '6');
-  assert(tensorArrayString1.at(6) == '7');
-  assert(tensorArrayString1.at(7) == '8');
+  gpuCheckEqual(tensorArrayString1.getArraySize(), 8);
+  gpuCheckEqual(tensorArrayString1.getTensorArray()(0), '1');
+  gpuCheckEqual(tensorArrayString1.getTensorArray()(1), '2');
+  gpuCheckEqual(tensorArrayString1.getTensorArray()(2), '3');
+  gpuCheckEqual(tensorArrayString1.getTensorArray()(3), '4');
+  gpuCheckEqual(tensorArrayString1.getTensorArray()(4), '5');
+  gpuCheckEqual(tensorArrayString1.getTensorArray()(5), '6');
+  gpuCheckEqual(tensorArrayString1.getTensorArray()(6), '7');
+  gpuCheckEqual(tensorArrayString1.getTensorArray()(7), '8');
+  gpuCheckEqual(tensorArrayString1.at(0), '1');
+  gpuCheckEqual(tensorArrayString1.at(1), '2');
+  gpuCheckEqual(tensorArrayString1.at(2), '3');
+  gpuCheckEqual(tensorArrayString1.at(3), '4');
+  gpuCheckEqual(tensorArrayString1.at(4), '5');
+  gpuCheckEqual(tensorArrayString1.at(5), '6');
+  gpuCheckEqual(tensorArrayString1.at(6), '7');
+  gpuCheckEqual(tensorArrayString1.at(7), '8');
 }
 
 void test_getTensorArrayAsStringTensorArray8Gpu()
@@ -118,10 +119,10 @@ void test_getTensorArrayAsStringTensorArray8Gpu()
   // Check << operator
   std::ostringstream os;
   os << tensorArrayInt1;
-  assert(std::string(os.str()) == "12345678");
+  gpuCheckEqual(std::string(os.str()), "12345678");
 
   // Check getter
-  assert(tensorArrayInt1.getTensorArrayAsString() == "12345678");
+  gpuCheckEqual(tensorArrayInt1.getTensorArrayAsString(), "12345678");
 }
 
 void test_comparisonTensorArray8Gpu()
@@ -133,23 +134,23 @@ void test_comparisonTensorArray8Gpu()
   Eigen::Tensor<float, 1> same_equal_float_2(8);
   same_equal_float_2.setValues({ 1,2,3,4,5,6,7,8 });
   TensorArrayGpu8<float> tensorArrayFloat2(same_equal_float_2);
-  assert(tensorArrayFloat1 == tensorArrayFloat2);
-  assert(!(tensorArrayFloat1 != tensorArrayFloat2));
-  assert(!(tensorArrayFloat1 < tensorArrayFloat2));
-  assert(!(tensorArrayFloat1 > tensorArrayFloat2));
-  assert(tensorArrayFloat1 <= tensorArrayFloat2);
-  assert(tensorArrayFloat1 >= tensorArrayFloat2);
+  gpuCheckEqual(tensorArrayFloat1, tensorArrayFloat2);
+  gpuCheckNotEqual(tensorArrayFloat1, tensorArrayFloat2);
+  gpuCheckLessThan(tensorArrayFloat1, tensorArrayFloat2);
+  gpuCheckGreaterThan(tensorArrayFloat1, tensorArrayFloat2);
+  gpuCheckLessThan(tensorArrayFloat1, tensorArrayFloat2);
+  gpuCheckGreaterThan(tensorArrayFloat1, tensorArrayFloat2);
 
   // Check different and equal length float
   Eigen::Tensor<float, 1> same_equal_float_3(8);
   same_equal_float_3.setValues({ 1,2,0,4,5,6,7,8 });
   TensorArrayGpu8<float> tensorArrayFloat3(same_equal_float_3);
-  assert(!(tensorArrayFloat1 == tensorArrayFloat3));
-  assert(tensorArrayFloat1 != tensorArrayFloat3);
-  assert(!(tensorArrayFloat1 < tensorArrayFloat3));
-  assert(tensorArrayFloat1 > tensorArrayFloat3);
-  assert(!(tensorArrayFloat1 <= tensorArrayFloat3));
-  assert(tensorArrayFloat1 >= tensorArrayFloat3);
+  gpuCheckEqual(tensorArrayFloat1, tensorArrayFloat3);
+  gpuCheckNotEqual(tensorArrayFloat1, tensorArrayFloat3);
+  gpuCheckLessThan(tensorArrayFloat1, tensorArrayFloat3);
+  gpuCheckGreaterThan(tensorArrayFloat1, tensorArrayFloat3);
+  gpuCheckLessThan(tensorArrayFloat1, tensorArrayFloat3);
+  gpuCheckGreaterThan(tensorArrayFloat1, tensorArrayFloat3);
 
   // Check same and equal length char
   Eigen::Tensor<char, 1> same_equal_char_1(8);
@@ -158,30 +159,30 @@ void test_comparisonTensorArray8Gpu()
   Eigen::Tensor<char, 1> same_equal_char_2(8);
   same_equal_char_2.setValues({ 'a', 'b', 'c', 'd', 'e', 'f', 'g', '\0' });
   TensorArrayGpu8<char> tensorArrayChar2(same_equal_char_2);
-  assert(tensorArrayChar1 == tensorArrayChar2);
-  assert(!(tensorArrayChar1 != tensorArrayChar2));
-  assert(!(tensorArrayChar1 < tensorArrayChar2));
-  assert(!(tensorArrayChar1 > tensorArrayChar2));
-  assert(tensorArrayChar1 <= tensorArrayChar2);
-  assert(tensorArrayChar1 >= tensorArrayChar2);
+  gpuCheckEqual(tensorArrayChar1, tensorArrayChar2);
+  gpuCheckNotEqual(tensorArrayChar1, tensorArrayChar2);
+  gpuCheckLessThan(tensorArrayChar1, tensorArrayChar2);
+  gpuCheckGreaterThan(tensorArrayChar1, tensorArrayChar2);
+  gpuCheckLessThan(tensorArrayChar1, tensorArrayChar2);
+  gpuCheckGreaterThan(tensorArrayChar1, tensorArrayChar2);
 
   // Check different and equal length char
   Eigen::Tensor<char, 1> same_equal_char_3(8);
   same_equal_char_3.setValues({ 'a', 'b', 'a', 'd', 'e', 'f', 'g', '\0' });
   TensorArrayGpu8<char> tensorArrayChar3(same_equal_char_3);
-  assert(!(tensorArrayChar1 == tensorArrayChar3));
-  assert(tensorArrayChar1 != tensorArrayChar3);
-  assert(!(tensorArrayChar1 < tensorArrayChar3));
-  assert(tensorArrayChar1 > tensorArrayChar3);
-  assert(!(tensorArrayChar1 <= tensorArrayChar3));
-  assert(tensorArrayChar1 >= tensorArrayChar3);
+  gpuCheckEqual(tensorArrayChar1, tensorArrayChar3);
+  gpuCheckNotEqual(tensorArrayChar1, tensorArrayChar3);
+  gpuCheckLessThan(tensorArrayChar1, tensorArrayChar3);
+  gpuCheckGreaterThan(tensorArrayChar1, tensorArrayChar3);
+  gpuCheckLessThan(tensorArrayChar1, tensorArrayChar3);
+  gpuCheckGreaterThan(tensorArrayChar1, tensorArrayChar3);
 }
 
 void test_tensorAssignmentTensorArray8Gpu()
 {
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -202,43 +203,43 @@ void test_tensorAssignmentTensorArray8Gpu()
   TensorArrayGpu8<char>* h_out1;
   TensorArrayGpu8<char>* d_in1;
   TensorArrayGpu8<char>* d_out1;
-  assert(cudaHostAlloc((void**)(&h_in1), bytes, cudaHostAllocDefault) == cudaSuccess);
-  assert(cudaHostAlloc((void**)(&h_out1), bytes, cudaHostAllocDefault) == cudaSuccess);
-  assert(cudaMalloc((void**)(&d_in1), bytes) == cudaSuccess);
-  assert(cudaMalloc((void**)(&d_out1), bytes) == cudaSuccess);
+  gpuErrchk(cudaHostAlloc((void**)(&h_in1), bytes, cudaHostAllocDefault));
+  gpuErrchk(cudaHostAlloc((void**)(&h_out1), bytes, cudaHostAllocDefault));
+  gpuErrchk(cudaMalloc((void**)(&d_in1), bytes));
+  gpuErrchk(cudaMalloc((void**)(&d_out1), bytes));
 
   // Copy from the Cpu to the Gpu
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 1>> in1(h_in1, 3);
   in1.setValues({ tensorArrayChar1 , tensorArrayChar2, tensorArrayChar3 });
   device.memcpyHostToDevice(d_in1, h_in1, bytes);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 1>> gpu_in1(d_in1, 3);
 
-  // Tensor copy
+  // Tensor copyToHost
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 1>> gpu_out1(d_out1, 3);
   gpu_out1.device(device) = gpu_in1;
 
   // Tensor compare
   device.memcpyDeviceToHost(h_out1, d_out1, bytes);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuErrchk(cudaStreamDestroy(stream));
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 1>> out1(h_out1, 3);
-  assert(out1(0) == tensorArrayChar1);
-  assert(out1(1) == tensorArrayChar2);
-  assert(out1(2) == tensorArrayChar3);
+  gpuCheckEqual(out1(0), tensorArrayChar1);
+  gpuCheckEqual(out1(1), tensorArrayChar2);
+  gpuCheckEqual(out1(2), tensorArrayChar3);
 
   // Cleanup
-  assert(cudaFree(d_in1) == cudaSuccess);
-  assert(cudaFree(d_out1) == cudaSuccess);
-  assert(cudaFreeHost(h_in1) == cudaSuccess);
-  assert(cudaFreeHost(h_out1) == cudaSuccess);
+  gpuErrchk(cudaFree(d_in1));
+  gpuErrchk(cudaFree(d_out1));
+  gpuErrchk(cudaFreeHost(h_in1));
+  gpuErrchk(cudaFreeHost(h_out1));
 }
 
 void test_tensorComparisonTensorArray8Gpu()
 {
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -259,16 +260,16 @@ void test_tensorComparisonTensorArray8Gpu()
   TensorArrayGpu8<char>* h_in2;
   TensorArrayGpu8<char>* d_in1;
   TensorArrayGpu8<char>* d_in2;
-  assert(cudaHostAlloc((void**)(&h_in1), bytes, cudaHostAllocDefault) == cudaSuccess);
-  assert(cudaHostAlloc((void**)(&h_in2), bytes, cudaHostAllocDefault) == cudaSuccess);
-  assert(cudaMalloc((void**)(&d_in1), bytes) == cudaSuccess);
-  assert(cudaMalloc((void**)(&d_in2), bytes) == cudaSuccess);
+  gpuErrchk(cudaHostAlloc((void**)(&h_in1), bytes, cudaHostAllocDefault));
+  gpuErrchk(cudaHostAlloc((void**)(&h_in2), bytes, cudaHostAllocDefault));
+  gpuErrchk(cudaMalloc((void**)(&d_in1), bytes));
+  gpuErrchk(cudaMalloc((void**)(&d_in2), bytes));
 
   // Create the selection indices
   int* h_index_1;
   int* d_index_1;
-  assert(cudaHostAlloc((void**)(&h_index_1), 3 * sizeof(int), cudaHostAllocDefault) == cudaSuccess);
-  assert(cudaMalloc((void**)(&d_index_1), 3 * sizeof(int)) == cudaSuccess);
+  gpuErrchk(cudaHostAlloc((void**)(&h_index_1), 3 * sizeof(int), cudaHostAllocDefault));
+  gpuErrchk(cudaMalloc((void**)(&d_index_1), 3 * sizeof(int)));
 
   // Copy form Cpu to Gpu
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 1>> in1(h_in1, 3);
@@ -291,28 +292,28 @@ void test_tensorComparisonTensorArray8Gpu()
 
   // Tensor compare
   device.memcpyDeviceToHost(h_index_1, d_index_1, 3 * sizeof(int));
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuErrchk(cudaStreamDestroy(stream));
   Eigen::TensorMap<Eigen::Tensor<int, 1>> out1(h_index_1, 3);
-  assert(out1(0) == 0);
-  assert(out1(1) == 1);
-  assert(out1(1) == 1);
+  gpuCheckEqual(out1(0), 0);
+  gpuCheckEqual(out1(1), 1);
+  gpuCheckEqual(out1(1), 1);
 
   // Cleanup
-  assert(cudaFree(d_in1) == cudaSuccess);
-  assert(cudaFree(d_in2) == cudaSuccess);
-  assert(cudaFreeHost(h_in1) == cudaSuccess);
-  assert(cudaFreeHost(h_in2) == cudaSuccess);
+  gpuErrchk(cudaFree(d_in1));
+  gpuErrchk(cudaFree(d_in2));
+  gpuErrchk(cudaFreeHost(h_in1));
+  gpuErrchk(cudaFreeHost(h_in2));
 
-  assert(cudaFree(d_index_1) == cudaSuccess);
-  assert(cudaFreeHost(h_index_1) == cudaSuccess);
+  gpuErrchk(cudaFree(d_index_1));
+  gpuErrchk(cudaFreeHost(h_index_1));
 }
 
 void test_tensorSortTensorArray8Gpu()
 {
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -332,15 +333,15 @@ void test_tensorSortTensorArray8Gpu()
   TensorArrayGpu8<char>* h_in1;
   TensorArrayGpu8<char>* h_out1;
   TensorArrayGpu8<char>* d_in1;
-  assert(cudaHostAlloc((void**)(&h_in1), bytes, cudaHostAllocDefault) == cudaSuccess);
-  assert(cudaHostAlloc((void**)(&h_out1), bytes, cudaHostAllocDefault) == cudaSuccess);
-  assert(cudaMalloc((void**)(&d_in1), bytes) == cudaSuccess);
+  gpuErrchk(cudaHostAlloc((void**)(&h_in1), bytes, cudaHostAllocDefault));
+  gpuErrchk(cudaHostAlloc((void**)(&h_out1), bytes, cudaHostAllocDefault));
+  gpuErrchk(cudaMalloc((void**)(&d_in1), bytes));
 
   // Copy from the Cpu to the Gpu
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 1>> in1(h_in1, 3);
   in1.setValues({ tensorArrayChar1 , tensorArrayChar2, tensorArrayChar3 });
   device.memcpyHostToDevice(d_in1, h_in1, bytes);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 1>> gpu_in1(d_in1, 3);
 
   // Thrust sort
@@ -351,17 +352,17 @@ void test_tensorSortTensorArray8Gpu()
 
   // Tensor compare
   device.memcpyDeviceToHost(h_out1, d_in1, bytes);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuErrchk(cudaStreamDestroy(stream));
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu8<char>, 1>> out1(h_out1, 3);
-  assert(out1(0) == tensorArrayChar2);
-  assert(out1(1) == tensorArrayChar1);
-  assert(out1(2) == tensorArrayChar3);
+  gpuCheckEqual(out1(0), tensorArrayChar2);
+  gpuCheckEqual(out1(1), tensorArrayChar1);
+  gpuCheckEqual(out1(2), tensorArrayChar3);
 
   // Cleanup
-  assert(cudaFree(d_in1) == cudaSuccess);
-  assert(cudaFreeHost(h_in1) == cudaSuccess);
-  assert(cudaFreeHost(h_out1) == cudaSuccess);
+  gpuErrchk(cudaFree(d_in1));
+  gpuErrchk(cudaFreeHost(h_in1));
+  gpuErrchk(cudaFreeHost(h_out1));
 }
 
 /* TensorArrayGpu32 Tests
@@ -371,7 +372,7 @@ void test_constructorTensorArray32Gpu()
   TensorArrayGpu32<float>* ptr = nullptr;
   TensorArrayGpu32<float>* nullPointer = nullptr;
   ptr = new TensorArrayGpu32<float>();
-  assert(ptr != nullPointer);
+  gpuCheckNotEqual(ptr, nullPointer);
   delete ptr;
 }
 
@@ -388,105 +389,105 @@ void test_gettersAndSettersTensorArray32Gpu()
   Eigen::Tensor<float, 1> same_equal_float_1(32);
   same_equal_float_1.setValues({ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32 });
   TensorArrayGpu32<float> tensorArrayFloat1(same_equal_float_1);
-  assert(tensorArrayFloat1.getArraySize() == 32);
-  assert(tensorArrayFloat1.getTensorArray()(0) == 1);
-  assert(tensorArrayFloat1.getTensorArray()(1) == 2);
-  assert(tensorArrayFloat1.getTensorArray()(2) == 3);
-  assert(tensorArrayFloat1.getTensorArray()(3) == 4);
-  assert(tensorArrayFloat1.getTensorArray()(4) == 5);
-  assert(tensorArrayFloat1.getTensorArray()(5) == 6);
-  assert(tensorArrayFloat1.getTensorArray()(6) == 7);
-  assert(tensorArrayFloat1.getTensorArray()(7) == 8);
-  assert(tensorArrayFloat1.getTensorArray()(8) == 9);
-  assert(tensorArrayFloat1.getTensorArray()(9) == 10);
-  assert(tensorArrayFloat1.getTensorArray()(10) == 11);
-  assert(tensorArrayFloat1.getTensorArray()(11) == 12);
-  assert(tensorArrayFloat1.getTensorArray()(12) == 13);
-  assert(tensorArrayFloat1.getTensorArray()(13) == 14);
-  assert(tensorArrayFloat1.getTensorArray()(14) == 15);
-  assert(tensorArrayFloat1.getTensorArray()(15) == 16);
-  assert(tensorArrayFloat1.getTensorArray()(16) == 17);
-  assert(tensorArrayFloat1.getTensorArray()(17) == 18);
-  assert(tensorArrayFloat1.getTensorArray()(18) == 19);
-  assert(tensorArrayFloat1.getTensorArray()(19) == 20);
-  assert(tensorArrayFloat1.getTensorArray()(20) == 21);
-  assert(tensorArrayFloat1.getTensorArray()(21) == 22);
-  assert(tensorArrayFloat1.getTensorArray()(22) == 23);
-  assert(tensorArrayFloat1.getTensorArray()(23) == 24);
-  assert(tensorArrayFloat1.getTensorArray()(24) == 25);
-  assert(tensorArrayFloat1.getTensorArray()(25) == 26);
-  assert(tensorArrayFloat1.getTensorArray()(26) == 27);
-  assert(tensorArrayFloat1.getTensorArray()(27) == 28);
-  assert(tensorArrayFloat1.getTensorArray()(28) == 29);
-  assert(tensorArrayFloat1.getTensorArray()(29) == 30);
-  assert(tensorArrayFloat1.getTensorArray()(30) == 31);
-  assert(tensorArrayFloat1.getTensorArray()(31) == 32);
-  assert(tensorArrayFloat1.at(0) == 1);
-  assert(tensorArrayFloat1.at(1) == 2);
-  assert(tensorArrayFloat1.at(2) == 3);
-  assert(tensorArrayFloat1.at(3) == 4);
-  assert(tensorArrayFloat1.at(4) == 5);
-  assert(tensorArrayFloat1.at(5) == 6);
-  assert(tensorArrayFloat1.at(6) == 7);
-  assert(tensorArrayFloat1.at(7) == 8);
-  assert(tensorArrayFloat1.at(8) == 9);
-  assert(tensorArrayFloat1.at(9) == 10);
-  assert(tensorArrayFloat1.at(10) == 11);
-  assert(tensorArrayFloat1.at(11) == 12);
-  assert(tensorArrayFloat1.at(12) == 13);
-  assert(tensorArrayFloat1.at(13) == 14);
-  assert(tensorArrayFloat1.at(14) == 15);
-  assert(tensorArrayFloat1.at(15) == 16);
-  assert(tensorArrayFloat1.at(16) == 17);
-  assert(tensorArrayFloat1.at(17) == 18);
-  assert(tensorArrayFloat1.at(18) == 19);
-  assert(tensorArrayFloat1.at(19) == 20);
-  assert(tensorArrayFloat1.at(20) == 21);
-  assert(tensorArrayFloat1.at(21) == 22);
-  assert(tensorArrayFloat1.at(22) == 23);
-  assert(tensorArrayFloat1.at(23) == 24);
-  assert(tensorArrayFloat1.at(24) == 25);
-  assert(tensorArrayFloat1.at(25) == 26);
-  assert(tensorArrayFloat1.at(26) == 27);
-  assert(tensorArrayFloat1.at(27) == 28);
-  assert(tensorArrayFloat1.at(28) == 29);
-  assert(tensorArrayFloat1.at(29) == 30);
-  assert(tensorArrayFloat1.at(30) == 31);
-  assert(tensorArrayFloat1.at(31) == 32);
+  gpuCheckEqual(tensorArrayFloat1.getArraySize(), 32);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(0), 1);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(1), 2);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(2), 3);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(3), 4);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(4), 5);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(5), 6);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(6), 7);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(7), 8);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(8), 9);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(9), 10);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(10), 11);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(11), 12);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(12), 13);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(13), 14);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(14), 15);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(15), 16);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(16), 17);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(17), 18);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(18), 19);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(19), 20);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(20), 21);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(21), 22);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(22), 23);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(23), 24);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(24), 25);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(25), 26);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(26), 27);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(27), 28);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(28), 29);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(29), 30);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(30), 31);
+  gpuCheckEqual(tensorArrayFloat1.getTensorArray()(31), 32);
+  gpuCheckEqual(tensorArrayFloat1.at(0), 1);
+  gpuCheckEqual(tensorArrayFloat1.at(1), 2);
+  gpuCheckEqual(tensorArrayFloat1.at(2), 3);
+  gpuCheckEqual(tensorArrayFloat1.at(3), 4);
+  gpuCheckEqual(tensorArrayFloat1.at(4), 5);
+  gpuCheckEqual(tensorArrayFloat1.at(5), 6);
+  gpuCheckEqual(tensorArrayFloat1.at(6), 7);
+  gpuCheckEqual(tensorArrayFloat1.at(7), 8);
+  gpuCheckEqual(tensorArrayFloat1.at(8), 9);
+  gpuCheckEqual(tensorArrayFloat1.at(9), 10);
+  gpuCheckEqual(tensorArrayFloat1.at(10), 11);
+  gpuCheckEqual(tensorArrayFloat1.at(11), 12);
+  gpuCheckEqual(tensorArrayFloat1.at(12), 13);
+  gpuCheckEqual(tensorArrayFloat1.at(13), 14);
+  gpuCheckEqual(tensorArrayFloat1.at(14), 15);
+  gpuCheckEqual(tensorArrayFloat1.at(15), 16);
+  gpuCheckEqual(tensorArrayFloat1.at(16), 17);
+  gpuCheckEqual(tensorArrayFloat1.at(17), 18);
+  gpuCheckEqual(tensorArrayFloat1.at(18), 19);
+  gpuCheckEqual(tensorArrayFloat1.at(19), 20);
+  gpuCheckEqual(tensorArrayFloat1.at(20), 21);
+  gpuCheckEqual(tensorArrayFloat1.at(21), 22);
+  gpuCheckEqual(tensorArrayFloat1.at(22), 23);
+  gpuCheckEqual(tensorArrayFloat1.at(23), 24);
+  gpuCheckEqual(tensorArrayFloat1.at(24), 25);
+  gpuCheckEqual(tensorArrayFloat1.at(25), 26);
+  gpuCheckEqual(tensorArrayFloat1.at(26), 27);
+  gpuCheckEqual(tensorArrayFloat1.at(27), 28);
+  gpuCheckEqual(tensorArrayFloat1.at(28), 29);
+  gpuCheckEqual(tensorArrayFloat1.at(29), 30);
+  gpuCheckEqual(tensorArrayFloat1.at(30), 31);
+  gpuCheckEqual(tensorArrayFloat1.at(31), 32);
 
   TensorArrayGpu32<float> tensorArrayFloat2({ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32 });
-  assert(tensorArrayFloat2.at(0) == 1);
-  assert(tensorArrayFloat2.at(1) == 2);
-  assert(tensorArrayFloat2.at(2) == 3);
-  assert(tensorArrayFloat2.at(3) == 4);
-  assert(tensorArrayFloat2.at(4) == 5);
-  assert(tensorArrayFloat2.at(5) == 6);
-  assert(tensorArrayFloat2.at(6) == 7);
-  assert(tensorArrayFloat2.at(7) == 8);
-  assert(tensorArrayFloat2.at(8) == 9);
-  assert(tensorArrayFloat2.at(9) == 10);
-  assert(tensorArrayFloat2.at(10) == 11);
-  assert(tensorArrayFloat2.at(11) == 12);
-  assert(tensorArrayFloat2.at(12) == 13);
-  assert(tensorArrayFloat2.at(13) == 14);
-  assert(tensorArrayFloat2.at(14) == 15);
-  assert(tensorArrayFloat2.at(15) == 16);
-  assert(tensorArrayFloat2.at(16) == 17);
-  assert(tensorArrayFloat2.at(17) == 18);
-  assert(tensorArrayFloat2.at(18) == 19);
-  assert(tensorArrayFloat2.at(19) == 20);
-  assert(tensorArrayFloat2.at(20) == 21);
-  assert(tensorArrayFloat2.at(21) == 22);
-  assert(tensorArrayFloat2.at(22) == 23);
-  assert(tensorArrayFloat2.at(23) == 24);
-  assert(tensorArrayFloat2.at(24) == 25);
-  assert(tensorArrayFloat2.at(25) == 26);
-  assert(tensorArrayFloat2.at(26) == 27);
-  assert(tensorArrayFloat2.at(27) == 28);
-  assert(tensorArrayFloat2.at(28) == 29);
-  assert(tensorArrayFloat2.at(29) == 30);
-  assert(tensorArrayFloat2.at(30) == 31);
-  assert(tensorArrayFloat2.at(31) == 32);
+  gpuCheckEqual(tensorArrayFloat2.at(0), 1);
+  gpuCheckEqual(tensorArrayFloat2.at(1), 2);
+  gpuCheckEqual(tensorArrayFloat2.at(2), 3);
+  gpuCheckEqual(tensorArrayFloat2.at(3), 4);
+  gpuCheckEqual(tensorArrayFloat2.at(4), 5);
+  gpuCheckEqual(tensorArrayFloat2.at(5), 6);
+  gpuCheckEqual(tensorArrayFloat2.at(6), 7);
+  gpuCheckEqual(tensorArrayFloat2.at(7), 8);
+  gpuCheckEqual(tensorArrayFloat2.at(8), 9);
+  gpuCheckEqual(tensorArrayFloat2.at(9), 10);
+  gpuCheckEqual(tensorArrayFloat2.at(10), 11);
+  gpuCheckEqual(tensorArrayFloat2.at(11), 12);
+  gpuCheckEqual(tensorArrayFloat2.at(12), 13);
+  gpuCheckEqual(tensorArrayFloat2.at(13), 14);
+  gpuCheckEqual(tensorArrayFloat2.at(14), 15);
+  gpuCheckEqual(tensorArrayFloat2.at(15), 16);
+  gpuCheckEqual(tensorArrayFloat2.at(16), 17);
+  gpuCheckEqual(tensorArrayFloat2.at(17), 18);
+  gpuCheckEqual(tensorArrayFloat2.at(18), 19);
+  gpuCheckEqual(tensorArrayFloat2.at(19), 20);
+  gpuCheckEqual(tensorArrayFloat2.at(20), 21);
+  gpuCheckEqual(tensorArrayFloat2.at(21), 22);
+  gpuCheckEqual(tensorArrayFloat2.at(22), 23);
+  gpuCheckEqual(tensorArrayFloat2.at(23), 24);
+  gpuCheckEqual(tensorArrayFloat2.at(24), 25);
+  gpuCheckEqual(tensorArrayFloat2.at(25), 26);
+  gpuCheckEqual(tensorArrayFloat2.at(26), 27);
+  gpuCheckEqual(tensorArrayFloat2.at(27), 28);
+  gpuCheckEqual(tensorArrayFloat2.at(28), 29);
+  gpuCheckEqual(tensorArrayFloat2.at(29), 30);
+  gpuCheckEqual(tensorArrayFloat2.at(30), 31);
+  gpuCheckEqual(tensorArrayFloat2.at(31), 32);
 }
 
 void test_comparisonTensorArray32Gpu()
@@ -498,23 +499,23 @@ void test_comparisonTensorArray32Gpu()
   Eigen::Tensor<float, 1> same_equal_float_2(32);
   same_equal_float_2.setValues({ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32 });
   TensorArrayGpu32<float> tensorArrayFloat2(same_equal_float_2);
-  assert(tensorArrayFloat1 == tensorArrayFloat2);
-  assert(!(tensorArrayFloat1 != tensorArrayFloat2));
-  assert(!(tensorArrayFloat1 < tensorArrayFloat2));
-  assert(!(tensorArrayFloat1 > tensorArrayFloat2));
-  assert(tensorArrayFloat1 <= tensorArrayFloat2);
-  assert(tensorArrayFloat1 >= tensorArrayFloat2);
+  gpuCheckEqual(tensorArrayFloat1, tensorArrayFloat2);
+  gpuCheckNotEqual(tensorArrayFloat1, tensorArrayFloat2);
+  gpuCheckLessThan(tensorArrayFloat1, tensorArrayFloat2);
+  gpuCheckGreaterThan(tensorArrayFloat1, tensorArrayFloat2);
+  gpuCheckLessThan(tensorArrayFloat1, tensorArrayFloat2);
+  gpuCheckGreaterThan(tensorArrayFloat1, tensorArrayFloat2);
 
   // Check different and equal length float
   Eigen::Tensor<float, 1> same_equal_float_3(32);
   same_equal_float_3.setValues({ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,0,28,29,30,31,32 });
   TensorArrayGpu32<float> tensorArrayFloat3(same_equal_float_3);
-  assert(!(tensorArrayFloat1 == tensorArrayFloat3));
-  assert(tensorArrayFloat1 != tensorArrayFloat3);
-  assert(!(tensorArrayFloat1 < tensorArrayFloat3));
-  assert(tensorArrayFloat1 > tensorArrayFloat3);
-  assert(!(tensorArrayFloat1 <= tensorArrayFloat3));
-  assert(tensorArrayFloat1 >= tensorArrayFloat3);
+  gpuCheckEqual(tensorArrayFloat1, tensorArrayFloat3);
+  gpuCheckNotEqual(tensorArrayFloat1, tensorArrayFloat3);
+  gpuCheckLessThan(tensorArrayFloat1, tensorArrayFloat3);
+  gpuCheckGreaterThan(tensorArrayFloat1, tensorArrayFloat3);
+  gpuCheckLessThan(tensorArrayFloat1, tensorArrayFloat3);
+  gpuCheckGreaterThan(tensorArrayFloat1, tensorArrayFloat3);
 }
 
 void test_getTensorArrayAsStringTensorArray32Gpu()
@@ -523,16 +524,16 @@ void test_getTensorArrayAsStringTensorArray32Gpu()
   // Check << operator
   std::ostringstream os;
   os << tensorArrayInt1;
-  assert(std::string(os.str()) == "1234567891011121314151617181920212223242526272829303132");
+  gpuCheckEqual(std::string(os.str()), "1234567891011121314151617181920212223242526272829303132");
 
   // Check getter
-  assert(tensorArrayInt1.getTensorArrayAsString() == "1234567891011121314151617181920212223242526272829303132");
+  gpuCheckEqual(tensorArrayInt1.getTensorArrayAsString(), "1234567891011121314151617181920212223242526272829303132");
 }
 void test_tensorAssignmentTensorArray32Gpu()
 {
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -553,43 +554,43 @@ void test_tensorAssignmentTensorArray32Gpu()
   TensorArrayGpu32<char>* h_out1;
   TensorArrayGpu32<char>* d_in1;
   TensorArrayGpu32<char>* d_out1;
-  assert(cudaHostAlloc((void**)(&h_in1), bytes, cudaHostAllocDefault) == cudaSuccess);
-  assert(cudaHostAlloc((void**)(&h_out1), bytes, cudaHostAllocDefault) == cudaSuccess);
-  assert(cudaMalloc((void**)(&d_in1), bytes) == cudaSuccess);
-  assert(cudaMalloc((void**)(&d_out1), bytes) == cudaSuccess);
+  gpuErrchk(cudaHostAlloc((void**)(&h_in1), bytes, cudaHostAllocDefault));
+  gpuErrchk(cudaHostAlloc((void**)(&h_out1), bytes, cudaHostAllocDefault));
+  gpuErrchk(cudaMalloc((void**)(&d_in1), bytes));
+  gpuErrchk(cudaMalloc((void**)(&d_out1), bytes));
 
   // Copy from the Cpu to the Gpu
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu32<char>, 1>> in1(h_in1, 3);
   in1.setValues({ tensorArrayChar1 , tensorArrayChar2, tensorArrayChar3 });
   device.memcpyHostToDevice(d_in1, h_in1, bytes);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu32<char>, 1>> gpu_in1(d_in1, 3);
 
-  // Tensor copy
+  // Tensor copyToHost
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu32<char>, 1>> gpu_out1(d_out1, 3);
   gpu_out1.device(device) = gpu_in1;
 
   // Tensor compare
   device.memcpyDeviceToHost(h_out1, d_out1, bytes);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuErrchk(cudaStreamDestroy(stream));
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu32<char>, 1>> out1(h_out1, 3);
-  assert(out1(0) == tensorArrayChar1);
-  assert(out1(1) == tensorArrayChar2);
-  assert(out1(2) == tensorArrayChar3);
+  gpuCheckEqual(out1(0), tensorArrayChar1);
+  gpuCheckEqual(out1(1), tensorArrayChar2);
+  gpuCheckEqual(out1(2), tensorArrayChar3);
 
   // Cleanup
-  assert(cudaFree(d_in1) == cudaSuccess);
-  assert(cudaFree(d_out1) == cudaSuccess);
-  assert(cudaFreeHost(h_in1) == cudaSuccess);
-  assert(cudaFreeHost(h_out1) == cudaSuccess);
+  gpuErrchk(cudaFree(d_in1));
+  gpuErrchk(cudaFree(d_out1));
+  gpuErrchk(cudaFreeHost(h_in1));
+  gpuErrchk(cudaFreeHost(h_out1));
 }
 
 void test_tensorComparisonTensorArray32Gpu()
 {
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -610,16 +611,16 @@ void test_tensorComparisonTensorArray32Gpu()
   TensorArrayGpu32<char>* h_in2;
   TensorArrayGpu32<char>* d_in1;
   TensorArrayGpu32<char>* d_in2;
-  assert(cudaHostAlloc((void**)(&h_in1), bytes, cudaHostAllocDefault) == cudaSuccess);
-  assert(cudaHostAlloc((void**)(&h_in2), bytes, cudaHostAllocDefault) == cudaSuccess);
-  assert(cudaMalloc((void**)(&d_in1), bytes) == cudaSuccess);
-  assert(cudaMalloc((void**)(&d_in2), bytes) == cudaSuccess);
+  gpuErrchk(cudaHostAlloc((void**)(&h_in1), bytes, cudaHostAllocDefault));
+  gpuErrchk(cudaHostAlloc((void**)(&h_in2), bytes, cudaHostAllocDefault));
+  gpuErrchk(cudaMalloc((void**)(&d_in1), bytes));
+  gpuErrchk(cudaMalloc((void**)(&d_in2), bytes));
 
   // Create the selection indices
   int* h_index_1;
   int* d_index_1;
-  assert(cudaHostAlloc((void**)(&h_index_1), 3 * sizeof(int), cudaHostAllocDefault) == cudaSuccess);
-  assert(cudaMalloc((void**)(&d_index_1), 3 * sizeof(int)) == cudaSuccess);
+  gpuErrchk(cudaHostAlloc((void**)(&h_index_1), 3 * sizeof(int), cudaHostAllocDefault));
+  gpuErrchk(cudaMalloc((void**)(&d_index_1), 3 * sizeof(int)));
 
   // Copy form Cpu to Gpu
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu32<char>, 1>> in1(h_in1, 3);
@@ -642,28 +643,28 @@ void test_tensorComparisonTensorArray32Gpu()
 
   // Tensor compare
   device.memcpyDeviceToHost(h_index_1, d_index_1, 3 * sizeof(int));
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuErrchk(cudaStreamDestroy(stream));
   Eigen::TensorMap<Eigen::Tensor<int, 1>> out1(h_index_1, 3);
-  assert(out1(0) == 0);
-  assert(out1(1) == 1);
-  assert(out1(1) == 1);
+  gpuCheckEqual(out1(0), 0);
+  gpuCheckEqual(out1(1), 1);
+  gpuCheckEqual(out1(1), 1);
 
   // Cleanup
-  assert(cudaFree(d_in1) == cudaSuccess);
-  assert(cudaFree(d_in2) == cudaSuccess);
-  assert(cudaFreeHost(h_in1) == cudaSuccess);
-  assert(cudaFreeHost(h_in2) == cudaSuccess);
+  gpuErrchk(cudaFree(d_in1));
+  gpuErrchk(cudaFree(d_in2));
+  gpuErrchk(cudaFreeHost(h_in1));
+  gpuErrchk(cudaFreeHost(h_in2));
 
-  assert(cudaFree(d_index_1) == cudaSuccess);
-  assert(cudaFreeHost(h_index_1) == cudaSuccess);
+  gpuErrchk(cudaFree(d_index_1));
+  gpuErrchk(cudaFreeHost(h_index_1));
 }
 
 void test_tensorSortTensorArray32Gpu()
 {
   // Initialize the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 
@@ -683,15 +684,15 @@ void test_tensorSortTensorArray32Gpu()
   TensorArrayGpu32<char>* h_in1;
   TensorArrayGpu32<char>* h_out1;
   TensorArrayGpu32<char>* d_in1;
-  assert(cudaHostAlloc((void**)(&h_in1), bytes, cudaHostAllocDefault) == cudaSuccess);
-  assert(cudaHostAlloc((void**)(&h_out1), bytes, cudaHostAllocDefault) == cudaSuccess);
-  assert(cudaMalloc((void**)(&d_in1), bytes) == cudaSuccess);
+  gpuErrchk(cudaHostAlloc((void**)(&h_in1), bytes, cudaHostAllocDefault));
+  gpuErrchk(cudaHostAlloc((void**)(&h_out1), bytes, cudaHostAllocDefault));
+  gpuErrchk(cudaMalloc((void**)(&d_in1), bytes));
 
   // Copy from the Cpu to the Gpu
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu32<char>, 1>> in1(h_in1, 3);
   in1.setValues({ tensorArrayChar1 , tensorArrayChar2, tensorArrayChar3 });
   device.memcpyHostToDevice(d_in1, h_in1, bytes);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu32<char>, 1>> gpu_in1(d_in1, 3);
 
   // Thrust sort
@@ -702,17 +703,17 @@ void test_tensorSortTensorArray32Gpu()
 
   // Tensor compare
   device.memcpyDeviceToHost(h_out1, d_in1, bytes);
-  assert(cudaStreamSynchronize(stream) == cudaSuccess);
-  assert(cudaStreamDestroy(stream) == cudaSuccess);
+  gpuErrchk(cudaStreamSynchronize(stream));
+  gpuErrchk(cudaStreamDestroy(stream));
   Eigen::TensorMap<Eigen::Tensor<TensorArrayGpu32<char>, 1>> out1(h_out1, 3);
-  assert(out1(0) == tensorArrayChar2);
-  assert(out1(1) == tensorArrayChar1);
-  assert(out1(2) == tensorArrayChar3);
+  gpuCheckEqual(out1(0), tensorArrayChar2);
+  gpuCheckEqual(out1(1), tensorArrayChar1);
+  gpuCheckEqual(out1(2), tensorArrayChar3);
 
   // Cleanup
-  assert(cudaFree(d_in1) == cudaSuccess);
-  assert(cudaFreeHost(h_in1) == cudaSuccess);
-  assert(cudaFreeHost(h_out1) == cudaSuccess);
+  gpuErrchk(cudaFree(d_in1));
+  gpuErrchk(cudaFreeHost(h_in1));
+  gpuErrchk(cudaFreeHost(h_out1));
 }
 
 int main(int argc, char** argv)

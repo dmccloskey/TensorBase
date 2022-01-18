@@ -7,7 +7,7 @@
 # $Author: Douglas McCloskey
 # --------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.8.2 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.18.0 FATAL_ERROR)
 
 #------------------------------------------------------------------------------
 # Handle superbuild first
@@ -33,6 +33,8 @@ SET(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS true)
 # Set C++ version
 SET(CMAKE_CXX_STANDARD 17)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CUDA_STANDARD 17)
+set(CMAKE_CUDA_STANDARD_REQUIRED TRUE)
 
 #------------------------------------------------------------------------------
 ## CMake sanity check: sometimes CMAKE_SIZEOF_VOID_P just vanishes when
@@ -133,6 +135,11 @@ if (EVONET_CUDA)
     message(STATUS "Found CUDA Toolkit version ${CUDA_VERSION_MAJOR}.${CUDA_VERSION_MINOR}" )
   endif()
   enable_language(CUDA)
+  if (EVONET_CUDA_ARCHITECTURES)
+	set(CMAKE_CUDA_ARCHITECTURES ${EVONET_CUDA_ARCHITECTURES})
+  endif()
+  set(CMAKE_CUDA_STANDARD 14)
+  set(CMAKE_CUDA_STANDARD_REQUIRED ON)
   set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --expt-relaxed-constexpr" )
   set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --expt-extended-lambda" )
   if(WIN32)

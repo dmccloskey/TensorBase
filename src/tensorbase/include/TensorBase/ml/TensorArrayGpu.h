@@ -8,10 +8,8 @@
 #define EIGEN_USE_GPU
 #include <cuda.h>
 #include <cuda_runtime.h>
-
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <iostream> // << operator overload
-
 #include <cereal/access.hpp>  // serialiation of private members
 
 namespace TensorBase

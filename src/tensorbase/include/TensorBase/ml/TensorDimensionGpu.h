@@ -51,7 +51,7 @@ namespace TensorBase
     };
     bool storeLabelsBinary(const std::string& filename, Eigen::GpuDevice& device) override {
       this->syncHAndDData(device); // D to H
-      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+      gpuErrchk(cudaStreamSynchronize(device.stream()));
       DataFile::storeDataBinary<TensorT, 1>(filename + ".td", this->getLabels());
       this->setDataStatus(false, true);
       return true;
@@ -95,7 +95,7 @@ namespace TensorBase
     };
     bool storeLabelsBinary(const std::string& filename, Eigen::GpuDevice& device) override {
       this->syncHAndDData(device); // D to H
-      assert(cudaStreamSynchronize(device.stream()) == cudaSuccess);
+      gpuErrchk(cudaStreamSynchronize(device.stream()));
       DataFile::storeDataBinary<ArrayT<TensorT>, 1>(filename + ".td", this->getLabels());
       this->setDataStatus(false, true);
       return true;

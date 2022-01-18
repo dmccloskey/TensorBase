@@ -61,6 +61,7 @@ namespace TensorBase
     }
 
     virtual int getId() const = 0;
+    virtual void setName(const std::string& name) = 0;
     virtual std::string getName() const = 0;
     virtual std::string getDir() const = 0;
     virtual std::map<std::string, std::shared_ptr<TensorAxisConcept<DeviceT>>>& getAxes() = 0;
@@ -77,7 +78,9 @@ namespace TensorBase
     virtual std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getNotInMemory() const = 0;
     virtual std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getShardId() const = 0;
     virtual std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getShardIndices() const = 0;
+    virtual void resetIndicesView(DeviceT& device) = 0;
     virtual void resetIndicesView(const std::string& axis_name, DeviceT& device) = 0;
+    virtual void replaceIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices_view, DeviceT& device) = 0;
     virtual void makeIndicesFromIndicesView(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) = 0;
     virtual int getDimSizeFromAxisName(const std::string& axis_name) const = 0;
     virtual int getMaxDimSizeFromAxisName(const std::string& axis_name) const = 0;
@@ -92,15 +95,43 @@ namespace TensorBase
     virtual bool syncHData(DeviceT& device) = 0;
     virtual void initData(DeviceT& device) = 0;
     virtual std::map<std::string, int> getShardSpans() const = 0;
+    virtual std::shared_ptr<TensorTableConcept<DeviceT>> copyToHost(DeviceT& device) = 0;
+    virtual std::shared_ptr<TensorTableConcept<DeviceT>> copyToDevice(DeviceT& device) = 0;
 
-    // All TensorT combos of `getLabelsDatapointer`
+    // All TensorT combos of `getDatapointer`
     virtual void getDataPointer(std::shared_ptr<int[]>& data_copy) = 0;
     virtual void getDataPointer(std::shared_ptr<float[]>& data_copy) = 0;
     virtual void getDataPointer(std::shared_ptr<double[]>& data_copy) = 0;
     virtual void getDataPointer(std::shared_ptr<char[]>& data_copy) = 0;
     virtual void getDataPointer(std::shared_ptr<TensorArray8<char>[]>& data_copy) = 0;
+    virtual void getDataPointer(std::shared_ptr<TensorArray32<char>[]>& data_copy) = 0;
+    virtual void getDataPointer(std::shared_ptr<TensorArray128<char>[]>& data_copy) = 0;
+    virtual void getDataPointer(std::shared_ptr<TensorArray512<char>[]>& data_copy) = 0;
+    virtual void getDataPointer(std::shared_ptr<TensorArray2048<char>[]>& data_copy) = 0;
 #if COMPILE_WITH_CUDA
     virtual void getDataPointer(std::shared_ptr<TensorArrayGpu8<char>[]>& data_copy) = 0;
+    virtual void getDataPointer(std::shared_ptr<TensorArrayGpu32<char>[]>& data_copy) = 0;
+    virtual void getDataPointer(std::shared_ptr<TensorArrayGpu128<char>[]>& data_copy) = 0;
+    virtual void getDataPointer(std::shared_ptr<TensorArrayGpu512<char>[]>& data_copy) = 0;
+    virtual void getDataPointer(std::shared_ptr<TensorArrayGpu2048<char>[]>& data_copy) = 0;
+#endif
+
+    // All TensorT combos of `getHDataPointer`
+    virtual void getHDataPointer(std::shared_ptr<int[]>& data_copy) = 0;
+    virtual void getHDataPointer(std::shared_ptr<float[]>& data_copy) = 0;
+    virtual void getHDataPointer(std::shared_ptr<double[]>& data_copy) = 0;
+    virtual void getHDataPointer(std::shared_ptr<char[]>& data_copy) = 0;
+    virtual void getHDataPointer(std::shared_ptr<TensorArray8<char>[]>& data_copy) = 0;
+    virtual void getHDataPointer(std::shared_ptr<TensorArray32<char>[]>& data_copy) = 0;
+    virtual void getHDataPointer(std::shared_ptr<TensorArray128<char>[]>& data_copy) = 0;
+    virtual void getHDataPointer(std::shared_ptr<TensorArray512<char>[]>& data_copy) = 0;
+    virtual void getHDataPointer(std::shared_ptr<TensorArray2048<char>[]>& data_copy) = 0;
+#if COMPILE_WITH_CUDA
+    virtual void getHDataPointer(std::shared_ptr<TensorArrayGpu8<char>[]>& data_copy) = 0;
+    virtual void getHDataPointer(std::shared_ptr<TensorArrayGpu32<char>[]>& data_copy) = 0;
+    virtual void getHDataPointer(std::shared_ptr<TensorArrayGpu128<char>[]>& data_copy) = 0;
+    virtual void getHDataPointer(std::shared_ptr<TensorArrayGpu512<char>[]>& data_copy) = 0;
+    virtual void getHDataPointer(std::shared_ptr<TensorArrayGpu2048<char>[]>& data_copy) = 0;
 #endif
 
     /*
@@ -468,6 +499,330 @@ namespace TensorBase
       const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
       const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
     virtual void whereIndicesView(const std::string& axis_name, const int& dimension_index, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+#endif
+
+    /*
+    All LabelT, TensorT, and DeviceT combos of `whereIndicesView`
+    */
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+#if COMPILE_WITH_CUDA
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
+    virtual void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& select_labels,
       const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
       const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) = 0;
 #endif
@@ -985,6 +1340,12 @@ namespace TensorBase
     virtual void insertIntoTableFromCsv(const std::map<std::string, Eigen::Tensor<std::string, 2>>& labels_new, const Eigen::Tensor<std::string, 2>& data_new, DeviceT & device) = 0;
     virtual void insertIntoTableFromCsv(const Eigen::Tensor<std::string, 2>& data_new, DeviceT & device) = 0;
 
+    /*
+    All DeviceT combos of reduction and scan methods
+    */
+    virtual void reduceTensorDataConcept(const reductionFunctions::reductionFunction& reduction_function, DeviceT& device) = 0;
+    virtual void scanTensorDataConcept(const std::vector<std::string>& axes_names, const scanFunctions::scanFunction& scan_function, DeviceT& device) = 0;
+    
   private:
     friend class cereal::access;
     template<class Archive>
@@ -999,6 +1360,7 @@ namespace TensorBase
     TensorTableWrapper(const std::shared_ptr<T>& tensor_table) : tensor_table_(tensor_table) {};
     TensorTableWrapper() = default;
     ~TensorTableWrapper() = default;
+    void setName(const std::string& name) { tensor_table_->setName(name); }
     int getId() const override { return tensor_table_->getId(); }
     std::string getName() const override { return tensor_table_->getName(); };
     std::string getDir() const override { return tensor_table_->getDir(); };
@@ -1016,7 +1378,11 @@ namespace TensorBase
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getNotInMemory() const override { return tensor_table_->getNotInMemory(); };
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getShardId() const override { return tensor_table_->getShardId(); };
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> getShardIndices() const override { return tensor_table_->getShardIndices(); };
+    void resetIndicesView(DeviceT& device) override { tensor_table_->resetIndicesView(device); };
     void resetIndicesView(const std::string& axis_name, DeviceT& device) override { tensor_table_->resetIndicesView(axis_name, device); };
+    void replaceIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 1>>& indices_view, DeviceT& device) override {
+      tensor_table_->replaceIndicesView(axis_name, indices_view, device);
+    }
     void makeIndicesFromIndicesView(const std::string & axis_name, std::shared_ptr<TensorData<int, DeviceT, 1>>& indices, DeviceT& device) override { 
       tensor_table_->makeIndicesFromIndicesView(axis_name, indices, device);
     };
@@ -1033,6 +1399,14 @@ namespace TensorBase
     bool syncHData(DeviceT& device) { return tensor_table_->syncHData(device); }
     void initData(DeviceT& device) { tensor_table_->initData(device); }
     std::map<std::string, int> getShardSpans() const { return tensor_table_->getShardSpans(); };
+    std::shared_ptr<TensorTableConcept<DeviceT>> copyToHost(DeviceT& device) override {
+      auto tensor_table_copy = tensor_table_->copyToHost(device);
+      return std::make_shared<TensorTableWrapper<T, DeviceT>>(tensor_table_copy);
+    }
+    std::shared_ptr<TensorTableConcept<DeviceT>> copyToDevice(DeviceT& device) override {
+      auto tensor_table_copy = tensor_table_->copyToDevice(device);
+      return std::make_shared<TensorTableWrapper<T, DeviceT>>(tensor_table_copy);
+    }
 
     void getDataPointer(std::shared_ptr<int[]>& data_copy) override {
       tensor_table_->getDataPointer(data_copy);
@@ -1049,9 +1423,78 @@ namespace TensorBase
     void getDataPointer(std::shared_ptr<TensorArray8<char>[]>& data_copy) override {
       tensor_table_->getDataPointer(data_copy);
     };
+    void getDataPointer(std::shared_ptr<TensorArray32<char>[]>& data_copy) override {
+      tensor_table_->getDataPointer(data_copy);
+    };
+    void getDataPointer(std::shared_ptr<TensorArray128<char>[]>& data_copy) override {
+      tensor_table_->getDataPointer(data_copy);
+    };
+    void getDataPointer(std::shared_ptr<TensorArray512<char>[]>& data_copy) override {
+      tensor_table_->getDataPointer(data_copy);
+    };
+    void getDataPointer(std::shared_ptr<TensorArray2048<char>[]>& data_copy) override {
+      tensor_table_->getDataPointer(data_copy);
+    };
 #if COMPILE_WITH_CUDA
     void getDataPointer(std::shared_ptr<TensorArrayGpu8<char>[]>& data_copy) override {
       tensor_table_->getDataPointer(data_copy);
+    };
+    void getDataPointer(std::shared_ptr<TensorArrayGpu32<char>[]>& data_copy) override {
+      tensor_table_->getDataPointer(data_copy);
+    };
+    void getDataPointer(std::shared_ptr<TensorArrayGpu128<char>[]>& data_copy) override {
+      tensor_table_->getDataPointer(data_copy);
+    };
+    void getDataPointer(std::shared_ptr<TensorArrayGpu512<char>[]>& data_copy) override {
+      tensor_table_->getDataPointer(data_copy);
+    };
+    void getDataPointer(std::shared_ptr<TensorArrayGpu2048<char>[]>& data_copy) override {
+      tensor_table_->getDataPointer(data_copy);
+    };
+#endif
+
+    void getHDataPointer(std::shared_ptr<int[]>& data_copy) override {
+      tensor_table_->getHDataPointer(data_copy);
+    };
+    void getHDataPointer(std::shared_ptr<float[]>& data_copy) override {
+      tensor_table_->getHDataPointer(data_copy);
+    };
+    void getHDataPointer(std::shared_ptr<double[]>& data_copy) override {
+      tensor_table_->getHDataPointer(data_copy);
+    };
+    void getHDataPointer(std::shared_ptr<char[]>& data_copy) override {
+      tensor_table_->getHDataPointer(data_copy);
+    };
+    void getHDataPointer(std::shared_ptr<TensorArray8<char>[]>& data_copy) override {
+      tensor_table_->getHDataPointer(data_copy);
+    };
+    void getHDataPointer(std::shared_ptr<TensorArray32<char>[]>& data_copy) override {
+      tensor_table_->getHDataPointer(data_copy);
+    };
+    void getHDataPointer(std::shared_ptr<TensorArray128<char>[]>& data_copy) override {
+      tensor_table_->getHDataPointer(data_copy);
+    };
+    void getHDataPointer(std::shared_ptr<TensorArray512<char>[]>& data_copy) override {
+      tensor_table_->getHDataPointer(data_copy);
+    };
+    void getHDataPointer(std::shared_ptr<TensorArray2048<char>[]>& data_copy) override {
+      tensor_table_->getHDataPointer(data_copy);
+    };
+#if COMPILE_WITH_CUDA
+    void getHDataPointer(std::shared_ptr<TensorArrayGpu8<char>[]>& data_copy) override {
+      tensor_table_->getHDataPointer(data_copy);
+    };
+    void getHDataPointer(std::shared_ptr<TensorArrayGpu32<char>[]>& data_copy) override {
+      tensor_table_->getHDataPointer(data_copy);
+    };
+    void getHDataPointer(std::shared_ptr<TensorArrayGpu128<char>[]>& data_copy) override {
+      tensor_table_->getHDataPointer(data_copy);
+    };
+    void getHDataPointer(std::shared_ptr<TensorArrayGpu512<char>[]>& data_copy) override {
+      tensor_table_->getHDataPointer(data_copy);
+    };
+    void getHDataPointer(std::shared_ptr<TensorArrayGpu2048<char>[]>& data_copy) override {
+      tensor_table_->getHDataPointer(data_copy);
     };
 #endif
 
@@ -1677,6 +2120,539 @@ namespace TensorBase
       const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
       const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
       tensor_table_->whereIndicesViewConcept(axis_name, dimension_index, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+#endif
+
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray8<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray32<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray128<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray512<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArray2048<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+#if COMPILE_WITH_CUDA
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<int, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<char, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<float, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<double, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu8<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu32<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu128<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu512<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<int, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<float, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<double, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
+    };
+    void whereIndicesView(const std::string& axis_name, const std::shared_ptr<TensorData<TensorArrayGpu2048<char>, DeviceT, 2>>& select_labels,
+      const std::shared_ptr<TensorData<char, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor, const logicalModifiers::logicalModifier& modifier,
+      const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator, DeviceT& device) override {
+      tensor_table_->whereIndicesViewConcept(axis_name, select_labels, values, comparitor, modifier, within_continuator, prepend_continuator, device);
     };
 #endif
 
@@ -3035,6 +4011,9 @@ namespace TensorBase
     void insertIntoTableFromCsv(const Eigen::Tensor<std::string, 2>& data_new, DeviceT & device) override {
       tensor_table_->insertIntoTableFromCsv(data_new, device);
     }
+
+    void reduceTensorDataConcept(const reductionFunctions::reductionFunction& reduction_function, DeviceT& device) override { tensor_table_->reduceTensorDataConcept(reduction_function, device); }
+    void scanTensorDataConcept(const std::vector<std::string>& axes_names, const scanFunctions::scanFunction& scan_function, DeviceT& device) override { tensor_table_->scanTensorDataConcept(axes_names, scan_function, device); }
 
   private:
     friend class cereal::access;

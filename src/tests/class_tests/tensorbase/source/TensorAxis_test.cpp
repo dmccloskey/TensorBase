@@ -134,6 +134,34 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersDefaultDevice)
   BOOST_CHECK_EQUAL(tensoraxis.getLabels()(2, 4), 1);
 }
 
+BOOST_AUTO_TEST_CASE(copyDefaultDevice)
+{
+  Eigen::Tensor<std::string, 1> dimensions(3);
+  dimensions(0) = "TensorDimension1";
+  dimensions(1) = "TensorDimension2";
+  dimensions(2) = "TensorDimension3";
+  Eigen::Tensor<int, 2> labels(3, 5);
+  labels.setConstant(1);
+  TensorAxisDefaultDevice<int> tensoraxis1("1", dimensions, labels);
+
+  // Test expected
+  Eigen::DefaultDevice device;
+  auto tensoraxis_copy = tensoraxis1.copyToHost(device);
+  BOOST_CHECK(*(tensoraxis_copy.get()) == tensoraxis1);
+  for (int i = 0; i < 3; ++i) {
+    for (int j = 0; j < 5; ++j) {
+      BOOST_CHECK_EQUAL(tensoraxis_copy->getLabels()(i, j), labels(i,j));
+    }
+  }
+  auto tensoraxis2_copy = tensoraxis1.copyToDevice(device);
+  BOOST_CHECK(*(tensoraxis2_copy.get()) == tensoraxis1);
+  for (int i = 0; i < 3; ++i) {
+    for (int j = 0; j < 5; ++j) {
+      BOOST_CHECK_EQUAL(tensoraxis2_copy->getLabels()(i, j), labels(i, j));
+    }
+  }
+}
+
 BOOST_AUTO_TEST_CASE(getLabelsDataPointerDefaultDevice)
 {
   Eigen::Tensor<std::string, 1> dimensions(3);
@@ -144,7 +172,7 @@ BOOST_AUTO_TEST_CASE(getLabelsDataPointerDefaultDevice)
   labels.setConstant(1);
   TensorAxisDefaultDevice<int> tensoraxis("1", dimensions, labels);
 
-  // Test data copy
+  // Test data copyToHost
   std::shared_ptr<int[]> data_int = nullptr;
   tensoraxis.getLabelsDataPointer<int>(data_int);
   BOOST_CHECK_EQUAL(data_int.get()[0], 1);
@@ -166,7 +194,7 @@ BOOST_AUTO_TEST_CASE(getLabelsDataPointerDefaultDevice)
   labels_char.setConstant('a');
   TensorAxisDefaultDevice<char> tensoraxis_char("1", dimensions, labels_char);
 
-  // Test data copy
+  // Test data copyToHost
   tensoraxis_char.getLabelsDataPointer<char>(data_char);
   BOOST_CHECK_EQUAL(data_char.get()[0], 'a');
   BOOST_CHECK_EQUAL(data_char.get()[14], 'a');

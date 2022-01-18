@@ -27,14 +27,14 @@ int main(int argc, char** argv)
 	int data_size = 1e5;
   int array_size = 32;
   int n_engines = 1;
-  parseCmdArgs(argc, argv, data_size, array_size, n_engines);
+  parseCmdArgsArray(argc, argv, data_size, array_size, n_engines);
 
   // Setup the benchmarking suite
   BenchmarkArrayGpuClassT<char> benchmark_array;
 
 	// Setup the device
   cudaStream_t stream;
-  assert(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess);
+  gpuErrchk(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   Eigen::GpuStreamDevice stream_device(&stream, 0);
   Eigen::GpuDevice device(&stream_device);
 

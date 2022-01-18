@@ -1,13 +1,18 @@
 set(benchmark_executables_list
   BenchmarkArray
   BenchmarkArrayCpu
+  BenchmarkDataFrame
+  BenchmarkDataFrameCpu
+  BenchmarkGraph
+  BenchmarkGraphCpu
   BenchmarkPixels
   BenchmarkPixelsCpu
 )
 
 set(cuda_executables_list
-  CUDA_example
   BenchmarkArrayGpu
+  BenchmarkDataFrameGpu
+  BenchmarkGraphGpu
   BenchmarkPixelsGpu
 )
 

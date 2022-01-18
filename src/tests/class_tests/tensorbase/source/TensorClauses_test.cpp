@@ -114,4 +114,51 @@ BOOST_AUTO_TEST_CASE(gettersAndSettersWhereClauseDefaultDevice)
   BOOST_CHECK_EQUAL(where_clause.prepend_continuator, logicalContinuators::OR);
 }
 
+/*ReductionClause DefaultDevice Tests*/
+BOOST_AUTO_TEST_CASE(constructorReductionClauseDefaultDevice)
+{
+  ReductionClause<Eigen::DefaultDevice>* ptr = nullptr;
+  ReductionClause<Eigen::DefaultDevice>* nullPointer = nullptr;
+  ptr = new ReductionClause<Eigen::DefaultDevice>();
+  BOOST_CHECK_NE(ptr, nullPointer);
+}
+
+BOOST_AUTO_TEST_CASE(destructorReductionClauseDefaultDevice)
+{
+  ReductionClause<Eigen::DefaultDevice>* ptr = nullptr;
+  ptr = new ReductionClause<Eigen::DefaultDevice>();
+  delete ptr;
+}
+
+BOOST_AUTO_TEST_CASE(gettersAndSettersReductionClauseDefaultDevice)
+{
+  ReductionClause<Eigen::DefaultDevice> select_clause("1", reductionFunctions::SUM);
+  BOOST_CHECK_EQUAL(select_clause.table_name, "1");
+  BOOST_CHECK(select_clause.reduction_function == reductionFunctions::SUM);
+}
+
+/*ScanClause DefaultDevice Tests*/
+BOOST_AUTO_TEST_CASE(constructorScanClauseDefaultDevice)
+{
+  ScanClause<Eigen::DefaultDevice>* ptr = nullptr;
+  ScanClause<Eigen::DefaultDevice>* nullPointer = nullptr;
+  ptr = new ScanClause<Eigen::DefaultDevice>();
+  BOOST_CHECK_NE(ptr, nullPointer);
+}
+
+BOOST_AUTO_TEST_CASE(destructorScanClauseDefaultDevice)
+{
+  ScanClause<Eigen::DefaultDevice>* ptr = nullptr;
+  ptr = new ScanClause<Eigen::DefaultDevice>();
+  delete ptr;
+}
+
+BOOST_AUTO_TEST_CASE(gettersAndSettersScanClauseDefaultDevice)
+{
+  ScanClause<Eigen::DefaultDevice> select_clause("1", { "1","2" }, scanFunctions::CUMSUM);
+  BOOST_CHECK_EQUAL(select_clause.table_name, "1");
+  BOOST_CHECK(select_clause.axes_names == std::vector<std::string>({ "1","2" }));
+  BOOST_CHECK(select_clause.scan_function == scanFunctions::CUMSUM);
+}
+
 BOOST_AUTO_TEST_SUITE_END()

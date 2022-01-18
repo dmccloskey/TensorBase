@@ -12,8 +12,213 @@ using namespace TensorBase;
 
 namespace TensorBaseBenchmarks
 {
+  /// Specialized class to select a region of pixels and compute the sum for the 0D and DefaultDevice case
+  template<typename TensorT>
+  class SelectAndSumPixels0DDefaultDevice : public SelectAndSumPixels0D<TensorArray8<char>, TensorT, Eigen::DefaultDevice> {
+  public:
+    using SelectAndSumPixels0D<TensorArray8<char>, TensorT, Eigen::DefaultDevice>::SelectAndSumPixels0D;
+    void setLabelsValuesResults(Eigen::DefaultDevice& device) override;
+  };
+  template< typename TensorT>
+  inline void SelectAndSumPixels0DDefaultDevice<TensorT>::setLabelsValuesResults(Eigen::DefaultDevice& device)
+  {
+    // make the labels and sync to the device
+    Eigen::Tensor<TensorArray8<char>, 2> select_labels_xyztv_values(1, 4);
+    select_labels_xyztv_values.setValues({ { TensorArray8<char>("x"), TensorArray8<char>("y"), TensorArray8<char>("z"), TensorArray8<char>("t")} });
+    TensorDataDefaultDevice<TensorArray8<char>, 2> select_labels_xyztv(select_labels_xyztv_values.dimensions());
+    select_labels_xyztv.setData(select_labels_xyztv_values);
+    select_labels_xyztv.syncHAndDData(device);
+    this->select_labels_xyztv_ = std::make_shared<TensorDataDefaultDevice<TensorArray8<char>, 2>>(select_labels_xyztv);
+
+    // make the corresponding values and sync to the device
+    Eigen::Tensor<TensorT, 1> select_values_xyztv_values(4);
+    select_values_xyztv_values.setValues({ this->dim_span_, this->dim_span_, this->dim_span_, this->dim_span_ });
+    TensorDataDefaultDevice<TensorT, 1> select_values_xyztv_lt(select_values_xyztv_values.dimensions());
+    select_values_xyztv_lt.setData(select_values_xyztv_values);
+    select_values_xyztv_lt.syncHAndDData(device);
+    this->select_values_xyztv_lt_ = std::make_shared<TensorDataDefaultDevice<TensorT, 1>>(select_values_xyztv_lt);
+    select_values_xyztv_values.setValues({ 1, 1, 1, 1 });
+    TensorDataDefaultDevice<TensorT, 1> select_values_xyztv_gt(select_values_xyztv_values.dimensions());
+    select_values_xyztv_gt.setData(select_values_xyztv_values);
+    select_values_xyztv_gt.syncHAndDData(device);
+    this->select_values_xyztv_gt_ = std::make_shared<TensorDataDefaultDevice<TensorT, 1>>(select_values_xyztv_gt);
+
+    // make the labels and sync to the device
+    Eigen::Tensor<TensorArray8<char>, 2> select_labels_v_values(1, 1);
+    select_labels_v_values.setValues({ { TensorArray8<char>("v")} });
+    TensorDataDefaultDevice<TensorArray8<char>, 2> select_labels_v(select_labels_v_values.dimensions());
+    select_labels_v.setData(select_labels_v_values);
+    select_labels_v.syncHAndDData(device);
+    this->select_labels_v_ = std::make_shared<TensorDataDefaultDevice<TensorArray8<char>, 2>>(select_labels_v);
+
+    // allocate memory for the results
+    TensorDataDefaultDevice<TensorT, 1> results(Eigen::array<Eigen::Index, 1>({ 1 }));
+    results.setData();
+    results.syncHAndDData(device);
+    this->result_ = std::make_shared<TensorDataDefaultDevice<TensorT, 1>>(results);
+  }
+
+  /// Specialized class to select a region of pixels and compute the sum for the 1D and DefaultDevice case
+  template<typename LabelsT, typename TensorT>
+  class SelectAndSumPixels1DDefaultDevice : public SelectAndSumPixels1D<LabelsT, TensorT, Eigen::DefaultDevice> {
+  public:
+    using SelectAndSumPixels1D<LabelsT, TensorT, Eigen::DefaultDevice>::SelectAndSumPixels1D;
+    void setLabelsValuesResults(Eigen::DefaultDevice& device) override;
+  };
+  template<typename LabelsT, typename TensorT>
+  inline void SelectAndSumPixels1DDefaultDevice<LabelsT, TensorT>::setLabelsValuesResults(Eigen::DefaultDevice& device)
+  {
+    // make the labels and sync to the device
+    const int data_span_xyzt = std::pow(this->dim_span_, 4);
+    Eigen::Tensor<LabelsT, 2> select_labels_xyzt_values(4, data_span_xyzt);
+    for (int i = 0; i < data_span_xyzt; ++i) {
+      select_labels_xyzt_values(0, i) = int(floor(float(i) / float(std::pow(this->dim_span_, 0)))) % this->dim_span_ + 1;
+      select_labels_xyzt_values(1, i) = int(floor(float(i) / float(std::pow(this->dim_span_, 1)))) % this->dim_span_ + 1;
+      select_labels_xyzt_values(2, i) = int(floor(float(i) / float(std::pow(this->dim_span_, 2)))) % this->dim_span_ + 1;
+      select_labels_xyzt_values(3, i) = int(floor(float(i) / float(std::pow(this->dim_span_, 3)))) % this->dim_span_ + 1;
+    }
+    TensorDataDefaultDevice<LabelsT, 2> select_labels_xyzt(select_labels_xyzt_values.dimensions());
+    select_labels_xyzt.setData(select_labels_xyzt_values);
+    select_labels_xyzt.syncHAndDData(device);
+    this->select_labels_xyzt_ = std::make_shared<TensorDataDefaultDevice<LabelsT, 2>>(select_labels_xyzt);
+
+    // allocate memory for the results
+    TensorDataDefaultDevice<TensorT, 1> results(Eigen::array<Eigen::Index, 1>({ 1 }));
+    results.setData();
+    results.syncHAndDData(device);
+    this->result_ = std::make_shared<TensorDataDefaultDevice<TensorT, 1>>(results);
+  }
+
+  /// Specialized class to select a region of pixels and compute the sum for the 2D and DefaultDevice case
+  template<typename LabelsT, typename TensorT>
+  class SelectAndSumPixels2DDefaultDevice : public SelectAndSumPixels2D<LabelsT, TensorT, Eigen::DefaultDevice> {
+  public:
+    using SelectAndSumPixels2D<LabelsT, TensorT, Eigen::DefaultDevice>::SelectAndSumPixels2D;
+    void setLabelsValuesResults(Eigen::DefaultDevice& device) override;
+  };
+  template<typename LabelsT, typename TensorT>
+  inline void SelectAndSumPixels2DDefaultDevice<LabelsT, TensorT>::setLabelsValuesResults(Eigen::DefaultDevice& device)
+  {
+    // make the labels and sync to the device
+    const int data_span_xyz = std::pow(this->dim_span_, 3);
+    Eigen::Tensor<LabelsT, 2> select_labels_xyz_values(3, data_span_xyz);
+    for (int i = 0; i < data_span_xyz; ++i) {
+      select_labels_xyz_values(0, i) = int(floor(float(i) / float(std::pow(this->dim_span_, 0)))) % this->dim_span_ + 1;
+      select_labels_xyz_values(1, i) = int(floor(float(i) / float(std::pow(this->dim_span_, 1)))) % this->dim_span_ + 1;
+      select_labels_xyz_values(2, i) = int(floor(float(i) / float(std::pow(this->dim_span_, 2)))) % this->dim_span_ + 1;
+    }
+    TensorDataDefaultDevice<LabelsT, 2> select_labels_xyz(select_labels_xyz_values.dimensions());
+    select_labels_xyz.setData(select_labels_xyz_values);
+    select_labels_xyz.syncHAndDData(device);
+    this->select_labels_xyz_ = std::make_shared<TensorDataDefaultDevice<LabelsT, 2>>(select_labels_xyz);
+
+    Eigen::Tensor<LabelsT, 2> select_labels_t_values(1, this->dim_span_);
+    for (int i = 0; i < this->dim_span_; ++i) {
+      select_labels_t_values(0, i) = i + 1;
+    }
+    TensorDataDefaultDevice<LabelsT, 2> select_labels_t(select_labels_t_values.dimensions());
+    select_labels_t.setData(select_labels_t_values);
+    select_labels_t.syncHAndDData(device);
+    this->select_labels_t_ = std::make_shared<TensorDataDefaultDevice<LabelsT, 2>>(select_labels_t);
+
+    // allocate memory for the results
+    TensorDataDefaultDevice<TensorT, 1> results(Eigen::array<Eigen::Index, 1>({ 1 }));
+    results.setData();
+    results.syncHAndDData(device);
+    this->result_ = std::make_shared<TensorDataDefaultDevice<TensorT, 1>>(results);
+  }
+
+  /// Specialized class to select a region of pixels and compute the sum for the 3D and DefaultDevice case
+  template<typename LabelsT, typename TensorT>
+  class SelectAndSumPixels3DDefaultDevice : public SelectAndSumPixels3D<LabelsT, TensorT, Eigen::DefaultDevice> {
+  public:
+    using SelectAndSumPixels3D<LabelsT, TensorT, Eigen::DefaultDevice>::SelectAndSumPixels3D;
+    void setLabelsValuesResults(Eigen::DefaultDevice& device) override;
+  };
+  template<typename LabelsT, typename TensorT>
+  inline void SelectAndSumPixels3DDefaultDevice<LabelsT, TensorT>::setLabelsValuesResults(Eigen::DefaultDevice& device)
+  {
+    // make the labels and sync to the device
+    const int data_span_xy = std::pow(this->dim_span_, 2);
+    Eigen::Tensor<LabelsT, 2> select_labels_xy_values(2, data_span_xy);
+    for (int i = 0; i < data_span_xy; ++i) {
+      select_labels_xy_values(0, i) = int(floor(float(i) / float(std::pow(this->dim_span_, 0)))) % this->dim_span_ + 1;
+      select_labels_xy_values(1, i) = int(floor(float(i) / float(std::pow(this->dim_span_, 1)))) % this->dim_span_ + 1;
+    }
+    TensorDataDefaultDevice<LabelsT, 2> select_labels_xy(select_labels_xy_values.dimensions());
+    select_labels_xy.setData(select_labels_xy_values);
+    select_labels_xy.syncHAndDData(device);
+    this->select_labels_xy_ = std::make_shared<TensorDataDefaultDevice<LabelsT, 2>>(select_labels_xy);
+
+    Eigen::Tensor<LabelsT, 2> select_labels_z_values(1, this->dim_span_);
+    Eigen::Tensor<LabelsT, 2> select_labels_t_values(1, this->dim_span_);
+    for (int i = 0; i < this->dim_span_; ++i) {
+      select_labels_z_values(0, i) = i + 1;
+      select_labels_t_values(0, i) = i + 1;
+    }
+    TensorDataDefaultDevice<LabelsT, 2> select_labels_z(select_labels_z_values.dimensions());
+    select_labels_z.setData(select_labels_z_values);
+    select_labels_z.syncHAndDData(device);
+    this->select_labels_z_ = std::make_shared<TensorDataDefaultDevice<LabelsT, 2>>(select_labels_z);
+    TensorDataDefaultDevice<LabelsT, 2> select_labels_t(select_labels_t_values.dimensions());
+    select_labels_t.setData(select_labels_t_values);
+    select_labels_t.syncHAndDData(device);
+    this->select_labels_t_ = std::make_shared<TensorDataDefaultDevice<LabelsT, 2>>(select_labels_t);
+
+    // allocate memory for the results
+    TensorDataDefaultDevice<TensorT, 1> results(Eigen::array<Eigen::Index, 1>({ 1 }));
+    results.setData();
+    results.syncHAndDData(device);
+    this->result_ = std::make_shared<TensorDataDefaultDevice<TensorT, 1>>(results);
+  }
+
+  /// Specialized class to select a region of pixels and compute the sum for the 4D and DefaultDevice case
+  template<typename LabelsT, typename TensorT>
+  class SelectAndSumPixels4DDefaultDevice : public SelectAndSumPixels4D<LabelsT, TensorT, Eigen::DefaultDevice> {
+  public:
+    using SelectAndSumPixels4D<LabelsT, TensorT, Eigen::DefaultDevice>::SelectAndSumPixels4D;
+    void setLabelsValuesResults(Eigen::DefaultDevice& device) override;
+  };
+  template<typename LabelsT, typename TensorT>
+  inline void SelectAndSumPixels4DDefaultDevice<LabelsT, TensorT>::setLabelsValuesResults(Eigen::DefaultDevice& device)
+  {
+    // make the labels and sync to the device
+    Eigen::Tensor<LabelsT, 2> select_labels_x_values(1, this->dim_span_);
+    Eigen::Tensor<LabelsT, 2> select_labels_y_values(1, this->dim_span_);
+    Eigen::Tensor<LabelsT, 2> select_labels_z_values(1, this->dim_span_);
+    Eigen::Tensor<LabelsT, 2> select_labels_t_values(1, this->dim_span_);
+    for (int i = 0; i < this->dim_span_; ++i) {
+      select_labels_x_values(0, i) = i + 1;
+      select_labels_y_values(0, i) = i + 1;
+      select_labels_z_values(0, i) = i + 1;
+      select_labels_t_values(0, i) = i + 1;
+    }
+    TensorDataDefaultDevice<LabelsT, 2> select_labels_x(select_labels_x_values.dimensions());
+    select_labels_x.setData(select_labels_x_values);
+    select_labels_x.syncHAndDData(device);
+    this->select_labels_x_ = std::make_shared<TensorDataDefaultDevice<LabelsT, 2>>(select_labels_x);
+    TensorDataDefaultDevice<LabelsT, 2> select_labels_y(select_labels_y_values.dimensions());
+    select_labels_y.setData(select_labels_y_values);
+    select_labels_y.syncHAndDData(device);
+    this->select_labels_y_ = std::make_shared<TensorDataDefaultDevice<LabelsT, 2>>(select_labels_y);
+    TensorDataDefaultDevice<LabelsT, 2> select_labels_z(select_labels_z_values.dimensions());
+    select_labels_z.setData(select_labels_z_values);
+    select_labels_z.syncHAndDData(device);
+    this->select_labels_z_ = std::make_shared<TensorDataDefaultDevice<LabelsT, 2>>(select_labels_z);
+    TensorDataDefaultDevice<LabelsT, 2> select_labels_t(select_labels_t_values.dimensions());
+    select_labels_t.setData(select_labels_t_values);
+    select_labels_t.syncHAndDData(device);
+    this->select_labels_t_ = std::make_shared<TensorDataDefaultDevice<LabelsT, 2>>(select_labels_t);
+
+    // allocate memory for the results
+    TensorDataDefaultDevice<TensorT, 1> results(Eigen::array<Eigen::Index, 1>({ 1 }));
+    results.setData();
+    results.syncHAndDData(device);
+    this->result_ = std::make_shared<TensorDataDefaultDevice<TensorT, 1>>(results);
+  }
+
 	/*
-	@brief Specialized `PixelManager` for the 0D and DefaultDevice case
+	@class Specialized `PixelManager` for the 0D and DefaultDevice case
 	*/
 	template<typename LabelsT, typename TensorT>
 	class PixelManager0DDefaultDevice : public PixelManager0D<LabelsT, TensorT, Eigen::DefaultDevice> {
@@ -36,7 +241,7 @@ namespace TensorBaseBenchmarks
 	}
 
 	/*
-	@brief Specialized `PixelManager` for the 1D and DefaultDevice case
+	@class Specialized `PixelManager` for the 1D and DefaultDevice case
 	*/
 	template<typename LabelsT, typename TensorT>
 	class PixelManager1DDefaultDevice : public PixelManager1D<LabelsT, TensorT, Eigen::DefaultDevice> {
@@ -59,7 +264,7 @@ namespace TensorBaseBenchmarks
 	}
 
 	/*
-	@brief Specialized `PixelManager` for the 2D and DefaultDevice case
+	@class Specialized `PixelManager` for the 2D and DefaultDevice case
 	*/
 	template<typename LabelsT, typename TensorT>
 	class PixelManager2DDefaultDevice : public PixelManager2D<LabelsT, TensorT, Eigen::DefaultDevice> {
@@ -82,7 +287,7 @@ namespace TensorBaseBenchmarks
 	}
 
 	/*
-	@brief Specialized `PixelManager` for the 3D and DefaultDevice case
+	@class Specialized `PixelManager` for the 3D and DefaultDevice case
 	*/
 	template<typename LabelsT, typename TensorT>
 	class PixelManager3DDefaultDevice : public PixelManager3D<LabelsT, TensorT, Eigen::DefaultDevice> {
@@ -105,7 +310,7 @@ namespace TensorBaseBenchmarks
 	}
 
 	/*
-	@brief Specialized `PixelManager` for the 4D and DefaultDevice case
+	@class Specialized `PixelManager` for the 4D and DefaultDevice case
 	*/
 	template<typename LabelsT, typename TensorT>
 	class PixelManager4DDefaultDevice : public PixelManager4D<LabelsT, TensorT, Eigen::DefaultDevice> {
@@ -128,10 +333,10 @@ namespace TensorBaseBenchmarks
 	}
 
 	/*
-	@brief A class for running 1 line insertion, deletion, and update benchmarks
+	@class A class for running 1 line insertion, deletion, and update benchmarks
 	*/
 	template<typename LabelsT, typename TensorT>
-	class Benchmark1TimePointDefaultDevice : public Benchmark1TimePoint<LabelsT, TensorT, Eigen::DefaultDevice> {
+	class Benchmark1TimePointDefaultDevice : public BenchmarkPixel1TimePoint<LabelsT, TensorT, Eigen::DefaultDevice> {
 	protected:
 		void insert1TimePoint0D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `insert1TimePoint0D`
 		void insert1TimePoint1D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `insert1TimePoint1D`
@@ -150,6 +355,12 @@ namespace TensorBaseBenchmarks
 		void delete1TimePoint2D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `delete1TimePoint2D`
 		void delete1TimePoint3D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `delete1TimePoint3D`
 		void delete1TimePoint4D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `delete1TimePoint4D`
+
+    TensorT selectAndSumPixels0D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `selectAndSumPixels0D`
+    TensorT selectAndSumPixels1D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `selectAndSumPixels1D`
+    TensorT selectAndSumPixels2D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `selectAndSumPixels2D`
+    TensorT selectAndSumPixels3D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `selectAndSumPixels3D`
+    TensorT selectAndSumPixels4D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const override; ///< Device specific interface to call `selectAndSumPixels4D`
 	};
 	template<typename LabelsT, typename TensorT>
 	void Benchmark1TimePointDefaultDevice<LabelsT, TensorT>::insert1TimePoint0D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const {
@@ -301,9 +512,59 @@ namespace TensorBaseBenchmarks
       }
 		}
 	}
+  template<typename LabelsT, typename TensorT>
+  inline TensorT Benchmark1TimePointDefaultDevice<LabelsT, TensorT>::selectAndSumPixels0D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const
+  {
+    SelectAndSumPixels0DDefaultDevice<int> select_sum_pixels(data_size);
+    select_sum_pixels(transaction_manager.getTensorCollection(), device);
+    if (!in_memory) {
+      transaction_manager.initTensorCollectionTensorData(device);
+    }
+    return select_sum_pixels.result_->getData()(0);
+  }
+  template<typename LabelsT, typename TensorT>
+  inline TensorT Benchmark1TimePointDefaultDevice<LabelsT, TensorT>::selectAndSumPixels1D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const
+  {
+    SelectAndSumPixels1DDefaultDevice<int, int> select_sum_pixels(data_size);
+    select_sum_pixels(transaction_manager.getTensorCollection(), device);
+    if (!in_memory) {
+      transaction_manager.initTensorCollectionTensorData(device);
+    }
+    return select_sum_pixels.result_->getData()(0);
+  }
+  template<typename LabelsT, typename TensorT>
+  inline TensorT Benchmark1TimePointDefaultDevice<LabelsT, TensorT>::selectAndSumPixels2D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const
+  {
+    SelectAndSumPixels2DDefaultDevice<int, int> select_sum_pixels(data_size);
+    select_sum_pixels(transaction_manager.getTensorCollection(), device);
+    if (!in_memory) {
+      transaction_manager.initTensorCollectionTensorData(device);
+    }
+    return select_sum_pixels.result_->getData()(0);
+  }
+  template<typename LabelsT, typename TensorT>
+  inline TensorT Benchmark1TimePointDefaultDevice<LabelsT, TensorT>::selectAndSumPixels3D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const
+  {
+    SelectAndSumPixels3DDefaultDevice<int, int> select_sum_pixels(data_size);
+    select_sum_pixels(transaction_manager.getTensorCollection(), device);
+    if (!in_memory) {
+      transaction_manager.initTensorCollectionTensorData(device);
+    }
+    return select_sum_pixels.result_->getData()(0);
+  }
+  template<typename LabelsT, typename TensorT>
+  inline TensorT Benchmark1TimePointDefaultDevice<LabelsT, TensorT>::selectAndSumPixels4D(TransactionManager<Eigen::DefaultDevice>& transaction_manager, const int& data_size, const bool& in_memory, Eigen::DefaultDevice& device) const
+  {
+    SelectAndSumPixels4DDefaultDevice<int, int> select_sum_pixels(data_size);
+    select_sum_pixels(transaction_manager.getTensorCollection(), device);
+    if (!in_memory) {
+      transaction_manager.initTensorCollectionTensorData(device);
+    }
+    return select_sum_pixels.result_->getData()(0);
+  }
 
 	template<typename LabelsT, typename TensorT>
-	class TensorCollectionGeneratorDefaultDevice : public TensorCollectionGenerator<LabelsT, TensorT, Eigen::DefaultDevice> {
+	class TensorCollectionGeneratorDefaultDevice : public PixelTensorCollectionGenerator<LabelsT, TensorT, Eigen::DefaultDevice> {
 	public:
 		std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> make0DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar, Eigen::DefaultDevice& device) const override;
 		std::shared_ptr<TensorCollection<Eigen::DefaultDevice>> make1DTensorCollection(const int& data_size, const std::map<std::string, int>& shard_span, const bool& is_columnar, Eigen::DefaultDevice& device) const override;
@@ -324,10 +585,10 @@ namespace TensorBaseBenchmarks
 		// Setup the tables
 		// TODO: refactor for the case where LabelsT != TensorT
 		std::shared_ptr<TensorTable<TensorT, Eigen::DefaultDevice, 2>> table_1_ptr = std::make_shared<TensorTableDefaultDevice<TensorT, 2>>(TensorTableDefaultDevice<TensorT, 2>("TTable"));
-		auto table_1_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray8<char>>>(TensorAxisDefaultDevice<TensorArray8<char>>("xyztv", dimensions_1, labels_1));
-		//auto table_1_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray8<char>>>(TensorAxisDefaultDevice<TensorArray8<char>>("xyzt", dimensions_1a, labels_1a));
-		//auto table_1_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray8<char>>>(TensorAxisDefaultDevice<TensorArray8<char>>("v", dimensions_1b, labels_1b));
-		auto table_1_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<LabelsT>>(TensorAxisDefaultDevice<LabelsT>("indices", 1, 0));
+		std::shared_ptr<TensorAxis<TensorArray8<char>, Eigen::DefaultDevice>> table_1_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray8<char>>>(TensorAxisDefaultDevice<TensorArray8<char>>("xyztv", dimensions_1, labels_1));
+		//std::shared_ptr<TensorAxis<TensorArray8<char>, Eigen::DefaultDevice>> table_1_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray8<char>>>(TensorAxisDefaultDevice<TensorArray8<char>>("xyzt", dimensions_1a, labels_1a));
+		//std::shared_ptr<TensorAxis<TensorArray8<char>, Eigen::DefaultDevice>> table_1_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray8<char>>>(TensorAxisDefaultDevice<TensorArray8<char>>("v", dimensions_1b, labels_1b));
+    std::shared_ptr<TensorAxis<LabelsT, Eigen::DefaultDevice>> table_1_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<LabelsT>>(TensorAxisDefaultDevice<LabelsT>("indices", 1, 0));
 		table_1_axis_2_ptr->setDimensions(dimensions_2);
 		table_1_ptr->addTensorAxis(table_1_axis_1_ptr);
 		table_1_ptr->addTensorAxis(table_1_axis_2_ptr);
@@ -355,8 +616,8 @@ namespace TensorBaseBenchmarks
 
 		// Setup the tables
 		std::shared_ptr<TensorTable<TensorT, Eigen::DefaultDevice, 2>> table_1_ptr = std::make_shared<TensorTableDefaultDevice<TensorT, 2>>(TensorTableDefaultDevice<TensorT, 2>("TTable"));
-		auto table_1_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray8<char>>>(TensorAxisDefaultDevice<TensorArray8<char>>("values", dimensions_1, labels_v));
-		auto table_1_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<LabelsT>>(TensorAxisDefaultDevice<LabelsT>("xyzt", 4, 0));
+		std::shared_ptr<TensorAxis<TensorArray8<char>, Eigen::DefaultDevice>> table_1_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<TensorArray8<char>>>(TensorAxisDefaultDevice<TensorArray8<char>>("values", dimensions_1, labels_v));
+    std::shared_ptr<TensorAxis<LabelsT, Eigen::DefaultDevice>> table_1_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<LabelsT>>(TensorAxisDefaultDevice<LabelsT>("xyzt", 4, 0));
 		table_1_axis_2_ptr->setDimensions(dimensions_2);
 		table_1_ptr->addTensorAxis(table_1_axis_1_ptr);
 		table_1_ptr->addTensorAxis(table_1_axis_2_ptr);
@@ -389,8 +650,8 @@ namespace TensorBaseBenchmarks
 
 		// Setup the tables
 		std::shared_ptr<TensorTable<TensorT, Eigen::DefaultDevice, 2>> table_1_ptr = std::make_shared<TensorTableDefaultDevice<TensorT, 2>>(TensorTableDefaultDevice<TensorT, 2>("TTable"));
-		auto table_1_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<LabelsT>>(TensorAxisDefaultDevice<LabelsT>("xyz", dimensions_1, labels_1));
-		auto table_1_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<LabelsT>>(TensorAxisDefaultDevice<LabelsT>("t", 1, 0));
+    std::shared_ptr<TensorAxis<LabelsT, Eigen::DefaultDevice>> table_1_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<LabelsT>>(TensorAxisDefaultDevice<LabelsT>("xyz", dimensions_1, labels_1));
+    std::shared_ptr<TensorAxis<LabelsT, Eigen::DefaultDevice>> table_1_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<LabelsT>>(TensorAxisDefaultDevice<LabelsT>("t", 1, 0));
 		table_1_axis_2_ptr->setDimensions(dimensions_2);
 		table_1_ptr->addTensorAxis(table_1_axis_1_ptr);
 		table_1_ptr->addTensorAxis(table_1_axis_2_ptr);
@@ -427,9 +688,9 @@ namespace TensorBaseBenchmarks
 
 		// Setup the tables
 		std::shared_ptr<TensorTable<TensorT, Eigen::DefaultDevice, 3>> table_1_ptr = std::make_shared<TensorTableDefaultDevice<TensorT, 3>>(TensorTableDefaultDevice<TensorT, 3>("TTable"));
-		auto table_1_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<LabelsT>>(TensorAxisDefaultDevice<LabelsT>("xy", dimensions_1, labels_1));
-		auto table_1_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<LabelsT>>(TensorAxisDefaultDevice<LabelsT>("z", dimensions_2, labels_2));
-		auto table_1_axis_3_ptr = std::make_shared<TensorAxisDefaultDevice<LabelsT>>(TensorAxisDefaultDevice<LabelsT>("t", 1, 0));
+    std::shared_ptr<TensorAxis<LabelsT, Eigen::DefaultDevice>> table_1_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<LabelsT>>(TensorAxisDefaultDevice<LabelsT>("xy", dimensions_1, labels_1));
+    std::shared_ptr<TensorAxis<LabelsT, Eigen::DefaultDevice>> table_1_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<LabelsT>>(TensorAxisDefaultDevice<LabelsT>("z", dimensions_2, labels_2));
+    std::shared_ptr<TensorAxis<LabelsT, Eigen::DefaultDevice>> table_1_axis_3_ptr = std::make_shared<TensorAxisDefaultDevice<LabelsT>>(TensorAxisDefaultDevice<LabelsT>("t", 1, 0));
 		table_1_axis_3_ptr->setDimensions(dimensions_3);
 		table_1_ptr->addTensorAxis(table_1_axis_1_ptr);
 		table_1_ptr->addTensorAxis(table_1_axis_2_ptr);
@@ -467,10 +728,10 @@ namespace TensorBaseBenchmarks
 
 		// Setup the tables
 		std::shared_ptr<TensorTable<TensorT, Eigen::DefaultDevice, 4>> table_1_ptr = std::make_shared<TensorTableDefaultDevice<TensorT, 4>>(TensorTableDefaultDevice<TensorT, 4>("TTable"));
-		auto table_1_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<LabelsT>>(TensorAxisDefaultDevice<LabelsT>("x", dimensions_1, labels_1));
-		auto table_1_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<LabelsT>>(TensorAxisDefaultDevice<LabelsT>("y", dimensions_2, labels_2));
-		auto table_1_axis_3_ptr = std::make_shared<TensorAxisDefaultDevice<LabelsT>>(TensorAxisDefaultDevice<LabelsT>("z", dimensions_3, labels_3));
-		auto table_1_axis_4_ptr = std::make_shared<TensorAxisDefaultDevice<LabelsT>>(TensorAxisDefaultDevice<LabelsT>("t", 1, 0));
+    std::shared_ptr<TensorAxis<LabelsT, Eigen::DefaultDevice>> table_1_axis_1_ptr = std::make_shared<TensorAxisDefaultDevice<LabelsT>>(TensorAxisDefaultDevice<LabelsT>("x", dimensions_1, labels_1));
+    std::shared_ptr<TensorAxis<LabelsT, Eigen::DefaultDevice>> table_1_axis_2_ptr = std::make_shared<TensorAxisDefaultDevice<LabelsT>>(TensorAxisDefaultDevice<LabelsT>("y", dimensions_2, labels_2));
+    std::shared_ptr<TensorAxis<LabelsT, Eigen::DefaultDevice>> table_1_axis_3_ptr = std::make_shared<TensorAxisDefaultDevice<LabelsT>>(TensorAxisDefaultDevice<LabelsT>("z", dimensions_3, labels_3));
+    std::shared_ptr<TensorAxis<LabelsT, Eigen::DefaultDevice>> table_1_axis_4_ptr = std::make_shared<TensorAxisDefaultDevice<LabelsT>>(TensorAxisDefaultDevice<LabelsT>("t", 1, 0));
 		table_1_axis_4_ptr->setDimensions(dimensions_4);
 		table_1_ptr->addTensorAxis(table_1_axis_1_ptr);
 		table_1_ptr->addTensorAxis(table_1_axis_2_ptr);

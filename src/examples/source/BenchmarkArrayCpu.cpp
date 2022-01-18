@@ -1,5 +1,6 @@
 /**TODO:  Add copyright*/
 
+#define EIGEN_USE_THREADS
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <TensorBase/benchmarks/BenchmarkArrayCpu.h>
 
@@ -22,7 +23,7 @@ int main(int argc, char** argv)
 	int data_size = 1e5;
   int array_size = 32;
   int n_engines = 2;
-  parseCmdArgs(argc, argv, data_size, array_size, n_engines);
+  parseCmdArgsArray(argc, argv, data_size, array_size, n_engines);
 
   // Setup the benchmarking suite
   BenchmarkArrayCpu<char> benchmark_array;

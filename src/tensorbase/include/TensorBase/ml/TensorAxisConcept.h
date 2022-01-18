@@ -47,6 +47,8 @@ namespace TensorBase
     virtual size_t getNLabels() const = 0;
     virtual size_t getNDimensions() const = 0;
     virtual Eigen::TensorMap<Eigen::Tensor<std::string, 1>> getDimensions() = 0;
+    virtual std::shared_ptr<TensorAxisConcept<DeviceT>> copyToHost(DeviceT& device) = 0;
+    virtual std::shared_ptr<TensorAxisConcept<DeviceT>> copyToDevice(DeviceT& device) = 0;
     virtual void setLabels() = 0;
 
     // All TensorT combos of `getLabelsDatapointer`
@@ -125,7 +127,8 @@ namespace TensorBase
 #endif
 
     // All DeviceT combos of tensorDataWrappers
-    virtual bool syncHAndDData(DeviceT& device) = 0;
+    virtual bool syncDData(DeviceT& device) = 0;
+    virtual bool syncHData(DeviceT& device) = 0;
     virtual void setDataStatus(const bool& h_data_updated, const bool& d_data_updated) = 0;
     virtual std::pair<bool, bool> getDataStatus() = 0;
 
@@ -164,6 +167,14 @@ namespace TensorBase
     size_t getNLabels() const override { return tensor_axis_->getNLabels(); };
     size_t getNDimensions() const override { return tensor_axis_->getNDimensions(); };
     Eigen::TensorMap<Eigen::Tensor<std::string, 1>> getDimensions() override { return tensor_axis_->getDimensions(); };
+    std::shared_ptr<TensorAxisConcept<DeviceT>> copyToHost(DeviceT& device) override {
+      auto tensor_axis_copy = tensor_axis_->copyToHost(device);
+      return std::make_shared<TensorAxisWrapper<T, DeviceT>>(tensor_axis_copy);
+    }
+    std::shared_ptr<TensorAxisConcept<DeviceT>> copyToDevice(DeviceT& device) override {
+      auto tensor_axis_copy = tensor_axis_->copyToDevice(device);
+      return std::make_shared<TensorAxisWrapper<T, DeviceT>>(tensor_axis_copy);
+    }
     void setLabels() override { tensor_axis_->setLabels(); }
 
     void getLabelsDataPointer(std::shared_ptr<int[]>& data_copy) override {
@@ -350,7 +361,8 @@ namespace TensorBase
     };
 #endif
 
-    bool syncHAndDData(DeviceT& device) override { return  tensor_axis_->syncHAndDData(device); };  
+    bool syncDData(DeviceT& device) override { return  tensor_axis_->syncDData(device); };
+    bool syncHData(DeviceT& device) override { return  tensor_axis_->syncHData(device); };
     void setDataStatus(const bool& h_data_updated, const bool& d_data_updated) override { tensor_axis_->setDataStatus(h_data_updated, d_data_updated); } 
     std::pair<bool, bool> getDataStatus() override { return  tensor_axis_->getDataStatus(); };  
 

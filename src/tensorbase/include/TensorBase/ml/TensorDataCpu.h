@@ -29,7 +29,8 @@ namespace TensorBase
   public:
     using TensorData<TensorT, Eigen::ThreadPoolDevice, TDim>::TensorData;
     ~TensorDataCpu() = default;
-    std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, TDim>> copy(Eigen::ThreadPoolDevice& device) override;
+    std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, TDim>> copyToHost(Eigen::ThreadPoolDevice& device) override;
+    std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, TDim>> copyToDevice(Eigen::ThreadPoolDevice& device) override;
     void select(std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices, Eigen::ThreadPoolDevice & device) override;
     void sortIndices(std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, TDim>>& indices, const std::string& sort_order, Eigen::ThreadPoolDevice & device) override;
     void sort(const std::string& sort_order, Eigen::ThreadPoolDevice& device) override;
@@ -76,14 +77,22 @@ namespace TensorBase
   };
 
   template<typename TensorT, int TDim>
-  std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, TDim>> TensorDataCpu<TensorT, TDim>::copy(Eigen::ThreadPoolDevice& device) {
+  std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, TDim>> TensorDataCpu<TensorT, TDim>::copyToHost(Eigen::ThreadPoolDevice& device) {
     // initialize the new data
     TensorDataCpu<TensorT, TDim> data_new(this->getDimensions());
     data_new.setData(this->getData());
-    //// copy over the values
-    //Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_converted(data_new.getDataPointer().get(), data_new.getDimensions());
-    //const Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(this->getDataPointer().get(), this->getDimensions());
-    //data_converted.device(device) = data_values;
+    return std::make_shared<TensorDataCpu<TensorT, TDim>>(data_new);
+  }
+  template<typename TensorT, int TDim>
+  inline std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, TDim>> TensorDataCpu<TensorT, TDim>::copyToDevice(Eigen::ThreadPoolDevice& device)
+  {
+    TensorDataCpu<TensorT, TDim> data_new(this->getDimensions());
+    data_new.setData();
+    // copy over the values
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_new_values(data_new.getDataPointer().get(), data_new.getDimensions());
+    const Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(this->getDataPointer().get(), this->getDimensions());
+    data_new_values.device(device) = data_values;
+    data_new.setDataStatus(false, true);
     return std::make_shared<TensorDataCpu<TensorT, TDim>>(data_new);
   }
 	template<typename TensorT, int TDim>
@@ -266,7 +275,7 @@ namespace TensorBase
 	inline void TensorDataCpu<TensorT, TDim>::histogram_(const int& n_levels, const T& lower_level, const T& upper_level, std::shared_ptr<TensorData<T, Eigen::ThreadPoolDevice, 1>>& histogram, Eigen::ThreadPoolDevice& device)
 	{
 		// Copy the data
-		auto data_copy = this->copy(device);
+		auto data_copy = this->copyToHost(device);
 		data_copy->syncHAndDData(device);
 
 		// sort data to bring equal elements together

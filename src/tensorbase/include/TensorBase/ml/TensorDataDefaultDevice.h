@@ -23,7 +23,8 @@ namespace TensorBase
   public:
     using TensorData<TensorT, Eigen::DefaultDevice, TDim>::TensorData;
     ~TensorDataDefaultDevice() = default;
-    std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>> copy(Eigen::DefaultDevice& device) override;
+    std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>> copyToHost(Eigen::DefaultDevice& device) override;
+    std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>> copyToDevice(Eigen::DefaultDevice& device) override;
     void select(std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>>& tensor_select, const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices, Eigen::DefaultDevice& device) override;
     void sortIndices(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices, const std::string& sort_order, Eigen::DefaultDevice& device) override;
     void sort(const std::string& sort_order, Eigen::DefaultDevice& device) override;
@@ -100,14 +101,22 @@ namespace TensorBase
   };
 
   template<typename TensorT, int TDim>
-  std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>> TensorDataDefaultDevice<TensorT, TDim>::copy(Eigen::DefaultDevice& device) {
+  std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>> TensorDataDefaultDevice<TensorT, TDim>::copyToHost(Eigen::DefaultDevice& device) {
     // initialize the new data
     TensorDataDefaultDevice<TensorT, TDim> data_new(this->getDimensions());
     data_new.setData(this->getData());
-    //// copy over the values
-    //Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_new_values(data_new.getDataPointer().get(), data_new.getDimensions());
-    //const Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(this->getDataPointer().get(), this->getDimensions());
-    //data_new_values.device(device) = data_values;
+    return std::make_shared<TensorDataDefaultDevice<TensorT, TDim>>(data_new);
+  }
+  template<typename TensorT, int TDim>
+  inline std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>> TensorDataDefaultDevice<TensorT, TDim>::copyToDevice(Eigen::DefaultDevice& device)
+  {
+    TensorDataDefaultDevice<TensorT, TDim> data_new(this->getDimensions());
+    data_new.setData();
+    // copy over the values
+    Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_new_values(data_new.getDataPointer().get(), data_new.getDimensions());
+    const Eigen::TensorMap<Eigen::Tensor<TensorT, TDim>> data_values(this->getDataPointer().get(), this->getDimensions());
+    data_new_values.device(device) = data_values;
+    data_new.setDataStatus(false, true);
     return std::make_shared<TensorDataDefaultDevice<TensorT, TDim>>(data_new);
   }
   template<typename TensorT, int TDim>
@@ -286,7 +295,7 @@ namespace TensorBase
 	inline void TensorDataDefaultDevice<TensorT, TDim>::histogram_(const int& n_levels, const T& lower_level, const T& upper_level, std::shared_ptr<TensorData<T, Eigen::DefaultDevice, 1>>& histogram, Eigen::DefaultDevice& device)
 	{
 		// Copy the data
-		auto data_copy = this->copy(device);
+		auto data_copy = this->copyToHost(device);
 		data_copy->syncHAndDData(device);
 
 		// sort data to bring equal elements together

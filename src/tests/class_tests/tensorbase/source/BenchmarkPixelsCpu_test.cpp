@@ -24,7 +24,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DCpu)
   // Setup the Benchmarking suite
   Benchmark1TimePointCpu<int, int> benchmark_1_tp;
 
-  // Setup the TensorCollectionGenerator
+  // Setup the PixelTensorCollectionGenerator
   TensorCollectionGeneratorCpu<int, int> tensor_collection_generator;
 
   // Setup the device
@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DCpu)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNLabels(), 1296);
   std::shared_ptr<TensorArray8<char>[]> labels_xyztv_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getLabelsDataPointer(labels_xyztv_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getLabelsHDataPointer(labels_xyztv_insert_data);
   Eigen::TensorMap<Eigen::Tensor<TensorArray8<char>, 2>> labels_xyztv_insert_values(labels_xyztv_insert_data.get(), 5, 1);
   for (int i = 0; i < 5; ++i) {
     for (int j = 0; j < 1; ++j) {
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DCpu)
     }
   }
   std::shared_ptr<int[]> labels_indices_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getLabelsDataPointer(labels_indices_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getLabelsHDataPointer(labels_indices_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_indices_insert_values(labels_indices_insert_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
@@ -117,13 +117,17 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DCpu)
   // Test the expected data after insert
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 6480);
   std::shared_ptr<int[]> data_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_insert_values(data_insert_data.get(), data_size, 5);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 5; ++j) {
       BOOST_CHECK_EQUAL(data_insert_values(i, j), values(i, j));
     }
   }
+
+  // Test the select and sum query
+  auto select_sum_pixels_result = benchmark_1_tp.selectAndSumPixels(n_dims, transaction_manager, data_size, in_memory, device);
+  BOOST_CHECK_EQUAL(select_sum_pixels_result.second, 2072);
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
@@ -134,7 +138,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DCpu)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNLabels(), 1296);
   std::shared_ptr<TensorArray8<char>[]> labels_xyztv_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getLabelsDataPointer(labels_xyztv_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getLabelsHDataPointer(labels_xyztv_update_data);
   Eigen::TensorMap<Eigen::Tensor<TensorArray8<char>, 2>> labels_xyztv_update_values(labels_xyztv_update_data.get(), 5, 1);
   for (int i = 0; i < 5; ++i) {
     for (int j = 0; j < 1; ++j) {
@@ -142,7 +146,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DCpu)
     }
   }
   std::shared_ptr<int[]> labels_indices_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getLabelsDataPointer(labels_indices_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getLabelsHDataPointer(labels_indices_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_indices_update_values(labels_indices_update_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
@@ -183,7 +187,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DCpu)
   // Test the expected data after update
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 6480);
   std::shared_ptr<int[]> data_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_update_values(data_update_data.get(), data_size, 5);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 5; ++j) {
@@ -215,7 +219,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete1DCpu)
   // Setup the Benchmarking suite
   Benchmark1TimePointCpu<int, int> benchmark_1_tp;
 
-  // Setup the TensorCollectionGenerator
+  // Setup the PixelTensorCollectionGenerator
   TensorCollectionGeneratorCpu<int, int> tensor_collection_generator;
 
   // Setup the device
@@ -256,7 +260,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete1DCpu)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("values")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("values")->getNLabels(), 1);
   std::shared_ptr<int[]> labels_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyzt")->getLabelsDataPointer(labels_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyzt")->getLabelsHDataPointer(labels_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_insert_values(labels_insert_data.get(), 4, data_size);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 4; ++j) {
@@ -297,13 +301,17 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete1DCpu)
   // Test the expected data after insert
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
   std::shared_ptr<int[]> data_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_insert_values(data_insert_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
       BOOST_CHECK_EQUAL(data_insert_values(i, j), values(i, j));
     }
   }
+
+  // Test the select and sum query
+  auto select_sum_pixels_result = benchmark_1_tp.selectAndSumPixels(n_dims, transaction_manager, data_size, in_memory, device);
+  BOOST_CHECK_EQUAL(select_sum_pixels_result.second, 2072);
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
@@ -314,7 +322,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete1DCpu)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("values")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("values")->getNLabels(), 1);
   std::shared_ptr<int[]> labels_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyzt")->getLabelsDataPointer(labels_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyzt")->getLabelsHDataPointer(labels_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_update_values(labels_update_data.get(), 4, data_size);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 4; ++j) {
@@ -355,7 +363,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete1DCpu)
   // Test the expected data after update
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
   std::shared_ptr<int[]> data_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_update_values(data_update_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
@@ -388,7 +396,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DCpu)
   // Setup the Benchmarking suite
   Benchmark1TimePointCpu<int, int> benchmark_1_tp;
 
-  // Setup the TensorCollectionGenerator
+  // Setup the PixelTensorCollectionGenerator
   TensorCollectionGeneratorCpu<int, int> tensor_collection_generator;
 
   // Setup the device
@@ -415,7 +423,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DCpu)
   for (int i = 0; i < t_dim_size; ++i) {
     labels_t(0, i) = int(floor(float(i) / float(std::pow(dim_span, 0)))) % dim_span + 1;
     Eigen::Tensor<int, 1> new_values(xyz_dim_size);
-    new_values.setConstant(i * xyz_dim_size + 1);
+    new_values.setConstant(i * xyz_dim_size);
     new_values = new_values.cumsum(0);
     values.slice(Eigen::array<Eigen::Index, 2>({ i, 0 }), Eigen::array<Eigen::Index, 2>({ 1, xyz_dim_size })) = new_values.reshape(Eigen::array<Eigen::Index, 2>({ 1, xyz_dim_size }));
   }
@@ -435,7 +443,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DCpu)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNLabels(), t_dim_size);
   std::shared_ptr<int[]> labels_xyz_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyz")->getLabelsDataPointer(labels_xyz_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyz")->getLabelsHDataPointer(labels_xyz_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_xyz_insert_values(labels_xyz_insert_data.get(), 3, xyz_dim_size);
   for (int i = 0; i < 3; ++i) {
     for (int j = 0; j < xyz_dim_size; ++j) {
@@ -443,7 +451,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DCpu)
     }
   }
   std::shared_ptr<int[]> labels_t_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsDataPointer(labels_t_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsHDataPointer(labels_t_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_t_insert_values(labels_t_insert_data.get(), 1, t_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < t_dim_size; ++j) {
@@ -484,7 +492,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DCpu)
   // Test the expected data after insert
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
   std::shared_ptr<int[]> data_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_insert_values(data_insert_data.get(), t_dim_size, xyz_dim_size);
   //std::cout << "values\n" << values << std::endl;
   //std::cout << "data_insert_values\n" << data_insert_values << std::endl;
@@ -493,6 +501,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DCpu)
       BOOST_CHECK_EQUAL(data_insert_values(i, j), values(i, j));
     }
   }
+
+  // Test the select and sum query
+  auto select_sum_pixels_result = benchmark_1_tp.selectAndSumPixels(n_dims, transaction_manager, data_size, in_memory, device);
+  BOOST_CHECK_EQUAL(select_sum_pixels_result.second, 38880);
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
@@ -503,7 +515,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DCpu)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNLabels(), t_dim_size);
   std::shared_ptr<int[]> labels_xyz_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyz")->getLabelsDataPointer(labels_xyz_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyz")->getLabelsHDataPointer(labels_xyz_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_xyz_update_values(labels_xyz_update_data.get(), 3, xyz_dim_size);
   for (int i = 0; i < 3; ++i) {
     for (int j = 0; j < xyz_dim_size; ++j) {
@@ -511,7 +523,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DCpu)
     }
   }
   std::shared_ptr<int[]> labels_t_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsDataPointer(labels_t_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsHDataPointer(labels_t_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_t_update_values(labels_t_update_data.get(), 1, t_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < t_dim_size; ++j) {
@@ -552,7 +564,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DCpu)
   // Test the expected data after update
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
   std::shared_ptr<int[]> data_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_update_values(data_update_data.get(), t_dim_size, xyz_dim_size);
   for (int i = 0; i < xyz_dim_size; ++i) {
     for (int j = 0; j < t_dim_size; ++j) {
@@ -586,7 +598,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DCpu)
   // Setup the Benchmarking suite
   Benchmark1TimePointCpu<int, int> benchmark_1_tp;
 
-  // Setup the TensorCollectionGenerator
+  // Setup the PixelTensorCollectionGenerator
   TensorCollectionGeneratorCpu<int, int> tensor_collection_generator;
 
   // Setup the device
@@ -615,7 +627,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DCpu)
   for (int i = 0; i < t_dim_size; ++i) {
     labels_t(0, i) = int(floor(float(i) / float(std::pow(dim_span, 0)))) % dim_span + 1;
     Eigen::Tensor<int, 1> new_values(xy_dim_size * z_dim_size);
-    new_values.setConstant(i * xy_dim_size * z_dim_size + 1);
+    new_values.setConstant(i * xy_dim_size * z_dim_size);
     new_values = new_values.cumsum(0);
     values.slice(Eigen::array<Eigen::Index, 3>({ i, 0, 0 }), Eigen::array<Eigen::Index, 3>({ 1, xy_dim_size, z_dim_size })) = new_values.reshape(Eigen::array<Eigen::Index, 3>({ 1, xy_dim_size, z_dim_size }));
   }
@@ -640,7 +652,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DCpu)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNLabels(), t_dim_size);
   std::shared_ptr<int[]> labels_xy_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xy")->getLabelsDataPointer(labels_xy_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xy")->getLabelsHDataPointer(labels_xy_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_xy_insert_values(labels_xy_insert_data.get(), 2, xy_dim_size);
   for (int i = 0; i < 2; ++i) {
     for (int j = 0; j < xy_dim_size; ++j) {
@@ -648,7 +660,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DCpu)
     }
   }
   std::shared_ptr<int[]> labels_z_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("z")->getLabelsDataPointer(labels_z_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("z")->getLabelsHDataPointer(labels_z_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_z_insert_values(labels_z_insert_data.get(), 1, z_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < z_dim_size; ++j) {
@@ -656,7 +668,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DCpu)
     }
   }
   std::shared_ptr<int[]> labels_t_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsDataPointer(labels_t_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsHDataPointer(labels_t_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_t_insert_values(labels_t_insert_data.get(), 1, t_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < t_dim_size; ++j) {
@@ -711,7 +723,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DCpu)
   // Test the expected data after insert
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
   std::shared_ptr<int[]> data_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 3>> data_insert_values(data_insert_data.get(), t_dim_size, xy_dim_size, z_dim_size);
   for (int i = 0; i < t_dim_size; ++i) {
     for (int j = 0; j < xy_dim_size; ++j) {
@@ -720,6 +732,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DCpu)
       }
     }
   }
+
+  // Test the select and sum query
+  auto select_sum_pixels_result = benchmark_1_tp.selectAndSumPixels(n_dims, transaction_manager, data_size, in_memory, device);
+  BOOST_CHECK_EQUAL(select_sum_pixels_result.second, 38880);
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
@@ -732,7 +748,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DCpu)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNLabels(), t_dim_size);
   std::shared_ptr<int[]> labels_xy_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xy")->getLabelsDataPointer(labels_xy_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xy")->getLabelsHDataPointer(labels_xy_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_xy_update_values(labels_xy_update_data.get(), 2, xy_dim_size);
   for (int i = 0; i < 2; ++i) {
     for (int j = 0; j < xy_dim_size; ++j) {
@@ -740,7 +756,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DCpu)
     }
   }
   std::shared_ptr<int[]> labels_z_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("z")->getLabelsDataPointer(labels_z_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("z")->getLabelsHDataPointer(labels_z_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_z_update_values(labels_z_update_data.get(), 1, z_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < z_dim_size; ++j) {
@@ -748,7 +764,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DCpu)
     }
   }
   std::shared_ptr<int[]> labels_t_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsDataPointer(labels_t_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsHDataPointer(labels_t_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_t_update_values(labels_t_update_data.get(), 1, t_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < t_dim_size; ++j) {
@@ -803,7 +819,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DCpu)
   // Test the expected data after update
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
   std::shared_ptr<int[]> data_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 3>> data_update_values(data_update_data.get(), t_dim_size, xy_dim_size, z_dim_size);
   for (int i = 0; i < t_dim_size; ++i) {
     for (int j = 0; j < xy_dim_size; ++j) {
@@ -842,7 +858,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DCpu)
   // Setup the Benchmarking suite
   Benchmark1TimePointCpu<int, int> benchmark_1_tp;
 
-  // Setup the TensorCollectionGenerator
+  // Setup the PixelTensorCollectionGenerator
   TensorCollectionGeneratorCpu<int, int> tensor_collection_generator;
 
   // Setup the device
@@ -873,7 +889,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DCpu)
   for (int i = 0; i < t_dim_size; ++i) {
     labels_t(0, i) = int(floor(float(i) / float(std::pow(dim_span, 0)))) % dim_span + 1;
     Eigen::Tensor<int, 1> new_values(x_dim_size * y_dim_size * z_dim_size);
-    new_values.setConstant(i * x_dim_size * y_dim_size * z_dim_size + 1);
+    new_values.setConstant(i * x_dim_size * y_dim_size * z_dim_size);
     new_values = new_values.cumsum(0);
     values.slice(Eigen::array<Eigen::Index, 4>({ i, 0, 0, 0 }), Eigen::array<Eigen::Index, 4>({ 1, x_dim_size, y_dim_size, z_dim_size })) = new_values.reshape(Eigen::array<Eigen::Index, 4>({ 1, x_dim_size, y_dim_size, z_dim_size }));
   }
@@ -899,7 +915,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DCpu)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNLabels(), t_dim_size);
   std::shared_ptr<int[]> labels_x_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getLabelsDataPointer(labels_x_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getLabelsHDataPointer(labels_x_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_x_insert_values(labels_x_insert_data.get(), 1, x_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < x_dim_size; ++j) {
@@ -907,7 +923,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DCpu)
     }
   }
   std::shared_ptr<int[]> labels_y_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getLabelsDataPointer(labels_y_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getLabelsHDataPointer(labels_y_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_y_insert_values(labels_y_insert_data.get(), 1, y_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < y_dim_size; ++j) {
@@ -915,7 +931,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DCpu)
     }
   }
   std::shared_ptr<int[]> labels_z_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("y")->getLabelsDataPointer(labels_z_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("y")->getLabelsHDataPointer(labels_z_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_z_insert_values(labels_z_insert_data.get(), 1, z_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < z_dim_size; ++j) {
@@ -923,7 +939,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DCpu)
     }
   }
   std::shared_ptr<int[]> labels_t_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsDataPointer(labels_t_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsHDataPointer(labels_t_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_t_insert_values(labels_t_insert_data.get(), 1, t_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < t_dim_size; ++j) {
@@ -992,7 +1008,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DCpu)
   // Test the expected data after insert
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
   std::shared_ptr<int[]> data_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 4>> data_insert_values(data_insert_data.get(), t_dim_size, x_dim_size, y_dim_size, z_dim_size);
   for (int i = 0; i < t_dim_size; ++i) {
     for (int j = 0; j < x_dim_size; ++j) {
@@ -1003,6 +1019,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DCpu)
       }
     }
   }
+
+  // Test the select and sum query
+  auto select_sum_pixels_result = benchmark_1_tp.selectAndSumPixels(n_dims, transaction_manager, data_size, in_memory, device);
+  BOOST_CHECK_EQUAL(select_sum_pixels_result.second, 38880);
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
@@ -1017,7 +1037,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DCpu)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNLabels(), t_dim_size);
   std::shared_ptr<int[]> labels_x_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getLabelsDataPointer(labels_x_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getLabelsHDataPointer(labels_x_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_x_update_values(labels_x_update_data.get(), 1, x_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < x_dim_size; ++j) {
@@ -1025,7 +1045,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DCpu)
     }
   }
   std::shared_ptr<int[]> labels_y_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("y")->getLabelsDataPointer(labels_y_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("y")->getLabelsHDataPointer(labels_y_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_y_update_values(labels_y_update_data.get(), 1, y_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < y_dim_size; ++j) {
@@ -1033,7 +1053,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DCpu)
     }
   }
   std::shared_ptr<int[]> labels_z_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("z")->getLabelsDataPointer(labels_z_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("z")->getLabelsHDataPointer(labels_z_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_z_update_values(labels_z_update_data.get(), 1, z_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < z_dim_size; ++j) {
@@ -1041,7 +1061,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DCpu)
     }
   }
   std::shared_ptr<int[]> labels_t_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsDataPointer(labels_t_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsHDataPointer(labels_t_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_t_update_values(labels_t_update_data.get(), 1, t_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < t_dim_size; ++j) {
@@ -1110,7 +1130,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DCpu)
   // Test the expected data after update
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
   std::shared_ptr<int[]> data_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 4>> data_update_values(data_update_data.get(), t_dim_size, x_dim_size, y_dim_size, z_dim_size);
   for (int i = 0; i < t_dim_size; ++i) {
     for (int j = 0; j < x_dim_size; ++j) {
@@ -1149,7 +1169,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DShardingCpu)
   // Setup the Benchmarking suite
   Benchmark1TimePointCpu<int, int> benchmark_1_tp;
 
-  // Setup the TensorCollectionGenerator
+  // Setup the PixelTensorCollectionGenerator
   TensorCollectionGeneratorCpu<int, int> tensor_collection_generator;
 
   // Setup the device
@@ -1197,7 +1217,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DShardingCpu)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNLabels(), 1296);
   std::shared_ptr<TensorArray8<char>[]> labels_xyztv_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getLabelsDataPointer(labels_xyztv_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getLabelsHDataPointer(labels_xyztv_insert_data);
   Eigen::TensorMap<Eigen::Tensor<TensorArray8<char>, 2>> labels_xyztv_insert_values(labels_xyztv_insert_data.get(), 5, 1);
   for (int i = 0; i < 5; ++i) {
     for (int j = 0; j < 1; ++j) {
@@ -1205,7 +1225,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DShardingCpu)
     }
   }
   std::shared_ptr<int[]> labels_indices_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getLabelsDataPointer(labels_indices_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getLabelsHDataPointer(labels_indices_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_indices_insert_values(labels_indices_insert_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
@@ -1248,7 +1268,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DShardingCpu)
   n_dim_tensor_collection->tables_.at("TTable")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("TTable")->getDir(), device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 6480);
   std::shared_ptr<int[]> data_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_insert_values(data_insert_data.get(), data_size, 5);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 5; ++j) {
@@ -1257,6 +1277,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DShardingCpu)
   }
   n_dim_tensor_collection->tables_.at("TTable")->initData(device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
+
+  // Test the select and sum query
+  auto select_sum_pixels_result = benchmark_1_tp.selectAndSumPixels(n_dims, transaction_manager, data_size, in_memory, device);
+  BOOST_CHECK_EQUAL(select_sum_pixels_result.second, 2072);
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
@@ -1267,7 +1291,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DShardingCpu)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getNLabels(), 1296);
   std::shared_ptr<TensorArray8<char>[]> labels_xyztv_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getLabelsDataPointer(labels_xyztv_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyztv")->getLabelsHDataPointer(labels_xyztv_update_data);
   Eigen::TensorMap<Eigen::Tensor<TensorArray8<char>, 2>> labels_xyztv_update_values(labels_xyztv_update_data.get(), 5, 1);
   for (int i = 0; i < 5; ++i) {
     for (int j = 0; j < 1; ++j) {
@@ -1275,7 +1299,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DShardingCpu)
     }
   }
   std::shared_ptr<int[]> labels_indices_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getLabelsDataPointer(labels_indices_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("indices")->getLabelsHDataPointer(labels_indices_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_indices_update_values(labels_indices_update_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
@@ -1318,7 +1342,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete0DShardingCpu)
   n_dim_tensor_collection->tables_.at("TTable")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("TTable")->getDir(), device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 6480);
   std::shared_ptr<int[]> data_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_update_values(data_update_data.get(), data_size, 5);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 5; ++j) {
@@ -1350,7 +1374,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete1DShardingCpu)
   // Setup the Benchmarking suite
   Benchmark1TimePointCpu<int, int> benchmark_1_tp;
 
-  // Setup the TensorCollectionGenerator
+  // Setup the PixelTensorCollectionGenerator
   TensorCollectionGeneratorCpu<int, int> tensor_collection_generator;
 
   // Setup the device
@@ -1395,7 +1419,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete1DShardingCpu)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("values")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("values")->getNLabels(), 1);
   std::shared_ptr<int[]> labels_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyzt")->getLabelsDataPointer(labels_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyzt")->getLabelsHDataPointer(labels_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_insert_values(labels_insert_data.get(), 4, data_size);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 4; ++j) {
@@ -1439,7 +1463,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete1DShardingCpu)
   n_dim_tensor_collection->tables_.at("TTable")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("TTable")->getDir(), device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
   std::shared_ptr<int[]> data_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_insert_values(data_insert_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
@@ -1448,6 +1472,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete1DShardingCpu)
   }
   n_dim_tensor_collection->tables_.at("TTable")->initData(device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
+
+  // Test the select and sum query
+  auto select_sum_pixels_result = benchmark_1_tp.selectAndSumPixels(n_dims, transaction_manager, data_size, in_memory, device);
+  BOOST_CHECK_EQUAL(select_sum_pixels_result.second, 2072);
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
@@ -1458,7 +1486,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete1DShardingCpu)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("values")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("values")->getNLabels(), 1);
   std::shared_ptr<int[]> labels_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyzt")->getLabelsDataPointer(labels_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyzt")->getLabelsHDataPointer(labels_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_update_values(labels_update_data.get(), 4, data_size);
   for (int i = 0; i < data_size; ++i) {
     for (int j = 0; j < 4; ++j) {
@@ -1501,7 +1529,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete1DShardingCpu)
   n_dim_tensor_collection->tables_.at("TTable")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("TTable")->getDir(), device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
   std::shared_ptr<int[]> data_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_update_values(data_update_data.get(), 1, data_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < data_size; ++j) {
@@ -1534,7 +1562,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DShardingCpu)
   // Setup the Benchmarking suite
   Benchmark1TimePointCpu<int, int> benchmark_1_tp;
 
-  // Setup the TensorCollectionGenerator
+  // Setup the PixelTensorCollectionGenerator
   TensorCollectionGeneratorCpu<int, int> tensor_collection_generator;
 
   // Setup the device
@@ -1565,7 +1593,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DShardingCpu)
   for (int i = 0; i < t_dim_size; ++i) {
     labels_t(0, i) = int(floor(float(i) / float(std::pow(dim_span, 0)))) % dim_span + 1;
     Eigen::Tensor<int, 1> new_values(xyz_dim_size);
-    new_values.setConstant(i * xyz_dim_size + 1);
+    new_values.setConstant(i * xyz_dim_size);
     new_values = new_values.cumsum(0);
     values.slice(Eigen::array<Eigen::Index, 2>({ i, 0 }), Eigen::array<Eigen::Index, 2>({ 1, xyz_dim_size })) = new_values.reshape(Eigen::array<Eigen::Index, 2>({ 1, xyz_dim_size }));
   }
@@ -1585,7 +1613,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DShardingCpu)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNLabels(), t_dim_size);
   std::shared_ptr<int[]> labels_xyz_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyz")->getLabelsDataPointer(labels_xyz_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyz")->getLabelsHDataPointer(labels_xyz_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_xyz_insert_values(labels_xyz_insert_data.get(), 3, xyz_dim_size);
   for (int i = 0; i < 3; ++i) {
     for (int j = 0; j < xyz_dim_size; ++j) {
@@ -1593,7 +1621,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DShardingCpu)
     }
   }
   std::shared_ptr<int[]> labels_t_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsDataPointer(labels_t_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsHDataPointer(labels_t_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_t_insert_values(labels_t_insert_data.get(), 1, t_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < t_dim_size; ++j) {
@@ -1640,7 +1668,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DShardingCpu)
   n_dim_tensor_collection->tables_.at("TTable")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("TTable")->getDir(), device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
   std::shared_ptr<int[]> data_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_insert_values(data_insert_data.get(), t_dim_size, xyz_dim_size);
   for (int i = 0; i < t_dim_size; ++i) {
     for (int j = 0; j < xyz_dim_size; ++j) {
@@ -1649,6 +1677,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DShardingCpu)
   }
   n_dim_tensor_collection->tables_.at("TTable")->initData(device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
+
+  // Test the select and sum query
+  auto select_sum_pixels_result = benchmark_1_tp.selectAndSumPixels(n_dims, transaction_manager, data_size, in_memory, device);
+  BOOST_CHECK_EQUAL(select_sum_pixels_result.second, 38880);
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
@@ -1659,7 +1691,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DShardingCpu)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNLabels(), t_dim_size);
   std::shared_ptr<int[]> labels_xyz_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyz")->getLabelsDataPointer(labels_xyz_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xyz")->getLabelsHDataPointer(labels_xyz_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_xyz_update_values(labels_xyz_update_data.get(), 3, xyz_dim_size);
   for (int i = 0; i < 3; ++i) {
     for (int j = 0; j < xyz_dim_size; ++j) {
@@ -1667,7 +1699,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DShardingCpu)
     }
   }
   std::shared_ptr<int[]> labels_t_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsDataPointer(labels_t_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsHDataPointer(labels_t_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_t_update_values(labels_t_update_data.get(), 1, t_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < t_dim_size; ++j) {
@@ -1714,7 +1746,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete2DShardingCpu)
   n_dim_tensor_collection->tables_.at("TTable")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("TTable")->getDir(), device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
   std::shared_ptr<int[]> data_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> data_update_values(data_update_data.get(), t_dim_size, xyz_dim_size);
   for (int i = 0; i < xyz_dim_size; ++i) {
     for (int j = 0; j < t_dim_size; ++j) {
@@ -1748,7 +1780,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DShardingCpu)
   // Setup the Benchmarking suite
   Benchmark1TimePointCpu<int, int> benchmark_1_tp;
 
-  // Setup the TensorCollectionGenerator
+  // Setup the PixelTensorCollectionGenerator
   TensorCollectionGeneratorCpu<int, int> tensor_collection_generator;
 
   // Setup the device
@@ -1783,7 +1815,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DShardingCpu)
   for (int i = 0; i < t_dim_size; ++i) {
     labels_t(0, i) = int(floor(float(i) / float(std::pow(dim_span, 0)))) % dim_span + 1;
     Eigen::Tensor<int, 1> new_values(xy_dim_size * z_dim_size);
-    new_values.setConstant(i * xy_dim_size * z_dim_size + 1);
+    new_values.setConstant(i * xy_dim_size * z_dim_size);
     new_values = new_values.cumsum(0);
     values.slice(Eigen::array<Eigen::Index, 3>({ i, 0, 0 }), Eigen::array<Eigen::Index, 3>({ 1, xy_dim_size, z_dim_size })) = new_values.reshape(Eigen::array<Eigen::Index, 3>({ 1, xy_dim_size, z_dim_size }));
   }
@@ -1808,7 +1840,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DShardingCpu)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNLabels(), t_dim_size);
   std::shared_ptr<int[]> labels_xy_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xy")->getLabelsDataPointer(labels_xy_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xy")->getLabelsHDataPointer(labels_xy_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_xy_insert_values(labels_xy_insert_data.get(), 2, xy_dim_size);
   for (int i = 0; i < 2; ++i) {
     for (int j = 0; j < xy_dim_size; ++j) {
@@ -1816,7 +1848,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DShardingCpu)
     }
   }
   std::shared_ptr<int[]> labels_z_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("z")->getLabelsDataPointer(labels_z_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("z")->getLabelsHDataPointer(labels_z_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_z_insert_values(labels_z_insert_data.get(), 1, z_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < z_dim_size; ++j) {
@@ -1824,7 +1856,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DShardingCpu)
     }
   }
   std::shared_ptr<int[]> labels_t_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsDataPointer(labels_t_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsHDataPointer(labels_t_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_t_insert_values(labels_t_insert_data.get(), 1, t_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < t_dim_size; ++j) {
@@ -1888,7 +1920,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DShardingCpu)
   n_dim_tensor_collection->tables_.at("TTable")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("TTable")->getDir(), device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
   std::shared_ptr<int[]> data_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 3>> data_insert_values(data_insert_data.get(), t_dim_size, xy_dim_size, z_dim_size);
   for (int i = 0; i < t_dim_size; ++i) {
     for (int j = 0; j < xy_dim_size; ++j) {
@@ -1899,6 +1931,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DShardingCpu)
   }
   n_dim_tensor_collection->tables_.at("TTable")->initData(device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
+
+  // Test the select and sum query
+  auto select_sum_pixels_result = benchmark_1_tp.selectAndSumPixels(n_dims, transaction_manager, data_size, in_memory, device);
+  BOOST_CHECK_EQUAL(select_sum_pixels_result.second, 38880);
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
@@ -1911,7 +1947,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DShardingCpu)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNLabels(), t_dim_size);
   std::shared_ptr<int[]> labels_xy_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xy")->getLabelsDataPointer(labels_xy_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("xy")->getLabelsHDataPointer(labels_xy_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_xy_update_values(labels_xy_update_data.get(), 2, xy_dim_size);
   for (int i = 0; i < 2; ++i) {
     for (int j = 0; j < xy_dim_size; ++j) {
@@ -1919,7 +1955,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DShardingCpu)
     }
   }
   std::shared_ptr<int[]> labels_z_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("z")->getLabelsDataPointer(labels_z_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("z")->getLabelsHDataPointer(labels_z_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_z_update_values(labels_z_update_data.get(), 1, z_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < z_dim_size; ++j) {
@@ -1927,7 +1963,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DShardingCpu)
     }
   }
   std::shared_ptr<int[]> labels_t_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsDataPointer(labels_t_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsHDataPointer(labels_t_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_t_update_values(labels_t_update_data.get(), 1, t_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < t_dim_size; ++j) {
@@ -1990,7 +2026,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete3DShardingCpu)
   n_dim_tensor_collection->tables_.at("TTable")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("TTable")->getDir(), device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
   std::shared_ptr<int[]> data_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 3>> data_update_values(data_update_data.get(), t_dim_size, xy_dim_size, z_dim_size);
   for (int i = 0; i < t_dim_size; ++i) {
     for (int j = 0; j < xy_dim_size; ++j) {
@@ -2029,7 +2065,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DShardingCpu)
   // Setup the Benchmarking suite
   Benchmark1TimePointCpu<int, int> benchmark_1_tp;
 
-  // Setup the TensorCollectionGenerator
+  // Setup the PixelTensorCollectionGenerator
   TensorCollectionGeneratorCpu<int, int> tensor_collection_generator;
 
   // Setup the device
@@ -2068,7 +2104,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DShardingCpu)
   for (int i = 0; i < t_dim_size; ++i) {
     labels_t(0, i) = int(floor(float(i) / float(std::pow(dim_span, 0)))) % dim_span + 1;
     Eigen::Tensor<int, 1> new_values(x_dim_size * y_dim_size * z_dim_size);
-    new_values.setConstant(i * x_dim_size * y_dim_size * z_dim_size + 1);
+    new_values.setConstant(i * x_dim_size * y_dim_size * z_dim_size);
     new_values = new_values.cumsum(0);
     values.slice(Eigen::array<Eigen::Index, 4>({ i, 0, 0, 0 }), Eigen::array<Eigen::Index, 4>({ 1, x_dim_size, y_dim_size, z_dim_size })) = new_values.reshape(Eigen::array<Eigen::Index, 4>({ 1, x_dim_size, y_dim_size, z_dim_size }));
   }
@@ -2094,7 +2130,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DShardingCpu)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNLabels(), t_dim_size);
   std::shared_ptr<int[]> labels_x_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getLabelsDataPointer(labels_x_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getLabelsHDataPointer(labels_x_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_x_insert_values(labels_x_insert_data.get(), 1, x_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < x_dim_size; ++j) {
@@ -2102,7 +2138,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DShardingCpu)
     }
   }
   std::shared_ptr<int[]> labels_y_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getLabelsDataPointer(labels_y_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getLabelsHDataPointer(labels_y_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_y_insert_values(labels_y_insert_data.get(), 1, y_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < y_dim_size; ++j) {
@@ -2110,7 +2146,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DShardingCpu)
     }
   }
   std::shared_ptr<int[]> labels_z_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("y")->getLabelsDataPointer(labels_z_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("y")->getLabelsHDataPointer(labels_z_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_z_insert_values(labels_z_insert_data.get(), 1, z_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < z_dim_size; ++j) {
@@ -2118,7 +2154,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DShardingCpu)
     }
   }
   std::shared_ptr<int[]> labels_t_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsDataPointer(labels_t_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsHDataPointer(labels_t_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_t_insert_values(labels_t_insert_data.get(), 1, t_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < t_dim_size; ++j) {
@@ -2197,7 +2233,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DShardingCpu)
   n_dim_tensor_collection->tables_.at("TTable")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("TTable")->getDir(), device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
   std::shared_ptr<int[]> data_insert_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_insert_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_insert_data);
   Eigen::TensorMap<Eigen::Tensor<int, 4>> data_insert_values(data_insert_data.get(), t_dim_size, x_dim_size, y_dim_size, z_dim_size);
   for (int i = 0; i < t_dim_size; ++i) {
     for (int j = 0; j < x_dim_size; ++j) {
@@ -2210,6 +2246,10 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DShardingCpu)
   }
   n_dim_tensor_collection->tables_.at("TTable")->initData(device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 0);
+
+  // Test the select and sum query
+  auto select_sum_pixels_result = benchmark_1_tp.selectAndSumPixels(n_dims, transaction_manager, data_size, in_memory, device);
+  BOOST_CHECK_EQUAL(select_sum_pixels_result.second, 38880);
 
   // Test the expected tensor collection after update
   benchmark_1_tp.update1TimePoint(n_dims, transaction_manager, data_size, in_memory, device);
@@ -2224,7 +2264,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DShardingCpu)
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNDimensions(), 1);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getNLabels(), t_dim_size);
   std::shared_ptr<int[]> labels_x_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getLabelsDataPointer(labels_x_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("x")->getLabelsHDataPointer(labels_x_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_x_update_values(labels_x_update_data.get(), 1, x_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < x_dim_size; ++j) {
@@ -2232,7 +2272,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DShardingCpu)
     }
   }
   std::shared_ptr<int[]> labels_y_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("y")->getLabelsDataPointer(labels_y_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("y")->getLabelsHDataPointer(labels_y_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_y_update_values(labels_y_update_data.get(), 1, y_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < y_dim_size; ++j) {
@@ -2240,7 +2280,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DShardingCpu)
     }
   }
   std::shared_ptr<int[]> labels_z_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("z")->getLabelsDataPointer(labels_z_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("z")->getLabelsHDataPointer(labels_z_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_z_update_values(labels_z_update_data.get(), 1, z_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < z_dim_size; ++j) {
@@ -2248,7 +2288,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DShardingCpu)
     }
   }
   std::shared_ptr<int[]> labels_t_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsDataPointer(labels_t_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getAxes().at("t")->getLabelsHDataPointer(labels_t_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 2>> labels_t_update_values(labels_t_update_data.get(), 1, t_dim_size);
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < t_dim_size; ++j) {
@@ -2327,7 +2367,7 @@ BOOST_AUTO_TEST_CASE(InsertUpdateDelete4DShardingCpu)
   n_dim_tensor_collection->tables_.at("TTable")->loadTensorTableBinary(n_dim_tensor_collection->tables_.at("TTable")->getDir(), device);
   BOOST_CHECK_EQUAL(n_dim_tensor_collection->tables_.at("TTable")->getDataTensorSize(), 1296);
   std::shared_ptr<int[]> data_update_data;
-  n_dim_tensor_collection->tables_.at("TTable")->getDataPointer(data_update_data);
+  n_dim_tensor_collection->tables_.at("TTable")->getHDataPointer(data_update_data);
   Eigen::TensorMap<Eigen::Tensor<int, 4>> data_update_values(data_update_data.get(), t_dim_size, x_dim_size, y_dim_size, z_dim_size);
   for (int i = 0; i < t_dim_size; ++i) {
     for (int j = 0; j < x_dim_size; ++j) {

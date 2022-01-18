@@ -72,7 +72,8 @@ namespace TensorBase
     Eigen::TensorMap<Eigen::Tensor<TensorT, 2>> getLabels() const { return tensor_dimension_labels_->getData(); };  ///< labels getter
     Eigen::TensorMap<Eigen::Tensor<std::string, 1>> getDimensions() { Eigen::TensorMap<Eigen::Tensor<std::string, 1>> data(tensor_dimension_names_.data(), (int)this->n_dimensions_); return data; } ///< dimensions getter
 
-    bool syncHAndDData(DeviceT& device) { return tensor_dimension_labels_->syncHAndDData(device); };  ///< Sync the host and device labels data
+    bool syncDData(DeviceT& device) { return tensor_dimension_labels_->syncDData(device); };  ///< Sync the device labels data
+    bool syncHData(DeviceT& device) { return tensor_dimension_labels_->syncHData(device); };  ///< Sync the host labels data
     void setDataStatus(const bool& h_data_updated, const bool& d_data_updated) { tensor_dimension_labels_->setDataStatus(h_data_updated, d_data_updated); } ///< Set the status of the host and device data
     std::pair<bool, bool> getDataStatus() { return tensor_dimension_labels_->getDataStatus(); };   ///< Get the status of the host and device labels data
 
@@ -81,6 +82,9 @@ namespace TensorBase
 
     template<typename T>
     void getLabelsHDataPointer(std::shared_ptr<T[]>& data_copy); ///< TensorAxisConcept labels getter
+
+    virtual std::shared_ptr<TensorAxis<TensorT, DeviceT>> copyToHost(DeviceT& device) = 0;
+    virtual std::shared_ptr<TensorAxis<TensorT, DeviceT>> copyToDevice(DeviceT& device) = 0;
     
     /*
     @brief Delete from axis based on a selection index
@@ -211,7 +215,7 @@ namespace TensorBase
 			setNLabels(labels_select->getDimensions().at(1));
 		}
 		else {
-			tensor_dimension_labels_.reset();
+			setLabels();
 			setNLabels(labels_select->getDimensions().at(1));
 		}
   }
@@ -268,7 +272,6 @@ namespace TensorBase
     // NOTE: the host and device should be syncronized for the primary axis
     //       If this is not true, then this needs to be implemented for each device 
     //       due to the need to synchronize the stream on the GPU
-    //syncHAndDData(device); // D to H
     std::vector<std::string> labels;
     for (int i = 0; i < n_dimensions_; i++) {
       for (int j = 0; j < n_labels_; j++) {
@@ -286,7 +289,6 @@ namespace TensorBase
     // NOTE: the host and device should be syncronized for the primary axis
     //       If this is not true, then this needs to be implemented for each device 
     //       due to the need to synchronize the stream on the GPU
-    //syncHAndDData(device); // D to H
     std::vector<std::string> labels;
     for (int i = 0; i < n_dimensions_; i++) {
       for (int j = 0; j < n_labels_; j++) {
@@ -304,7 +306,6 @@ namespace TensorBase
     // NOTE: the host and device should be syncronized for the primary axis
     //       If this is not true, then this needs to be implemented for each device 
     //       due to the need to synchronize the stream on the GPU
-    //syncHAndDData(device); // D to H
     std::vector<std::string> labels;
     for (int i = 0; i < n_dimensions_; i++) {
       for (int j = 0; j < n_labels_; j++) {

@@ -26,6 +26,8 @@ namespace TensorBase
     void setAxes(Eigen::DefaultDevice& device) override;
     void initData(Eigen::DefaultDevice& device) override;
     void initData(const Eigen::array<Eigen::Index, TDim>& new_dimensions, Eigen::DefaultDevice& device) override;
+    std::shared_ptr<TensorTable<TensorT, Eigen::DefaultDevice, TDim>> copyToHost(Eigen::DefaultDevice& device) override;
+    std::shared_ptr<TensorTable<TensorT, Eigen::DefaultDevice, TDim>> copyToDevice(Eigen::DefaultDevice& device) override;
     // Select methods
     void broadcastSelectIndicesView(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_view_bcast, const std::string& axis_name, Eigen::DefaultDevice& device) override;
     void reduceTensorDataToSelectIndices(const std::shared_ptr<TensorData<int, Eigen::DefaultDevice, TDim>>& indices_view_bcast, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, TDim>>& tensor_select, const std::string& axis_name, const int& n_select, Eigen::DefaultDevice& device) override;
@@ -162,6 +164,66 @@ namespace TensorBase
       Eigen::TensorMap<Eigen::Tensor<int, 1>> not_in_memory(this->not_in_memory_.at(axis_to_dim.first)->getDataPointer().get(), (int)this->not_in_memory_.at(axis_to_dim.first)->getTensorSize());
       not_in_memory.device(device) = not_in_memory.constant(1);
     }
+  }
+
+  template<typename TensorT, int TDim>
+  inline std::shared_ptr<TensorTable<TensorT, Eigen::DefaultDevice, TDim>> TensorTableDefaultDevice<TensorT, TDim>::copyToHost(Eigen::DefaultDevice& device)
+  {
+    TensorTableDefaultDevice<TensorT, TDim> tensor_table_copy;
+    // copy the metadata
+    tensor_table_copy.setId(this->getId());
+    tensor_table_copy.setName(this->getName());
+    tensor_table_copy.setDir(this->getDir());
+    tensor_table_copy.axes_to_dims_ = this->getAxesToDims();
+    tensor_table_copy.dimensions_ = this->getDimensions();
+    tensor_table_copy.setShardSpans(this->getShardSpans());
+    tensor_table_copy.setMaximumDimensions(this->getMaximumDimensions());
+
+    // copy the axes and indices
+    for (auto& axis_to_dim : this->getAxesToDims()) {
+      tensor_table_copy.getAxes().emplace(axis_to_dim.first, this->getAxes().at(axis_to_dim.first)->copyToHost(device));
+      tensor_table_copy.getIndices().emplace(axis_to_dim.first, this->getIndices().at(axis_to_dim.first)->copyToHost(device));
+      tensor_table_copy.getIndicesView().emplace(axis_to_dim.first, this->getIndicesView().at(axis_to_dim.first)->copyToHost(device));
+      tensor_table_copy.getIsModified().emplace(axis_to_dim.first, this->getIsModified().at(axis_to_dim.first)->copyToHost(device));
+      tensor_table_copy.getNotInMemory().emplace(axis_to_dim.first, this->getNotInMemory().at(axis_to_dim.first)->copyToHost(device));
+      tensor_table_copy.getShardId().emplace(axis_to_dim.first, this->getShardId().at(axis_to_dim.first)->copyToHost(device));
+      tensor_table_copy.getShardIndices().emplace(axis_to_dim.first, this->getShardIndices().at(axis_to_dim.first)->copyToHost(device));
+      tensor_table_copy.getDimensions().at(axis_to_dim.second) = this->getDimensions().at(axis_to_dim.second);
+    }
+
+    // copy the data
+    tensor_table_copy.setData(data_->copyToHost(device));
+    return std::make_shared<TensorTableDefaultDevice<TensorT, TDim>>(tensor_table_copy);
+  }
+
+  template<typename TensorT, int TDim>
+  inline std::shared_ptr<TensorTable<TensorT, Eigen::DefaultDevice, TDim>> TensorTableDefaultDevice<TensorT, TDim>::copyToDevice(Eigen::DefaultDevice& device)
+  {
+    TensorTableDefaultDevice<TensorT, TDim> tensor_table_copy;
+    // copy the metadata
+    tensor_table_copy.setId(this->getId());
+    tensor_table_copy.setName(this->getName());
+    tensor_table_copy.setDir(this->getDir());
+    tensor_table_copy.axes_to_dims_ = this->getAxesToDims();
+    tensor_table_copy.dimensions_ = this->getDimensions();
+    tensor_table_copy.setShardSpans(this->getShardSpans());
+    tensor_table_copy.setMaximumDimensions(this->getMaximumDimensions());
+
+    // copy the axes and indices
+    for (auto& axis_to_dim : this->getAxesToDims()) {
+      tensor_table_copy.getAxes().emplace(axis_to_dim.first, this->getAxes().at(axis_to_dim.first)->copyToDevice(device));
+      tensor_table_copy.getIndices().emplace(axis_to_dim.first, this->getIndices().at(axis_to_dim.first)->copyToDevice(device));
+      tensor_table_copy.getIndicesView().emplace(axis_to_dim.first, this->getIndicesView().at(axis_to_dim.first)->copyToDevice(device));
+      tensor_table_copy.getIsModified().emplace(axis_to_dim.first, this->getIsModified().at(axis_to_dim.first)->copyToDevice(device));
+      tensor_table_copy.getNotInMemory().emplace(axis_to_dim.first, this->getNotInMemory().at(axis_to_dim.first)->copyToDevice(device));
+      tensor_table_copy.getShardId().emplace(axis_to_dim.first, this->getShardId().at(axis_to_dim.first)->copyToDevice(device));
+      tensor_table_copy.getShardIndices().emplace(axis_to_dim.first, this->getShardIndices().at(axis_to_dim.first)->copyToDevice(device));
+      tensor_table_copy.getDimensions().at(axis_to_dim.second) = this->getDimensions().at(axis_to_dim.second);
+    }
+
+    // copy the data
+    tensor_table_copy.setData(data_->copyToDevice(device));
+    return std::make_shared<TensorTableDefaultDevice<TensorT, TDim>>(tensor_table_copy);
   }
 
   template<typename TensorT, int TDim>
@@ -381,7 +443,7 @@ namespace TensorBase
     Eigen::Tensor<int, TDim> zeros(this->getDimensions());
     zeros.setZero();
     indices_sort_tmp.setData(zeros);
-    indices_sort_tmp.syncHAndDData(device);
+    indices_sort_tmp.syncDData(device);
     Eigen::TensorMap<Eigen::Tensor<int, TDim>> indices_sort_values(indices_sort_tmp.getDataPointer().get(), indices_sort_tmp.getDimensions());
 
     // [PERFORMANCE: Can this be replaced with contractions?]
@@ -428,7 +490,7 @@ namespace TensorBase
     // Allocate memory for the extend axis indices
     TensorDataDefaultDevice<int, 1> indices_tmp(Eigen::array<Eigen::Index, 1>({n_labels}));
     indices_tmp.setData();
-    indices_tmp.syncHAndDData(device);
+    indices_tmp.syncDData(device);
 
 		Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_values(indices_tmp.getDataPointer().get(), n_labels);
 		if (this->indices_view_.at(axis_name)->getTensorSize() > 0) {
@@ -498,7 +560,7 @@ namespace TensorBase
   inline void TensorTableDefaultDevice<TensorT, TDim>::makeIndicesFromIndicesView(const std::string & axis_name, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& indices, Eigen::DefaultDevice & device)
   {
     // Normalize the indices view
-    auto indices_view_copy = this->indices_view_.at(axis_name)->copy(device);
+    auto indices_view_copy = this->indices_view_.at(axis_name)->copyToDevice(device);
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_copy_values(indices_view_copy->getDataPointer().get(), indices_view_copy->getDimensions());
     Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_view_values(this->indices_view_.at(axis_name)->getDataPointer().get(), this->indices_view_.at(axis_name)->getDimensions());
     indices_view_copy_values.device(device) = indices_view_values.clip(0, 1);
@@ -538,7 +600,7 @@ namespace TensorBase
       labels_size *= dim_size.getData()(0);
 
       // create the selection for the indices view
-      std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> indices_select = this->indices_view_.at(axis_to_name.first)->copy(device);
+      std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>> indices_select = this->indices_view_.at(axis_to_name.first)->copyToDevice(device);
       Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_select_values(indices_select->getDataPointer().get(), indices_select->getDimensions());
       indices_select_values.device(device) = indices_view_values.clip(0, 1);
 
@@ -612,7 +674,7 @@ namespace TensorBase
     // allocate memory for the indices
     TensorDataDefaultDevice<int, TDim> indices_shard_tmp(this->getDimensions());
     indices_shard_tmp.setData();
-    indices_shard_tmp.syncHAndDData(device);
+    indices_shard_tmp.syncDData(device);
     indices_shard = std::make_shared<TensorDataDefaultDevice<int, TDim>>(indices_shard_tmp);
 
     // make the shard indices
@@ -624,13 +686,13 @@ namespace TensorBase
     // Allocate memory
     TensorDataDefaultDevice<int, 1> unique_tmp(Eigen::array<Eigen::Index, 1>({ (int)data->getTensorSize() }));
     unique_tmp.setData();
-    unique_tmp.syncHAndDData(device);
+    unique_tmp.syncDData(device);
     TensorDataDefaultDevice<int, 1> count_tmp(Eigen::array<Eigen::Index, 1>({ (int)data->getTensorSize() }));
     count_tmp.setData();
-    count_tmp.syncHAndDData(device);
+    count_tmp.syncDData(device);
     TensorDataDefaultDevice<int, 1> n_runs_tmp(Eigen::array<Eigen::Index, 1>({ 1 }));
     n_runs_tmp.setData();
-    n_runs_tmp.syncHAndDData(device);
+    n_runs_tmp.syncDData(device);
 
     // Move over the memory
     unique = std::make_shared<TensorDataDefaultDevice<int, 1>>(unique_tmp);
@@ -673,18 +735,18 @@ namespace TensorBase
     shard_slice_max.setData();
 
     // find the min and max indices values (along Dim=1) 
-    shard_slice_min.syncHAndDData(device); // H to D
-    shard_slice_max.syncHAndDData(device);
+    shard_slice_min.syncDData(device); // H to D
+    shard_slice_max.syncDData(device);
     Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_ids_slice_max(shard_slice_max.getDataPointer().get(), (int)shard_slice_max.getTensorSize());
     shard_ids_slice_max.device(device) = shard_ids_slice_indices.maximum(Eigen::array<Eigen::Index, 1>({ 1 }));
     Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_ids_slice_min(shard_slice_min.getDataPointer().get(), (int)shard_slice_min.getTensorSize());
     auto shard_ids_slice_indices_min = (shard_ids_slice_indices >= shard_ids_slice_indices.constant(0)).select(shard_ids_slice_indices, shard_ids_slice_indices.constant(this->getMaxInt())); // substitute -1 with a large number prior to calling minimum
     shard_ids_slice_min.device(device) = shard_ids_slice_indices_min.minimum(Eigen::array<Eigen::Index, 1>({ 1 }));
-    shard_slice_min.syncHAndDData(device); // D to H
-    shard_slice_max.syncHAndDData(device);
+    shard_slice_min.syncHData(device); // D to H
+    shard_slice_max.syncHData(device);
 
     // initialize the slice indices
-    modified_shard_ids->syncHAndDData(device);// D to H
+    modified_shard_ids->syncHData(device);// D to H
     for (int i = 0; i < modified_shard_ids->getTensorSize(); ++i) {
       slice_indices.emplace(modified_shard_ids->getData()(i), std::make_pair(Eigen::array<Eigen::Index, TDim>(), Eigen::array<Eigen::Index, TDim>()));
     }
@@ -734,8 +796,8 @@ namespace TensorBase
   inline void TensorTableDefaultDevice<TensorT, TDim>::makeShardIDTensor(std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& modified_shard_ids, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& unique, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 1>>& num_runs, Eigen::DefaultDevice & device) const
   {
     // Resize the unique results and remove 0's from the unique
-    unique->syncHAndDData(device); // d to h
-    num_runs->syncHAndDData(device); // d to h
+    unique->syncHData(device); // d to h
+    num_runs->syncHData(device); // d to h
 
     if (num_runs->getData()(0) == 1 && unique->getData()(0) == 0) {
       unique->setDimensions(Eigen::array<Eigen::Index, 1>({ 0 }));
@@ -849,7 +911,7 @@ namespace TensorBase
     sparse_table.setDimensions(new_dimensions);
     sparse_table.initData(new_dimensions, device);
     sparse_table.setData();
-    sparse_table.syncHAndDData(device);
+    sparse_table.syncDData(device);
     sparse_table.convertDataFromStringToTensorT(data_new, device);
     sparse_table_ptr = std::make_shared<TensorTableDefaultDevice<TensorT, 2>>(sparse_table);
   }
