@@ -33,6 +33,7 @@
 
 # Distribution / packaging
 build*/
+tensorbase_build*/
 
 # VS
 .vscode*/
