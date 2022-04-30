@@ -138,7 +138,8 @@ namespace TensorBase
     this->setDimensions(dimensions);
 
     // Set the shard_id and shard_indices
-    this->reShardIndices();
+    //this->reShardIndices();
+		this->reShardIndices(device);
 
 		// Allocate memory for the tensor
 		this->initData(this->getDimensions(), device);
