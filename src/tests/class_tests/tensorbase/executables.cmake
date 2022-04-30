@@ -25,7 +25,7 @@ set(core_executables_list
 set(io_executables_list
   CSVWriter_test
   DataFile_test
-  TensorTableFile_test
+  TensorCollectionFile_test
 )
 
 set(ml_executables_list
