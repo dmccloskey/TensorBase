@@ -20,8 +20,8 @@ namespace TensorBase
 	{
 	public:
 		TensorTableCpu() = default;
-		TensorTableCpu(const std::string& name) : TensorTable(name) {};
-		TensorTableCpu(const std::string& name, const std::string& dir) : TensorTable(name, dir) {};
+		TensorTableCpu(const std::string& name) : TensorTable<TensorT, Eigen::ThreadPoolDevice, TDim>(name) {};
+		TensorTableCpu(const std::string& name, const std::string& dir) : TensorTable<TensorT, Eigen::ThreadPoolDevice, TDim>(name, dir) {};
 		~TensorTableCpu() = default;
 		// Initialization methods
 		void setAxes(Eigen::ThreadPoolDevice& device) override;
@@ -138,8 +138,7 @@ namespace TensorBase
     this->setDimensions(dimensions);
 
     // Set the shard_id and shard_indices
-    //this->reShardIndices();
-		this->reShardIndices(device);
+    this->reShardIndices();
 
 		// Allocate memory for the tensor
 		this->initData(this->getDimensions(), device);

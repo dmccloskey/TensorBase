@@ -26,8 +26,8 @@ namespace TensorBase
   {
   public:
     TensorTableGpuPrimitiveT() = default;
-    TensorTableGpuPrimitiveT(const std::string& name) : TensorTable(name) {};
-    TensorTableGpuPrimitiveT(const std::string& name, const std::string& dir) : TensorTable(name, dir) {};
+    TensorTableGpuPrimitiveT(const std::string& name) : TensorTable<TensorT, Eigen::GpuDevice, TDim>(name) {};
+    TensorTableGpuPrimitiveT(const std::string& name, const std::string& dir) : TensorTable<TensorT, Eigen::GpuDevice, TDim>(name, dir) {};
     ~TensorTableGpuPrimitiveT() = default;
     // Initialization methods
     void setAxes(Eigen::GpuDevice& device) override;
@@ -144,8 +144,7 @@ namespace TensorBase
     this->setDimensions(dimensions);
 
     // Set the shard_id and shard_indices
-    //this->reShardIndices();
-    this->reShardIndices(device);
+    this->reShardIndices();
 
     // Allocate memory for the tensor
     this->initData(this->getDimensions(), device);

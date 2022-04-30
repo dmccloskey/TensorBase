@@ -206,7 +206,7 @@ namespace TensorBase
     @param[in] device
     */
     void reShardIndices(DeviceT& device);
-    //void reShardIndices();
+    void reShardIndices();
 
     /*
     @brief Select Tensor Axis that will be included in the view
@@ -1418,31 +1418,32 @@ namespace TensorBase
     this->setShardIndicesDataStatus(false, true);
   }
 
-  //template<typename TensorT, typename DeviceT, int TDim>
-  //inline void TensorTable<TensorT, DeviceT, TDim>::reShardIndices()
-  //{
-  //  for (const auto& shard_span_map : shard_spans_) {
-  //    // Determine the max shard id value
-  //    int shard_id = 0;
-  //    int max_shard_id = ceil(float(axes_.at(shard_span_map.first)->getNLabels()) / float(shard_span_map.second));
-  //    for (; shard_id < max_shard_id; ++shard_id) {
-  //      // Determine the offsets and span for slicing
-  //      Eigen::array<Eigen::Index, 1> offset, span;
-  //      offset.at(0) = shard_id * shard_span_map.second;
-  //      int remaining_length = axes_.at(shard_span_map.first)->getNLabels() - shard_id * shard_span_map.second;
-  //      span.at(0) = (shard_span_map.second <= remaining_length) ? shard_span_map.second : remaining_length;
+  template<typename TensorT, typename DeviceT, int TDim>
+  inline void TensorTable<TensorT, DeviceT, TDim>::reShardIndices()
+  {
+    Eigen::DefaultDevice device;
+    for (const auto& shard_span_map : shard_spans_) {
+      // Determine the max shard id value
+      int shard_id = 0;
+      int max_shard_id = ceil(float(axes_.at(shard_span_map.first)->getNLabels()) / float(shard_span_map.second));
+      for (; shard_id < max_shard_id; ++shard_id) {
+        // Determine the offsets and span for slicing
+        Eigen::array<Eigen::Index, 1> offset, span;
+        offset.at(0) = shard_id * shard_span_map.second;
+        int remaining_length = axes_.at(shard_span_map.first)->getNLabels() - shard_id * shard_span_map.second;
+        span.at(0) = (shard_span_map.second <= remaining_length) ? shard_span_map.second : remaining_length;
 
-  //      // Update the shard id
-  //      Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_id_values(shard_id_.at(shard_span_map.first)->getHDataPointer().get(), (int)shard_id_.at(shard_span_map.first)->getTensorSize());
-  //      shard_id_values.slice(offset, span) = shard_id_values.slice(offset, span).constant(shard_id + 1);
+        // Update the shard id
+        Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_id_values(shard_id_.at(shard_span_map.first)->getHDataPointer().get(), (int)shard_id_.at(shard_span_map.first)->getTensorSize());
+        shard_id_values.slice(offset, span).device(device) = shard_id_values.slice(offset, span).constant(shard_id + 1);
 
-  //      // Update the shard indices using the indices as a template
-  //      Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_indices_values(shard_indices_.at(shard_span_map.first)->getHDataPointer().get(), (int)shard_indices_.at(shard_span_map.first)->getTensorSize());
-  //      Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_values(indices_.at(shard_span_map.first)->getHDataPointer().get(), (int)indices_.at(shard_span_map.first)->getTensorSize());
-  //      shard_indices_values.slice(offset, span) = indices_values.slice(Eigen::array<Eigen::Index, 1>({ 0 }), span);
-  //    }
-  //  }
-  //}
+        // Update the shard indices using the indices as a template
+        Eigen::TensorMap<Eigen::Tensor<int, 1>> shard_indices_values(shard_indices_.at(shard_span_map.first)->getHDataPointer().get(), (int)shard_indices_.at(shard_span_map.first)->getTensorSize());
+        Eigen::TensorMap<Eigen::Tensor<int, 1>> indices_values(indices_.at(shard_span_map.first)->getHDataPointer().get(), (int)indices_.at(shard_span_map.first)->getTensorSize());
+        shard_indices_values.slice(offset, span).device(device) = indices_values.slice(Eigen::array<Eigen::Index, 1>({0}), span);
+      }
+    }
+  }
 
   template<typename TensorT, typename DeviceT, int TDim>
   template<typename T>

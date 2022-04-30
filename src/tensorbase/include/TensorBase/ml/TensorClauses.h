@@ -67,9 +67,9 @@ namespace TensorBase
   public:
     AggregateClause() = default;
     AggregateClause(const std::string & table_name, const std::string & axis_name, const std::string & dimension_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>> & labels, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& as_axis_labels, const aggregateFunctions::aggregateFunction& aggregate_function) :
-      SelectClause(table_name, axis_name, dimension_name, labels), as_axis_labels(as_axis_labels), aggregate_function(aggregate_function){ };
+      SelectClause<LabelsT, DeviceT>(table_name, axis_name, dimension_name, labels), as_axis_labels(as_axis_labels), aggregate_function(aggregate_function){ };
     AggregateClause(const std::string & table_name, const std::string & axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> & axis_labels, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& as_axis_labels, const aggregateFunctions::aggregateFunction& aggregate_function) :
-      SelectClause(table_name, axis_name, axis_labels), as_axis_labels(as_axis_labels), aggregate_function(aggregate_function) { };
+      SelectClause<LabelsT, DeviceT>(table_name, axis_name, axis_labels), as_axis_labels(as_axis_labels), aggregate_function(aggregate_function) { };
     ~AggregateClause() = default;
     std::shared_ptr<TensorData<LabelsT, DeviceT, 2>> as_axis_labels = nullptr; ///< the labels to select (option 2)
     aggregateFunctions::aggregateFunction aggregate_function;
@@ -258,13 +258,13 @@ namespace TensorBase
     WhereClause(const std::string& table_name, const std::string& axis_name, const std::string& dimension_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& labels,
       const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor,
       const logicalModifiers::logicalModifier& modifier, const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator) :
-      SelectClause(table_name, axis_name, dimension_name, labels),
+      SelectClause<LabelsT, DeviceT>(table_name, axis_name, dimension_name, labels),
       values(values), comparitor(comparitor),
       modifier(modifier), within_continuator(within_continuator), prepend_continuator(prepend_continuator) { };
     WhereClause(const std::string& table_name, const std::string& axis_name, const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& axis_labels,
       const std::shared_ptr<TensorData<TensorT, DeviceT, 1>>& values, const logicalComparitors::logicalComparitor& comparitor,
       const logicalModifiers::logicalModifier& modifier, const logicalContinuators::logicalContinuator& within_continuator, const logicalContinuators::logicalContinuator& prepend_continuator) :
-      SelectClause(table_name, axis_name, axis_labels),
+      SelectClause<LabelsT, DeviceT>(table_name, axis_name, axis_labels),
       values(values), comparitor(comparitor),
       modifier(modifier), within_continuator(within_continuator), prepend_continuator(prepend_continuator) { };
     ~WhereClause() = default;
@@ -291,10 +291,10 @@ namespace TensorBase
     SortClause() = default;
     SortClause(const std::string& table_name, const std::string& axis_name, const std::string& dimension_name,
       const std::shared_ptr<TensorData<LabelsT, DeviceT, 1>>& labels, const sortOrder::order& order_by) :
-      SelectClause(table_name, axis_name, dimension_name, labels), order_by(order_by) { };
+      SelectClause<LabelsT, DeviceT>(table_name, axis_name, dimension_name, labels), order_by(order_by) { };
     SortClause(const std::string& table_name, const std::string& axis_name,
       const std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& axis_labels, const sortOrder::order& order_by) :
-      SelectClause(table_name, axis_name, axis_labels), order_by(order_by) { };
+      SelectClause<LabelsT, DeviceT>(table_name, axis_name, axis_labels), order_by(order_by) { };
     ~SortClause() = default;
     sortOrder::order order_by = sortOrder::ASC;
   };

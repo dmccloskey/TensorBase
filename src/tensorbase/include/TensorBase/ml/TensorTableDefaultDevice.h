@@ -19,8 +19,8 @@ namespace TensorBase
   {
   public:
     TensorTableDefaultDevice() = default;
-    TensorTableDefaultDevice(const std::string& name): TensorTable(name){};
-    TensorTableDefaultDevice(const std::string& name, const std::string& dir) : TensorTable(name, dir) {};
+    TensorTableDefaultDevice(const std::string& name): TensorTable<TensorT, Eigen::DefaultDevice, TDim>(name){};
+    TensorTableDefaultDevice(const std::string& name, const std::string& dir) : TensorTable<TensorT, Eigen::DefaultDevice, TDim>(name, dir) {};
     ~TensorTableDefaultDevice() = default;
     // Initialization methods
     void setAxes(Eigen::DefaultDevice& device) override;
@@ -139,8 +139,7 @@ namespace TensorBase
     this->setDimensions(dimensions);
 
     // Set the shard_id and shard_indices
-    //this->reShardIndices();
-    this->reShardIndices(device);
+    this->reShardIndices();
 
     // Allocate memory for the tensor
     this->initData(this->getDimensions(), device);

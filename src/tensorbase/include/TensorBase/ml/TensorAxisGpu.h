@@ -25,8 +25,8 @@ namespace TensorBase
   {
   public:
     TensorAxisGpuPrimitiveT() = default;  ///< Default constructor
-    TensorAxisGpuPrimitiveT(const std::string& name, const size_t& n_dimensions, const size_t& n_labels) : TensorAxis(name, n_dimensions, n_labels) { this->setLabels(); };
-    TensorAxisGpuPrimitiveT(const std::string& name, const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) : TensorAxis(name) { this->setDimensionsAndLabels(dimensions, labels); };
+    TensorAxisGpuPrimitiveT(const std::string& name, const size_t& n_dimensions, const size_t& n_labels) : TensorAxis<TensorT, Eigen::GpuDevice>(name, n_dimensions, n_labels) { this->setLabels(); };
+    TensorAxisGpuPrimitiveT(const std::string& name, const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) : TensorAxis<TensorT, Eigen::GpuDevice>(name) { this->setDimensionsAndLabels(dimensions, labels); };
     ~TensorAxisGpuPrimitiveT() = default; ///< Default destructor
     void setLabels(const Eigen::Tensor<TensorT, 2>& labels) override;
     void setLabels() override;
@@ -318,8 +318,8 @@ namespace TensorBase
   {
   public:
     TensorAxisGpuClassT() = default;  ///< Default constructor
-    TensorAxisGpuClassT(const std::string& name, const size_t& n_dimensions, const size_t& n_labels) : TensorAxis(name, n_dimensions, n_labels) { this->setLabels(); };
-    TensorAxisGpuClassT(const std::string& name, const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<ArrayT<TensorT>, 2>& labels) : TensorAxis(name) { this->setDimensionsAndLabels(dimensions, labels); };
+    TensorAxisGpuClassT(const std::string& name, const size_t& n_dimensions, const size_t& n_labels) : TensorAxis<ArrayT<TensorT>, Eigen::GpuDevice>(name, n_dimensions, n_labels) { this->setLabels(); };
+    TensorAxisGpuClassT(const std::string& name, const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<ArrayT<TensorT>, 2>& labels) : TensorAxis<ArrayT<TensorT>, Eigen::GpuDevice>(name) { this->setDimensionsAndLabels(dimensions, labels); };
     ~TensorAxisGpuClassT() = default; ///< Default destructor
     void setLabels(const Eigen::Tensor<ArrayT<TensorT>, 2>& labels) override;
     void setLabels() override;

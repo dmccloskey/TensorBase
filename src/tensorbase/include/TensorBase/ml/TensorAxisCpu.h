@@ -20,8 +20,8 @@ namespace TensorBase
   {
   public:
     TensorAxisCpu() = default;  ///< Default constructor
-    TensorAxisCpu(const std::string& name, const size_t& n_dimensions, const size_t& n_labels) : TensorAxis(name, n_dimensions, n_labels) { this->setLabels(); };
-    TensorAxisCpu(const std::string& name, const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) : TensorAxis(name) { this->setDimensionsAndLabels(dimensions, labels); };
+    TensorAxisCpu(const std::string& name, const size_t& n_dimensions, const size_t& n_labels) : TensorAxis<TensorT, Eigen::ThreadPoolDevice>(name, n_dimensions, n_labels) { this->setLabels(); };
+    TensorAxisCpu(const std::string& name, const Eigen::Tensor<std::string, 1>& dimensions, const Eigen::Tensor<TensorT, 2>& labels) : TensorAxis<TensorT, Eigen::ThreadPoolDevice>(name) { this->setDimensionsAndLabels(dimensions, labels); };
     ~TensorAxisCpu() = default; ///< Default destructor
     void setLabels(const Eigen::Tensor<TensorT, 2>& labels) override;
     void setLabels() override;
