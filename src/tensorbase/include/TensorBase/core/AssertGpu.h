@@ -9,6 +9,7 @@
 #define gpuCheckEqual(lhs, rhs) { TensorBaseAssert::gpuAssertEqual((lhs), (rhs), __FILE__, __LINE__); }
 #define gpuCheckEqualNoLhsRhsPrint(lhs, rhs) { TensorBaseAssert::gpuAssertEqualNoLhsRhsPrint((lhs), (rhs), __FILE__, __LINE__); }
 #define gpuCheckNotEqual(lhs, rhs) { TensorBaseAssert::gpuAssertNotEqual((lhs), (rhs), __FILE__, __LINE__); }
+#define gpuCheckNotEqualNoLhsRhsPrint(lhs, rhs) { TensorBaseAssert::gpuAssertNotEqualNoLhsRhsPrint((lhs), (rhs), __FILE__, __LINE__); }
 #define gpuCheckLessThan(lhs, rhs) { TensorBaseAssert::gpuAssertLessThan((lhs), (rhs), __FILE__, __LINE__); }
 #define gpuCheckGreaterThan(lhs, rhs) { TensorBaseAssert::gpuAssertGreaterThan((lhs), (rhs), __FILE__, __LINE__); }
 #define gpuCheck(ans) { TensorBaseAssert::gpuAssertBool((ans), __FILE__, __LINE__); }
@@ -40,7 +41,7 @@ namespace TensorBaseAssert
   {
     if (!(lhs == static_cast<TensorTLHS>(rhs)))
     {
-      std::cout << "GPUassert: " << file << " " << line << " " << "lhs" << " == " << "rhs" << std::endl;
+      std::cout << "GPUassert: " << file << " " << line << std::endl;
       if (abort) exit(1);
     }
   }
@@ -50,6 +51,15 @@ namespace TensorBaseAssert
     if (!(lhs != static_cast<TensorTLHS>(rhs)))
     {
       std::cout << "GPUassert: " << file << " " << line << " " << lhs << " != " << rhs << std::endl;
+      if (abort) exit(1);
+    }
+  }
+  template<typename TensorTLHS, typename TensorTRHS>
+  inline void gpuAssertNotEqualNoLhsRhsPrint(const TensorTLHS& lhs, const TensorTRHS& rhs, const char* file, int line, bool abort = false)
+  {
+    if (!(lhs != static_cast<TensorTLHS>(rhs)))
+    {
+      std::cout << "GPUassert: " << file << " " << line << std::endl;
       if (abort) exit(1);
     }
   }

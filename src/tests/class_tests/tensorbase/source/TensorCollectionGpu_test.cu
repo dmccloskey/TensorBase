@@ -6,7 +6,7 @@
 using namespace TensorBase;
 using namespace std;
 
-/* TensorArray8 Tests
+/* TensorCollectionGpu Tests
 */
 void test_constructorGpu() 
 {
@@ -74,13 +74,12 @@ void test_comparisonGpu()
   tensorCollection1.addTensorTable(tensorTable2_ptr, "1");
   tensorCollection1.addTensorTable(tensorTable3_ptr, "1");
 
-  gpuCheckEqual(tensorCollection_test, tensorCollection1); // Control
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection_test, tensorCollection1); // Control
   tensorCollection1.setName("3");
-  gpuCheckNotEqual(tensorCollection_test, tensorCollection1); // Different names but same data
+  gpuCheckNotEqualNoLhsRhsPrint(tensorCollection_test, tensorCollection1); // Different names but same data
   tensorCollection1.setName("1");
   tensorCollection1.removeTensorTable("1");
-  gpuCheckNotEqual(tensorCollection_test, tensorCollection1); // Different data but same names
-
+  gpuCheckNotEqualNoLhsRhsPrint(tensorCollection_test, tensorCollection1); // Different data but same names
 }
 
 void test_gettersAndSettersGpu()
@@ -127,28 +126,28 @@ void test_gettersAndSettersGpu()
   tensorCollection.addTensorTable(tensorTable3_ptr, "1");
 
   // name getter
-  gpuCheckEqual(tensorCollection.getTableNames(), std::vector<std::string>({ "1", "2", "3" }));
-  gpuCheckEqual(tensorCollection.getTableNamesFromUserName("1"), std::set<std::string>({ "1", "2", "3" }));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTableNames(), std::vector<std::string>({ "1", "2", "3" }));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTableNamesFromUserName("1"), std::set<std::string>({ "1", "2", "3" }));
 
   // table concept getter
   auto tt1_ptr = tensorCollection.getTensorTableConcept("1");
   gpuCheckEqual(tt1_ptr->getName(), tensorTable1_ptr->getName());
-  gpuCheckEqual(tt1_ptr->getAxes(), tensorTable1_ptr->getAxes());
-  gpuCheckEqual(tt1_ptr->getIndices(), tensorTable1_ptr->getIndices());
-  gpuCheckEqual(tt1_ptr->getIndicesView(), tensorTable1_ptr->getIndicesView());
-  gpuCheckEqual(tt1_ptr->getIsModified(), tensorTable1_ptr->getIsModified());
-  gpuCheckEqual(tt1_ptr->getNotInMemory(), tensorTable1_ptr->getNotInMemory());
-  gpuCheckEqual(tt1_ptr->getShardId(), tensorTable1_ptr->getShardId());
+  gpuCheckEqualNoLhsRhsPrint(tt1_ptr->getAxes(), tensorTable1_ptr->getAxes());
+  gpuCheckEqualNoLhsRhsPrint(tt1_ptr->getIndices(), tensorTable1_ptr->getIndices());
+  gpuCheckEqualNoLhsRhsPrint(tt1_ptr->getIndicesView(), tensorTable1_ptr->getIndicesView());
+  gpuCheckEqualNoLhsRhsPrint(tt1_ptr->getIsModified(), tensorTable1_ptr->getIsModified());
+  gpuCheckEqualNoLhsRhsPrint(tt1_ptr->getNotInMemory(), tensorTable1_ptr->getNotInMemory());
+  gpuCheckEqualNoLhsRhsPrint(tt1_ptr->getShardId(), tensorTable1_ptr->getShardId());
 
   // remove tensor tables
   tensorCollection.removeTensorTable("2");
-  gpuCheckEqual(tensorCollection.getTableNames(), std::vector<std::string>({ "1", "3" }));
-  gpuCheckEqual(tensorCollection.getTableNamesFromUserName("1"), std::set<std::string>({ "1", "3" }));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTableNames(), std::vector<std::string>({ "1", "3" }));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTableNamesFromUserName("1"), std::set<std::string>({ "1", "3" }));
 
   // clear the collection
   tensorCollection.clear();
-  gpuCheckEqual(tensorCollection.getTableNames(), std::vector<std::string>());
-  gpuCheckEqual(tensorCollection.getTableNamesFromUserName("1"), std::set<std::string>());
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTableNames(), std::vector<std::string>());
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTableNamesFromUserName("1"), std::set<std::string>());
 }
 
 void test_addTensorTableConceptGpu()
@@ -197,104 +196,104 @@ void test_addTensorTableConceptGpu()
   // table concept getter
   const std::shared_ptr<TensorTableConcept<Eigen::GpuDevice>> tt1_ptr = tensorCollection.getTensorTableConcept("1");
   gpuCheckEqual(tt1_ptr->getName(), tensorTable1_ptr->getName());
-  gpuCheckEqual(tt1_ptr->getAxes(), tensorTable1_ptr->getAxes());
-  gpuCheckEqual(tt1_ptr->getIndices(), tensorTable1_ptr->getIndices());
-  gpuCheckEqual(tt1_ptr->getIndicesView(), tensorTable1_ptr->getIndicesView());
-  gpuCheckEqual(tt1_ptr->getIsModified(), tensorTable1_ptr->getIsModified());
-  gpuCheckEqual(tt1_ptr->getNotInMemory(), tensorTable1_ptr->getNotInMemory());
-  gpuCheckEqual(tt1_ptr->getShardId(), tensorTable1_ptr->getShardId());
+  gpuCheckEqualNoLhsRhsPrint(tt1_ptr->getAxes(), tensorTable1_ptr->getAxes());
+  gpuCheckEqualNoLhsRhsPrint(tt1_ptr->getIndices(), tensorTable1_ptr->getIndices());
+  gpuCheckEqualNoLhsRhsPrint(tt1_ptr->getIndicesView(), tensorTable1_ptr->getIndicesView());
+  gpuCheckEqualNoLhsRhsPrint(tt1_ptr->getIsModified(), tensorTable1_ptr->getIsModified());
+  gpuCheckEqualNoLhsRhsPrint(tt1_ptr->getNotInMemory(), tensorTable1_ptr->getNotInMemory());
+  gpuCheckEqualNoLhsRhsPrint(tt1_ptr->getShardId(), tensorTable1_ptr->getShardId());
 
   // table concept adder
   tensorCollection.removeTensorTable("1");
-  gpuCheckEqual(tensorCollection.getTableNames(), std::vector<std::string>({ "2", "3" }));
-  gpuCheckEqual(tensorCollection.getTableNamesFromUserName("1"), std::set<std::string>({ "2", "3" }));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTableNames(), std::vector<std::string>({ "2", "3" }));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTableNamesFromUserName("1"), std::set<std::string>({ "2", "3" }));
   tensorCollection.addTensorTableConcept(tt1_ptr, "1");
-  gpuCheckEqual(tensorCollection.getTableNames(), std::vector<std::string>({ "1", "2", "3" }));
-  gpuCheckEqual(tensorCollection.getTableNamesFromUserName("1"), std::set<std::string>({ "1", "2", "3" }));;
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTableNames(), std::vector<std::string>({ "1", "2", "3" }));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTableNamesFromUserName("1"), std::set<std::string>({ "1", "2", "3" }));;
 
   // test default axes and indices linkage
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getAxes().at("1"), tensorTable1.getAxes().at("1"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getAxes().at("2"), tensorTable1.getAxes().at("2"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getAxes().at("3"), tensorTable1.getAxes().at("3"));
-  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("2")->getAxes().at("1"), tensorTable1.getAxes().at("1"));
-  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("2")->getAxes().at("2"), tensorTable1.getAxes().at("2"));
-  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getAxes().at("1"), tensorTable1.getAxes().at("1"));
-  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getAxes().at("2"), tensorTable1.getAxes().at("2"));
-  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getAxes().at("3"), tensorTable1.getAxes().at("3"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIndices().at("1"), tensorTable1.getIndices().at("1"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIndices().at("2"), tensorTable1.getIndices().at("2"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIndices().at("3"), tensorTable1.getIndices().at("3"));
-  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("2")->getIndices().at("1"), tensorTable1.getIndices().at("1"));
-  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("2")->getIndices().at("2"), tensorTable1.getIndices().at("2"));
-  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getIndices().at("1"), tensorTable1.getIndices().at("1"));
-  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getIndices().at("2"), tensorTable1.getIndices().at("2"));
-  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getIndices().at("3"), tensorTable1.getIndices().at("3"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("1"), tensorTable1.getIndicesView().at("1"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("2"), tensorTable1.getIndicesView().at("2"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("3"), tensorTable1.getIndicesView().at("3"));
-  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("2")->getIndicesView().at("1"), tensorTable1.getIndicesView().at("1"));
-  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("2")->getIndicesView().at("2"), tensorTable1.getIndicesView().at("2"));
-  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("1"), tensorTable1.getIndicesView().at("1"));
-  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("2"), tensorTable1.getIndicesView().at("2"));
-  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("3"), tensorTable1.getIndicesView().at("3"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIsModified().at("1"), tensorTable1.getIsModified().at("1"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIsModified().at("2"), tensorTable1.getIsModified().at("2"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIsModified().at("3"), tensorTable1.getIsModified().at("3"));
-  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("2")->getIsModified().at("1"), tensorTable1.getIsModified().at("1"));
-  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("2")->getIsModified().at("2"), tensorTable1.getIsModified().at("2"));
-  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getIsModified().at("1"), tensorTable1.getIsModified().at("1"));
-  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getIsModified().at("2"), tensorTable1.getIsModified().at("2"));
-  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getIsModified().at("3"), tensorTable1.getIsModified().at("3"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("1")->getAxes().at("1"), tensorTable1.getAxes().at("1"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("1")->getAxes().at("2"), tensorTable1.getAxes().at("2"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("1")->getAxes().at("3"), tensorTable1.getAxes().at("3"));
+  gpuCheckNotEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("2")->getAxes().at("1"), tensorTable1.getAxes().at("1"));
+  gpuCheckNotEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("2")->getAxes().at("2"), tensorTable1.getAxes().at("2"));
+  gpuCheckNotEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("3")->getAxes().at("1"), tensorTable1.getAxes().at("1"));
+  gpuCheckNotEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("3")->getAxes().at("2"), tensorTable1.getAxes().at("2"));
+  gpuCheckNotEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("3")->getAxes().at("3"), tensorTable1.getAxes().at("3"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("1")->getIndices().at("1"), tensorTable1.getIndices().at("1"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("1")->getIndices().at("2"), tensorTable1.getIndices().at("2"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("1")->getIndices().at("3"), tensorTable1.getIndices().at("3"));
+  gpuCheckNotEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("2")->getIndices().at("1"), tensorTable1.getIndices().at("1"));
+  gpuCheckNotEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("2")->getIndices().at("2"), tensorTable1.getIndices().at("2"));
+  gpuCheckNotEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("3")->getIndices().at("1"), tensorTable1.getIndices().at("1"));
+  gpuCheckNotEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("3")->getIndices().at("2"), tensorTable1.getIndices().at("2"));
+  gpuCheckNotEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("3")->getIndices().at("3"), tensorTable1.getIndices().at("3"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("1"), tensorTable1.getIndicesView().at("1"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("2"), tensorTable1.getIndicesView().at("2"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("3"), tensorTable1.getIndicesView().at("3"));
+  gpuCheckNotEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("2")->getIndicesView().at("1"), tensorTable1.getIndicesView().at("1"));
+  gpuCheckNotEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("2")->getIndicesView().at("2"), tensorTable1.getIndicesView().at("2"));
+  gpuCheckNotEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("1"), tensorTable1.getIndicesView().at("1"));
+  gpuCheckNotEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("2"), tensorTable1.getIndicesView().at("2"));
+  gpuCheckNotEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("3"), tensorTable1.getIndicesView().at("3"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("1")->getIsModified().at("1"), tensorTable1.getIsModified().at("1"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("1")->getIsModified().at("2"), tensorTable1.getIsModified().at("2"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("1")->getIsModified().at("3"), tensorTable1.getIsModified().at("3"));
+  gpuCheckNotEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("2")->getIsModified().at("1"), tensorTable1.getIsModified().at("1"));
+  gpuCheckNotEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("2")->getIsModified().at("2"), tensorTable1.getIsModified().at("2"));
+  gpuCheckNotEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("3")->getIsModified().at("1"), tensorTable1.getIsModified().at("1"));
+  gpuCheckNotEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("3")->getIsModified().at("2"), tensorTable1.getIsModified().at("2"));
+  gpuCheckNotEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("3")->getIsModified().at("3"), tensorTable1.getIsModified().at("3"));
 
   // test linkAxesAndIndicesByUserTableName
   tensorCollection.linkAxesAndIndicesByUserTableName("1", "1");
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getAxes().at("1"), tensorTable1.getAxes().at("1"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getAxes().at("2"), tensorTable1.getAxes().at("2"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getAxes().at("3"), tensorTable1.getAxes().at("3"));
-  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("2")->getAxes().at("1"), tensorTable1.getAxes().at("1"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("2")->getAxes().at("2"), tensorTable1.getAxes().at("2"));
-  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getAxes().at("1"), tensorTable1.getAxes().at("1"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("3")->getAxes().at("2"), tensorTable1.getAxes().at("2"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("3")->getAxes().at("3"), tensorTable1.getAxes().at("3"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIndices().at("1"), tensorTable1.getIndices().at("1"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIndices().at("2"), tensorTable1.getIndices().at("2"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIndices().at("3"), tensorTable1.getIndices().at("3"));
-  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("2")->getIndices().at("1"), tensorTable1.getIndices().at("1"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("2")->getIndices().at("2"), tensorTable1.getIndices().at("2"));
-  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getIndices().at("1"), tensorTable1.getIndices().at("1"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("3")->getIndices().at("2"), tensorTable1.getIndices().at("2"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("3")->getIndices().at("3"), tensorTable1.getIndices().at("3"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("1"), tensorTable1.getIndicesView().at("1"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("2"), tensorTable1.getIndicesView().at("2"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("3"), tensorTable1.getIndicesView().at("3"));
-  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("2")->getIndicesView().at("1"), tensorTable1.getIndicesView().at("1"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("2")->getIndicesView().at("2"), tensorTable1.getIndicesView().at("2"));
-  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("1"), tensorTable1.getIndicesView().at("1"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("2"), tensorTable1.getIndicesView().at("2"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("3"), tensorTable1.getIndicesView().at("3"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIsModified().at("1"), tensorTable1.getIsModified().at("1"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIsModified().at("2"), tensorTable1.getIsModified().at("2"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIsModified().at("3"), tensorTable1.getIsModified().at("3"));
-  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("2")->getIsModified().at("1"), tensorTable1.getIsModified().at("1"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("2")->getIsModified().at("2"), tensorTable1.getIsModified().at("2"));
-  gpuCheckNotEqual(tensorCollection.getTensorTableConcept("3")->getIsModified().at("1"), tensorTable1.getIsModified().at("1"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("3")->getIsModified().at("2"), tensorTable1.getIsModified().at("2"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("3")->getIsModified().at("3"), tensorTable1.getIsModified().at("3"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("1")->getAxes().at("1"), tensorTable1.getAxes().at("1"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("1")->getAxes().at("2"), tensorTable1.getAxes().at("2"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("1")->getAxes().at("3"), tensorTable1.getAxes().at("3"));
+  gpuCheckNotEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("2")->getAxes().at("1"), tensorTable1.getAxes().at("1"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("2")->getAxes().at("2"), tensorTable1.getAxes().at("2"));
+  gpuCheckNotEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("3")->getAxes().at("1"), tensorTable1.getAxes().at("1"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("3")->getAxes().at("2"), tensorTable1.getAxes().at("2"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("3")->getAxes().at("3"), tensorTable1.getAxes().at("3"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("1")->getIndices().at("1"), tensorTable1.getIndices().at("1"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("1")->getIndices().at("2"), tensorTable1.getIndices().at("2"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("1")->getIndices().at("3"), tensorTable1.getIndices().at("3"));
+  gpuCheckNotEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("2")->getIndices().at("1"), tensorTable1.getIndices().at("1"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("2")->getIndices().at("2"), tensorTable1.getIndices().at("2"));
+  gpuCheckNotEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("3")->getIndices().at("1"), tensorTable1.getIndices().at("1"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("3")->getIndices().at("2"), tensorTable1.getIndices().at("2"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("3")->getIndices().at("3"), tensorTable1.getIndices().at("3"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("1"), tensorTable1.getIndicesView().at("1"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("2"), tensorTable1.getIndicesView().at("2"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("3"), tensorTable1.getIndicesView().at("3"));
+  gpuCheckNotEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("2")->getIndicesView().at("1"), tensorTable1.getIndicesView().at("1"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("2")->getIndicesView().at("2"), tensorTable1.getIndicesView().at("2"));
+  gpuCheckNotEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("1"), tensorTable1.getIndicesView().at("1"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("2"), tensorTable1.getIndicesView().at("2"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("3"), tensorTable1.getIndicesView().at("3"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("1")->getIsModified().at("1"), tensorTable1.getIsModified().at("1"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("1")->getIsModified().at("2"), tensorTable1.getIsModified().at("2"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("1")->getIsModified().at("3"), tensorTable1.getIsModified().at("3"));
+  gpuCheckNotEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("2")->getIsModified().at("1"), tensorTable1.getIsModified().at("1"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("2")->getIsModified().at("2"), tensorTable1.getIsModified().at("2"));
+  gpuCheckNotEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("3")->getIsModified().at("1"), tensorTable1.getIsModified().at("1"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("3")->getIsModified().at("2"), tensorTable1.getIsModified().at("2"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("3")->getIsModified().at("3"), tensorTable1.getIsModified().at("3"));
 
   // test linkAxesAndIndicesByAxisName
   tensorCollection.linkAxesAndIndicesByAxisName({ "1" });
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getAxes().at("1"), tensorTable1.getAxes().at("1"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("2")->getAxes().at("1"), tensorTable1.getAxes().at("1"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("3")->getAxes().at("1"), tensorTable1.getAxes().at("1"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIndices().at("1"), tensorTable1.getIndices().at("1"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("2")->getIndices().at("1"), tensorTable1.getIndices().at("1"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("3")->getIndices().at("1"), tensorTable1.getIndices().at("1"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("1"), tensorTable1.getIndicesView().at("1"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("2")->getIndicesView().at("1"), tensorTable1.getIndicesView().at("1"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("1"), tensorTable1.getIndicesView().at("1"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("1")->getIsModified().at("1"), tensorTable1.getIsModified().at("1"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("2")->getIsModified().at("1"), tensorTable1.getIsModified().at("1"));
-  gpuCheckEqual(tensorCollection.getTensorTableConcept("3")->getIsModified().at("1"), tensorTable1.getIsModified().at("1"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("1")->getAxes().at("1"), tensorTable1.getAxes().at("1"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("2")->getAxes().at("1"), tensorTable1.getAxes().at("1"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("3")->getAxes().at("1"), tensorTable1.getAxes().at("1"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("1")->getIndices().at("1"), tensorTable1.getIndices().at("1"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("2")->getIndices().at("1"), tensorTable1.getIndices().at("1"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("3")->getIndices().at("1"), tensorTable1.getIndices().at("1"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("1")->getIndicesView().at("1"), tensorTable1.getIndicesView().at("1"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("2")->getIndicesView().at("1"), tensorTable1.getIndicesView().at("1"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("3")->getIndicesView().at("1"), tensorTable1.getIndicesView().at("1"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("1")->getIsModified().at("1"), tensorTable1.getIsModified().at("1"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("2")->getIsModified().at("1"), tensorTable1.getIsModified().at("1"));
+  gpuCheckEqualNoLhsRhsPrint(tensorCollection.getTensorTableConcept("3")->getIsModified().at("1"), tensorTable1.getIsModified().at("1"));
 }
 
 int main(int argc, char** argv)
