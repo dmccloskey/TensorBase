@@ -217,7 +217,7 @@ namespace TensorBase
     std::map<std::string, std::shared_ptr<TensorData<int, DeviceT, 1>>> indices, indices_view, is_modified;
     std::map<std::string, std::shared_ptr<TensorAxisConcept<DeviceT>>> axes;
     for (auto& table_name : getTableNamesFromUserName(user_table_name)) {
-      auto& table = getTensorTableConcept(table_name);
+      const auto& table = getTensorTableConcept(table_name);
       for (auto& axis_to_dim : table->getAxesToDims()) {
         if (axis_to_dim.first != p_axis_name) {
           indices.emplace(axis_to_dim.first, table->getIndices().at(axis_to_dim.first));
@@ -230,7 +230,7 @@ namespace TensorBase
 
     // set the indices, indices_view and is_modified using the same indices
     for (auto& table_name : getTableNamesFromUserName(user_table_name)) {
-      auto& table = getTensorTableConcept(table_name);
+      const auto& table = getTensorTableConcept(table_name);
       for (auto& axis_to_dim : table->getAxesToDims()) {
         if (axis_to_dim.first != p_axis_name) {
           table->getIndices().at(axis_to_dim.first) = indices.at(axis_to_dim.first);
