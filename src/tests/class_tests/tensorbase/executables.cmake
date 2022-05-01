@@ -40,9 +40,9 @@ set(ml_executables_list
   TensorData_test
   TensorDataCpu_test
   TensorDataGpu_test
-  TensorDimension_test
-  TensorDimensionCpu_test
-  TensorDimensionGpu_test
+  #TensorDimension_test # Not used
+  #TensorDimensionCpu_test # Not used
+  #TensorDimensionGpu_test # Not used
   TensorOperation_test
   TensorOperationGpu_test
   TensorShard_test
