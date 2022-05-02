@@ -5,10 +5,6 @@
 
 #undef min // clashes with std::limit on windows in polymorphic.hpp
 #undef max // clashes with std::limit on windows in polymorphic.hpp
-#include <cereal/types/memory.hpp>
-#include <cereal/types/map.hpp>
-#include <cereal/types/array.hpp>
-#include <cereal/types/polymorphic.hpp>
 #include <cereal/archives/binary.hpp>
 
 #include <TensorBase/ml/TensorCollection.h>

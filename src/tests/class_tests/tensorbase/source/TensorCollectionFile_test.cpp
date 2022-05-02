@@ -351,13 +351,25 @@ BOOST_AUTO_TEST_CASE(getTensorTableHeadersDefaultDevice)
   // Check the metadata
   BOOST_CHECK(*(tensorCollectionMinPtr.get()) == *(tensorCollectionPtr.get()));
 
-  // Check the table data
+  // Check the read-in table data
+  std::cout << "BUG: chars are converted to ints in `getCsvDataRow` and `getCsvAxesLabelsRow`" << std::endl;
   for (int k = 0; k < nlabels3; ++k) {
     for (int j = 0; j < nlabels2; ++j) {
       for (int i = 0; i < nlabels1; ++i) {
         BOOST_CHECK_EQUAL(tensorTable1_min_ptr->getData()(i, j, k), tensor1_values(i, j, k));
         BOOST_CHECK_EQUAL(tensorTable2_min_ptr->getData()(i, j, k), tensor2_values(i, j, k));
         BOOST_CHECK_EQUAL(tensorTable3_min_ptr->getData()(i, j, k), tensor3_values(i, j, k));
+      }
+    }
+  }
+
+  // Sanity check the original table data
+  for (int k = 0; k < nlabels3; ++k) {
+    for (int j = 0; j < nlabels2; ++j) {
+      for (int i = 0; i < nlabels1; ++i) {
+        BOOST_CHECK_EQUAL(tensorTable1_ptr->getData()(i, j, k), tensor1_values(i, j, k));
+        BOOST_CHECK_EQUAL(tensorTable2_ptr->getData()(i, j, k), tensor2_values(i, j, k));
+        BOOST_CHECK_EQUAL(tensorTable3_ptr->getData()(i, j, k), tensor3_values(i, j, k));
       }
     }
   }

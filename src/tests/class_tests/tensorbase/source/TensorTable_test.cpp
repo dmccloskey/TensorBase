@@ -4166,13 +4166,13 @@ BOOST_AUTO_TEST_CASE(getCsvDataRowDefaultDevice)
   BOOST_CHECK_EQUAL(labels_row_0.size(), 2);
   BOOST_CHECK_EQUAL(labels_row_1.size(), 2);
   BOOST_CHECK_EQUAL(labels_row_4.size(), 2);
+  std::cout << "BUG: chars are converted to ints in `getCsvDataRow` and `getCsvAxesLabelsRow`" << std::endl;
   for (int i = 2; i < 4; ++i) {
     std::string axis_name = std::to_string(i);
     for (int j = 0; j < 1; ++j) {
-      // BUG: chars are converted to ints
-      //BOOST_CHECK_EQUAL(labels_row_0.at(axis_name).at(j), labels_row_0_test.at(axis_name).at(j)); // 48 = a
-      //BOOST_CHECK_EQUAL(labels_row_1.at(axis_name).at(j), labels_row_1_test.at(axis_name).at(j)); // 48 = a
-      //BOOST_CHECK_EQUAL(labels_row_4.at(axis_name).at(j), labels_row_4_test.at(axis_name).at(j)); // 49 = b
+      BOOST_CHECK_EQUAL(labels_row_0.at(axis_name).at(j), labels_row_0_test.at(axis_name).at(j)); // 48 = a
+      BOOST_CHECK_EQUAL(labels_row_1.at(axis_name).at(j), labels_row_1_test.at(axis_name).at(j)); // 48 = a
+      BOOST_CHECK_EQUAL(labels_row_4.at(axis_name).at(j), labels_row_4_test.at(axis_name).at(j)); // 49 = b
     }
   }
 }

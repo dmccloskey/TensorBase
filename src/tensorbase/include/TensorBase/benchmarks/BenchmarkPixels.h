@@ -912,9 +912,9 @@ namespace TensorBaseBenchmarks
 			else if (argv[3] == std::string("XL")) {
 				data_size = 1003875856;
 			}
-      else if (argv[3] == std::string("XXL")) {
-        data_size = 1e12;
-      }
+			//else if (argv[2] == std::string("XXL")) {
+			//  data_size = 1e12; // requires use of long long int
+			//}
 		}
 		if (argc >= 5) {
 			in_memory = (argv[4] == std::string("true")) ? true : false;

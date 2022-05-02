@@ -11,7 +11,10 @@
 
 #include <cereal/access.hpp>  // serialiation of private members
 #include <cereal/types/memory.hpp>
+#include <cereal/types/map.hpp>
 #include <cereal/types/array.hpp>
+#include <cereal/types/string.hpp> // appear not to be needed for enum type
+#include <cereal/types/common.hpp> // appear not to be needed for enum type
 #undef min // clashes with std::limit on windows in polymorphic.hpp
 #undef max // clashes with std::limit on windows in polymorphic.hpp
 #include <cereal/types/polymorphic.hpp>
@@ -19,7 +22,7 @@
 namespace TensorBase
 {
   /// Flags for pinned memory
-  enum struct TensorDataGpuPinnedFlags {
+  enum TensorDataGpuPinnedFlags {
     HostAllocDefault = 0,
     HostAllocPortable,
     HostAllocMapped,
@@ -192,8 +195,10 @@ namespace TensorBase
     friend class cereal::access;
     template<class Archive>
     void serialize(Archive& archive) {
-    	archive(dimensions_, tensor_size_, device_name_, h_data_updated_, d_data_updated_,
-        pinned_memory_, pinned_flag_);
+    	archive(//dimensions_, // TODO: convert from Eigen::array to std::array
+        tensor_size_, device_name_, h_data_updated_, d_data_updated_,
+        pinned_memory_, pinned_flag_
+      );
     }
   };
   template<typename TensorT, typename DeviceT, int TDim>

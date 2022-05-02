@@ -4970,7 +4970,7 @@ void test_getCsvDataRowGpuPrimitiveT()
   for (int i = 2; i < 4; ++i) {
     std::string axis_name = std::to_string(i);
     for (int j = 0; j < 1; ++j) {
-      gpuCheckEqual(labels_row_0.at(axis_name).at(j), labels_row_0_test.at(axis_name).at(j)); //FIXME
+      gpuCheckEqual(labels_row_0.at(axis_name).at(j), labels_row_0_test.at(axis_name).at(j));
       gpuCheckEqual(labels_row_1.at(axis_name).at(j), labels_row_1_test.at(axis_name).at(j));
       gpuCheckEqual(labels_row_4.at(axis_name).at(j), labels_row_4_test.at(axis_name).at(j));
     }
@@ -5416,7 +5416,7 @@ int main(int argc, char** argv)
   test_makeSparseAxisLabelsFromIndicesViewGpu();
   test_makeSparseTensorTableGpu();
   test_getSelectTensorDataAsSparseTensorTableGpu();
-  test_updateTensorDataConstantGpu(); // Fix broken test
+  test_updateTensorDataConstantGpu();
   test_makeShardIndicesFromShardIDsGpu();
   test_makeModifiedShardIDTensorGpu();
   test_makeNotInMemoryShardIDTensorGpu();

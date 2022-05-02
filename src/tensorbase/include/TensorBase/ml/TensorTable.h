@@ -23,6 +23,7 @@
 #include <cereal/types/memory.hpp>
 #include <cereal/types/map.hpp>
 #include <cereal/types/array.hpp>
+#include <cereal/types/string.hpp>
 #undef min // clashes with std::limit on windows in polymorphic.hpp
 #undef max // clashes with std::limit on windows in polymorphic.hpp
 #include <cereal/types/polymorphic.hpp>
@@ -927,8 +928,9 @@ namespace TensorBase
   	friend class cereal::access;
   	template<class Archive>
   	void serialize(Archive& archive) {
-  		archive(id_, name_, dimensions_, axes_, indices_, indices_view_, is_modified_, not_in_memory_, shard_id_, shard_indices_,
-        axes_to_dims_, data_, shard_spans_, dimensions_maximum_);
+  		archive(id_, name_, axes_, indices_, indices_view_, is_modified_, not_in_memory_, shard_id_, shard_indices_,
+        axes_to_dims_, data_, shard_spans_//, dimensions_, dimensions_maximum_
+      );
   	}
   };
 

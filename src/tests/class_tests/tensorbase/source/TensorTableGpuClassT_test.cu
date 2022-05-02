@@ -1117,7 +1117,6 @@ void test_whereIndicesViewData1Gpu()
   tensorTable.syncIsModifiedDData(device);
   tensorTable.syncDData(device);
 
-  // test  // FIXME: call to whereIndicesView is causing assertion failures for TensorArrayGpu8 size
   tensorTable.whereIndicesView("1", 0, select_labels_ptr, select_values_ptr,
     logicalComparitors::logicalComparitor::EQUAL_TO, logicalModifiers::logicalModifier::NONE,
     logicalContinuators::logicalContinuator::OR, logicalContinuators::logicalContinuator::AND, device);
@@ -1266,7 +1265,6 @@ void test_whereIndicesViewData2Gpu()
   tensorTable.syncIsModifiedDData(device);
   tensorTable.syncDData(device);
 
-  // FIXME: call to whereIndicesView is causing assertion failures for TensorArrayGpu8 size
   tensorTable.whereIndicesView("1", select_labels_ptr, select_values_ptr,
     logicalComparitors::logicalComparitor::EQUAL_TO, logicalModifiers::logicalModifier::NONE,
     logicalContinuators::logicalContinuator::OR, logicalContinuators::logicalContinuator::AND, device);
@@ -1436,8 +1434,8 @@ void test_sortIndicesViewData1Gpu()
   gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < nlabels; ++i) {
     gpuCheckEqual(tensorTable.getIndicesView().at("1")->getData()(i), i + 1);
-    gpuCheckEqual(tensorTable.getIndicesView().at("2")->getData()(i), nlabels - i); // FIXME
-    gpuCheckEqual(tensorTable.getIndicesView().at("3")->getData()(i), nlabels - i); // FIXME
+    gpuCheckEqual(tensorTable.getIndicesView().at("2")->getData()(i), nlabels - i);
+    gpuCheckEqual(tensorTable.getIndicesView().at("3")->getData()(i), nlabels - i);
   }
 
   gpuErrchk(cudaStreamDestroy(stream));
@@ -1501,8 +1499,8 @@ void test_sortIndicesViewData2Gpu()
   gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < nlabels; ++i) {
     gpuCheckEqual(tensorTable.getIndicesView().at("1")->getData()(i), i + 1);
-    gpuCheckEqual(tensorTable.getIndicesView().at("2")->getData()(i), i + 1); // FIXME
-    gpuCheckEqual(tensorTable.getIndicesView().at("3")->getData()(i), i + 1); // FIXME
+    gpuCheckEqual(tensorTable.getIndicesView().at("2")->getData()(i), i + 1);
+    gpuCheckEqual(tensorTable.getIndicesView().at("3")->getData()(i), i + 1);
   }
 
   // test sort DESC
@@ -1513,8 +1511,8 @@ void test_sortIndicesViewData2Gpu()
   gpuErrchk(cudaStreamSynchronize(stream));
   for (int i = 0; i < nlabels; ++i) {
     gpuCheckEqual(tensorTable.getIndicesView().at("1")->getData()(i), i + 1);
-    gpuCheckEqual(tensorTable.getIndicesView().at("2")->getData()(i), nlabels - i); // FIXME
-    gpuCheckEqual(tensorTable.getIndicesView().at("3")->getData()(i), nlabels - i); // FIXME
+    gpuCheckEqual(tensorTable.getIndicesView().at("2")->getData()(i), nlabels - i);
+    gpuCheckEqual(tensorTable.getIndicesView().at("3")->getData()(i), nlabels - i);
   }
 
   gpuErrchk(cudaStreamDestroy(stream));
@@ -2017,12 +2015,12 @@ void test_sortTensorDataGpuClassT()
     gpuCheckEqual(tensorTable.getIndicesView().at("3")->getData()(i), i + 1);
     gpuCheckEqual(axis_1_ptr->getLabels()(0, i), i);
     gpuCheckEqual(axis_2_ptr->getLabels()(0, i), nlabels - i - 1);
-    gpuCheckEqual(axis_3_ptr->getLabels()(0, i), nlabels - i - 1); //FIXME
+    gpuCheckEqual(axis_3_ptr->getLabels()(0, i), nlabels - i - 1);
   }
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {
       for (int i = 0; i < nlabels; ++i) {
-        gpuCheckEqual(tensorTable.getData()(i, j, k), tensor_sorted_values(i, j, k)); //FIXME
+        gpuCheckEqual(tensorTable.getData()(i, j, k), tensor_sorted_values(i, j, k));
       }
     }
   }
@@ -2061,12 +2059,12 @@ void test_sortTensorDataGpuClassT()
     gpuCheckEqual(tensorTable.getIndicesView().at("3")->getData()(i), i + 1);
     gpuCheckEqual(axis_1_ptr->getLabels()(0, i), i);
     gpuCheckEqual(axis_2_ptr->getLabels()(0, i), nlabels - i - 1);
-    gpuCheckEqual(axis_3_ptr->getLabels()(0, i), nlabels - i - 1); // FIXME
+    gpuCheckEqual(axis_3_ptr->getLabels()(0, i), nlabels - i - 1);
   }
   for (int k = 0; k < nlabels; ++k) {
     for (int j = 0; j < nlabels; ++j) {
       for (int i = 0; i < nlabels; ++i) {
-        gpuCheckEqual(tensorTable.getData()(i, j, k), tensor_sorted_values(i, j, k)); // FIXME
+        gpuCheckEqual(tensorTable.getData()(i, j, k), tensor_sorted_values(i, j, k));
       }
     }
   }
