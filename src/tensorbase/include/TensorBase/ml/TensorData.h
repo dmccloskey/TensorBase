@@ -195,7 +195,7 @@ namespace TensorBase
     friend class cereal::access;
     template<class Archive>
     void serialize(Archive& archive) {
-    	archive(//dimensions_, // TODO: convert from Eigen::array to std::array
+    	archive(dimensions_, // TODO: convert from Eigen::array to std::array
         tensor_size_, device_name_, h_data_updated_, d_data_updated_,
         pinned_memory_, pinned_flag_
       );

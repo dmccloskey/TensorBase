@@ -929,7 +929,7 @@ namespace TensorBase
   	template<class Archive>
   	void serialize(Archive& archive) {
   		archive(id_, name_, axes_, indices_, indices_view_, is_modified_, not_in_memory_, shard_id_, shard_indices_,
-        axes_to_dims_, data_, shard_spans_//, dimensions_, dimensions_maximum_
+        axes_to_dims_, data_, shard_spans_, dimensions_, dimensions_maximum_ // TODO: convert from Eigen::array to std::array
       );
   	}
   };
