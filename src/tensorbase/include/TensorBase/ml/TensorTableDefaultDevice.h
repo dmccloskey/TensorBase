@@ -917,6 +917,12 @@ namespace TensorBase
   }
 };
 
+namespace cereal
+{
+  template <class Archive, typename TensorT, int TDim>
+  struct specialize<Archive, TensorBase::TensorTableDefaultDevice<TensorT, TDim>, cereal::specialization::member_serialize> {};
+}
+
 // Cereal registration of TensorTs: float, int, char, double and TDims: 1, 2, 3, 4
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<int, 1>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableDefaultDevice<float, 1>);

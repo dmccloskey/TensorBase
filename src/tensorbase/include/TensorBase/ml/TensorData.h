@@ -195,11 +195,21 @@ namespace TensorBase
     friend class cereal::access;
     template<class Archive>
     void serialize(Archive& archive) {
-    	archive(dimensions_, // TODO: convert from Eigen::array to std::array
-        tensor_size_, device_name_, h_data_updated_, d_data_updated_,
-        pinned_memory_, pinned_flag_
-      );
+    	archive(dimensions_, tensor_size_, device_name_, h_data_updated_, d_data_updated_,pinned_memory_, pinned_flag_);
     }
+    //template<class Archive>
+    //void save(Archive& archive) const {
+    //  //std::array<long long int, TDim> dimensions;
+    //  //for (const int i = 0; i < TDim; ++i) dimensions.at(i) = dimensions_.at(i);
+    //  std::array<long long int, TDim> dimensions = static_cast<std::array<long long int, TDim>>(dimensions_);
+    //  archive(dimensions, tensor_size_, device_name_, h_data_updated_, d_data_updated_, pinned_memory_, pinned_flag_);
+    //}
+    //template<class Archive>
+    //void load(Archive& archive) {
+    //  std::array<long long int, TDim> dimensions;
+    //  archive(dimensions, tensor_size_, device_name_, h_data_updated_, d_data_updated_, pinned_memory_, pinned_flag_);
+    //  dimensions_ = static_cast<Eigen::array<Eigen::Index, TDim>>(dimensions);
+    //}
   };
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorData<TensorT, DeviceT, TDim>::setDimensions(const Eigen::array<Eigen::Index, TDim>& dimensions) {

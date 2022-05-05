@@ -926,12 +926,30 @@ namespace TensorBase
     
   private:
   	friend class cereal::access;
-  	template<class Archive>
-  	void serialize(Archive& archive) {
-  		archive(id_, name_, axes_, indices_, indices_view_, is_modified_, not_in_memory_, shard_id_, shard_indices_,
-        axes_to_dims_, data_, shard_spans_, dimensions_, dimensions_maximum_ // TODO: convert from Eigen::array to std::array
-      );
-  	}
+  	//template<class Archive>  // Approach fails due to inability to convert Eigen::Array to std::array type
+  	//void serialize(Archive& archive) {
+  	//	archive(id_, name_, axes_, indices_, indices_view_, is_modified_, not_in_memory_, shard_id_, shard_indices_, axes_to_dims_, data_, shard_spans_, dimensions_, dimensions_maximum_);
+  	//}
+    template<class Archive>
+    void save(Archive& archive) const {
+      //std::array<long long int, TDim> dimensions;
+      //for (const int i = 0; i < TDim; ++i) dimensions.at(i) = dimensions_.at(i);
+      //std::array<long long int, TDim> dimensions_maximum;
+      //for (const int i = 0; i < TDim; ++i) dimensions_maximum.at(i) = dimensions_maximum_.at(i);
+      std::array<long long int, TDim> dimensions = static_cast<std::array<long long int, TDim>>(dimensions_);
+      std::array<long long int, TDim> dimensions_maximum = static_cast<std::array<long long int, TDim>>(dimensions_maximum_);
+      archive(id_, name_, axes_, indices_, indices_view_, is_modified_, not_in_memory_, shard_id_, shard_indices_,
+        axes_to_dims_, data_, shard_spans_, dimensions, dimensions_maximum);
+    }
+    template<class Archive>
+    void load(Archive& archive) {
+      std::array<long long int, TDim> dimensions;
+      std::array<long long int, TDim> dimensions_maximum;
+      archive(id_, name_, axes_, indices_, indices_view_, is_modified_, not_in_memory_, shard_id_, shard_indices_,
+        axes_to_dims_, data_, shard_spans_, dimensions, dimensions_maximum);
+      dimensions_ = static_cast<Eigen::array<Eigen::Index, TDim>>(dimensions);
+      dimensions_maximum_ = static_cast<Eigen::array<Eigen::Index, TDim>>(dimensions_maximum);
+    }
   };
 
   template<typename TensorT, typename DeviceT, int TDim>
