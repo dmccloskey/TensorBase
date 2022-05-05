@@ -11,8 +11,6 @@
 #include <TensorBase/ml/TensorData.h>
 
 #include <cereal/access.hpp>  // serialiation of private members
-#include <cereal/types/memory.hpp>
-#include <cereal/types/array.hpp>
 #undef min // clashes with std::limit on windows in polymorphic.hpp
 #undef max // clashes with std::limit on windows in polymorphic.hpp
 #include <cereal/types/polymorphic.hpp>
@@ -405,6 +403,13 @@ namespace TensorBase
     std::transform(std::execution::par, data_new.data(), data_new.data() + data_new.size(), getDataPointer().get(),
       [](const std::string& elem) -> TensorArray2048<char> { return TensorArray2048<char>(elem); });
   }
+}
+
+// Cereal disambiguation of load/save in base class from serialize in member
+namespace cereal
+{
+  template <class Archive, typename TensorT, int TDim>
+  struct specialize<Archive, TensorBase::TensorDataCpu<TensorT, TDim>, cereal::specialization::member_serialize> {};
 }
 
 // Cereal registration of TensorTs: float, int, char, double and TDims: 1, 2, 3, 4

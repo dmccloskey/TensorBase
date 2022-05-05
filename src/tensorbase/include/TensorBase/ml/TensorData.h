@@ -193,23 +193,22 @@ namespace TensorBase
     TensorDataGpuPinnedFlags pinned_flag_ = TensorDataGpuPinnedFlags::HostAllocDefault;
   private:
     friend class cereal::access;
+    //template<class Archive>
+    //void serialize(Archive& archive) {
+    //	archive(dimensions_, tensor_size_, device_name_, h_data_updated_, d_data_updated_,pinned_memory_, pinned_flag_);
+    //}
     template<class Archive>
-    void serialize(Archive& archive) {
-    	archive(dimensions_, tensor_size_, device_name_, h_data_updated_, d_data_updated_,pinned_memory_, pinned_flag_);
+    void save(Archive& archive) const {
+      std::array<long long int, TDim> dimensions;
+      for (int i = 0; i < TDim; ++i) { dimensions.at(i) = dimensions_.at(i); }
+      archive(dimensions, tensor_size_, device_name_, h_data_updated_, d_data_updated_, pinned_memory_, pinned_flag_);
     }
-    //template<class Archive>
-    //void save(Archive& archive) const {
-    //  //std::array<long long int, TDim> dimensions;
-    //  //for (const int i = 0; i < TDim; ++i) dimensions.at(i) = dimensions_.at(i);
-    //  std::array<long long int, TDim> dimensions = static_cast<std::array<long long int, TDim>>(dimensions_);
-    //  archive(dimensions, tensor_size_, device_name_, h_data_updated_, d_data_updated_, pinned_memory_, pinned_flag_);
-    //}
-    //template<class Archive>
-    //void load(Archive& archive) {
-    //  std::array<long long int, TDim> dimensions;
-    //  archive(dimensions, tensor_size_, device_name_, h_data_updated_, d_data_updated_, pinned_memory_, pinned_flag_);
-    //  dimensions_ = static_cast<Eigen::array<Eigen::Index, TDim>>(dimensions);
-    //}
+    template<class Archive>
+    void load(Archive& archive) {
+      std::array<long long int, TDim> dimensions;
+      archive(dimensions, tensor_size_, device_name_, h_data_updated_, d_data_updated_, pinned_memory_, pinned_flag_);
+      for (int i = 0; i < TDim; ++i) { dimensions_.at(i) = dimensions.at(i); }
+    }
   };
   template<typename TensorT, typename DeviceT, int TDim>
   inline void TensorData<TensorT, DeviceT, TDim>::setDimensions(const Eigen::array<Eigen::Index, TDim>& dimensions) {

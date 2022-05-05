@@ -917,6 +917,7 @@ namespace TensorBase
   }
 };
 
+// Cereal disambiguation of load/save in base class from serialize in member
 namespace cereal
 {
   template <class Archive, typename TensorT, int TDim>

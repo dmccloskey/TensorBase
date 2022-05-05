@@ -976,6 +976,13 @@ namespace TensorBase
   }
 };
 
+// Cereal disambiguation of load/save in base class from serialize in member
+namespace cereal
+{
+  template <class Archive, typename TensorT, int TDim>
+  struct specialize<Archive, TensorBase::TensorTableGpuPrimitiveT<TensorT, TDim>, cereal::specialization::member_serialize> {};
+}
+
 // Cereal registration of TensorTs: float, int, char, double and TDims: 1, 2, 3, 4
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableGpuPrimitiveT<int, 1>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableGpuPrimitiveT<float, 1>);
