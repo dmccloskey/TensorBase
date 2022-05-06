@@ -112,7 +112,7 @@ namespace TensorBaseBenchmarks
 	*/
 	class DataFrameManagerTimeDefaultDevice : public DataFrameManagerTime<int, int, Eigen::DefaultDevice> {
 	public:
-		using DataFrameManagerTime::DataFrameManagerTime;
+		using DataFrameManagerTime<int, int, Eigen::DefaultDevice>::DataFrameManagerTime;
 		void makeLabelsPtr(const Eigen::Tensor<int, 2>& labels, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& labels_ptr);
 		void makeValuesPtr(const Eigen::Tensor<int, 3>& values, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 3>>& values_ptr);
 	};
@@ -132,7 +132,7 @@ namespace TensorBaseBenchmarks
   */
   class DataFrameManagerLabelDefaultDevice : public DataFrameManagerLabel<int, TensorArray32<char>, Eigen::DefaultDevice> {
   public:
-    using DataFrameManagerLabel::DataFrameManagerLabel;
+    using DataFrameManagerLabel<int, TensorArray32<char>, Eigen::DefaultDevice>::DataFrameManagerLabel;
     void makeLabelsPtr(const Eigen::Tensor<int, 2>& labels, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& labels_ptr);
     void makeValuesPtr(const Eigen::Tensor<TensorArray32<char>, 2>& values, std::shared_ptr<TensorData<TensorArray32<char>, Eigen::DefaultDevice, 2>>& values_ptr);
   };
@@ -152,7 +152,7 @@ namespace TensorBaseBenchmarks
   */
   class DataFrameManagerImage2DDefaultDevice : public DataFrameManagerImage2D<int, float, Eigen::DefaultDevice> {
   public:
-    using DataFrameManagerImage2D::DataFrameManagerImage2D;
+    using DataFrameManagerImage2D<int, float, Eigen::DefaultDevice>::DataFrameManagerImage2D;
     void makeLabelsPtr(const Eigen::Tensor<int, 2>& labels, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& labels_ptr);
     void makeValuesPtr(const Eigen::Tensor<float, 4>& values, std::shared_ptr<TensorData<float, Eigen::DefaultDevice, 4>>& values_ptr);
   };
@@ -172,7 +172,7 @@ namespace TensorBaseBenchmarks
   */
   class DataFrameManagerIsValidDefaultDevice : public DataFrameManagerIsValid<int, int, Eigen::DefaultDevice> {
   public:
-    using DataFrameManagerIsValid::DataFrameManagerIsValid;
+    using DataFrameManagerIsValid<int, int, Eigen::DefaultDevice>::DataFrameManagerIsValid;
     void makeLabelsPtr(const Eigen::Tensor<int, 2>& labels, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& labels_ptr);
     void makeValuesPtr(const Eigen::Tensor<int, 2>& values, std::shared_ptr<TensorData<int, Eigen::DefaultDevice, 2>>& values_ptr);
   };

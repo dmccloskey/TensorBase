@@ -228,7 +228,7 @@ namespace TensorBaseBenchmarks
 	template<typename LabelsT, typename TensorT>
 	class PixelManager0DGpu : public PixelManager0D<LabelsT, TensorT, Eigen::GpuDevice> {
 	public:
-		using PixelManager0D::PixelManager0D;
+		using PixelManager0D<LabelsT, TensorT, Eigen::GpuDevice>::PixelManager0D;
 		void makeLabelsPtr(const Eigen::Tensor<LabelsT, 2>& labels, std::shared_ptr<TensorData<LabelsT, Eigen::GpuDevice, 2>>& labels_ptr);
 		void makeValuesPtr(const Eigen::Tensor<TensorT, 2>& values, std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 2>>& values_ptr);
 	};
@@ -251,7 +251,7 @@ namespace TensorBaseBenchmarks
 	template<typename LabelsT, typename TensorT>
 	class PixelManager1DGpu : public PixelManager1D<LabelsT, TensorT, Eigen::GpuDevice> {
 	public:
-		using PixelManager1D::PixelManager1D;
+		using PixelManager1D<LabelsT, TensorT, Eigen::GpuDevice>::PixelManager1D;
 		void makeLabelsPtr(const Eigen::Tensor<LabelsT, 2>& labels, std::shared_ptr<TensorData<LabelsT, Eigen::GpuDevice, 2>>& labels_ptr);
 		void makeValuesPtr(const Eigen::Tensor<TensorT, 2>& values, std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 2>>& values_ptr);
 	};
@@ -274,7 +274,7 @@ namespace TensorBaseBenchmarks
 	template<typename LabelsT, typename TensorT>
 	class PixelManager2DGpu : public PixelManager2D<LabelsT, TensorT, Eigen::GpuDevice> {
 	public:
-		using PixelManager2D::PixelManager2D;
+		using PixelManager2D<LabelsT, TensorT, Eigen::GpuDevice>::PixelManager2D;
 		void makeLabelsPtr(const Eigen::Tensor<LabelsT, 2>& labels, std::shared_ptr<TensorData<LabelsT, Eigen::GpuDevice, 2>>& labels_ptr);
 		void makeValuesPtr(const Eigen::Tensor<TensorT, 2>& values, std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 2>>& values_ptr);
 	};
@@ -297,7 +297,7 @@ namespace TensorBaseBenchmarks
 	template<typename LabelsT, typename TensorT>
 	class PixelManager3DGpu : public PixelManager3D<LabelsT, TensorT, Eigen::GpuDevice> {
 	public:
-		using PixelManager3D::PixelManager3D;
+		using PixelManager3D<LabelsT, TensorT, Eigen::GpuDevice>::PixelManager3D;
 		void makeLabelsPtr(const Eigen::Tensor<LabelsT, 2>& labels, std::shared_ptr<TensorData<LabelsT, Eigen::GpuDevice, 2>>& labels_ptr);
 		void makeValuesPtr(const Eigen::Tensor<TensorT, 3>& values, std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 3>>& values_ptr);
 	};
@@ -320,7 +320,7 @@ namespace TensorBaseBenchmarks
 	template<typename LabelsT, typename TensorT>
 	class PixelManager4DGpu : public PixelManager4D<LabelsT, TensorT, Eigen::GpuDevice> {
 	public:
-		using PixelManager4D::PixelManager4D;
+		using PixelManager4D<LabelsT, TensorT, Eigen::GpuDevice>::PixelManager4D;
 		void makeLabelsPtr(const Eigen::Tensor<LabelsT, 2>& labels, std::shared_ptr<TensorData<LabelsT, Eigen::GpuDevice, 2>>& labels_ptr);
 		void makeValuesPtr(const Eigen::Tensor<TensorT, 4>& values, std::shared_ptr<TensorData<TensorT, Eigen::GpuDevice, 4>>& values_ptr);
 	};

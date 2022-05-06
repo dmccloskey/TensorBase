@@ -277,7 +277,7 @@ namespace TensorBaseBenchmarks
 	template<typename LabelsT, typename TensorT, typename DeviceT>
 	class PixelManager0D : public PixelManager<LabelsT, TensorT, DeviceT, 2> {
 	public:
-		using PixelManager::PixelManager;
+		using PixelManager<LabelsT, TensorT, DeviceT, 2>::PixelManager;
 		void setDimSizes();
 		void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& values_ptr);
 	private:
@@ -314,7 +314,7 @@ namespace TensorBaseBenchmarks
 	template<typename LabelsT, typename TensorT, typename DeviceT>
 	class PixelManager1D : public PixelManager<LabelsT, TensorT, DeviceT, 2> {
 	public:
-		using PixelManager::PixelManager;
+		using PixelManager<LabelsT, TensorT, DeviceT, 2>::PixelManager;
 		void setDimSizes();
 		void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& values_ptr);
 	private:
@@ -350,7 +350,7 @@ namespace TensorBaseBenchmarks
 	template<typename LabelsT, typename TensorT, typename DeviceT>
 	class PixelManager2D : public PixelManager<LabelsT, TensorT, DeviceT, 2> {
 	public:
-		using PixelManager::PixelManager;
+		using PixelManager<LabelsT, TensorT, DeviceT, 2>::PixelManager;
 		void setDimSizes();
 		void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& values_ptr);
 	private:
@@ -392,7 +392,7 @@ namespace TensorBaseBenchmarks
 	template<typename LabelsT, typename TensorT, typename DeviceT>
 	class PixelManager3D : public PixelManager<LabelsT, TensorT, DeviceT, 3> {
 	public:
-		using PixelManager::PixelManager;
+		using PixelManager<LabelsT, TensorT, DeviceT, 3>::PixelManager;
 		void setDimSizes();
 		void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 3>>& values_ptr);
 	private:
@@ -436,7 +436,7 @@ namespace TensorBaseBenchmarks
 	template<typename LabelsT, typename TensorT, typename DeviceT>
 	class PixelManager4D : public PixelManager<LabelsT, TensorT, DeviceT, 4> {
 	public:
-		using PixelManager::PixelManager;
+		using PixelManager<LabelsT, TensorT, DeviceT, 4>::PixelManager;
 		void setDimSizes();
 		void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 4>>& values_ptr);
 	private:

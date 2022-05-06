@@ -224,7 +224,7 @@ namespace TensorBaseBenchmarks
 	template<typename LabelsT, typename TensorT>
 	class PixelManager0DCpu : public PixelManager0D<LabelsT, TensorT, Eigen::ThreadPoolDevice> {
 	public:
-		using PixelManager0D::PixelManager0D;
+		using PixelManager0D<LabelsT, TensorT, Eigen::ThreadPoolDevice>::PixelManager0D;
 		void makeLabelsPtr(const Eigen::Tensor<LabelsT, 2>& labels, std::shared_ptr<TensorData<LabelsT, Eigen::ThreadPoolDevice, 2>>& labels_ptr);
 		void makeValuesPtr(const Eigen::Tensor<TensorT, 2>& values, std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>>& values_ptr);
 	};
@@ -247,7 +247,7 @@ namespace TensorBaseBenchmarks
 	template<typename LabelsT, typename TensorT>
 	class PixelManager1DCpu : public PixelManager1D<LabelsT, TensorT, Eigen::ThreadPoolDevice> {
 	public:
-		using PixelManager1D::PixelManager1D;
+		using PixelManager1D<LabelsT, TensorT, Eigen::ThreadPoolDevice>::PixelManager1D;
 		void makeLabelsPtr(const Eigen::Tensor<LabelsT, 2>& labels, std::shared_ptr<TensorData<LabelsT, Eigen::ThreadPoolDevice, 2>>& labels_ptr);
 		void makeValuesPtr(const Eigen::Tensor<TensorT, 2>& values, std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>>& values_ptr);
 	};
@@ -270,7 +270,7 @@ namespace TensorBaseBenchmarks
 	template<typename LabelsT, typename TensorT>
 	class PixelManager2DCpu : public PixelManager2D<LabelsT, TensorT, Eigen::ThreadPoolDevice> {
 	public:
-		using PixelManager2D::PixelManager2D;
+		using PixelManager2D<LabelsT, TensorT, Eigen::ThreadPoolDevice>::PixelManager2D;
 		void makeLabelsPtr(const Eigen::Tensor<LabelsT, 2>& labels, std::shared_ptr<TensorData<LabelsT, Eigen::ThreadPoolDevice, 2>>& labels_ptr);
 		void makeValuesPtr(const Eigen::Tensor<TensorT, 2>& values, std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 2>>& values_ptr);
 	};
@@ -293,7 +293,7 @@ namespace TensorBaseBenchmarks
 	template<typename LabelsT, typename TensorT>
 	class PixelManager3DCpu : public PixelManager3D<LabelsT, TensorT, Eigen::ThreadPoolDevice> {
 	public:
-		using PixelManager3D::PixelManager3D;
+		using PixelManager3D<LabelsT, TensorT, Eigen::ThreadPoolDevice>::PixelManager3D;
 		void makeLabelsPtr(const Eigen::Tensor<LabelsT, 2>& labels, std::shared_ptr<TensorData<LabelsT, Eigen::ThreadPoolDevice, 2>>& labels_ptr);
 		void makeValuesPtr(const Eigen::Tensor<TensorT, 3>& values, std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 3>>& values_ptr);
 	};
@@ -316,7 +316,7 @@ namespace TensorBaseBenchmarks
 	template<typename LabelsT, typename TensorT>
 	class PixelManager4DCpu : public PixelManager4D<LabelsT, TensorT, Eigen::ThreadPoolDevice> {
 	public:
-		using PixelManager4D::PixelManager4D;
+		using PixelManager4D<LabelsT, TensorT, Eigen::ThreadPoolDevice>::PixelManager4D;
 		void makeLabelsPtr(const Eigen::Tensor<LabelsT, 2>& labels, std::shared_ptr<TensorData<LabelsT, Eigen::ThreadPoolDevice, 2>>& labels_ptr);
 		void makeValuesPtr(const Eigen::Tensor<TensorT, 4>& values, std::shared_ptr<TensorData<TensorT, Eigen::ThreadPoolDevice, 4>>& values_ptr);
 	};

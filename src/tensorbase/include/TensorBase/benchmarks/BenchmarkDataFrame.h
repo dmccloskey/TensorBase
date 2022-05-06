@@ -216,7 +216,7 @@ namespace TensorBaseBenchmarks
 	class DataFrameManagerTime : public DataFrameManager<LabelsT, TensorT, DeviceT, 3> {
     std::tm time_ = { 0 };
 	public:
-    DataFrameManagerTime(const int& data_size, const bool& use_random_values = false) : DataFrameManager(data_size, use_random_values) { initTime(); };
+    DataFrameManagerTime(const int& data_size, const bool& use_random_values = false) : DataFrameManager<LabelsT, TensorT, DeviceT, 3>(data_size, use_random_values) { initTime(); };
 		void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 3>>& values_ptr);
     void initTime();
   };
@@ -266,7 +266,7 @@ namespace TensorBaseBenchmarks
   template<typename LabelsT, typename TensorT, typename DeviceT>
   class DataFrameManagerLabel : public DataFrameManager<LabelsT, TensorT, DeviceT, 2> {
   public:
-    using DataFrameManager::DataFrameManager;
+    using DataFrameManager<LabelsT, TensorT, DeviceT, 2>::DataFrameManager;
     void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& values_ptr);
   private:
     std::vector<std::string> labels_ = { "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" };
@@ -292,7 +292,7 @@ namespace TensorBaseBenchmarks
   template<typename LabelsT, typename TensorT, typename DeviceT>
   class DataFrameManagerImage2D : public DataFrameManager<LabelsT, TensorT, DeviceT, 4> {
   public:
-    using DataFrameManager::DataFrameManager;
+    using DataFrameManager<LabelsT, TensorT, DeviceT, 4>::DataFrameManager;
     void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 4>>& values_ptr);
   };
   template<typename LabelsT, typename TensorT, typename DeviceT>
@@ -319,7 +319,7 @@ namespace TensorBaseBenchmarks
   template<typename LabelsT, typename TensorT, typename DeviceT>
   class DataFrameManagerIsValid : public DataFrameManager<LabelsT, TensorT, DeviceT, 2> {
   public:
-    using DataFrameManager::DataFrameManager;
+    using DataFrameManager<LabelsT, TensorT, DeviceT, 2>::DataFrameManager;
     void getInsertData(const int& offset, const int& span, std::shared_ptr<TensorData<LabelsT, DeviceT, 2>>& labels_ptr, std::shared_ptr<TensorData<TensorT, DeviceT, 2>>& values_ptr);
   };
   template<typename LabelsT, typename TensorT, typename DeviceT>

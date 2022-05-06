@@ -144,6 +144,7 @@ if (EVONET_CUDA)
     set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --expt-relaxed-constexpr --expt-extended-lambda")
   endif()
   add_compile_definitions(COMPILE_WITH_CUDA=true)
+  add_compile_definitions(THRUST_IGNORE_CUB_VERSION_CHECK) # TEMP fix for using Cub 1.6 with Cuda 11.6.2
 endif()
 if(EVONET_CUDA AND EVONET_LARGE_GPU_ARRAY)
   set(LARGE_GPU_ARRAY On)

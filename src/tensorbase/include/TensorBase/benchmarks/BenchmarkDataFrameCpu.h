@@ -113,7 +113,7 @@ namespace TensorBaseBenchmarks
 	*/
 	class DataFrameManagerTimeCpu : public DataFrameManagerTime<int, int, Eigen::ThreadPoolDevice> {
 	public:
-		using DataFrameManagerTime::DataFrameManagerTime;
+		using DataFrameManagerTime<int, int, Eigen::ThreadPoolDevice>::DataFrameManagerTime;
 		void makeLabelsPtr(const Eigen::Tensor<int, 2>& labels, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>>& labels_ptr);
 		void makeValuesPtr(const Eigen::Tensor<int, 3>& values, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 3>>& values_ptr);
 	};
@@ -133,7 +133,7 @@ namespace TensorBaseBenchmarks
   */
   class DataFrameManagerLabelCpu : public DataFrameManagerLabel<int, TensorArray32<char>, Eigen::ThreadPoolDevice> {
   public:
-    using DataFrameManagerLabel::DataFrameManagerLabel;
+    using DataFrameManagerLabel<int, TensorArray32<char>, Eigen::ThreadPoolDevice>::DataFrameManagerLabel;
     void makeLabelsPtr(const Eigen::Tensor<int, 2>& labels, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>>& labels_ptr);
     void makeValuesPtr(const Eigen::Tensor<TensorArray32<char>, 2>& values, std::shared_ptr<TensorData<TensorArray32<char>, Eigen::ThreadPoolDevice, 2>>& values_ptr);
   };
@@ -153,7 +153,7 @@ namespace TensorBaseBenchmarks
   */
   class DataFrameManagerImage2DCpu : public DataFrameManagerImage2D<int, float, Eigen::ThreadPoolDevice> {
   public:
-    using DataFrameManagerImage2D::DataFrameManagerImage2D;
+    using DataFrameManagerImage2D<int, float, Eigen::ThreadPoolDevice>::DataFrameManagerImage2D;
     void makeLabelsPtr(const Eigen::Tensor<int, 2>& labels, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>>& labels_ptr);
     void makeValuesPtr(const Eigen::Tensor<float, 4>& values, std::shared_ptr<TensorData<float, Eigen::ThreadPoolDevice, 4>>& values_ptr);
   };
@@ -173,7 +173,7 @@ namespace TensorBaseBenchmarks
   */
   class DataFrameManagerIsValidCpu : public DataFrameManagerIsValid<int, int, Eigen::ThreadPoolDevice> {
   public:
-    using DataFrameManagerIsValid::DataFrameManagerIsValid;
+    using DataFrameManagerIsValid<int, int, Eigen::ThreadPoolDevice>::DataFrameManagerIsValid;
     void makeLabelsPtr(const Eigen::Tensor<int, 2>& labels, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>>& labels_ptr);
     void makeValuesPtr(const Eigen::Tensor<int, 2>& values, std::shared_ptr<TensorData<int, Eigen::ThreadPoolDevice, 2>>& values_ptr);
   };

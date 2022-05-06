@@ -123,7 +123,7 @@ namespace TensorBaseBenchmarks
 	*/
 	class DataFrameManagerTimeGpu : public DataFrameManagerTime<int, int, Eigen::GpuDevice> {
 	public:
-		using DataFrameManagerTime::DataFrameManagerTime;
+		using DataFrameManagerTime<int, int, Eigen::GpuDevice>::DataFrameManagerTime;
 		void makeLabelsPtr(const Eigen::Tensor<int, 2>& labels, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>>& labels_ptr);
 		void makeValuesPtr(const Eigen::Tensor<int, 3>& values, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 3>>& values_ptr);
 	};
@@ -143,7 +143,7 @@ namespace TensorBaseBenchmarks
   */
   class DataFrameManagerLabelGpu : public DataFrameManagerLabel<int, TensorArrayGpu32<char>, Eigen::GpuDevice> {
   public:
-    using DataFrameManagerLabel::DataFrameManagerLabel;
+    using DataFrameManagerLabel<int, TensorArrayGpu32<char>, Eigen::GpuDevice>::DataFrameManagerLabel;
     void makeLabelsPtr(const Eigen::Tensor<int, 2>& labels, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>>& labels_ptr);
     void makeValuesPtr(const Eigen::Tensor<TensorArrayGpu32<char>, 2>& values, std::shared_ptr<TensorData<TensorArrayGpu32<char>, Eigen::GpuDevice, 2>>& values_ptr);
   };
@@ -163,7 +163,7 @@ namespace TensorBaseBenchmarks
   */
   class DataFrameManagerImage2DGpu : public DataFrameManagerImage2D<int, float, Eigen::GpuDevice> {
   public:
-    using DataFrameManagerImage2D::DataFrameManagerImage2D;
+    using DataFrameManagerImage2D<int, float, Eigen::GpuDevice>::DataFrameManagerImage2D;
     void makeLabelsPtr(const Eigen::Tensor<int, 2>& labels, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>>& labels_ptr);
     void makeValuesPtr(const Eigen::Tensor<float, 4>& values, std::shared_ptr<TensorData<float, Eigen::GpuDevice, 4>>& values_ptr);
   };
@@ -183,7 +183,7 @@ namespace TensorBaseBenchmarks
   */
   class DataFrameManagerIsValidGpu : public DataFrameManagerIsValid<int, int, Eigen::GpuDevice> {
   public:
-    using DataFrameManagerIsValid::DataFrameManagerIsValid;
+    using DataFrameManagerIsValid<int, int, Eigen::GpuDevice>::DataFrameManagerIsValid;
     void makeLabelsPtr(const Eigen::Tensor<int, 2>& labels, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>>& labels_ptr);
     void makeValuesPtr(const Eigen::Tensor<int, 2>& values, std::shared_ptr<TensorData<int, Eigen::GpuDevice, 2>>& values_ptr);
   };

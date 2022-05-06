@@ -223,7 +223,7 @@ namespace TensorBaseBenchmarks
 	template<typename LabelsT, typename TensorT>
 	class PixelManager0DDefaultDevice : public PixelManager0D<LabelsT, TensorT, Eigen::DefaultDevice> {
 	public:
-		using PixelManager0D::PixelManager0D;
+		using PixelManager0D<LabelsT, TensorT, Eigen::DefaultDevice>::PixelManager0D;
 		void makeLabelsPtr(const Eigen::Tensor<LabelsT, 2>& labels, std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& labels_ptr);
 		void makeValuesPtr(const Eigen::Tensor<TensorT, 2>& values, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& values_ptr);
 	};
@@ -246,7 +246,7 @@ namespace TensorBaseBenchmarks
 	template<typename LabelsT, typename TensorT>
 	class PixelManager1DDefaultDevice : public PixelManager1D<LabelsT, TensorT, Eigen::DefaultDevice> {
 	public:
-		using PixelManager1D::PixelManager1D;
+		using PixelManager1D<LabelsT, TensorT, Eigen::DefaultDevice>::PixelManager1D;
 		void makeLabelsPtr(const Eigen::Tensor<LabelsT, 2>& labels, std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& labels_ptr);
 		void makeValuesPtr(const Eigen::Tensor<TensorT, 2>& values, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& values_ptr);
 	};
@@ -269,7 +269,7 @@ namespace TensorBaseBenchmarks
 	template<typename LabelsT, typename TensorT>
 	class PixelManager2DDefaultDevice : public PixelManager2D<LabelsT, TensorT, Eigen::DefaultDevice> {
 	public:
-		using PixelManager2D::PixelManager2D;
+		using PixelManager2D<LabelsT, TensorT, Eigen::DefaultDevice>::PixelManager2D;
 		void makeLabelsPtr(const Eigen::Tensor<LabelsT, 2>& labels, std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& labels_ptr);
 		void makeValuesPtr(const Eigen::Tensor<TensorT, 2>& values, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 2>>& values_ptr);
 	};
@@ -292,7 +292,7 @@ namespace TensorBaseBenchmarks
 	template<typename LabelsT, typename TensorT>
 	class PixelManager3DDefaultDevice : public PixelManager3D<LabelsT, TensorT, Eigen::DefaultDevice> {
 	public:
-		using PixelManager3D::PixelManager3D;
+		using PixelManager3D<LabelsT, TensorT, Eigen::DefaultDevice>::PixelManager3D;
 		void makeLabelsPtr(const Eigen::Tensor<LabelsT, 2>& labels, std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& labels_ptr);
 		void makeValuesPtr(const Eigen::Tensor<TensorT, 3>& values, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 3>>& values_ptr);
 	};
@@ -315,7 +315,7 @@ namespace TensorBaseBenchmarks
 	template<typename LabelsT, typename TensorT>
 	class PixelManager4DDefaultDevice : public PixelManager4D<LabelsT, TensorT, Eigen::DefaultDevice> {
 	public:
-		using PixelManager4D::PixelManager4D;
+		using PixelManager4D<LabelsT, TensorT, Eigen::DefaultDevice>::PixelManager4D;
 		void makeLabelsPtr(const Eigen::Tensor<LabelsT, 2>& labels, std::shared_ptr<TensorData<LabelsT, Eigen::DefaultDevice, 2>>& labels_ptr);
 		void makeValuesPtr(const Eigen::Tensor<TensorT, 4>& values, std::shared_ptr<TensorData<TensorT, Eigen::DefaultDevice, 4>>& values_ptr);
 	};
