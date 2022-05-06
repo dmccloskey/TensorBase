@@ -988,6 +988,7 @@ CEREAL_REGISTER_TYPE(TensorBase::TensorTableGpuClassT<TensorBase::TensorArrayGpu
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableGpuClassT<TensorBase::TensorArrayGpu32, char, 2>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableGpuClassT<TensorBase::TensorArrayGpu32, char, 3>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableGpuClassT<TensorBase::TensorArrayGpu32, char, 4>);
+#if LARGE_GPU_ARRAY
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableGpuClassT<TensorBase::TensorArrayGpu128, char, 1>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableGpuClassT<TensorBase::TensorArrayGpu128, char, 2>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableGpuClassT<TensorBase::TensorArrayGpu128, char, 3>);
@@ -1000,5 +1001,6 @@ CEREAL_REGISTER_TYPE(TensorBase::TensorTableGpuClassT<TensorBase::TensorArrayGpu
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableGpuClassT<TensorBase::TensorArrayGpu2048, char, 2>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableGpuClassT<TensorBase::TensorArrayGpu2048, char, 3>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorTableGpuClassT<TensorBase::TensorArrayGpu2048, char, 4>);
+#endif
 #endif
 #endif //TENSORBASE_TENSORTABLEGPUCLASST_H

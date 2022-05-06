@@ -145,6 +145,11 @@ if (EVONET_CUDA)
   endif()
   add_compile_definitions(COMPILE_WITH_CUDA=true)
 endif()
+if(EVONET_CUDA AND EVONET_LARGE_GPU_ARRAY)
+  set(LARGE_GPU_ARRAY On)
+else()
+  set(LARGE_GPU_ARRAY Off)
+endif()
 
 #------------------------------------------------------------------------------
 # Check architecture 32bit vs. 64bit

@@ -974,10 +974,14 @@ namespace TensorBase
     return comp(*this, other);
   }
 
+#if LARGE_GPU_ARRAY
   /**
     @brief Fixed length 128 vector class
+
+    Due to ptxas error "... uses too much shared data ... 0xc000 max" on NVidia GTX 3080 Ti
+      the functionality of the class has been removed
   */
-  template<typename TensorT>
+    template<typename TensorT>
   class TensorArrayGpu128
   {
   public:
@@ -1017,7 +1021,6 @@ namespace TensorBase
       );
     }
   };
-
   /* Operators for Gpu classes
   */
   namespace TensorArrayComparisonGpu {
@@ -2097,6 +2100,9 @@ namespace TensorBase
 
   /**
     @brief Fixed length 512 vector class
+
+    Due to ptxas error "... uses too much shared data ... 0xc000 max" on NVidia GTX 3080 Ti
+      the functionality of the class has been removed
   */
   template<typename TensorT>
   class TensorArrayGpu512
@@ -5906,6 +5912,9 @@ namespace TensorBase
 
   /**
     @brief Fixed length 2048 vector class
+
+    Due to ptxas error "... uses too much shared data ... 0xc000 max" on NVidia GTX 3080 Ti
+      the functionality of the class has been removed
   */
   template<typename TensorT>
   class TensorArrayGpu2048
@@ -20467,6 +20476,7 @@ namespace TensorBase
     isGreaterThanOrEqualToGpu2048 comp(this->array_size_);
     return comp(*this, other);
   }
+#endif
 };
 #endif
 #endif //TENSORBASE_TENSORARRAYGPU_H

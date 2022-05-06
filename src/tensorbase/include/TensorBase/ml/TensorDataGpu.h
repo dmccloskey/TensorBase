@@ -68,6 +68,7 @@ namespace TensorBase
       isGreaterThanGpu32 comp(size_);
       return comp(s1, s2);
     }
+#if LARGE_GPU_ARRAY
     template<template<class> class A = ArrayT, class T = TensorT, std::enable_if_t<std::is_same<TensorArrayGpu128<T>, A<T>>::value, int> = 0>
     __host__ __device__ bool operator()(const A<T>& s1, const A<T>& s2) {
       isGreaterThanGpu128 comp(size_);
@@ -83,6 +84,7 @@ namespace TensorBase
       isGreaterThanGpu2048 comp(size_);
       return comp(s1, s2);
     }
+#endif
   };
 
   /**
@@ -746,44 +748,6 @@ namespace cereal
 }
 
 // Cereal registration of TensorTs: float, int, char, double and TDims: 1, 2, 3, 4
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<int, 1>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<float, 1>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<double, 1>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<char, 1>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<int, 2>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<float, 2>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<double, 2>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<char, 2>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<int, 3>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<float, 3>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<double, 3>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<char, 3>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<int, 4>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<float, 4>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<double, 4>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<char, 4>);
-//
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<TensorBase::TensorArrayGpu8<char>, 1>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<TensorBase::TensorArrayGpu8<char>, 2>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<TensorBase::TensorArrayGpu8<char>, 3>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<TensorBase::TensorArrayGpu8<char>, 4>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<TensorBase::TensorArrayGpu32<char>, 1>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<TensorBase::TensorArrayGpu32<char>, 2>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<TensorBase::TensorArrayGpu32<char>, 3>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<TensorBase::TensorArrayGpu32<char>, 4>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<TensorBase::TensorArrayGpu128<char>, 1>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<TensorBase::TensorArrayGpu128<char>, 2>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<TensorBase::TensorArrayGpu128<char>, 3>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<TensorBase::TensorArrayGpu128<char>, 4>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<TensorBase::TensorArrayGpu512<char>, 1>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<TensorBase::TensorArrayGpu512<char>, 2>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<TensorBase::TensorArrayGpu512<char>, 3>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<TensorBase::TensorArrayGpu512<char>, 4>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<TensorBase::TensorArrayGpu2048<char>, 1>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<TensorBase::TensorArrayGpu2048<char>, 2>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<TensorBase::TensorArrayGpu2048<char>, 3>);
-//CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpu<TensorBase::TensorArrayGpu2048<char>, 4>);
-
 CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuPrimitiveT<int, 1>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuPrimitiveT<float, 1>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuPrimitiveT<double, 1>);
@@ -809,7 +773,8 @@ CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu3
 CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu32, char, 2>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu32, char, 3>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu32, char, 4>);
-CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu128, char, 1>);
+#if LARGE_GPU_ARRAY
+CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu128, char, 1>); 
 CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu128, char, 2>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu128, char, 3>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu128, char, 4>);
@@ -821,5 +786,6 @@ CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu2
 CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu2048, char, 2>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu2048, char, 3>);
 CEREAL_REGISTER_TYPE(TensorBase::TensorDataGpuClassT<TensorBase::TensorArrayGpu2048, char, 4>);
+#endif
 #endif
 #endif //TENSORBASE_TENSORDATAGPU_H
